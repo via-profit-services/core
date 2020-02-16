@@ -1,0 +1,45 @@
+{
+  "extends": [
+    "airbnb-base",
+    "plugin:prettier/recommended"
+  
+  ],
+  "plugins": [
+    "@typescript-eslint",
+    "prettier"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+      "sourceType": "module"
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {},
+      "webpack": {
+        "config": "./webpack/webpack.config.base.js"
+      }
+    }
+  },
+  "rules": {
+    "@typescript-eslint/adjacent-overload-signatures": "error",
+    "yoda": "off",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "error",
+    "no-dupe-class-members": "off",
+    "no-console": "off",
+    "prettier/prettier": "error",
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "never",
+        "jsx": "never",
+        "ts": "never",
+        "tsx": "never"
+      }
+   ]
+  },
+  "globals": {
+    "fetch": false
+  }
+}

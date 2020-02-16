@@ -1,0 +1,143 @@
+{
+    "name": "@via-profit-services/core",
+    "support": "https://via-profit.ru",
+    "version": "0.1.1",
+    "description": "Via Profit Core service",
+    "main": "dist/index.js",
+    "scripts": {
+        "dist": "yarn lint && webpack --config ./webpack/webpack.config.prod.js",
+        "build": "webpack --config ./webpack/webpack.config.dev.js",
+        "start": "yarn start:dev",
+        "start:dev": "webpack --config ./webpack/webpack.config.dev.js --watch",
+        "start:dist": "yarn dist && node ./scripts/start-dist.js",
+        "test": "jest",
+        "lint": "eslint --ext .ts ./src/ --fix"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "yarn lint && yarn test"
+        }
+    },
+    "release-it": {
+        "git": {
+            "commit": true,
+            "tag": true,
+            "push": true
+        },
+        "gitlab": {
+            "release": true
+        },
+        "npm": {
+            "publish": false
+        }
+    },
+    "eslintConfig": {
+        "extends": "eslint:recommended",
+        "parserOptions": {
+            "ecmaVersion": 7,
+            "sourceType": "module"
+        },
+        "env": {
+            "node": true
+        },
+        "rules": {
+            "no-console": 0,
+            "no-unused-vars": 1
+        }
+    },
+    "repository": {
+        "type": "git",
+        "url": "git@gitlab.com:via-profit-services/core.git"
+    },
+    "author": "Via Profit <promo@via-profit.ru>",
+    "license": "MIT",
+    "dependencies": {
+        "@graphql-toolkit/core": "^0.9.1",
+        "@graphql-toolkit/schema-merging": "^0.9.1",
+        "accesscontrol": "^2.2.1",
+        "bcryptjs": "^2.4.3",
+        "chalk": "^3.0.0",
+        "cors": "^2.8.5",
+        "dotenv": "^8.2.0",
+        "express": "^4.17.1",
+        "express-async-handler": "^1.1.4",
+        "express-graphql": "^0.9.0",
+        "graphql": "^14.5.8",
+        "graphql-playground-middleware-express": "^1.7.12",
+        "graphql-subscriptions": "^1.1.0",
+        "graphql-tag": "^2.10.1",
+        "graphql-tools": "^4.0.6",
+        "graphql-voyager": "^1.0.0-rc.28",
+        "jsonwebtoken": "^8.5.1",
+        "moment": "^2.24.0",
+        "moment-timezone": "^0.5.27",
+        "node-noop": "^1.0.0",
+        "pg": "^7.18.1",
+        "pg-hstore": "^2.3.3",
+        "pg-listen": "^1.5.0",
+        "remove": "^0.1.5",
+        "sequelize": "^5.21.4",
+        "subscriptions-transport-ws": "^0.9.16",
+        "winston": "^3.2.1",
+        "winston-daily-rotate-file": "^4.4.2"
+    },
+    "devDependencies": {
+        "@types/bcryptjs": "^2.4.2",
+        "@types/bluebird": "^3.5.29",
+        "@types/cors": "^2.8.6",
+        "@types/express": "^4.17.2",
+        "@types/express-graphql": "^0.9.0",
+        "@types/jest": "^24.0.23",
+        "@types/jsonwebtoken": "^8.3.7",
+        "@types/knex": "^0.16.1",
+        "@types/moment": "^2.13.0",
+        "@types/moment-timezone": "^0.5.12",
+        "@types/pg": "^7.11.2",
+        "@types/supertest": "^2.0.8",
+        "@types/validator": "^12.0.1",
+        "@types/webpack": "^4.41.2",
+        "@types/webpack-merge": "^4.1.5",
+        "@types/webpack-node-externals": "^1.7.0",
+        "@types/winston": "^2.4.4",
+        "@typescript-eslint/eslint-plugin": "^2.19.2",
+        "@typescript-eslint/parser": "^2.19.2",
+        "child-process-promise": "^2.2.1",
+        "clean-webpack-plugin": "^3.0.0",
+        "copy-webpack-plugin": "^5.1.1",
+        "cross-env": "^6.0.3",
+        "eslint": "^6.8.0",
+        "eslint-config-airbnb-base": "^14.0.0",
+        "eslint-config-prettier": "^6.10.0",
+        "eslint-config-standard": "^14.1.0",
+        "eslint-import-resolver-webpack": "^0.12.1",
+        "eslint-plugin-import": "^2.20.1",
+        "eslint-plugin-node": "^11.0.0",
+        "eslint-plugin-prettier": "^3.1.2",
+        "eslint-plugin-promise": "^4.2.1",
+        "eslint-plugin-standard": "^4.0.1",
+        "jest": "^24.9.0",
+        "nodemon": "^2.0.2",
+        "nodemon-webpack-plugin": "^4.2.2",
+        "npm-run-all": "^4.1.5",
+        "ora": "^4.0.3",
+        "prettier": "^1.19.1",
+        "release-it": "^12.4.3",
+        "remove-files-webpack-plugin": "^1.2.2",
+        "rimraf": "^3.0.0",
+        "supertest": "^4.0.2",
+        "ts-jest": "^24.2.0",
+        "ts-loader": "^6.2.1",
+        "ts-node": "^8.6.2",
+        "typescript": "^3.7.2",
+        "webpack": "^4.41.5",
+        "webpack-cli": "^3.3.10",
+        "webpack-dev-server": "^3.10.1",
+        "webpack-graphql-loader": "^1.0.2",
+        "webpack-merge": "^4.2.2",
+        "webpack-node-externals": "^1.7.2"
+    },
+    "private": true,
+    "publishConfig": {
+        "access": "public"
+    }
+}

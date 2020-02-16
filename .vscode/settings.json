@@ -1,0 +1,10 @@
+{
+  "eslint.enable": true,
+  "prettier.packageManager": "yarn",
+  "eslint.alwaysShowStatus": true,
+  "eslint.format.enable": true,
+  "eslint.lintTask.enable": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+}
