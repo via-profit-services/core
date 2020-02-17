@@ -1,8 +1,6 @@
 import path from 'path';
 import { configureLogger, Server } from '~/index';
-import CatalogSchema, {
-  configureCatalogLogger,
-} from '~/playground/schemas/catalog';
+import CatalogSchema, { configureCatalogLogger } from '~/playground/schemas/catalog';
 
 const catalogLogger = configureCatalogLogger({
   logPath: 'log',
@@ -29,7 +27,7 @@ const server = new Server({
     issuer: 'viaprofit-services',
     privateKey: path.resolve(__dirname, './cert/jwtRS256.key'),
     publicKey: path.resolve(__dirname, './cert/jwtRS256.key.pub'),
-    refreshTokenExpiresIn: 2592e6,
+    refreshTokenExpiresIn: 2.592e6,
   },
   logger,
   port: 4000,

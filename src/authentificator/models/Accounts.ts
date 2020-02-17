@@ -1,4 +1,5 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { Sequelize, DataTypes, Model, NOW } from 'sequelize';
+import { IAccount } from '../Authentificator';
 
 class AccountsModel extends Model {
   public id: string;
@@ -9,7 +10,9 @@ class AccountsModel extends Model {
 
   public password: string;
 
-  public status: 'allowed' | 'forbidden';
+  public status: IAccount['status'];
+
+  public roles: IAccount['roles'];
 }
 
 const modelFactory = (sequelize: Sequelize) => {
@@ -35,6 +38,16 @@ const modelFactory = (sequelize: Sequelize) => {
       status: {
         type: DataTypes.ENUM('allowed', 'forbidden'),
         allowNull: false,
+      },
+      createdAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: NOW,
+      },
+      updatedAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: NOW,
       },
     },
     {

@@ -1,14 +1,10 @@
 import bcryptjs from 'bcryptjs';
 import { NextFunction, Request, Response, Router } from 'express';
 import asyncHandler from 'express-async-handler';
+import DeviceDetector from 'device-detector-js';
+
 import { IContext } from '~/index';
-import {
-  AccountStatus,
-  Authentificator,
-  ResponseErrorType,
-  TokenType,
-} from './Authentificator';
-import Accounts from './models/Accounts';
+import { AccountStatus, Authentificator, ResponseErrorType, TokenType } from './Authentificator';
 
 const authentificatorMiddleware = (config: IMiddlewareConfig) => {
   const { context, authUrl, allowedUrl } = config;
@@ -19,78 +15,91 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
   const authentificator = new Authentificator({ context });
 
   const router = Router();
-
   router.post(
-    authUrl,
+    `${authUrl}/access-token`,
     asyncHandler(async (req: Request, res: Response) => {
-      const { body } = req;
+      const { body, headers } = req;
       const { login, password } = body;
+
+      const deviceDetector = new DeviceDetector();
+      const deviceInfo = deviceDetector.parse(headers['user-agent']);
 
       logger.auth.info('Access token request', { login });
 
-      const account = await Accounts(context.sequelize).findOne({
-        attributes: ['id', 'password', 'status'],
-        where: {
-          login,
-        },
-      });
+      const account = await authentificator.getAccountByLogin(login);
 
       // account not found
       if (!account || !bcryptjs.compareSync(password, account.password)) {
         logger.auth.error('Account not found', { login });
-        return Authentificator.sendResponseError(
-          ResponseErrorType.accountNotFound,
-          res,
-        );
+        return Authentificator.sendResponseError(ResponseErrorType.accountNotFound, res);
       }
 
       // account locked
-      if (
-        account.status === AccountStatus.forbidden &&
-        bcryptjs.compareSync(password, account.password)
-      ) {
+      if (account.status === AccountStatus.forbidden && bcryptjs.compareSync(password, account.password)) {
         logger.auth.info('Authentification forbidden', { login });
-        return Authentificator.sendResponseError(
-          ResponseErrorType.accountForbidden,
-          res,
-        );
+        return Authentificator.sendResponseError(ResponseErrorType.accountForbidden, res);
       }
 
       // success
-      if (
-        account.status === AccountStatus.allowed &&
-        bcryptjs.compareSync(password, account.password)
-      ) {
-        const payload = {
-          id: account.id,
-          roles: ['some'],
-        };
-
-        const accessToken = authentificator.generateToken(
-          TokenType.access,
-          payload,
-        );
-        const refreshToken = authentificator.generateToken(
-          TokenType.refresh,
-          payload,
-        );
-
-        logger.auth.info('Authentification success', {
-          login,
-          ...accessToken.payload,
+      if (account.status === AccountStatus.allowed && bcryptjs.compareSync(password, account.password)) {
+        const tokens = await authentificator.registerTokens({
+          uuid: account.id,
+          deviceInfo,
         });
 
         return res.status(200).json({
-          accessToken: accessToken.token,
+          accessToken: tokens.accessToken.token,
+          tokenType: 'bearer',
           expiresIn: config.context.jwt.accessTokenExpiresIn,
-          refreshToken: refreshToken.token,
+          refreshToken: tokens.refreshToken.token,
         });
       }
 
-      return Authentificator.sendResponseError(
-        ResponseErrorType.accountNotFound,
-        res,
-      );
+      return Authentificator.sendResponseError(ResponseErrorType.accountNotFound, res);
+    }),
+  );
+
+  router.post(
+    `${authUrl}/refresh-token`,
+    asyncHandler(async (req: Request, res: Response) => {
+      const { body, headers } = req;
+      const { token } = body;
+
+      // try to verify refresh token
+      const tokenPayload = Authentificator.verifyToken(token, context.jwt.publicKey);
+
+      if (tokenPayload.type !== TokenType.refresh) {
+        logger.auth.info('Tried to refresh token by access token. Rejected', { payload: tokenPayload });
+        return Authentificator.sendResponseError(ResponseErrorType.isNotARefreshToken, res);
+      }
+
+      // check to token exist
+      if (!(await authentificator.checkTokenExist(tokenPayload.id))) {
+        logger.auth.info('Tried to refresh token by revoked refresh token. Rejected', { payload: tokenPayload });
+        return Authentificator.sendResponseError(ResponseErrorType.tokenWasRevoked, res);
+      }
+
+      const deviceDetector = new DeviceDetector();
+      const deviceInfo = deviceDetector.parse(headers['user-agent']);
+
+      // revoke old access token of this refresh
+      await authentificator.revokeToken(tokenPayload.associated);
+
+      // revoke old refresh token
+      await authentificator.revokeToken(tokenPayload.id);
+
+      // create new tokens
+      const tokens = await authentificator.registerTokens({
+        uuid: tokenPayload.uuid,
+        deviceInfo,
+      });
+
+      return res.status(200).json({
+        accessToken: tokens.accessToken.token,
+        tokenType: 'bearer',
+        expiresIn: config.context.jwt.accessTokenExpiresIn,
+        refreshToken: tokens.refreshToken.token,
+      });
     }),
   );
 
@@ -102,16 +111,9 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
       }
 
       const token = Authentificator.extractToken(req);
-      const validationResult = Authentificator.verifyToken(token, publicKey);
+      Authentificator.verifyToken(token, publicKey);
 
-      if (validationResult === true) {
-        return next();
-      }
-
-      return Authentificator.sendResponseError(
-        ResponseErrorType.authentificationRequired,
-        res,
-      );
+      return Authentificator.sendResponseError(ResponseErrorType.authentificationRequired, res);
     }),
   );
 

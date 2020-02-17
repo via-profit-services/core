@@ -1,8 +1,11 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
 import jwt, { SignOptions } from 'jsonwebtoken';
+import uuidv4 from 'uuid/v4';
+import moment from 'moment-timezone';
 
 import { IContext, ServerError } from '~/index';
+import { TokensModel, AccountsModel } from './models';
 
 export enum TokenType {
   access = 'access',
@@ -16,6 +19,11 @@ export class Authentificator {
     this.props = props;
   }
 
+  /**
+   * Extract Token from HTTP request headers
+   * @param  {Request} request
+   * @returns string
+   */
   public static extractToken(request: Request): string | undefined {
     const { headers } = request;
     const { authorization } = headers;
@@ -25,28 +33,75 @@ export class Authentificator {
     return bearer.toLocaleLowerCase() === 'bearer' ? token : '';
   }
 
-  public static verifyToken(token: string, publicKeyPath: string): boolean {
+  /**
+   * Verify JWT token
+   * @param  {string} token
+   * @param  {string} publicKeyPath
+   * @returns ITokenInfo['payload']
+   */
+  public static verifyToken(token: string, publicKeyPath: string): ITokenInfo['payload'] {
     if (token === null) {
-      return false;
+      throw new ServerError('Token verification failed. The token must be provided');
     }
 
     try {
       const publicKey = fs.readFileSync(publicKeyPath);
-      jwt.verify(String(token), publicKey);
-      return true;
+      const payload = jwt.verify(String(token), publicKey) as ITokenInfo['payload'];
+      return payload;
     } catch (err) {
-      // logger.server.error(err);
-      console.log(err.name, err.message);
-      return false;
+      throw new ServerError('Token verification failed', err);
     }
   }
 
-  public generateToken(
-    type: TokenType,
-    payload: Omit<ITokenPayload, 'type'>,
-  ): ITokenInfo {
+  /**
+   * Register tokens
+   * @param  {{uuid:string;deviceInfo:{};}} data
+   * @returns ITokenInfo
+   */
+  public async registerTokens(data: { uuid: string; deviceInfo: {} }): Promise<ITokenPackage> {
     const { context } = this.props;
-    const { logger } = context;
+    const { sequelize, logger } = context;
+
+    const account = await AccountsModel(sequelize).findByPk(data.uuid);
+    const tokens = this.generateTokens({
+      uuid: account.id,
+      roles: account.roles,
+    });
+
+    // Register access token
+    try {
+      await TokensModel(sequelize).create({
+        id: tokens.accessToken.payload.id,
+        account: tokens.accessToken.payload.uuid,
+        type: TokenType.access,
+        deviceInfo: data.deviceInfo,
+        expiredAt: moment(tokens.accessToken.payload.exp).format(),
+      });
+    } catch (err) {
+      throw new ServerError('Failed to register access token', err);
+    }
+
+    // register refresh token
+    try {
+      await TokensModel(sequelize).create({
+        id: tokens.refreshToken.payload.id,
+        account: tokens.refreshToken.payload.uuid,
+        type: TokenType.refresh,
+        associated: tokens.accessToken.payload.id,
+        deviceInfo: data.deviceInfo,
+        expiredAt: moment(tokens.refreshToken.payload.exp).format(),
+      });
+    } catch (err) {
+      throw new ServerError('Failed to register refresh token', err);
+    }
+
+    logger.auth.info('New Access token was registered', tokens.accessToken.payload);
+
+    return tokens;
+  }
+
+  public generateTokens(payload: Pick<ITokenInfo['payload'], 'uuid' | 'roles'>): ITokenPackage {
+    const { context } = this.props;
 
     // check file to access and readable
     try {
@@ -57,45 +112,90 @@ export class Authentificator {
 
     const privatKey = fs.readFileSync(context.jwt.privateKey);
 
-    const options: SignOptions = {
-      algorithm: context.jwt.algorithm,
-      issuer: context.jwt.issuer,
+    const accessTokenPayload = {
+      ...payload,
+      type: TokenType.access,
+      id: uuidv4(),
+      exp: Date.now() + Number(context.jwt.accessTokenExpiresIn) * 1000,
+      iss: context.jwt.issuer,
     };
 
-    let token: string;
-    let tokenPayload: ITokenPayload;
+    const refreshTokenPayload = {
+      ...payload,
+      type: TokenType.refresh,
+      id: uuidv4(),
+      associated: accessTokenPayload.id,
+      exp: Date.now() + Number(context.jwt.refreshTokenExpiresIn) * 1000,
+      iss: context.jwt.issuer,
+    };
 
-    switch (type) {
-      // Access token
-      case TokenType.access:
-        tokenPayload = { ...payload, ...{ type: TokenType.access } };
-        options.expiresIn = context.jwt.accessTokenExpiresIn;
-        token = jwt.sign(payload, privatKey, options);
-        break;
+    const accessToken = jwt.sign(accessTokenPayload, privatKey, {
+      algorithm: context.jwt.algorithm,
+    });
 
-      // RefreshToken
-      case TokenType.refresh:
-        tokenPayload = { ...payload, ...{ type: TokenType.refresh } };
-        options.expiresIn = context.jwt.refreshTokenExpiresIn;
-        token = jwt.sign(payload, privatKey, options);
-        break;
-
-      default:
-        break;
-    }
-
-    logger.auth.info('New token was generated', { tokenPayload });
+    const refreshToken = jwt.sign(refreshTokenPayload, privatKey, {
+      algorithm: context.jwt.algorithm,
+    });
 
     return {
-      payload: tokenPayload,
-      token,
+      accessToken: {
+        token: accessToken,
+        payload: {
+          ...accessTokenPayload,
+          type: TokenType.access,
+        },
+      },
+      refreshToken: {
+        token: refreshToken,
+        payload: {
+          ...refreshTokenPayload,
+          type: TokenType.refresh,
+        },
+      },
     };
   }
 
-  public static sendResponseError(
-    responsetype: ResponseErrorType,
-    resp: Response,
-  ) {
+  public async revokeToken(tokenId: string) {
+    const { context } = this.props;
+    const { sequelize } = context;
+
+    await TokensModel(sequelize).destroy({
+      where: {
+        id: tokenId,
+      },
+    });
+  }
+
+  public async checkTokenExist(tokenId: string): Promise<boolean> {
+    const { context } = this.props;
+    const { sequelize } = context;
+
+    const tokenData = await TokensModel(sequelize).findByPk(tokenId, {
+      attributes: ['id'],
+    });
+
+    return tokenData !== null;
+  }
+
+  public async getAccountByLogin(login: IAccount['login']): Promise<Pick<IAccount, 'id' | 'password' | 'status'>> {
+    const { context } = this.props;
+    const { sequelize } = context;
+
+    const account = await AccountsModel(sequelize).findOne({
+      attributes: ['id', 'password', 'status'],
+      where: {
+        login,
+      },
+    });
+
+    return {
+      id: account.id,
+      password: account.password,
+      status: account.status,
+    };
+  }
+
+  public static sendResponseError(responsetype: ResponseErrorType, resp: Response) {
     const errors: IResponseError[] = [];
 
     switch (responsetype) {
@@ -109,6 +209,24 @@ export class Authentificator {
         errors.push({
           message: 'Authentication Required',
           name: 'Authorization error',
+        });
+        break;
+      case 'isNotARefreshToken':
+        errors.push({
+          message: 'Token error',
+          name: 'Is not a refresh token',
+        });
+        break;
+      case 'tokenExpired':
+        errors.push({
+          message: 'Token error',
+          name: 'This token expired',
+        });
+        break;
+      case 'tokenWasRevoked':
+        errors.push({
+          message: 'Token error',
+          name: 'Token was revoked',
         });
         break;
 
@@ -131,9 +249,8 @@ interface IProps {
 }
 
 /**
- * JWT configuration. See [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)
+ * @see: JWT configuration. See [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)
  */
-
 export interface IJwtConfig extends Pick<SignOptions, 'algorithm' | 'issuer'> {
   accessTokenExpiresIn: SignOptions['expiresIn'];
   refreshTokenExpiresIn: SignOptions['expiresIn'];
@@ -147,15 +264,36 @@ export interface IJwtConfig extends Pick<SignOptions, 'algorithm' | 'issuer'> {
   publicKey: string;
 }
 
-export interface ITokenPayload {
-  type: TokenType;
-  id: string;
-  roles: string[];
+export type ITokenInfo = IAccessToken | IRefreshToken;
+
+export interface ITokenPackage {
+  accessToken: ITokenInfo;
+  refreshToken: ITokenInfo;
 }
 
-export interface ITokenInfo {
+export interface IAccessToken {
   token: string;
-  payload: ITokenPayload;
+  payload: {
+    type: TokenType.access;
+    uuid: string;
+    id: string;
+    roles: string[];
+    exp: number;
+    iss: string;
+  };
+}
+
+export interface IRefreshToken {
+  token: string;
+  payload: {
+    type: TokenType.refresh;
+    uuid: string;
+    id: string;
+    roles: string[];
+    associated: string;
+    exp: number;
+    iss: string;
+  };
 }
 
 export enum ResponseErrorType {
@@ -163,6 +301,9 @@ export enum ResponseErrorType {
   accountNotFound = 'accountNotFound',
   accountForbidden = 'accountForbidden',
   invalidLoginOrPassword = 'invalidLoginOrPassword',
+  tokenExpired = 'tokenExpired',
+  isNotARefreshToken = 'isNotARefreshToken',
+  tokenWasRevoked = 'tokenWasRevoked',
 }
 
 export interface IResponseError {
@@ -173,4 +314,12 @@ export interface IResponseError {
 export enum AccountStatus {
   allowed = 'allowed',
   forbidden = 'forbidden',
+}
+
+export interface IAccount {
+  id: string;
+  login: string;
+  password: string;
+  status: AccountStatus;
+  roles: string[];
 }

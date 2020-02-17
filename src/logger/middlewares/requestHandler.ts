@@ -9,7 +9,11 @@ export default (config: ILoggerMiddlewareConfig) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const { method, originalUrl, headers } = req;
 
-    logger.http.info(`${method} "${originalUrl}"`, { headers });
+    const xForwardedFor = String(req.headers['x-forwarded-for'] || '').replace(/:\d+$/, '');
+    const ip = xForwardedFor || req.connection.remoteAddress;
+    const ipAddress = ip === '127.0.0.1' || ip === '::1' ? 'localhost' : ip;
+
+    logger.http.info(`${ipAddress} ${method} "${originalUrl}"`, { headers });
     return next();
   };
 };

@@ -12,12 +12,7 @@ import { SubscriptionServer } from 'subscriptions-transport-ws';
 
 import { authentificatorMiddleware, IJwtConfig } from '~/authentificator';
 import { sequelizeProvider } from '~/databaseManager';
-import {
-  errorHandlerMiddleware,
-  ILoggerCollection,
-  requestHandlerMiddleware,
-  ServerError,
-} from '~/logger';
+import { errorHandlerMiddleware, ILoggerCollection, requestHandlerMiddleware, ServerError } from '~/logger';
 
 const app = express();
 
@@ -52,9 +47,7 @@ class Server {
     sequelize
       .authenticate()
       .then(() => {
-        logger.server.debug(
-          'Test the connection by trying to authenticate is OK',
-        );
+        logger.server.debug('Test the connection by trying to authenticate is OK');
         return true;
       })
       .catch(err => {
@@ -86,9 +79,7 @@ class Server {
     app.use(
       endpoint,
       graphqlHTTP(
-        async (): Promise<
-          OptionsData & { subscriptionsEndpoint?: string }
-        > => ({
+        async (): Promise<OptionsData & { subscriptionsEndpoint?: string }> => ({
           context,
           graphiql: false,
           schema,
@@ -109,26 +100,12 @@ class Server {
       console.log('');
       console.log(chalk.green('========= GraphQL ========='));
       console.log('');
+      console.log(`${chalk.green('GraphQL server')}:     ${chalk.yellow(`http://localhost:${port}${endpoint}`)}`);
       console.log(
-        `${chalk.green('GraphQL server')}:     ${chalk.yellow(
-          `http://localhost:${port}${endpoint}`,
-        )}`,
+        `${chalk.magenta('GraphQL playground')}: ${chalk.yellow(`http://localhost:${port}${routes.playground}`)}`,
       );
-      console.log(
-        `${chalk.magenta('GraphQL playground')}: ${chalk.yellow(
-          `http://localhost:${port}${routes.playground}`,
-        )}`,
-      );
-      console.log(
-        `${chalk.cyan('Auth Server')}:        ${chalk.yellow(
-          `http://localhost:${port}${routes.auth}`,
-        )}`,
-      );
-      console.log(
-        `${chalk.blue('GraphQL voyager')}:    ${chalk.yellow(
-          `http://localhost:${port}${routes.voyager}`,
-        )}`,
-      );
+      console.log(`${chalk.cyan('Auth Server')}:        ${chalk.yellow(`http://localhost:${port}${routes.auth}`)}`);
+      console.log(`${chalk.blue('GraphQL voyager')}:    ${chalk.yellow(`http://localhost:${port}${routes.voyager}`)}`);
       console.log('');
 
       // Set up the WebSocket for handling GraphQL subscriptions.
@@ -147,9 +124,7 @@ class Server {
     });
 
     process.on('SIGINT', code => {
-      logger.server.debug(
-        `Server was stopped. SIGINT to exit with code: ${code}`,
-      );
+      logger.server.debug(`Server was stopped. SIGINT to exit with code: ${code}`);
     });
   }
 }

@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
+import chalk from 'chalk';
 
 import { IContext } from '~/index';
 import { ErrorHandler } from '~/logger/errorHandlers';
@@ -9,14 +10,19 @@ export default (config: ILoggerMiddlewareConfig) => {
   const { logger } = context;
 
   return [
-    (err: ErrorHandler, req: Request, res: Response) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    (err: ErrorHandler, req: Request, res: Response, next: NextFunction) => {
       const { status, stack, name, message, metaData } = err;
       const { originalUrl } = req;
 
-      logger.server.error(
-        message ? `${status || ''} ${message}` : 'Unknown error',
-        { originalUrl, stack, metaData },
-      );
+      logger.server.error(message ? `${status || ''} ${message}` : 'Unknown error', { originalUrl, stack, metaData });
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('');
+        console.log(`${chalk.bgRed.white(' Fatal Error ')} ${chalk.red(name)}`);
+        console.log(message, metaData);
+        console.log('');
+      }
 
       res.status(status || 500).json(
         responseFormatter({
