@@ -1,0 +1,3 @@
+# Contributing to Via Profit Services
+
+Soon...
