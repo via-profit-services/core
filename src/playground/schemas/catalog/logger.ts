@@ -15,9 +15,7 @@ export default (config: Config) => {
         const { timestamp, level, message, metadata } = info;
         const meta = JSON.stringify(metadata) !== '{}' ? metadata : null;
 
-        return `${timestamp} ${level}: ${message} ${
-          meta ? JSON.stringify(meta) : ''
-        }`;
+        return `${timestamp} ${level}: ${message} ${meta ? JSON.stringify(meta) : ''}`;
       }),
     ),
     transports: [

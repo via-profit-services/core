@@ -11,7 +11,7 @@
         "start:dev": "webpack --config ./webpack/webpack.config.dev.js --watch",
         "start:dist": "yarn dist && node ./scripts/start-dist.js",
         "test": "jest",
-        "lint": "eslint --ext .ts ./src/ --fix"
+        "lint": "eslint --ext .ts ./src/ --fix ."
     },
     "husky": {
         "hooks": {

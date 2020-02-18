@@ -1,10 +1,9 @@
 import bcryptjs from 'bcryptjs';
+import DeviceDetector from 'device-detector-js';
 import { NextFunction, Request, Response, Router } from 'express';
 import asyncHandler from 'express-async-handler';
-import DeviceDetector from 'device-detector-js';
-
-import { IContext } from '~/index';
 import { AccountStatus, Authentificator, ResponseErrorType, TokenType } from './Authentificator';
+import { IContext } from '~/index';
 
 const authentificatorMiddleware = (config: IMiddlewareConfig) => {
   const { context, authUrl, allowedUrl } = config;

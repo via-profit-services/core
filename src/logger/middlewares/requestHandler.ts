@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-
 import { IContext } from '~/index';
 
 export default (config: ILoggerMiddlewareConfig) => {

@@ -1,11 +1,10 @@
-import { Request, Response } from 'express';
 import fs from 'fs';
+import { Request, Response } from 'express';
 import jwt, { SignOptions } from 'jsonwebtoken';
-import uuidv4 from 'uuid/v4';
 import moment from 'moment-timezone';
-
-import { IContext, ServerError } from '~/index';
+import uuidv4 from 'uuid/v4';
 import { TokensModel, AccountsModel } from './models';
+import { IContext, ServerError } from '~/index';
 
 export enum TokenType {
   access = 'access',

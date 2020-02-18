@@ -1,6 +1,6 @@
-import serverLogger from './server';
 import authLogger from './auth';
-import sqlLogger from './sql';
 import httpLogger from './http';
+import serverLogger from './server';
+import sqlLogger from './sql';
 
 export { serverLogger, authLogger, sqlLogger, httpLogger };

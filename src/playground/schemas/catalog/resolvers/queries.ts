@@ -1,7 +1,6 @@
 import { IResolverObject } from 'graphql-tools';
-import { IContext } from '~/index';
-
 import NewsService from '../service';
+import { IContext } from '~/index';
 
 export const NewsQueries: IResolverObject<any, IContext> = {
   categories: (source, args, context) => {

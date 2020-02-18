@@ -1,3 +1,5 @@
+/* eslint-disable import/max-dependencies */
+import { createServer } from 'http';
 import chalk from 'chalk';
 import cors from 'cors';
 import express from 'express';
@@ -6,10 +8,8 @@ import { execute, GraphQLSchema, subscribe } from 'graphql';
 import expressPlayground from 'graphql-playground-middleware-express';
 import { mergeSchemas } from 'graphql-tools';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
-import { createServer } from 'http';
 import { Options, Sequelize } from 'sequelize';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
-
 import { authentificatorMiddleware, IJwtConfig } from '~/authentificator';
 import { sequelizeProvider } from '~/databaseManager';
 import { errorHandlerMiddleware, ILoggerCollection, requestHandlerMiddleware, ServerError } from '~/logger';

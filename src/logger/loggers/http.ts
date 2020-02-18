@@ -1,6 +1,5 @@
 import { transports, createLogger } from 'winston';
 import 'winston-daily-rotate-file';
-
 import loggerFormatter from '../utils/logFormatter';
 
 export default (config: Config) => {
