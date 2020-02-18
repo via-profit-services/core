@@ -5,7 +5,7 @@
     "description": "Via Profit Core service",
     "main": "dist/index.js",
     "scripts": {
-        "dist": "yarn lint && webpack --config ./webpack/webpack.config.prod.js",
+        "dist": "yarn lint && yarn test && webpack --config ./webpack/webpack.config.prod.js",
         "start": "yarn start:dev",
         "start:dev": "webpack --config ./webpack/webpack.config.dev.js --watch",
         "start:dist": "yarn dist && node ./dist/playground.js",
