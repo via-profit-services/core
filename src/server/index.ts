@@ -8,10 +8,9 @@ import { execute, GraphQLSchema, subscribe } from 'graphql';
 import expressPlayground from 'graphql-playground-middleware-express';
 import { mergeSchemas } from 'graphql-tools';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
-import { Options, Sequelize } from 'sequelize';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { authentificatorMiddleware, IJwtConfig } from '~/authentificator';
-import { sequelizeProvider } from '~/databaseManager';
+import { knexProvider, DBConfig, KnexInstance } from '~/databaseManager';
 import { errorHandlerMiddleware, ILoggerCollection, requestHandlerMiddleware, ServerError } from '~/logger';
 
 const app = express();
@@ -34,18 +33,11 @@ class Server {
       voyager: `${endpoint}/voyager`,
     };
 
-    const sequelize = sequelizeProvider({
-      benchmark: true,
-      logging: (sql, timing) => {
-        if (process.env.NODE_ENV === 'development') {
-          logger.sql.debug(sql, { queryTimeMs: timing });
-        }
-      },
-      ...database,
-    });
+    const knex = knexProvider({ logger, database });
 
-    sequelize
-      .authenticate()
+    // check connection
+    knex
+      .raw('SELECT 1+1 AS result')
       .then(() => {
         logger.server.debug('Test the connection by trying to authenticate is OK');
         return true;
@@ -55,11 +47,32 @@ class Server {
         throw new ServerError(err);
       });
 
+    // const sequelize = sequelizeProvider({
+    //   benchmark: true,
+    //   logging: (sql, timing) => {
+    //     if (process.env.NODE_ENV === 'development') {
+    //       logger.sql.debug(sql, { queryTimeMs: timing });
+    //     }
+    //   },
+    //   ...database,
+    // });
+
+    // sequelize
+    //   .authenticate()
+    //   .then(() => {
+    //     logger.server.debug('Test the connection by trying to authenticate is OK');
+    //     return true;
+    //   })
+    //   .catch(err => {
+    //     logger.server.error(err.name, err);
+    //     throw new ServerError(err);
+    //   });
+
     const context: IContext = {
       endpoint,
       jwt,
       logger,
-      sequelize,
+      knex,
     };
     // This middleware must be defined first
     app.use(requestHandlerMiddleware({ context }));
@@ -124,7 +137,8 @@ class Server {
     });
 
     process.on('SIGINT', code => {
-      logger.server.debug(`Server was stopped. SIGINT to exit with code: ${code}`);
+      logger.server.debug(`Server was stopped (Ctrl-C key passed). Exit with code: ${code}`);
+      process.exit(2);
     });
   }
 }
@@ -134,14 +148,14 @@ interface IInitProps {
   endpoint: string;
   schemas: GraphQLSchema[];
   jwt: IJwtConfig;
-  database: Options;
+  database: DBConfig;
   logger: ILoggerCollection;
 }
 
 export interface IContext {
   endpoint: string;
   jwt: IJwtConfig;
-  sequelize: Sequelize;
+  knex: KnexInstance;
   logger: ILoggerCollection;
 }
 

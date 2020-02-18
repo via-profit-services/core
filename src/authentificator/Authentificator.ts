@@ -3,7 +3,6 @@ import { Request, Response } from 'express';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import moment from 'moment-timezone';
 import uuidv4 from 'uuid/v4';
-import { TokensModel, AccountsModel } from './models';
 import { IContext, ServerError } from '~/index';
 
 export enum TokenType {
@@ -59,9 +58,16 @@ export class Authentificator {
    */
   public async registerTokens(data: { uuid: string; deviceInfo: {} }): Promise<ITokenPackage> {
     const { context } = this.props;
-    const { sequelize, logger } = context;
+    const { knex, logger } = context;
 
-    const account = await AccountsModel(sequelize).findByPk(data.uuid);
+    const account = await knex
+      .select<any, Pick<IAccount, 'id' | 'roles'>[]>(['id', 'roles'])
+      .from('accounts')
+      .where({
+        id: data.uuid,
+      })
+      .first();
+
     const tokens = this.generateTokens({
       uuid: account.id,
       roles: account.roles,
@@ -69,7 +75,7 @@ export class Authentificator {
 
     // Register access token
     try {
-      await TokensModel(sequelize).create({
+      await knex('tokens').insert({
         id: tokens.accessToken.payload.id,
         account: tokens.accessToken.payload.uuid,
         type: TokenType.access,
@@ -82,7 +88,7 @@ export class Authentificator {
 
     // register refresh token
     try {
-      await TokensModel(sequelize).create({
+      await knex('tokens').insert({
         id: tokens.refreshToken.payload.id,
         account: tokens.refreshToken.payload.uuid,
         type: TokenType.refresh,
@@ -156,36 +162,37 @@ export class Authentificator {
 
   public async revokeToken(tokenId: string) {
     const { context } = this.props;
-    const { sequelize } = context;
+    const { knex } = context;
 
-    await TokensModel(sequelize).destroy({
-      where: {
-        id: tokenId,
-      },
+    await knex.del('tokens').where({
+      id: tokenId,
     });
   }
 
   public async checkTokenExist(tokenId: string): Promise<boolean> {
     const { context } = this.props;
-    const { sequelize } = context;
+    const { knex } = context;
 
-    const tokenData = await TokensModel(sequelize).findByPk(tokenId, {
-      attributes: ['id'],
-    });
+    const tokenData = await knex
+      .select(['id'])
+      .from('tokens')
+      .where({ id: tokenId })
+      .first();
 
     return tokenData !== null;
   }
 
   public async getAccountByLogin(login: IAccount['login']): Promise<Pick<IAccount, 'id' | 'password' | 'status'>> {
     const { context } = this.props;
-    const { sequelize } = context;
+    const { knex } = context;
 
-    const account = await AccountsModel(sequelize).findOne({
-      attributes: ['id', 'password', 'status'],
-      where: {
+    const account = await knex
+      .select<any, Pick<IAccount, 'id' | 'password' | 'status'>>(['id', 'password', 'status'])
+      .from('accounts')
+      .where({
         login,
-      },
-    });
+      })
+      .first();
 
     return {
       id: account.id,

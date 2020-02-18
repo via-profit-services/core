@@ -11,7 +11,7 @@ export default (config: Config) => {
     format: loggerFormatter,
     transports: [
       new transports.DailyRotateFile({
-        filename: `${logPath}/%DATE%-debug.log`,
+        filename: `${logPath}/%DATE%-sql.log`,
         level: 'debug',
         datePattern: 'YYYY-MM-DD',
         zippedArchive: true,

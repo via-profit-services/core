@@ -1,6 +1,6 @@
 import { GraphQLSchema } from 'graphql';
-import { Options, Sequelize } from 'sequelize';
 import { IJwtConfig } from '~/authentificator';
+import { DBConfig, KnexInstance } from '~/databaseManager';
 import { ILoggerCollection } from '~/logger';
 declare class Server {
     private props;
@@ -12,13 +12,13 @@ interface IInitProps {
     endpoint: string;
     schemas: GraphQLSchema[];
     jwt: IJwtConfig;
-    database: Options;
+    database: DBConfig;
     logger: ILoggerCollection;
 }
 export interface IContext {
     endpoint: string;
     jwt: IJwtConfig;
-    sequelize: Sequelize;
+    knex: KnexInstance;
     logger: ILoggerCollection;
 }
 export { Server };

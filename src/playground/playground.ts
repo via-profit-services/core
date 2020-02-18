@@ -15,10 +15,13 @@ const logger = configureLogger({
 
 const server = new Server({
   database: {
-    database: 'services',
-    host: 'e1g.ru',
-    password: 'nonprofitproject',
-    username: 'services',
+    client: 'pg',
+    connection: {
+      database: 'services',
+      host: 'e1g.ru',
+      password: 'nonprofitproject',
+      user: 'services',
+    },
   },
   endpoint: '/api/graphql',
   jwt: {
