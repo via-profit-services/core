@@ -1,9 +1,9 @@
-const merge = require('webpack-merge');
-const nodeExternals = require('webpack-node-externals');
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const RemovePlugin = require('remove-files-webpack-plugin');
-const { NormalModuleReplacementPlugin, ProgressPlugin, IgnorePlugin} = require('webpack');
+const { ProgressPlugin, IgnorePlugin } = require('webpack');
+const merge = require('webpack-merge');
+// const nodeExternals = require('webpack-node-externals');
 
 const baseConfig = require('./webpack.config.base');
 
@@ -32,6 +32,6 @@ module.exports = merge(baseConfig, {
     new IgnorePlugin(/pg-native/),
     new IgnorePlugin(/pg-query-stream/),
   ],
-  
+
   // externals: [nodeExternals()],
 });

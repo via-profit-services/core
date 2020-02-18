@@ -1,10 +1,10 @@
-const merge = require('webpack-merge');
-const { ProgressPlugin } = require('webpack');
-const nodeExternals = require('webpack-node-externals');
 const path = require('path');
-const NodemonPlugin = require('nodemon-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
+const NodemonPlugin = require('nodemon-webpack-plugin');
+const { ProgressPlugin } = require('webpack');
+const merge = require('webpack-merge');
+const nodeExternals = require('webpack-node-externals');
 
 const baseConfig = require('./webpack.config.base');
 
