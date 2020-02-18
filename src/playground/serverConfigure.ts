@@ -1,17 +1,9 @@
 import path from 'path';
-import { configureLogger, IInitProps, Core } from '~/index';
-// import { configureCatalogLogger } from '~/playground/schemas/catalog';
+import { configureLogger, IInitProps, createServer } from '~/index';
 import NewsSchema from '~/playground/schemas/news';
-
-// const catalogLogger = configureCatalogLogger({
-//   logPath: 'log',
-// });
 
 const logger = configureLogger({
   logPath: 'log',
-  // loggers: {
-  //   catalog: catalogLogger,
-  // },
 });
 
 const databaseConfig: IInitProps['database'] = {
@@ -42,7 +34,8 @@ const serverConfig: IInitProps = {
   schemas: [NewsSchema],
 };
 
-const server = Core.init(serverConfig);
-// const server = Core.init(serverConfig);
-export default server;
-export { serverConfig, jwtConfig, databaseConfig, logger };
+const configureServer = (config?: Partial<IInitProps>) => {
+  return createServer({ ...serverConfig, ...config });
+};
+export { configureServer, serverConfig, jwtConfig, databaseConfig, logger };
+export default configureServer;

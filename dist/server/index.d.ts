@@ -1,24 +1,41 @@
+/// <reference types="node" />
+import { EventEmitter } from 'events';
 import { GraphQLSchema } from 'graphql';
 import { IJwtConfig } from '~/authentificator';
 import { DBConfig, KnexInstance } from '~/databaseManager';
 import { ILoggerCollection } from '~/logger';
-declare class Server {
-    private props;
-    constructor(props: IInitProps);
-    startServer(): Promise<void>;
-}
-interface IInitProps {
-    port: number;
+export declare const getRoutes: (endpoint: string, routes: Partial<{
+    auth?: string;
+    playground?: string;
+    voyager?: string;
+}>) => Partial<{
+    auth?: string;
+    playground?: string;
+    voyager?: string;
+}>;
+declare const createServer: (props: IInitProps) => {
+    server: import("express-serve-static-core").Express;
+    context: IContext;
+};
+export interface IInitProps {
+    port?: number;
     endpoint: string;
     schemas: GraphQLSchema[];
     jwt: IJwtConfig;
     database: DBConfig;
     logger: ILoggerCollection;
+    routes?: {
+        auth?: string;
+        playground?: string;
+        voyager?: string;
+    };
 }
 export interface IContext {
     endpoint: string;
     jwt: IJwtConfig;
     knex: KnexInstance;
     logger: ILoggerCollection;
+    emitter: EventEmitter;
 }
-export { Server };
+export default createServer;
+export { createServer };

@@ -84,6 +84,7 @@
         "winston-daily-rotate-file": "^4.4.2"
     },
     "devDependencies": {
+        "@jagi/jest-transform-graphql": "^1.0.2",
         "@types/bcryptjs": "^2.4.2",
         "@types/bluebird": "^3.5.29",
         "@types/cors": "^2.8.6",

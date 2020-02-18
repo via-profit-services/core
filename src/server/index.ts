@@ -1,155 +1,131 @@
 /* eslint-disable import/max-dependencies */
-import { createServer } from 'http';
-import chalk from 'chalk';
+import { EventEmitter } from 'events';
 import cors from 'cors';
 import express from 'express';
 import graphqlHTTP, { OptionsData } from 'express-graphql';
-import { execute, GraphQLSchema, subscribe } from 'graphql';
+import { GraphQLSchema } from 'graphql';
 import expressPlayground from 'graphql-playground-middleware-express';
 import { mergeSchemas } from 'graphql-tools';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
-import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { authentificatorMiddleware, IJwtConfig } from '~/authentificator';
 import { knexProvider, DBConfig, KnexInstance } from '~/databaseManager';
-import { errorHandlerMiddleware, ILoggerCollection, requestHandlerMiddleware, ServerError } from '~/logger';
+import { errorHandlerMiddleware, ILoggerCollection, requestHandlerMiddleware } from '~/logger';
 
-const app = express();
+export const getRoutes = (endpoint: string, routes: Partial<IInitProps['routes']>): Partial<IInitProps['routes']> => {
+  return {
+    auth: `${endpoint}/auth`,
+    playground: `${endpoint}/playground`,
+    voyager: `${endpoint}/voyager`,
+    ...routes,
+  };
+};
 
-class Server {
-  private props: IInitProps;
+const createServer = (props: IInitProps) => {
+  const server = express();
 
-  constructor(props: IInitProps) {
-    this.props = props;
-  }
+  const { schemas, endpoint, port, jwt, database, logger, routes } = props;
+  const subscriptionsEndpoint = '/subscriptions';
+  const schema = mergeSchemas({ schemas });
 
-  public async startServer() {
-    const { schemas, endpoint, port, jwt, database, logger } = this.props;
-    const subscriptionsEndpoint = '/subscriptions';
-    const schema = mergeSchemas({ schemas });
+  // generate routes
+  const routesList = getRoutes(endpoint, routes);
 
-    const routes = {
-      auth: `${endpoint}/auth`,
-      playground: `${endpoint}/playground`,
-      voyager: `${endpoint}/voyager`,
-    };
+  // define knex instance
+  const knex = knexProvider({ logger, database });
 
-    const knex = knexProvider({ logger, database });
+  // define EventEmittre instance
+  const emitter = new EventEmitter();
 
-    // check connection
-    knex
-      .raw('SELECT 1+1 AS result')
-      .then(() => {
-        logger.server.debug('Test the connection by trying to authenticate is OK');
-        return true;
-      })
-      .catch(err => {
-        logger.server.error(err.name, err);
-        throw new ServerError(err);
-      });
+  const context: IContext = {
+    endpoint,
+    jwt,
+    logger,
+    knex,
+    emitter,
+  };
 
-    // const sequelize = sequelizeProvider({
-    //   benchmark: true,
-    //   logging: (sql, timing) => {
-    //     if (process.env.NODE_ENV === 'development') {
-    //       logger.sql.debug(sql, { queryTimeMs: timing });
-    //     }
-    //   },
-    //   ...database,
-    // });
+  // This middleware must be defined first
+  server.use(requestHandlerMiddleware({ context }));
+  server.use(cors());
+  server.use(express.json({ limit: '50mb' }));
+  server.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-    // sequelize
-    //   .authenticate()
-    //   .then(() => {
-    //     logger.server.debug('Test the connection by trying to authenticate is OK');
-    //     return true;
-    //   })
-    //   .catch(err => {
-    //     logger.server.error(err.name, err);
-    //     throw new ServerError(err);
-    //   });
-
-    const context: IContext = {
-      endpoint,
-      jwt,
-      logger,
-      knex,
-    };
-    // This middleware must be defined first
-    app.use(requestHandlerMiddleware({ context }));
-    app.use(cors());
-    app.use(express.json({ limit: '50mb' }));
-    app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-
-    app.use(
-      authentificatorMiddleware({
+  server.use(
+    authentificatorMiddleware({
+      context,
+      authUrl: routesList.auth,
+      allowedUrl: [routesList.playground],
+    }),
+  );
+  server.get(routesList.playground, expressPlayground({ endpoint }));
+  server.use(routesList.voyager, voyagerMiddleware({ endpointUrl: endpoint }));
+  server.use(
+    endpoint,
+    graphqlHTTP(
+      async (): Promise<OptionsData & { subscriptionsEndpoint?: string }> => ({
         context,
-        authUrl: routes.auth,
-        allowedUrl: [routes.playground],
+        graphiql: false,
+        schema,
+        subscriptionsEndpoint: `ws://localhost:${port || 4000}${subscriptionsEndpoint}`,
       }),
+    ),
+  );
+
+  // this middleware most be defined first
+  server.use(errorHandlerMiddleware({ context }));
+
+  // Create listener server by wrapping express app
+  /* const webServer = createServer(app);
+
+  webServer.listen(port, () => {
+    logger.server.debug('Server was started', { port, endpoint, routesList });
+    console.log('');
+    console.log('');
+    console.log(chalk.green('========= GraphQL ========='));
+    console.log('');
+    console.log(`${chalk.green('GraphQL server')}:     ${chalk.yellow(`http://localhost:${port}${endpoint}`)}`);
+    console.log(
+      `${chalk.magenta('GraphQL playground')}: ${chalk.yellow(`http://localhost:${port}${routes.playground}`)}`,
     );
-    app.get(routes.playground, expressPlayground({ endpoint }));
-    app.use(routes.voyager, voyagerMiddleware({ endpointUrl: endpoint }));
-    app.use(
-      endpoint,
-      graphqlHTTP(
-        async (): Promise<OptionsData & { subscriptionsEndpoint?: string }> => ({
-          context,
-          graphiql: false,
-          schema,
-          subscriptionsEndpoint: `ws://localhost:${port}${subscriptionsEndpoint}`,
-        }),
-      ),
+    console.log(`${chalk.cyan('Auth Server')}:        ${chalk.yellow(`http://localhost:${port}${routes.auth}`)}`);
+    console.log(`${chalk.blue('GraphQL voyager')}:    ${chalk.yellow(`http://localhost:${port}${routes.voyager}`)}`);
+    console.log('');
+
+    // Set up the WebSocket for handling GraphQL subscriptions.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const ss = new SubscriptionServer(
+      {
+        execute,
+        schema,
+        subscribe,
+      },
+      {
+        path: subscriptionsEndpoint,
+        server: webServer,
+      },
     );
+  });
 
-    // this middleware most be defined first
-    app.use(errorHandlerMiddleware({ context }));
+  process.on('SIGINT', code => {
+    logger.server.debug(`Server was stopped (Ctrl-C key passed). Exit with code: ${code}`);
+    process.exit(2);
+  }); */
 
-    // Create listener server by wrapping express app
-    const webServer = createServer(app);
+  return { server, context };
+};
 
-    webServer.listen(port, () => {
-      logger.server.debug('Server was started', { port, endpoint, routes });
-      console.log('');
-      console.log('');
-      console.log(chalk.green('========= GraphQL ========='));
-      console.log('');
-      console.log(`${chalk.green('GraphQL server')}:     ${chalk.yellow(`http://localhost:${port}${endpoint}`)}`);
-      console.log(
-        `${chalk.magenta('GraphQL playground')}: ${chalk.yellow(`http://localhost:${port}${routes.playground}`)}`,
-      );
-      console.log(`${chalk.cyan('Auth Server')}:        ${chalk.yellow(`http://localhost:${port}${routes.auth}`)}`);
-      console.log(`${chalk.blue('GraphQL voyager')}:    ${chalk.yellow(`http://localhost:${port}${routes.voyager}`)}`);
-      console.log('');
-
-      // Set up the WebSocket for handling GraphQL subscriptions.
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const ss = new SubscriptionServer(
-        {
-          execute,
-          schema,
-          subscribe,
-        },
-        {
-          path: subscriptionsEndpoint,
-          server: webServer,
-        },
-      );
-    });
-
-    process.on('SIGINT', code => {
-      logger.server.debug(`Server was stopped (Ctrl-C key passed). Exit with code: ${code}`);
-      process.exit(2);
-    });
-  }
-}
-
-interface IInitProps {
-  port: number;
+export interface IInitProps {
+  port?: number;
   endpoint: string;
   schemas: GraphQLSchema[];
   jwt: IJwtConfig;
   database: DBConfig;
   logger: ILoggerCollection;
+  routes?: {
+    auth?: string;
+    playground?: string;
+    voyager?: string;
+  };
 }
 
 export interface IContext {
@@ -157,7 +133,9 @@ export interface IContext {
   jwt: IJwtConfig;
   knex: KnexInstance;
   logger: ILoggerCollection;
+  emitter: EventEmitter;
 }
 
-export { Server };
+export default createServer;
+export { createServer };
 // TODO Tests reuired

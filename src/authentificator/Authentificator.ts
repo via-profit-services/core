@@ -27,7 +27,6 @@ export class Authentificator {
     const { authorization } = headers;
     const bearer = String(authorization).split(' ')[0];
     const token = String(authorization).split(' ')[1];
-
     return bearer.toLocaleLowerCase() === 'bearer' ? token : '';
   }
 
