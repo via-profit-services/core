@@ -1,13 +1,15 @@
+import { createServer } from 'http';
 import supertest from 'supertest';
-import { configureServer } from '~/playground/serverConfigure';
+import { configureApp } from '~/playground/serverConfigure';
 import { configureTokens } from '~/playground/tokenConfigure';
 
 const endpoint = '/test';
-const { server, context } = configureServer({ port: 4001, endpoint });
+const { app, context } = configureApp({ port: 4001, endpoint });
 const { accessToken } = configureTokens([], context);
+const server = createServer(app);
 
 describe('Server', () => {
-  it('Any request without token should be rejected with ServerError 500', done => {
+  it('Any NOT authorized request must return 500 «Internal Server Error»', done => {
     supertest(server)
       .post(endpoint)
       .set('Content-Type', 'application/json')
@@ -16,13 +18,13 @@ describe('Server', () => {
       .end(done);
   });
 
-  it('Some', done => {
+  it('Any authorized request must return 400 «Bad Request Error»', done => {
     supertest(server)
       .post(`${endpoint}`)
       .set('Authorization', `Bearer ${accessToken.token}`)
       .set('Content-Type', 'application/json')
       .expect('Content-Type', /json/)
-      .expect(200)
+      .expect(400)
       .end(done);
   });
 });

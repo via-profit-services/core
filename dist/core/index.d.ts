@@ -1,6 +1,7 @@
-import { IInitProps } from '~/server';
+/// <reference types="node" />
+import { IInitProps } from '~/app';
 declare class Core {
-    static init(config: IInitProps): import("express-serve-static-core").Express;
+    static init(config: IInitProps): import("http").Server;
 }
 export default Core;
 export { Core };

@@ -111,10 +111,8 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
 
       const token = Authentificator.extractToken(req);
       Authentificator.verifyToken(token, publicKey);
-      return res.json({
-        status: 'ok',
-      });
-      // return Authentificator.sendResponseError(ResponseErrorType.authentificationRequired, res);
+
+      return next();
     }),
   );
 

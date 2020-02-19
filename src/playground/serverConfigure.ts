@@ -1,6 +1,6 @@
 import path from 'path';
-import { configureLogger, IInitProps, createServer } from '~/index';
-import NewsSchema from '~/playground/schemas/news';
+import { configureLogger, IInitProps, createApp } from '~/index';
+import SimpleSchema from '~/playground/schemas/simple';
 
 const logger = configureLogger({
   logPath: 'log',
@@ -31,11 +31,11 @@ const serverConfig: IInitProps = {
   jwt: jwtConfig,
   logger,
   port: 4000,
-  schemas: [NewsSchema],
+  schemas: [SimpleSchema],
 };
 
-const configureServer = (config?: Partial<IInitProps>) => {
-  return createServer({ ...serverConfig, ...config });
+const configureApp = (config?: Partial<IInitProps>) => {
+  return createApp({ ...serverConfig, ...config });
 };
-export { configureServer, serverConfig, jwtConfig, databaseConfig, logger };
-export default configureServer;
+export { configureApp, serverConfig, jwtConfig, databaseConfig, logger };
+export default configureApp;

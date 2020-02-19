@@ -1,19 +1,17 @@
-// import { createServer } from 'http';
+import { createServer } from 'http';
 import chalk from 'chalk';
 // import { SubscriptionServer } from 'subscriptions-transport-ws';
+import { createApp, IInitProps, getRoutes } from '~/app';
 import { ServerError } from '~/logger';
-import { createServer, IInitProps, getRoutes } from '~/server';
 
 class Core {
   public static init(config: IInitProps) {
     const { port, endpoint, routes, logger } = config;
     const routesList = getRoutes(endpoint, routes);
 
-    // check connection
-
     // Create listener server by wrapping express app
-    const { server, context } = createServer(config);
-
+    const { app, context } = createApp(config);
+    const server = createServer(app);
     const { knex } = context;
 
     knex

@@ -10,6 +10,7 @@ import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 import { authentificatorMiddleware, IJwtConfig } from '~/authentificator';
 import { knexProvider, DBConfig, KnexInstance } from '~/databaseManager';
 import { errorHandlerMiddleware, ILoggerCollection, requestHandlerMiddleware } from '~/logger';
+import { infoSchema } from '~/schemas';
 
 export const getRoutes = (endpoint: string, routes: Partial<IInitProps['routes']>): Partial<IInitProps['routes']> => {
   return {
@@ -20,12 +21,14 @@ export const getRoutes = (endpoint: string, routes: Partial<IInitProps['routes']
   };
 };
 
-const createServer = (props: IInitProps) => {
-  const server = express();
+const createApp = (props: IInitProps) => {
+  const app = express();
 
   const { schemas, endpoint, port, jwt, database, logger, routes } = props;
   const subscriptionsEndpoint = '/subscriptions';
-  const schema = mergeSchemas({ schemas });
+
+  // merge user schemas and legacy
+  const schema = mergeSchemas({ schemas: [...schemas, infoSchema] });
 
   // generate routes
   const routesList = getRoutes(endpoint, routes);
@@ -45,21 +48,21 @@ const createServer = (props: IInitProps) => {
   };
 
   // This middleware must be defined first
-  server.use(requestHandlerMiddleware({ context }));
-  server.use(cors());
-  server.use(express.json({ limit: '50mb' }));
-  server.use(express.urlencoded({ extended: true, limit: '50mb' }));
+  app.use(requestHandlerMiddleware({ context }));
+  app.use(cors());
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-  server.use(
+  app.use(
     authentificatorMiddleware({
       context,
       authUrl: routesList.auth,
       allowedUrl: [routesList.playground],
     }),
   );
-  server.get(routesList.playground, expressPlayground({ endpoint }));
-  server.use(routesList.voyager, voyagerMiddleware({ endpointUrl: endpoint }));
-  server.use(
+  app.get(routesList.playground, expressPlayground({ endpoint }));
+  app.use(routesList.voyager, voyagerMiddleware({ endpointUrl: endpoint }));
+  app.use(
     endpoint,
     graphqlHTTP(
       async (): Promise<OptionsData & { subscriptionsEndpoint?: string }> => ({
@@ -72,7 +75,7 @@ const createServer = (props: IInitProps) => {
   );
 
   // this middleware most be defined first
-  server.use(errorHandlerMiddleware({ context }));
+  app.use(errorHandlerMiddleware({ context }));
 
   // Create listener server by wrapping express app
   /* const webServer = createServer(app);
@@ -110,8 +113,7 @@ const createServer = (props: IInitProps) => {
     logger.server.debug(`Server was stopped (Ctrl-C key passed). Exit with code: ${code}`);
     process.exit(2);
   }); */
-
-  return { server, context };
+  return { app, context };
 };
 
 export interface IInitProps {
@@ -136,6 +138,6 @@ export interface IContext {
   emitter: EventEmitter;
 }
 
-export default createServer;
-export { createServer };
+export default createApp;
+export { createApp };
 // TODO Tests reuired

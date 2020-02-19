@@ -1,16 +1,16 @@
 import { GraphQLSchema, GraphQLObjectType, GraphQLNonNull, GraphQLString, GraphQLBoolean } from 'graphql';
 
-const DeveloperInfo = new GraphQLObjectType({
-  name: 'DeveloperInfo',
-  description: 'developer info',
+const Post = new GraphQLObjectType({
+  name: 'Post',
+  description: 'Current Post data',
   fields: () => ({
-    name: {
+    title: {
       type: new GraphQLNonNull(GraphQLString),
-      description: 'Company name',
+      description: 'Post Title',
     },
-    website: {
+    url: {
       type: new GraphQLNonNull(GraphQLString),
-      description: 'Website URL address',
+      description: 'URL address',
     },
   }),
 });
@@ -19,17 +19,11 @@ const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
     fields: () => ({
-      version: {
-        description: 'Just version',
-        resolve: () => '0.1.1',
-        type: new GraphQLNonNull(GraphQLString),
-      },
-      developer: {
-        description: 'Retuen Developer info',
-        type: new GraphQLNonNull(DeveloperInfo),
+      post: {
+        type: new GraphQLNonNull(Post),
         resolve: () => ({
-          name: 'Via Profit',
-          website: 'https://via-profit.ru',
+          title: 'Lorem ipsum',
+          url: 'hppts://google.com',
         }),
       },
     }),

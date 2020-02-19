@@ -1,7 +1,7 @@
 import path from 'path';
 import { configureLogger, IInitProps, Core } from '~/index';
 // import { configureCatalogLogger } from '~/playground/schemas/catalog';
-import NewsSchema from '~/playground/schemas/news';
+import SimpleSchema from '~/playground/schemas/simple';
 
 // const catalogLogger = configureCatalogLogger({
 //   logPath: 'log',
@@ -39,10 +39,10 @@ const serverConfig: IInitProps = {
   jwt: jwtConfig,
   logger,
   port: 4000,
-  schemas: [NewsSchema],
+  schemas: [SimpleSchema],
 };
 
 const server = Core.init(serverConfig);
-// const server = Core.init(serverConfig);
+
 export default server;
 export { serverConfig, jwtConfig, databaseConfig, logger };

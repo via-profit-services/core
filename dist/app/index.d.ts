@@ -13,8 +13,8 @@ export declare const getRoutes: (endpoint: string, routes: Partial<{
     playground?: string;
     voyager?: string;
 }>;
-declare const createServer: (props: IInitProps) => {
-    server: import("express-serve-static-core").Express;
+declare const createApp: (props: IInitProps) => {
+    app: import("express-serve-static-core").Express;
     context: IContext;
 };
 export interface IInitProps {
@@ -37,5 +37,5 @@ export interface IContext {
     logger: ILoggerCollection;
     emitter: EventEmitter;
 }
-export default createServer;
-export { createServer };
+export default createApp;
+export { createApp };
