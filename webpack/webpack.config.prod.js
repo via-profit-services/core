@@ -7,6 +7,8 @@ const nodeExternals = require('webpack-node-externals');
 
 const baseConfig = require('./webpack.config.base');
 
+// TODO Remove playground from production
+
 module.exports = merge(baseConfig, {
   entry: {
     index: path.resolve(__dirname, '../src/index.ts'),
