@@ -1,4 +1,4 @@
-// import assert from 'assert';
+import assert from 'assert';
 import { createServer } from 'http';
 import supertest from 'supertest';
 import configureTest from '../playground/configureTest';
@@ -39,22 +39,21 @@ describe('Server', () => {
       })
       .expect('Content-Type', /json/)
       .expect(200)
-      .end(done);
-    // .then(async response => {
-    //   const data = JSON.parse(response.text);
-    //   assert.deepEqual(
-    //     data,
-    //     {
-    //       data: {
-    //         devInfo: {
-    //           version: '0.1.1',
-    //         },
-    //       },
-    //     },
-    //     'Invalid response ERROR',
-    //   );
-    //   done();
-    // });
+      .then(async response => {
+        const data = JSON.parse(response.text);
+        assert.deepEqual(
+          data,
+          {
+            data: {
+              devInfo: {
+                version: '0.1.1',
+              },
+            },
+          },
+          'Invalid response ERROR',
+        );
+        done();
+      });
   });
 
   afterAll(async () => {
