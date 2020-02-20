@@ -1,19 +1,24 @@
 import { createServer } from 'http';
 import chalk from 'chalk';
-// import { SubscriptionServer } from 'subscriptions-transport-ws';
-import { createApp, IInitProps, getRoutes } from '~/app';
+import { execute, subscribe } from 'graphql';
+import { SubscriptionServer } from 'subscriptions-transport-ws';
+import { App, IInitProps } from '~/app';
 import { ServerError } from '~/logger';
 
 class Core {
   public static init(config: IInitProps) {
-    const { port, endpoint, routes, logger } = config;
-    const routesList = getRoutes(endpoint, routes);
+    const { port, endpoint, subscriptionsEndpoint, logger } = config;
 
-    // Create listener server by wrapping express app
-    const { app, context } = createApp(config);
+    // Create web application by wrapping express app
+    const { app, context, schema, routes } = App.createApp(config);
+
+    // Create web server
     const server = createServer(app);
+
+    // configure knex query builder
     const { knex } = context;
 
+    // check database connection
     knex
       .raw('SELECT 1+1 AS result')
       .then(() => {
@@ -25,61 +30,39 @@ class Core {
         throw new ServerError(err);
       });
 
+    // Run HTTP server
     server.listen(port, () => {
+      // connect websockrt subscriptions werver
+      // @see https://github.com/apollographql/subscriptions-transport-ws/blob/master/docs/source/express.md
+      // eslint-disable-next-line no-new
+      new SubscriptionServer(
+        {
+          execute,
+          schema,
+          subscribe,
+        },
+        {
+          server,
+          path: subscriptionsEndpoint,
+        },
+      );
+
       console.log('');
       console.log('');
       console.log(chalk.green('========= GraphQL ========='));
       console.log('');
       console.log(`${chalk.green('GraphQL server')}:     ${chalk.yellow(`http://localhost:${port}${endpoint}`)}`);
       console.log(
-        `${chalk.magenta('GraphQL playground')}: ${chalk.yellow(`http://localhost:${port}${routesList.playground}`)}`,
+        `${chalk.magenta('GraphQL playground')}: ${chalk.yellow(`http://localhost:${port}${routes.playground}`)}`,
       );
-      console.log(`${chalk.cyan('Auth Server')}:        ${chalk.yellow(`http://localhost:${port}${routesList.auth}`)}`);
-      console.log(
-        `${chalk.blue('GraphQL voyager')}:    ${chalk.yellow(`http://localhost:${port}${routesList.voyager}`)}`,
-      );
+      console.log(`${chalk.cyan('Auth Server')}:        ${chalk.yellow(`http://localhost:${port}${routes.auth}`)}`);
+      console.log(`${chalk.blue('GraphQL voyager')}:    ${chalk.yellow(`http://localhost:${port}${routes.voyager}`)}`);
       console.log('');
     });
 
     return server;
-    // const webServer = createServer(s);
-
-    // webServer.listen(port, () => {
-    //   // logger.server.debug('Server was started', { port, endpoint, routes });
-    //   console.log('');
-    //   console.log('');
-    //   console.log(chalk.green('========= GraphQL ========='));
-    //   console.log('');
-    //   console.log(`${chalk.green('GraphQL server')}:     ${chalk.yellow(`http://localhost:${port}${endpoint}`)}`);
-    //   console.log(
-    //     `${chalk.magenta('GraphQL playground')}: ${chalk.yellow(`http://localhost:${port}${routes.playground}`)}`,
-    //   );
-    //   console.log(`${chalk.cyan('Auth Server')}:        ${chalk.yellow(`http://localhost:${port}${routes.auth}`)}`);
-    //   console.log(`${chalk.blue('GraphQL voyager')}:    ${chalk.yellow(`http://localhost:${port}${routes.voyager}`)}`);
-    //   console.log('');
-
-    // Set up the WebSocket for handling GraphQL subscriptions.
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    // const ss = new SubscriptionServer(
-    //   {
-    //     execute,
-    //     schema,
-    //     subscribe,
-    //   },
-    //   {
-    //     path: subscriptionsEndpoint,
-    //     server: webServer,
-    //   },
-    // );
-    // });
-
-    // process.on('SIGINT', code => {
-    //   logger.server.debug(`Server was stopped (Ctrl-C key passed). Exit with code: ${code}`);
-    //   process.exit(2);
-    // });
   }
 }
 
 export default Core;
 export { Core };
-// const webServer = server(config: IInitProps);

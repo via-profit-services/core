@@ -1,5 +1,5 @@
 import path from 'path';
-import { configureLogger, IInitProps, createApp } from '~/index';
+import { configureLogger, IInitProps, App } from '~/index';
 import SimpleSchema from '~/playground/schemas/simple';
 
 const logger = configureLogger({
@@ -28,6 +28,7 @@ const jwtConfig: IInitProps['jwt'] = {
 const serverConfig: IInitProps = {
   database: databaseConfig,
   endpoint: '/api/graphql',
+  subscriptionsEndpoint: '/api/subscriptions',
   jwt: jwtConfig,
   logger,
   port: 4000,
@@ -35,7 +36,7 @@ const serverConfig: IInitProps = {
 };
 
 const configureApp = (config?: Partial<IInitProps>) => {
-  return createApp({ ...serverConfig, ...config });
+  return App.createApp({ ...serverConfig, ...config });
 };
 export { configureApp, serverConfig, jwtConfig, databaseConfig, logger };
 export default configureApp;

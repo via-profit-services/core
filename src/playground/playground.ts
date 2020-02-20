@@ -36,6 +36,7 @@ const jwtConfig: IInitProps['jwt'] = {
 const serverConfig: IInitProps = {
   database: databaseConfig,
   endpoint: '/api/graphql',
+  subscriptionsEndpoint: '/api/subscriptions',
   jwt: jwtConfig,
   logger,
   port: 4000,
