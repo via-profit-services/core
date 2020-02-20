@@ -1,9 +1,17 @@
 import path from 'path';
-import { configureLogger, IInitProps, App } from '~/index';
+import { configureLogger, IInitProps } from '~/index';
+// import { configureCatalogLogger } from '~/playground/schemas/catalog';
 import SimpleSchema from '~/playground/schemas/simple';
+
+// const catalogLogger = configureCatalogLogger({
+//   logPath: 'log',
+// });
 
 const logger = configureLogger({
   logPath: 'log',
+  // loggers: {
+  //   catalog: catalogLogger,
+  // },
 });
 
 const databaseConfig: IInitProps['database'] = {
@@ -35,8 +43,4 @@ const serverConfig: IInitProps = {
   schemas: [SimpleSchema],
 };
 
-const configureApp = (config?: Partial<IInitProps>) => {
-  return App.createApp({ ...serverConfig, ...config });
-};
-export { configureApp, serverConfig, jwtConfig, databaseConfig, logger };
-export default configureApp;
+export { serverConfig, jwtConfig, databaseConfig, logger };

@@ -14,11 +14,30 @@ export default (config: ILoggerMiddlewareConfig) => {
       const { status, stack, name, message, metaData } = err;
       const { originalUrl } = req;
 
-      logger.server.error(message ? `${status || ''} ${message}` : 'Unknown error', { originalUrl, stack, metaData });
+      const errorMessage = message ? `${status || ''} ${message}` : 'Unknown error';
+
+      switch (status) {
+        case 401:
+          logger.auth.error(errorMessage, {
+            originalUrl,
+            stack,
+            metaData,
+          });
+          break;
+
+        case 500:
+        default:
+          logger.server.error(errorMessage, {
+            originalUrl,
+            stack,
+            metaData,
+          });
+          break;
+      }
 
       if (process.env.NODE_ENV === 'development') {
         console.log('');
-        console.log(`${chalk.bgRed.white(' Fatal Error ')} ${chalk.red(name)}`);
+        console.log(`${chalk.bgRed.white(errorMessage)} ${chalk.red(name)}`);
         console.log(message, metaData);
         console.log('');
       }

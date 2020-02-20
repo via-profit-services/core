@@ -15,6 +15,13 @@ declare class App {
             playground?: string;
             voyager?: string;
         }>;
+        port?: number;
+        endpoint: string;
+        subscriptionsEndpoint: string;
+        schemas: GraphQLSchema[];
+        jwt: IJwtConfig;
+        database: DBConfig;
+        logger: ILoggerCollection;
     };
 }
 export default App;

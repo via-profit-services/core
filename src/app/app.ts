@@ -78,7 +78,8 @@ class App {
     // this middleware most be defined first
     app.use(errorHandlerMiddleware({ context }));
 
-    return { app, context, schema, routes: routesList };
+    // return { app, context, schema, routes: routesList };
+    return { ...props, app, context, schema, routes: routesList };
   }
 }
 

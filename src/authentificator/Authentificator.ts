@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import moment from 'moment-timezone';
 import uuidv4 from 'uuid/v4';
-import { IContext, ServerError } from '~/index';
+import { IContext, ServerError, UnauthorizedError } from '~/index';
 
 export enum TokenType {
   access = 'access',
@@ -37,8 +37,8 @@ export class Authentificator {
    * @returns ITokenInfo['payload']
    */
   public static verifyToken(token: string, publicKeyPath: string): ITokenInfo['payload'] {
-    if (token === null) {
-      throw new ServerError('Token verification failed. The token must be provided');
+    if (token === null || token === '') {
+      throw new UnauthorizedError('The token must be provided');
     }
 
     try {
@@ -46,7 +46,7 @@ export class Authentificator {
       const payload = jwt.verify(String(token), publicKey) as ITokenInfo['payload'];
       return payload;
     } catch (err) {
-      throw new ServerError('Token verification failed', err);
+      throw new UnauthorizedError('Token verification failed', err);
     }
   }
 
