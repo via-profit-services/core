@@ -14,7 +14,7 @@ module.exports = merge(baseConfig, {
     playground: path.resolve(__dirname, '../src/playground/index.ts'),
   },
   output: {
-    path: path.join(__dirname, '../dist/'),
+    path: path.join(__dirname, '../build/'),
     filename: '[name].js',
     libraryTarget: 'commonjs2',
   },
@@ -26,8 +26,8 @@ module.exports = merge(baseConfig, {
       verbose: true,
     }),
     new NodemonPlugin({
-      script: path.resolve(__dirname, '../dist/playground.js'),
-      watch: path.resolve(__dirname, '../dist'),
+      script: path.resolve(__dirname, '../build/playground.js'),
+      watch: path.resolve(__dirname, '../build'),
     }),
     new CopyPlugin([{ from: 'src/playground/cert', to: 'cert' }]),
   ],

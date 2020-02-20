@@ -5,9 +5,11 @@
     "description": "Via Profit Core service",
     "main": "dist/index.js",
     "scripts": {
-        "dist": "yarn lint && yarn test && webpack --config ./webpack/webpack.config.prod.js",
+        "dist": "yarn lint && yarn test && yarn build:dist",
         "start": "yarn start:dev",
-        "start:dev": "webpack --config ./webpack/webpack.config.dev.js --watch",
+        "build:dev": "cross-env NODE_ENV=development webpack --config ./webpack/webpack.config.dev.js",
+        "build:dist": "webpack --config ./webpack/webpack.config.prod.js",
+        "start:dev": "yarn build:dev --watch",
         "start:dist": "yarn dist && node ./dist/playground.js",
         "test": "jest",
         "lint": "eslint --ext .ts ./src/ --fix ."
@@ -131,6 +133,7 @@
         "ts-jest": "^24.2.0",
         "ts-loader": "^6.2.1",
         "ts-node": "^8.6.2",
+        "tsconfig-paths-webpack-plugin": "^3.2.0",
         "typescript": "^3.7.2",
         "webpack": "^4.41.5",
         "webpack-cli": "^3.3.10",

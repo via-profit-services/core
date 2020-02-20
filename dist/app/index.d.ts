@@ -15,6 +15,15 @@ declare class App {
             playground?: string;
             voyager?: string;
         }>;
+        port?: number;
+        endpoint: string;
+        subscriptionsEndpoint: string;
+        schemas: GraphQLSchema[];
+        jwt: IJwtConfig;
+        database: DBConfig;
+        logger: ILoggerCollection;
+        playgroundInProduction?: boolean;
+        voyagerInProduction?: boolean;
     };
 }
 export default App;
@@ -32,6 +41,8 @@ export interface IInitProps {
         playground?: string;
         voyager?: string;
     };
+    playgroundInProduction?: boolean;
+    voyagerInProduction?: boolean;
 }
 export interface IContext {
     endpoint: string;

@@ -4,4 +4,5 @@ import { serverConfig } from '~/playground/configureApp';
 Core.init({
   ...serverConfig,
   port: 4000,
+  playgroundInProduction: true,
 });

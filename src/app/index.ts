@@ -25,7 +25,22 @@ class App {
   public static createApp(props: IInitProps) {
     const app = express();
 
-    const { schemas, endpoint, port, jwt, database, logger, routes, subscriptionsEndpoint } = props;
+    const {
+      schemas,
+      endpoint,
+      port,
+      jwt,
+      database,
+      logger,
+      routes,
+      subscriptionsEndpoint,
+      playgroundInProduction,
+      voyagerInProduction,
+    } = props;
+
+    const usePlayground = process.env.NODE_ENV === 'development' || !!playgroundInProduction;
+
+    const useVoyager = process.env.NODE_ENV === 'development' || !!voyagerInProduction;
 
     // merge user schemas and legacy
     const schema = mergeSchemas({ schemas: [...schemas, infoSchema] });
@@ -61,8 +76,15 @@ class App {
         allowedUrl: [routesList.playground],
       }),
     );
-    app.get(routesList.playground, expressPlayground({ endpoint }));
-    app.use(routesList.voyager, voyagerMiddleware({ endpointUrl: endpoint }));
+
+    if (usePlayground) {
+      app.get(routesList.playground, expressPlayground({ endpoint }));
+    }
+
+    if (useVoyager) {
+      app.use(routesList.voyager, voyagerMiddleware({ endpointUrl: endpoint }));
+    }
+
     app.use(
       endpoint,
       graphqlHTTP(
@@ -78,7 +100,8 @@ class App {
     // this middleware most be defined first
     app.use(errorHandlerMiddleware({ context }));
 
-    return { app, context, schema, routes: routesList };
+    // return { app, context, schema, routes: routesList };
+    return { ...props, app, context, schema, routes: routesList };
   }
 }
 
@@ -98,6 +121,8 @@ export interface IInitProps {
     playground?: string;
     voyager?: string;
   };
+  playgroundInProduction?: boolean;
+  voyagerInProduction?: boolean;
 }
 
 export interface IContext {

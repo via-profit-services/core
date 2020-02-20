@@ -7,7 +7,11 @@ import { ServerError } from '~/logger';
 
 class Core {
   public static init(config: IInitProps) {
-    const { port, endpoint, subscriptionsEndpoint, logger } = config;
+    const { port, endpoint, subscriptionsEndpoint, logger, playgroundInProduction, voyagerInProduction } = config;
+
+    const usePlayground = process.env.NODE_ENV === 'development' || !!playgroundInProduction;
+
+    const useVoyager = process.env.NODE_ENV === 'development' || !!voyagerInProduction;
 
     // Create web application by wrapping express app
     const { app, context, schema, routes } = App.createApp(config);
@@ -52,11 +56,18 @@ class Core {
       console.log(chalk.green('========= GraphQL ========='));
       console.log('');
       console.log(`${chalk.green('GraphQL server')}:     ${chalk.yellow(`http://localhost:${port}${endpoint}`)}`);
-      console.log(
-        `${chalk.magenta('GraphQL playground')}: ${chalk.yellow(`http://localhost:${port}${routes.playground}`)}`,
-      );
+
+      if (usePlayground) {
+        console.log(
+          `${chalk.magenta('GraphQL playground')}: ${chalk.yellow(`http://localhost:${port}${routes.playground}`)}`,
+        );
+      }
       console.log(`${chalk.cyan('Auth Server')}:        ${chalk.yellow(`http://localhost:${port}${routes.auth}`)}`);
-      console.log(`${chalk.blue('GraphQL voyager')}:    ${chalk.yellow(`http://localhost:${port}${routes.voyager}`)}`);
+      if (useVoyager) {
+        console.log(
+          `${chalk.blue('GraphQL voyager')}:    ${chalk.yellow(`http://localhost:${port}${routes.voyager}`)}`,
+        );
+      }
       console.log('');
     });
 

@@ -6,8 +6,18 @@ module.exports = {
     rules: [
       {
         test: /\.ts$/,
-        use: 'ts-loader',
         exclude: /node_modules/,
+        use: [
+          {
+            loader: 'ts-loader',
+            options: {
+              configFile: path.resolve(
+                __dirname,
+                `../tsconfig.${process.env.NODE_ENV === 'development' ? 'dev' : 'prod'}.json`,
+              ),
+            },
+          },
+        ],
       },
       {
         test: /\.mjs$/, // fixes https://github.com/graphql/graphql-js/issues/1272
