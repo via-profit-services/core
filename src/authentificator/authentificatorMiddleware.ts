@@ -14,6 +14,22 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
   const authentificator = new Authentificator({ context });
 
   const router = Router();
+
+  /**
+   * Route serving access token requests
+   * This point response JSON object with token data:
+   * e.g. {
+   *  accessToken: "XXXXXXXXXXXXXXX...",
+   *  tokenType: "bearer",
+   *  expiresIn: 1582178054
+   *  refreshToken: "XXXXXXXXXXXXXXX..."
+   * }
+   * @param  {Request} req The request
+   * @param  {Response} res The response
+   * @param  {string} req.body.login Account login
+   * @param  {string} req.body.password Account password
+   * @param  {Response} res
+   */
   router.post(
     `${authUrl}/access-token`,
     asyncHandler(async (req: Request, res: Response) => {
@@ -58,6 +74,20 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
     }),
   );
 
+  /**
+   * Route serving refresh token requests
+   * This point response JSON object with token data:
+   * e.g. {
+   *  accessToken: "XXXXXXXXXXXXXXX...",
+   *  tokenType: "bearer",
+   *  expiresIn: 1582178054
+   *  refreshToken: "XXXXXXXXXXXXXXX..."
+   * }
+   * @param  {Request} req The request
+   * @param  {Response} res The response
+   * @param  {string} req.token Valid refresh token
+   * @param  {Response} res
+   */
   router.post(
     `${authUrl}/refresh-token`,
     asyncHandler(async (req: Request, res: Response) => {
@@ -102,6 +132,29 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
     }),
   );
 
+  /**
+   * Route serving token validation requests
+   * This point response JSON object with token payload data
+   * @param  {Request} req The request
+   * @param  {Response} res The response
+   * @param  {string} req.token Valid refresh token
+   * @param  {Response} res
+   */
+  router.post(
+    `${authUrl}/validate-token`,
+    asyncHandler(async (req: Request, res: Response) => {
+      const { body } = req;
+      const { token } = body;
+
+      const payload = Authentificator.verifyToken(token, publicKey);
+
+      res.json(payload);
+    }),
+  );
+
+  /**
+   * This point serve all request into GraphQL `endpoint`
+   */
   router.use(
     endpoint,
     asyncHandler(async (req: Request, res: Response, next: NextFunction) => {

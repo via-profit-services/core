@@ -120,7 +120,7 @@ export class Authentificator {
       ...payload,
       type: TokenType.access,
       id: uuidv4(),
-      exp: Date.now() + Number(context.jwt.accessTokenExpiresIn) * 1000,
+      exp: Math.floor(Date.now() / 1000) + Number(context.jwt.accessTokenExpiresIn),
       iss: context.jwt.issuer,
     };
 
@@ -129,7 +129,7 @@ export class Authentificator {
       type: TokenType.refresh,
       id: uuidv4(),
       associated: accessTokenPayload.id,
-      exp: Date.now() + Number(context.jwt.refreshTokenExpiresIn) * 1000,
+      exp: Math.floor(Date.now() / 1000) + Number(context.jwt.refreshTokenExpiresIn),
       iss: context.jwt.issuer,
     };
 
