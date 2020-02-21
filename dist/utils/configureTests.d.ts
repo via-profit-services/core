@@ -1,7 +1,7 @@
 import { IInitProps } from '~/app';
 declare const configureTest: (config?: Partial<IInitProps>) => {
     config: {
-        port: number;
+        port?: number;
         endpoint?: string;
         subscriptionsEndpoint?: string;
         schemas: import("graphql").GraphQLSchema[];

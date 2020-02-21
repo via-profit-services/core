@@ -2,5 +2,12 @@
 /.env
 /log
 /sandbox.js
+
+# jest
 /coverage
+
+# webpack temporary dir
 /build
+
+# jwt certificates
+/cert

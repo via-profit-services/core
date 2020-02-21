@@ -24,14 +24,15 @@ const jwtConfig: IInitProps['jwt'] = {
   accessTokenExpiresIn: Number(process.env.JWT_ACCESSTOKENEXPIRESIN),
   algorithm: process.env.JWT_ALGORITHM,
   issuer: process.env.JWT_ISSUER,
-  privateKey: path.resolve(process.cwd(), './src/playground/cert/jwtRS256.key'),
-  publicKey: path.resolve(process.cwd(), './src/playground/cert/jwtRS256.key.pub'),
+  privateKey: path.resolve(process.cwd(), process.env.JWT_PRIVATEKEY),
+  publicKey: path.resolve(process.cwd(), process.env.JWT_PUBLICKEY),
   refreshTokenExpiresIn: Number(process.env.JWT_REFRESHTOKENEXPIRESIN),
 };
 
 const serverConfig: IInitProps = {
   port: Number(process.env.PORT),
   endpoint: process.env.GQL_ENDPOINT,
+  subscriptionsEndpoint: process.env.GQL_SUBSCRIPTIONSENDPOINT,
   database: databaseConfig,
   jwt: jwtConfig,
   logger,

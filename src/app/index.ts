@@ -31,6 +31,7 @@ class App {
       ...props,
     } as IInitDefaultProps;
 
+    // combine default routes with passed
     this.props.routes = {
       auth: '/auth',
       playground: '/playground',
@@ -227,6 +228,7 @@ interface IInitDefaultProps extends IInitProps {
     auth: string;
     playground: string;
     voyager: string;
+    [key: string]: string;
   };
   usePlayground: boolean;
   useVoyager: boolean;

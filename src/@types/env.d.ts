@@ -5,6 +5,7 @@ declare namespace NodeJS {
     PORT: string;
 
     GQL_ENDPOINT: string;
+    GQL_SUBSCRIPTIONSENDPOINT: string;
 
     DB_CLIENT: 'pg' | 'postgres';
     DB_HOST: string;
@@ -21,5 +22,7 @@ declare namespace NodeJS {
     JWT_ACCESSTOKENEXPIRESIN: string;
     JWT_REFRESHTOKENEXPIRESIN: string;
     JWT_ISSUER: string;
+    JWT_PRIVATEKEY: string;
+    JWT_PUBLICKEY: string;
   }
 }
