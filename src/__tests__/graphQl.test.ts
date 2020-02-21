@@ -14,7 +14,7 @@ const { endpoint } = config;
 describe('GraphQL', () => {
   const server = createServer(app);
 
-  it(`Simple GraphQL query. Must returns the application version ${packageInfo.version}`, done => {
+  it(`GraphQL «devInfo» query. Must returns full «devInfo»`, done => {
     supertest(server)
       .post(endpoint)
       .set('Accept', 'application/json')

@@ -1,12 +1,11 @@
-import assert from 'assert';
 import { createServer } from 'http';
 import supertest from 'supertest';
 import configureTest from '../playground/configureTest';
 
-const { app, config, accessToken } = configureTest({ port: 4001 });
+const { app, config, accessToken, refreshToken } = configureTest({ port: 4001 });
 const { endpoint } = config;
 
-describe('Server', () => {
+describe('Authentification service', () => {
   const server = createServer(app);
 
   it('Any NOT authorized request must return 401 «Unauthorized»', done => {
@@ -28,31 +27,22 @@ describe('Server', () => {
       .end(done);
   });
 
-  it('GraphQL', done => {
+  it('Any GraphQL request with refresh token as bearer authentificator should return 401 «Unauthorized»', done => {
     supertest(server)
       .post(endpoint)
       .set('Accept', 'application/json')
       .set('Content-Type', 'application/json')
-      .set('Authorization', `Bearer ${accessToken.token}`)
+      .set('Authorization', `Bearer ${refreshToken.token}`)
       .send({
-        query: 'query{devInfo{version}}',
+        query: `
+        query{
+          devInfo {
+            version
+          }
+        }`,
       })
       .expect('Content-Type', /json/)
-      .expect(200)
-      .then(async response => {
-        const data = JSON.parse(response.text);
-        assert.deepEqual(
-          data,
-          {
-            data: {
-              devInfo: {
-                version: '0.1.1',
-              },
-            },
-          },
-          'Invalid response ERROR',
-        );
-        done();
-      });
+      .expect(401)
+      .end(done);
   });
 });
