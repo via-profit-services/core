@@ -16,6 +16,7 @@ declare class App {
         context: IContext;
         schema: GraphQLSchema;
         routes: {
+            [key: string]: string;
             auth: string;
             playground: string;
             voyager: string;
@@ -48,6 +49,7 @@ interface IInitDefaultProps extends IInitProps {
         auth: string;
         playground: string;
         voyager: string;
+        [key: string]: string;
     };
     usePlayground: boolean;
     useVoyager: boolean;

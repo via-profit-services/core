@@ -22,6 +22,7 @@ declare const configureTest: (config?: Partial<IInitProps>) => {
     context: import("../app").IContext;
     schema: import("graphql").GraphQLSchema;
     routes: {
+        [key: string]: string;
         auth: string;
         playground: string;
         voyager: string;
