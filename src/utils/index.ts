@@ -1,2 +1,2 @@
 export * from './configureTokens';
-export * from './configureTest';
+export * from './configureTests';

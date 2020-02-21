@@ -1,6 +1,6 @@
 import { createServer } from 'http';
 import supertest from 'supertest';
-import configureTest from '../playground/configureTest';
+import configureTest from '../utils/configureTests';
 
 const { app, config, accessToken, refreshToken } = configureTest({ port: 4001 });
 const { endpoint } = config;

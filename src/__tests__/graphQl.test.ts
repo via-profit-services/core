@@ -3,7 +3,7 @@ import fs from 'fs';
 import { createServer } from 'http';
 import path from 'path';
 import supertest from 'supertest';
-import configureTest from '../playground/configureTest';
+import configureTest from '../utils/configureTests';
 
 const packageJson = fs.readFileSync(path.resolve(__dirname, '..', '..', 'package.json'), 'utf8');
 const packageInfo = JSON.parse(packageJson);
