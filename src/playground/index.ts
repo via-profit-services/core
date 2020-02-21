@@ -1,8 +1,12 @@
-import { Core } from '~/index';
+import { App } from '~/app';
 import { serverConfig } from '~/playground/configureApp';
 
-Core.init({
+const app = new App({
   ...serverConfig,
   port: 4000,
-  playgroundInProduction: true,
+  usePlayground: true,
 });
+
+app.createApp();
+app.createServer();
+app.startServer();

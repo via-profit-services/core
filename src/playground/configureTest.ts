@@ -4,7 +4,8 @@ import { configureTokens } from '~/playground/configureToken';
 
 const configureTest = (config?: Partial<IInitProps>) => {
   const newConfig = { ...serverConfig, ...{ port: 4001 }, ...config };
-  const appData = App.createApp(newConfig);
+  const app = new App(newConfig);
+  const appData = app.createApp();
   const tokenData = configureTokens([], appData.context);
 
   return {
