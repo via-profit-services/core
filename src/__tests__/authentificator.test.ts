@@ -55,8 +55,4 @@ describe('Server', () => {
         done();
       });
   });
-
-  afterAll(async () => {
-    server.close();
-  });
 });

@@ -57,8 +57,4 @@ describe('GraphQL', () => {
         done();
       });
   });
-
-  afterAll(async () => {
-    server.close();
-  });
 });

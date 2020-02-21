@@ -1,0 +1,40 @@
+type Query {
+  news: CatalogQueries!
+}
+
+type Mutation {
+  news: CatalogMutations!
+}
+
+type CatalogQueries {
+  categories: [Category]!
+  items: [Item]!
+  item(id: ID!): Item
+}
+
+type CatalogMutations {
+  category: CategoryMutations!
+  item: ItemMutations!
+}
+
+type ItemMutations {
+  create(name: String!): Item!
+  update(id: ID!, name: String!): Item!
+  delete(id: ID!): Boolean!
+}
+
+type CategoryMutations {
+  create(name: String!): Category!
+  update(id: ID!, name: String!): Category!
+  delete(id: ID!): Boolean!
+}
+
+type Category {
+  id: ID!
+  name: String!
+}
+
+type Item {
+  id: ID!
+  name: String!
+}

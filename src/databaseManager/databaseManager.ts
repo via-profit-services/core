@@ -1,6 +1,6 @@
 import { performance } from 'perf_hooks';
 import knex from 'knex';
-import { ILoggerCollection } from '~/logger';
+import { ILoggerCollection, ServerError } from '~/logger';
 
 const knexProvider = (config: IConfig) => {
   const { database, logger } = config;
@@ -31,6 +31,17 @@ const knexProvider = (config: IConfig) => {
     })
     .on('query-error', (err, query) => {
       logger.sql.error(query.sql, { err });
+    });
+
+  instance
+    .raw('SELECT 1+1 AS result')
+    .then(() => {
+      logger.server.debug('Test the connection by trying to authenticate is OK');
+      return true;
+    })
+    .catch(err => {
+      logger.server.error(err.name, err);
+      throw new ServerError(err);
     });
 
   return instance;

@@ -1,6 +1,6 @@
 import { IInitProps, App } from '~/app';
 import { serverConfig } from '~/playground/configureApp';
-import { configureTokens } from '~/utils/configureToken';
+import { configureTokens } from '~/utils/configureTokens';
 
 const configureTest = (config?: Partial<IInitProps>) => {
   const newConfig = { ...serverConfig, ...{ port: 4001 }, ...config };

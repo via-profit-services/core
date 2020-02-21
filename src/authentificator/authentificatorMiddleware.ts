@@ -163,7 +163,11 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
       }
 
       const token = Authentificator.extractToken(req);
-      Authentificator.verifyToken(token, publicKey);
+      const payload = Authentificator.verifyToken(token, publicKey);
+
+      if (payload.type !== TokenType.access) {
+        return Authentificator.sendResponseError(ResponseErrorType.isNotAnAccessToken, res);
+      }
 
       return next();
     }),

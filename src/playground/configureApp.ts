@@ -1,47 +1,50 @@
 import path from 'path';
+import dotenv from 'dotenv';
 import { IInitProps } from '~/app';
 import { configureLogger } from '~/logger';
-// import { configureCatalogLogger } from '~/playground/schemas/catalog';
+import Catalogchema, { configureCatalogLogger } from '~/playground/schemas/catalog';
 import SimpleSchema from '~/playground/schemas/simple';
 
-// const catalogLogger = configureCatalogLogger({
-//   logPath: 'log',
-// });
+const catalogLogger = configureCatalogLogger({
+  logPath: 'log',
+});
 
 const logger = configureLogger({
   logPath: 'log',
-  // loggers: {
-  //   catalog: catalogLogger,
-  // },
+  loggers: {
+    catalog: catalogLogger,
+  },
 });
 
+// dotenv configuration
+dotenv.config();
+
 const databaseConfig: IInitProps['database'] = {
-  client: 'pg',
+  client: process.env.DB_CLIENT,
   connection: {
-    database: 'services',
-    host: 'e1g.ru',
-    password: 'nonprofitproject',
-    user: 'services',
+    database: process.env.DB_NAME,
+    host: process.env.DB_HOST,
+    password: process.env.DB_PASSWORD,
+    user: process.env.DB_USER,
   },
 };
 
 const jwtConfig: IInitProps['jwt'] = {
-  accessTokenExpiresIn: 1800,
-  algorithm: 'RS256',
-  issuer: 'viaprofit-services',
+  accessTokenExpiresIn: Number(process.env.JWT_ACCESSTOKENEXPIRESIN),
+  algorithm: process.env.JWT_ALGORITHM,
+  issuer: process.env.JWT_ISSUER,
   privateKey: path.resolve(__dirname, './cert/jwtRS256.key'),
   publicKey: path.resolve(__dirname, './cert/jwtRS256.key.pub'),
-  refreshTokenExpiresIn: 2.592e6,
+  refreshTokenExpiresIn: Number(process.env.JWT_REFRESHTOKENEXPIRESIN),
 };
 
 const serverConfig: IInitProps = {
+  port: Number(process.env.PORT),
+  endpoint: process.env.GQL_ENDPOINT,
   database: databaseConfig,
-  endpoint: '/api/graphql',
-  subscriptionsEndpoint: '/api/subscriptions',
   jwt: jwtConfig,
   logger,
-  port: 4000,
-  schemas: [SimpleSchema],
+  schemas: [SimpleSchema, Catalogchema],
 };
 
 export { serverConfig, jwtConfig, databaseConfig, logger };

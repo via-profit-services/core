@@ -223,6 +223,12 @@ export class Authentificator {
           name: 'Is not a refresh token',
         });
         break;
+      case 'isNotAnAccessToken':
+        errors.push({
+          message: 'Token error',
+          name: 'Is not a access token',
+        });
+        break;
       case 'tokenExpired':
         errors.push({
           message: 'Token error',
@@ -308,6 +314,7 @@ export enum ResponseErrorType {
   accountForbidden = 'accountForbidden',
   invalidLoginOrPassword = 'invalidLoginOrPassword',
   tokenExpired = 'tokenExpired',
+  isNotAnAccessToken = 'isNotAnAccessToken',
   isNotARefreshToken = 'isNotARefreshToken',
   tokenWasRevoked = 'tokenWasRevoked',
 }
