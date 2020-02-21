@@ -1,4 +1,4 @@
-export * from './Authentificator';
+export * from './authentificator';
 export * from './authentificatorMiddleware';
 
 // TODO Tests reuired

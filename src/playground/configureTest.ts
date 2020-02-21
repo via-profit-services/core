@@ -1,4 +1,4 @@
-import { IInitProps, App } from '~/index';
+import { IInitProps, App } from '~/app';
 import { serverConfig } from '~/playground/configureApp';
 import { configureTokens } from '~/playground/configureToken';
 

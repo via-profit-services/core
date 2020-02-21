@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { Request, Response, NextFunction } from 'express';
-import { IContext } from '~/index';
+import { IContext } from '~/app';
 import { ErrorHandler } from '~/logger/errorHandlers';
 import responseFormatter from '~/logger/utils/responseFormatter';
 

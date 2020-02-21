@@ -1,5 +1,6 @@
 import path from 'path';
-import { configureLogger, IInitProps } from '~/index';
+import { IInitProps } from '~/app';
+import { configureLogger } from '~/logger';
 // import { configureCatalogLogger } from '~/playground/schemas/catalog';
 import SimpleSchema from '~/playground/schemas/simple';
 

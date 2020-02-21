@@ -3,7 +3,8 @@ import { Request, Response } from 'express';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import moment from 'moment-timezone';
 import uuidv4 from 'uuid/v4';
-import { IContext, ServerError, UnauthorizedError } from '~/index';
+import { IContext } from '~/app';
+import { ServerError, UnauthorizedError } from '~/logger';
 
 export enum TokenType {
   access = 'access',

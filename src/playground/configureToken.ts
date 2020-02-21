@@ -1,6 +1,6 @@
 import uuidv4 from 'uuid/v4';
+import { IContext } from '~/app';
 import { Authentificator } from '~/authentificator';
-import { IContext } from '~/index';
 
 const configureTokens = (roles: string[], context: IContext) => {
   const authentificator = new Authentificator({ context });
