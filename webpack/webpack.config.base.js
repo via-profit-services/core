@@ -13,7 +13,7 @@ module.exports = {
             options: {
               configFile: path.resolve(
                 __dirname,
-                `../tsconfig.${process.env.NODE_ENV === 'development' ? 'dev' : 'prod'}.json`,
+                process.env.NODE_ENV === 'development' ? 'tsconfig.json' : 'tsconfig.prod.json',
               ),
             },
           },
