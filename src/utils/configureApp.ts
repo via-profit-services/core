@@ -4,7 +4,7 @@ import { IInitProps } from '~/app';
 import { configureLogger } from '~/logger';
 
 const logger = configureLogger({
-  logPath: 'log',
+  logDir: 'log',
 });
 
 // dotenv configuration

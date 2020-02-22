@@ -6,7 +6,7 @@ import myGraphQLSchema from './my-graphql-schema';
 
 // configure main logger
 const logger = configureLogger({
-  logPath: 'log', // you should pass the path relative to the project root
+  logDir: 'log', // you should pass the path relative to the project root
 });
 
 const config = {

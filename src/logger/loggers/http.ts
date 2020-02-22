@@ -3,14 +3,14 @@ import 'winston-daily-rotate-file';
 import loggerFormatter from '../utils/logFormatter';
 
 export default (config: Config) => {
-  const { logPath } = config;
+  const { logDir } = config;
 
   return createLogger({
     level: 'info',
     format: loggerFormatter,
     transports: [
       new transports.DailyRotateFile({
-        filename: `${logPath}/%DATE%-http.log`,
+        filename: `${logDir}/%DATE%-http.log`,
         level: 'info',
         datePattern: 'YYYY-MM-DD',
         zippedArchive: true,
@@ -22,5 +22,5 @@ export default (config: Config) => {
 };
 
 interface Config {
-  logPath: string;
+  logDir: string;
 }

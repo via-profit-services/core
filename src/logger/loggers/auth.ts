@@ -4,14 +4,14 @@ import 'winston-daily-rotate-file';
 import loggerFormatter from '../utils/logFormatter';
 
 export default (config: Config) => {
-  const { logPath } = config;
+  const { logDir } = config;
 
   return createLogger({
     level: 'info',
     format: loggerFormatter,
     transports: [
       new transports.DailyRotateFile({
-        filename: `${logPath}/%DATE%-auth.log`,
+        filename: `${logDir}/%DATE%-auth.log`,
         level: 'info',
         datePattern: 'YYYY-MM-DD',
         zippedArchive: true,
@@ -19,7 +19,7 @@ export default (config: Config) => {
         maxFiles: '14d',
       }),
       new transports.DailyRotateFile({
-        filename: `${logPath}/%DATE%-debug.log`,
+        filename: `${logDir}/%DATE%-debug.log`,
         level: 'debug',
         datePattern: 'YYYY-MM-DD',
         zippedArchive: true,
@@ -31,5 +31,5 @@ export default (config: Config) => {
 };
 
 interface Config {
-  logPath: string;
+  logDir: string;
 }
