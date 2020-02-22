@@ -6,7 +6,7 @@
 
  - [Установка и настройка](./setup.md)
  - [Структура проекта и особенности сборки](./structure.md)
- - [npm-скрипты](./scripts)
+ - [npm-скрипты](./scripts.md)
  - [Playground](./playground.md)
  - [GraphQL Playground](./graphql-playground.md)
  - [GraphQL Voyager](./graphql-voyager.md)
