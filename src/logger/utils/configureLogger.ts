@@ -28,7 +28,7 @@ export interface ILoggerCollection {
 }
 
 export interface ILoggerConfig {
-  logPath: string;
+  logDir: string;
   loggers?: { [key: string]: Logger };
 }
 

@@ -10,7 +10,7 @@ export interface ILoggerCollection {
     [key: string]: Logger;
 }
 export interface ILoggerConfig {
-    logPath: string;
+    logDir: string;
     loggers?: {
         [key: string]: Logger;
     };

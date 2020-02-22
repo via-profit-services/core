@@ -2,7 +2,7 @@ import { transports, createLogger, format } from 'winston';
 import 'winston-daily-rotate-file';
 
 export default (config: Config) => {
-  const { logPath } = config;
+  const { logDir } = config;
 
   return createLogger({
     level: 'debug',
@@ -20,7 +20,7 @@ export default (config: Config) => {
     ),
     transports: [
       new transports.DailyRotateFile({
-        filename: `${logPath}/%DATE%-catalog.log`,
+        filename: `${logDir}/%DATE%-catalog.log`,
         level: 'debug',
         datePattern: 'YYYY-MM-DD',
         zippedArchive: true,
@@ -32,5 +32,5 @@ export default (config: Config) => {
 };
 
 interface Config {
-  logPath: string;
+  logDir: string;
 }
