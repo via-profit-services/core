@@ -1,7 +1,8 @@
 # Via Profit services / Core
 
-Soon
+TODO Дополнить описание основного пакета
 
 ## Документация
 
  - [Contributing](./contributing)
+ - [Использование](./usage.md)
