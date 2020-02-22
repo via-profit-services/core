@@ -9,13 +9,16 @@ const logger = configureLogger({
   logDir: 'log', // you should pass the path relative to the project root
 });
 
-const config = {
+// create application
+const app = new App({
   schemas: [myGraphQLSchema],
   logger,
   jwt: { ... },
   database: { ... },
-};
-const app = new App(config);
+  ...
+});
+
+// autostart server
 app.bootstrap();
 
 ```
