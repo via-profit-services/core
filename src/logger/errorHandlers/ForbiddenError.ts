@@ -11,7 +11,7 @@ export default class ForbiddenError extends Error implements ErrorHandler {
     this.name = 'ForbiddenError';
     this.message = message;
     this.metaData = metaData;
-    this.status = 503;
+    this.status = 403;
 
     // Set the prototype explicitly.
     Object.setPrototypeOf(this, ForbiddenError.prototype);
