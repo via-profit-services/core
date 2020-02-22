@@ -9,7 +9,7 @@ _[GraphQL Weekly #42](https://graphqlweekly.com/issues/42)_
 ## [GraphQL voyager](https://github.com/APIs-guru/graphql-voyager)
 
 ## [Live Demo](https://apis.guru/graphql-voyager/)
-[![voyager demo](./docs/demo-gif.gif)](https://apis.guru/graphql-voyager/)
+[![voyager demo](./assets/graphql-voyager-demo.gif)](https://apis.guru/graphql-voyager/)
 
 
 # Особенности интеграции
