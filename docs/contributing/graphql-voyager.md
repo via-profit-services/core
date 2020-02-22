@@ -14,4 +14,6 @@ _[GraphQL Weekly #42](https://graphqlweekly.com/issues/42)_
 
 # Особенности интеграции
 
+**GraphQL voyager** интегрирован в проект как Express middleware и по умолчанию всегда доступен в `develoment` режиме.
+
 При запуске **GraphQL voyager** автоматически генерируется и добавляется к заголовкам `AccessToken`. Это необходимо для того, чтобы обойти защиту `src/authentificator/authentificatorMiddleware.ts`, которая блокирует все запросы без валидного токена.

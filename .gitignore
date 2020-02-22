@@ -9,5 +9,5 @@
 # webpack temporary dir
 /build
 
-# jwt certificates
-/cert
+# jwt keys
+/keys
