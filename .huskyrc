@@ -1,3 +1,5 @@
 {
-  
+  "hooks": {
+    "pre-commit": "(git-branch-is dev && echo \"You can't modify this branch\" && exit 1) || true"
+  }
 }
