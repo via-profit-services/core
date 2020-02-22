@@ -4,4 +4,4 @@ Soon
 
 ## Документация
 
- - [Разработка](./development)
+ - [Contributing](./contributing)

@@ -1,5 +1,6 @@
 {
     "name": "@via-profit-services/core",
+    "private": true,
     "support": "https://via-profit.ru",
     "version": "0.1.1",
     "description": "Via Profit Core service",
@@ -13,20 +14,6 @@
         "start:dist": "yarn dist && node ./dist/playground.js",
         "test": "jest",
         "lint": "eslint --ext .ts ./src/ --fix ."
-    },
-    "eslintConfig": {
-        "extends": "eslint:recommended",
-        "parserOptions": {
-            "ecmaVersion": 7,
-            "sourceType": "module"
-        },
-        "env": {
-            "node": true
-        },
-        "rules": {
-            "no-console": 0,
-            "no-unused-vars": 1
-        }
     },
     "repository": {
         "type": "git",
@@ -124,9 +111,5 @@
         "webpack-graphql-loader": "^1.0.2",
         "webpack-merge": "^4.2.2",
         "webpack-node-externals": "^1.7.2"
-    },
-    "private": true,
-    "publishConfig": {
-        "access": "public"
-    }
+    }    
 }
