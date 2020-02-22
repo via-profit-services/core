@@ -1,6 +1,5 @@
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
 const NodemonPlugin = require('nodemon-webpack-plugin');
 const { ProgressPlugin } = require('webpack');
 const merge = require('webpack-merge');
@@ -29,7 +28,6 @@ module.exports = merge(baseConfig, {
       script: path.resolve(__dirname, '../build/playground.js'),
       watch: path.resolve(__dirname, '../build'),
     }),
-    new CopyPlugin([{ from: 'src/playground/cert', to: 'cert' }]),
   ],
   externals: [nodeExternals()],
 });
