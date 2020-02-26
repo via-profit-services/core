@@ -254,10 +254,56 @@ export class Authentificator {
 
     return resp.status(401).json({ errors });
   }
+
+  // eslint-disable-next-line class-methods-use-this
+  public getAccounts(filter: IAccountsFilter) {
+    const { context } = this.props;
+    const { knex } = context;
+
+    const orderByArray = [];
+
+    if (filter.orderBy) {
+      const { column, order } = filter.orderBy;
+      orderByArray.push({ column, order });
+    }
+
+    orderByArray.push({ column: 'cursor', order: 'asc' });
+
+    const query = knex
+      .select('accounts.*')
+      .join(
+        knex('accounts')
+          .select('id')
+          .orderBy(orderByArray)
+          .limit(filter.first)
+          .where('cursor', '>', Number(filter.after || 0))
+          .as('j'),
+        'j.id',
+        'accounts.id',
+      )
+      .orderBy(orderByArray)
+      .from('accounts');
+
+    return query;
+  }
 }
 
 interface IProps {
   context: IContext;
+}
+
+enum orderRange {
+  asc = 'asc',
+  desc = 'desc',
+}
+
+interface IAccountsFilter {
+  first: number;
+  after?: number;
+  orderBy?: {
+    column: string;
+    order: orderRange;
+  };
 }
 
 /**

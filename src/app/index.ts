@@ -14,7 +14,7 @@ import { IJwtConfig } from '~/authentificator/authentificator';
 import { authentificatorMiddleware } from '~/authentificator/authentificatorMiddleware';
 import { knexProvider, DBConfig, KnexInstance } from '~/databaseManager';
 import { errorHandlerMiddleware, requestHandlerMiddleware, ILoggerCollection } from '~/logger';
-import { infoSchema } from '~/schemas';
+import { infoSchema, accountsSchema } from '~/schemas';
 import { configureTokens } from '~/utils/configureTokens';
 
 class App {
@@ -112,7 +112,7 @@ class App {
     } = this.props as IInitDefaultProps;
 
     // merge user schemas and legacy
-    const schema = mergeSchemas({ schemas: [...schemas, infoSchema] });
+    const schema = mergeSchemas({ schemas: [...schemas, infoSchema, accountsSchema] });
 
     // define knex instance
     const knex = knexProvider({ logger, database });
