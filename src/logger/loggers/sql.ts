@@ -2,6 +2,7 @@ import { transports, createLogger } from 'winston';
 import 'winston-daily-rotate-file';
 
 import loggerFormatter from '../utils/logFormatter';
+import { SQL_LOG_FILENAME } from '../utils/logNames';
 
 export default (config: Config) => {
   const { logDir } = config;
@@ -11,7 +12,7 @@ export default (config: Config) => {
     format: loggerFormatter,
     transports: [
       new transports.DailyRotateFile({
-        filename: `${logDir}/%DATE%-sql.log`,
+        filename: `${logDir}/${SQL_LOG_FILENAME}`,
         level: 'debug',
         datePattern: 'YYYY-MM-DD',
         zippedArchive: true,

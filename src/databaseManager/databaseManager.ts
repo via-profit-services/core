@@ -26,11 +26,11 @@ const knexProvider = (config: IConfig) => {
       const uid = query.__knexQueryUid;
       times[uid].endTime = performance.now();
       times[uid].finished = true;
-
-      logger.sql.debug(query.sql, times[uid]);
+      logger.sql.debug(query.sql, { bindings: query.bindings, ...times[uid] });
     })
     .on('query-error', (err, query) => {
-      logger.sql.error(query.sql, { err });
+      console.log(query);
+      logger.sql.error(query.sql, { bindings: query.bindings, err });
     });
 
   instance

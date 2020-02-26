@@ -4,10 +4,16 @@ import { Authentificator } from '~/authentificator/authentificator';
 
 const configureTokens = (roles: string[], context: IContext) => {
   const authentificator = new Authentificator({ context });
-  const tokens = authentificator.generateTokens({
-    uuid: uuidv4(),
-    roles,
-  });
+  const tokens = authentificator.generateTokens(
+    {
+      uuid: uuidv4(),
+      roles,
+    },
+    {
+      access: 86400,
+      refresh: 86400,
+    },
+  );
 
   return tokens;
 };

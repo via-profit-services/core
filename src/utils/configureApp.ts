@@ -33,6 +33,7 @@ const serverConfig: IInitProps = {
   port: Number(process.env.PORT),
   endpoint: process.env.GQL_ENDPOINT,
   subscriptionsEndpoint: process.env.GQL_SUBSCRIPTIONSENDPOINT,
+  timezone: process.env.TIMEZONE,
   database: databaseConfig,
   jwt: jwtConfig,
   logger,
