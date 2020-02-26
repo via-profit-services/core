@@ -1,0 +1,92 @@
+type Query {
+  accounts: AccountsQueries!
+}
+
+"""
+Information about pagination in a connection.
+"""
+type PageInfo {
+  hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+"""
+Account adge bundle
+"""
+type AccountsEdge {
+  node: Account!
+  cursor: String!
+}
+
+"""
+Accounts module queries
+"""
+type AccountsQueries {
+
+  """
+  Returns Accounts list bundle
+  """
+  list(
+    first: Int
+    last: Int
+    after: String
+    before: String
+    status: AccountStatus
+    orderBy: AccountOrderBy
+  ): AccountListResult!
+}
+
+"""
+Ordering options for accounts returned from the connection
+"""
+input AccountOrderBy {
+  field: AccountOrderField!
+  direction: OrderDirection!
+}
+
+
+enum AccountOrderField {
+  name
+  login
+  createdAt
+  updatedAt
+}
+
+enum OrderDirection {
+  ASC
+  DESC
+}
+
+"""
+Account object
+"""
+type Account {
+  id: ID!
+  name: String!
+  login: String!
+  password: String!
+  status: AccountStatus!
+  createdAt: String!
+  updatedAt: String!
+  roles: [String]!
+}
+
+"""
+Accounts list bundle
+"""
+type AccountListResult {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [AccountsEdge]!
+}
+
+
+"""
+Account status
+"""
+enum AccountStatus {
+  allowed
+  forbidden
+}

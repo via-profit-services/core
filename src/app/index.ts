@@ -25,6 +25,7 @@ class App {
     this.props = {
       port: 4000,
       endpoint: '/graphql',
+      timezone: 'UTC',
       subscriptionsEndpoint: '/subscriptions',
       usePlayground: process.env.NODE_ENV === 'development',
       useVoyager: process.env.NODE_ENV === 'development',
@@ -57,7 +58,7 @@ class App {
       if (process.env.NODE_ENV === 'development') {
         console.log('');
         console.log('');
-        console.log(chalk.green('========= GraphQL ========='));
+        console.log(chalk.green('========= Server ========='));
         console.log('');
         console.log(`${chalk.green('GraphQL server')}:     ${chalk.yellow(`http://localhost:${port}${endpoint}`)}`);
 
@@ -101,6 +102,7 @@ class App {
     const {
       schemas,
       endpoint,
+      timezone,
       port,
       jwt,
       database,
@@ -123,6 +125,7 @@ class App {
     // combine finally context object
     const context: IContext = {
       endpoint,
+      timezone,
       jwt,
       logger,
       knex,
@@ -174,6 +177,13 @@ class App {
       );
     }
 
+    // only in dev mode you should have tokens with over then 8400 sec.
+    if (process.env.NODE_ENV === 'development') {
+      const { accessToken } = configureTokens([''], context);
+      console.log('');
+      console.log(chalk.yellow(`Your development Access token is: ${chalk.magenta(accessToken.token)}`));
+    }
+
     // GraphQL server
     app.use(
       endpoint,
@@ -207,6 +217,7 @@ export interface IInitProps {
   port?: number;
   endpoint?: string;
   subscriptionsEndpoint?: string;
+  timezone?: string;
   schemas: GraphQLSchema[];
   jwt: IJwtConfig;
   database: DBConfig;
@@ -224,6 +235,7 @@ interface IInitDefaultProps extends IInitProps {
   port: number;
   endpoint: string;
   subscriptionsEndpoint: string;
+  timezone: string;
   routes: {
     auth: string;
     playground: string;
@@ -240,6 +252,7 @@ export interface IContext {
   knex: KnexInstance;
   logger: ILoggerCollection;
   emitter: EventEmitter;
+  timezone: string;
 }
 
 export interface ISubServerConfig {

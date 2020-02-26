@@ -105,8 +105,17 @@ export class Authentificator {
     return tokens;
   }
 
-  public generateTokens(payload: Pick<ITokenInfo['payload'], 'uuid' | 'roles'>): ITokenPackage {
+  public generateTokens(
+    payload: Pick<ITokenInfo['payload'], 'uuid' | 'roles'>,
+    exp?: {
+      access: number;
+      refresh: number;
+    },
+  ): ITokenPackage {
     const { context } = this.props;
+
+    const accessExpires = exp?.access ? exp.access : context.jwt.accessTokenExpiresIn;
+    const refreshExpires = exp?.refresh ? exp.refresh : context.jwt.refreshTokenExpiresIn;
 
     // check file to access and readable
     try {
@@ -121,7 +130,7 @@ export class Authentificator {
       ...payload,
       type: TokenType.access,
       id: uuidv4(),
-      exp: Math.floor(Date.now() / 1000) + Number(context.jwt.accessTokenExpiresIn),
+      exp: Math.floor(Date.now() / 1000) + Number(accessExpires),
       iss: context.jwt.issuer,
     };
 
@@ -130,7 +139,7 @@ export class Authentificator {
       type: TokenType.refresh,
       id: uuidv4(),
       associated: accessTokenPayload.id,
-      exp: Math.floor(Date.now() / 1000) + Number(context.jwt.refreshTokenExpiresIn),
+      exp: Math.floor(Date.now() / 1000) + Number(refreshExpires),
       iss: context.jwt.issuer,
     };
 
@@ -255,34 +264,57 @@ export class Authentificator {
     return resp.status(401).json({ errors });
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  public getAccounts(filter: IAccountsFilter) {
+  public getAccounts(filter: IAccountsFilter): Promise<IAccountsListResponse> {
     const { context } = this.props;
-    const { knex } = context;
+    const { knex, timezone } = context;
 
-    const orderByArray = [];
-
-    if (filter.orderBy) {
-      const { column, order } = filter.orderBy;
-      orderByArray.push({ column, order });
-    }
-
-    orderByArray.push({ column: 'cursor', order: 'asc' });
+    const responseData: IAccountsListResponse = {
+      totalCount: 0,
+      nodes: [],
+    };
 
     const query = knex
-      .select('accounts.*')
+      .select<any, Array<IAccount & { totalCount: number }>>(['j.totalCount', 'accounts.*'])
       .join(
         knex('accounts')
-          .select('id')
-          .orderBy(orderByArray)
-          .limit(filter.first)
-          .where('cursor', '>', Number(filter.after || 0))
+          .select(['id', knex.raw('count(*) over() as "totalCount"')])
+          .orderBy(filter.orderBy)
+          .limit(filter.limit)
+          .where(handle => {
+            if (filter.after !== undefined) {
+              handle.where('cursor', '>', Number(filter.after));
+            }
+            if (filter.before !== undefined) {
+              handle.where('cursor', '<', Number(filter.before));
+            }
+
+            if (filter.where !== undefined) {
+              handle.where(filter.where);
+            }
+          })
           .as('j'),
         'j.id',
         'accounts.id',
       )
-      .orderBy(orderByArray)
-      .from('accounts');
+      .orderBy(filter.orderBy)
+      .from('accounts')
+      .then(nodes => {
+        return nodes.map(node => {
+          const { totalCount, ...nodeData } = node;
+          responseData.totalCount = totalCount;
+          return {
+            ...nodeData,
+            createdAt: moment.tz(nodeData.createdAt, timezone).format(),
+            updatedAt: moment.tz(nodeData.updatedAt, timezone).format(),
+          };
+        });
+      })
+      .then(nodes => {
+        responseData.totalCount = Number(responseData.totalCount);
+        responseData.nodes = nodes;
+
+        return responseData;
+      });
 
     return query;
   }
@@ -292,18 +324,29 @@ interface IProps {
   context: IContext;
 }
 
-enum orderRange {
+export interface IAccountsListResponse {
+  totalCount: number;
+  nodes: IAccount[];
+}
+
+export enum OrderRange {
   asc = 'asc',
   desc = 'desc',
 }
 
-interface IAccountsFilter {
-  first: number;
+export interface IAccountsFilter {
+  limit: number;
   after?: number;
-  orderBy?: {
-    column: string;
-    order: orderRange;
+  before?: number;
+  where?: {
+    status?: AccountStatus;
   };
+  orderBy: [
+    {
+      column: string;
+      order: OrderRange;
+    },
+  ];
 }
 
 /**
@@ -381,4 +424,7 @@ export interface IAccount {
   password: string;
   status: AccountStatus;
   roles: string[];
+  cursor: number;
+  createdAt: string;
+  updatedAt: string;
 }
