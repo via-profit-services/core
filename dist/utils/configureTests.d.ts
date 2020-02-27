@@ -4,10 +4,11 @@ declare const configureTest: (config?: Partial<IInitProps>) => {
         port?: number;
         endpoint?: string;
         subscriptionsEndpoint?: string;
+        timezone?: string;
         schemas: import("graphql").GraphQLSchema[];
         jwt: import("../authentificator").IJwtConfig;
         database: import("../databaseManager").DBConfig;
-        logger: import("../logger").ILoggerCollection;
+        logger: import("..").ILoggerCollection;
         routes?: {
             auth?: string;
             playground?: string;

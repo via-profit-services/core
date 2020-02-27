@@ -29,6 +29,7 @@ export interface IInitProps {
     port?: number;
     endpoint?: string;
     subscriptionsEndpoint?: string;
+    timezone?: string;
     schemas: GraphQLSchema[];
     jwt: IJwtConfig;
     database: DBConfig;
@@ -45,6 +46,7 @@ interface IInitDefaultProps extends IInitProps {
     port: number;
     endpoint: string;
     subscriptionsEndpoint: string;
+    timezone: string;
     routes: {
         auth: string;
         playground: string;
@@ -60,6 +62,7 @@ export interface IContext {
     knex: KnexInstance;
     logger: ILoggerCollection;
     emitter: EventEmitter;
+    timezone: string;
 }
 export interface ISubServerConfig {
     schema: GraphQLSchema;
