@@ -62,6 +62,8 @@ JWT_REFRESHTOKENEXPIRESIN=2.592e6
 JWT_ISSUER=viaprofit-services
 JWT_PRIVATEKEY=./keys/jwtRS256.key
 JWT_PUBLICKEY=./keys/jwtRS256.key.pub
+
+TIMEZONE=Asia/Yekaterinburg
 ```
 
 ## <a name="scripts"></a> npm-скрипты
