@@ -13,7 +13,7 @@
  - [Запуск тестов](#test)
 
 
-## <a id="start-dev"></a> Запуск проекта в `development` режиме
+## <a name="start-dev"></a> Запуск проекта в `development` режиме
 
 ```bash
 yarn start:dev
@@ -37,7 +37,7 @@ yarn start
   - [GraphQL-voyager](./graphql-voyager.md)
 
 
-## <a id="start-dist"></a> Запуск проекта в `production` режиме
+## <a name="start-dist"></a> Запуск проекта в `production` режиме
 
 ```bash
 yarn start:dist
@@ -46,7 +46,7 @@ yarn start:dist
 Будет произведена сборка проекта для `production` (запустится [yarn dist](#dist)), после чего управление переходит на [playground](./playground.md)
 
 
-## <a id="dist"></a>Финальная сборка проекта для production
+## <a name="dist"></a>Финальная сборка проекта для production
 
 ```bash
 yarn dist
@@ -55,7 +55,7 @@ yarn dist
 Данный скрипт последовательно запустит [yarn lint](#lint), [yarn test](#test) и [yarn build:dist](#build-dist), что в свою очередь запустит линтер, затем все тесты, после чего выполнит сборку проекта для `production`
 
 
-## <a id="build-dist"></a>Cборка проекта для production
+## <a name="build-dist"></a>Cборка проекта для production
 
 ```bash
 yarn build:dist
@@ -66,7 +66,7 @@ yarn build:dist
 Готовая сборка будет располагаться в директории `dist`.
 
 
-## <a id="build-dev"></a>Cборка проекта для development
+## <a name="build-dev"></a>Cборка проекта для development
 
 ```bash
 yarn build:dev
@@ -77,7 +77,7 @@ yarn build:dev
 Готовая сборка будет располагаться в директории `build`.
 
 
-## <a id="lint"></a>Запуск линтера
+## <a name="lint"></a>Запуск линтера
 
 ```bash
 yarn lint
@@ -86,7 +86,7 @@ yarn lint
 Данный скрипт запустит [ESLint](https://eslint.org/) для директории `src`. В проверке участвуют файлы с расширением `.ts`. ESLint запускается с ключем `--fix`, что позволяет, при наличии возможности, автоматически исправлять некоторые ошибки.
 
 
-## <a id="test"></a>Запуск тестов
+## <a name="test"></a>Запуск тестов
 
 ```bash
 yarn test
