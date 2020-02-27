@@ -3,9 +3,9 @@ import { EventEmitter } from 'events';
 import { Server } from 'http';
 import { GraphQLSchema } from 'graphql';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
-import { IJwtConfig } from '~/authentificator/authentificator';
-import { DBConfig, KnexInstance } from '~/databaseManager';
-import { ILoggerCollection } from '~/logger';
+import { IJwtConfig } from "../authentificator/authentificator";
+import { DBConfig, KnexInstance } from "../databaseManager";
+import { ILoggerCollection } from "../logger";
 declare class App {
     props: IInitDefaultProps;
     constructor(props: IInitProps);

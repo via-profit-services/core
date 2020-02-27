@@ -4,7 +4,6 @@ const RemovePlugin = require('remove-files-webpack-plugin');
 const { ProgressPlugin, IgnorePlugin } = require('webpack');
 const merge = require('webpack-merge');
 const nodeExternals = require('webpack-node-externals');
-
 const baseConfig = require('./webpack.config.base');
 
 // TODO Remove playground from production

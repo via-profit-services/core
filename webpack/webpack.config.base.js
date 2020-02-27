@@ -1,4 +1,5 @@
 const path = require('path');
+const tsTransformPaths = require('@zerollup/ts-transform-paths');
 
 module.exports = {
   target: 'node',
@@ -15,6 +16,14 @@ module.exports = {
                 __dirname,
                 process.env.NODE_ENV === 'development' ? '../tsconfig.json' : '../tsconfig.prod.json',
               ),
+              getCustomTransformers: program => {
+                const transformer = tsTransformPaths(program);
+
+                return {
+                  before: [transformer.before], // for updating paths in generated code
+                  afterDeclarations: [transformer.afterDeclarations], // for updating paths in declaration files
+                };
+              },
             },
           },
         ],
