@@ -1,4 +1,4 @@
-import { IInitProps } from '~/app';
+import { IInitProps } from "../app";
 declare const configureApp: (props: IProps) => IInitProps;
 interface IProps {
     schemas: IInitProps['schemas'];

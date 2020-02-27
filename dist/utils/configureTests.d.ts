@@ -1,4 +1,4 @@
-import { IInitProps } from '~/app';
+import { IInitProps } from "../app";
 declare const configureTest: (config?: Partial<IInitProps>) => {
     config: {
         port?: number;
