@@ -30,14 +30,38 @@ export declare class Authentificator {
         uuid: string;
         deviceInfo: {};
     }): Promise<ITokenPackage>;
-    generateTokens(payload: Pick<ITokenInfo['payload'], 'uuid' | 'roles'>): ITokenPackage;
+    generateTokens(payload: Pick<ITokenInfo['payload'], 'uuid' | 'roles'>, exp?: {
+        access: number;
+        refresh: number;
+    }): ITokenPackage;
     revokeToken(tokenId: string): Promise<void>;
     checkTokenExist(tokenId: string): Promise<boolean>;
     getAccountByLogin(login: IAccount['login']): Promise<Pick<IAccount, 'id' | 'password' | 'status'>>;
     static sendResponseError(responsetype: ResponseErrorType, resp: Response): Response;
+    getAccounts(filter: IAccountsFilter): Promise<IAccountsListResponse>;
 }
 interface IProps {
     context: IContext;
+}
+export interface IAccountsListResponse {
+    totalCount: number;
+    nodes: IAccount[];
+}
+export declare enum OrderRange {
+    asc = "asc",
+    desc = "desc"
+}
+export interface IAccountsFilter {
+    limit: number;
+    after?: number;
+    before?: number;
+    where?: {
+        status?: AccountStatus;
+    };
+    orderBy: [{
+        column: string;
+        order: OrderRange;
+    }];
 }
 /**
  * @see: JWT configuration. See [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)
@@ -106,5 +130,8 @@ export interface IAccount {
     password: string;
     status: AccountStatus;
     roles: string[];
+    cursor: number;
+    createdAt: string;
+    updatedAt: string;
 }
 export {};
