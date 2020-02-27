@@ -6,7 +6,7 @@
  - [Логгер](#logger)
  - [Error handlers (исключения)](#error-handlers)
 
-## <a id="how-to-use"></a> Как использовать
+## <a name="how-to-use"></a> Как использовать
 
 Для создания сервера необходимо сконфигурировать [логгер](#logger), создать инстанс приложения и запустить `bootstrap` метод.
 
@@ -35,7 +35,7 @@ app.bootstrap();
 
 ```
 
-## <a id="logger"></a> Логгер
+## <a name="logger"></a> Логгер
 
 Логгер - это объект, содержащий несколько ключей, в качестве значения которых выступает уже настроенный пакет [Winston](https://github.com/winstonjs/winston). Т.о. формируется коллекция логгеров. Эта коллекция добавляется в контекст, передаваемый в каждый резолвер. Логгеры используется внутренними компонентами для регистрации ошибок, отладочной информации и пр. В 90% случаев вам будет необходим лишь один логгер: `logger.server.debug('Message')`.
 
@@ -91,7 +91,7 @@ const logger = configureLogger({
 
 ```
 
-## <a id="error-handlers"></a> Error handlers (исключения)
+## <a name="error-handlers"></a> Error handlers (исключения)
 
 Исключения ([exception](https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/Error)) позволяют регистрировать наличие ошибки и прерывать дальнейшее выполнение скрипта.
 

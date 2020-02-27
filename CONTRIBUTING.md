@@ -8,7 +8,7 @@
 
 [Issue tracker](https://gitlab.com/via-profit-services/core/issues) является предпочтительным каналом для [баг репортов](#bugs).
 
-## <a id="bugs"></a> Сообщения о багах
+## <a name="bugs"></a> Сообщения о багах
 
 Рекомендации по сообщениям об ошибках:
 
