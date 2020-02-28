@@ -43,7 +43,7 @@ class App {
 
   public bootstrap(callback?: (args: IBootstrapCallbackArgs) => void) {
     const { port, usePlayground, useVoyager, endpoint, routes } = this.props;
-    const { app, schema } = this.createApp();
+    const { app, schema, context } = this.createApp();
     const server = createServer(app);
 
     // Run HTTP server
@@ -67,6 +67,7 @@ class App {
       if (callback !== undefined) {
         callback({
           port,
+          context,
           resolveUrl,
         });
       }
@@ -257,6 +258,7 @@ export interface ISubServerConfig {
 
 export interface IBootstrapCallbackArgs {
   port: number;
+  context: IContext;
   resolveUrl: {
     graphql: string;
     auth: string;

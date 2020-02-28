@@ -70,6 +70,7 @@ export interface ISubServerConfig {
 }
 export interface IBootstrapCallbackArgs {
     port: number;
+    context: IContext;
     resolveUrl: {
         graphql: string;
         auth: string;
