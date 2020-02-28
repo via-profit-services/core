@@ -41,7 +41,7 @@ class App {
     } as IInitDefaultProps['routes'];
   }
 
-  public bootstrap() {
+  public bootstrap(callback?: (args: IBootstrapCallbackArgs) => void) {
     const { port, usePlayground, useVoyager, endpoint, routes } = this.props;
     const { app, schema, context } = this.createApp();
     const { emitter } = context;
@@ -55,25 +55,57 @@ class App {
       emitter.emit('VIAPROFIT_SERVER_STARTED', {
         port,
       });
-      if (process.env.NODE_ENV === 'development') {
-        console.log('');
-        console.log('');
-        console.log(chalk.green('========= Server ========='));
-        console.log('');
-        console.log(`${chalk.green('GraphQL server')}:     ${chalk.yellow(`http://localhost:${port}${endpoint}`)}`);
 
-        if (usePlayground) {
-          console.log(
-            `${chalk.magenta('GraphQL playground')}: ${chalk.yellow(`http://localhost:${port}${routes.playground}`)}`,
-          );
-        }
-        console.log(`${chalk.cyan('Auth Server')}:        ${chalk.yellow(`http://localhost:${port}${routes.auth}`)}`);
-        if (useVoyager) {
-          console.log(
-            `${chalk.blue('GraphQL voyager')}:    ${chalk.yellow(`http://localhost:${port}${routes.voyager}`)}`,
-          );
-        }
-        console.log('');
+      const resolveUrl: IBootstrapCallbackArgs['resolveUrl'] = {
+        graphql: `http://localhost:${port}${endpoint}`,
+        auth: `http://localhost:${port}${routes.auth}`,
+      };
+
+      if (usePlayground) {
+        resolveUrl.playground = `http://localhost:${port}${routes.playground}`;
+      }
+
+      if (useVoyager) {
+        resolveUrl.playground = `http://localhost:${port}${routes.voyager}`;
+      }
+
+      // if (process.env.NODE_ENV === 'development') {
+      //   console.log('');
+      //   console.log('');
+      //   console.log(chalk.green('========= Server ========='));
+      //   console.log('');
+      //   Object.entries(resolveUrl).forEach(([key, url], index) => {
+      //     // const color = '';
+      //     console.log();
+      //   });
+      // }
+      // if (process.env.NODE_ENV === 'development') {
+
+      // console.log('');
+      // console.log('');
+      // console.log(chalk.green('========= Server ========='));
+      // console.log('');
+      // console.log(`${chalk.green('GraphQL server')}:     ${chalk.yellow(`http://localhost:${port}${endpoint}`)}`);
+
+      // if (usePlayground) {
+      //   console.log(
+      //     `${chalk.magenta('GraphQL playground')}: ${chalk.yellow(`http://localhost:${port}${routes.playground}`)}`,
+      //   );
+      // }
+      // console.log(`${chalk.cyan('Auth Server')}:        ${chalk.yellow(`http://localhost:${port}${routes.auth}`)}`);
+      // if (useVoyager) {
+      //   console.log(
+      //     `${chalk.blue('GraphQL voyager')}:    ${chalk.yellow(`http://localhost:${port}${routes.voyager}`)}`,
+      //   );
+      // }
+      // console.log('');
+      // }
+
+      if (callback !== undefined) {
+        callback({
+          port,
+          resolveUrl,
+        });
       }
     });
   }
@@ -258,4 +290,14 @@ export interface IContext {
 export interface ISubServerConfig {
   schema: GraphQLSchema;
   server: Server;
+}
+
+export interface IBootstrapCallbackArgs {
+  port: number;
+  resolveUrl: {
+    graphql: string;
+    auth: string;
+    playground?: string;
+    voyager?: string;
+  };
 }
