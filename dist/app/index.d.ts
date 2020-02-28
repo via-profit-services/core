@@ -9,7 +9,7 @@ import { ILoggerCollection } from "../logger";
 declare class App {
     props: IInitDefaultProps;
     constructor(props: IInitProps);
-    bootstrap(): void;
+    bootstrap(callback?: (args: IBootstrapCallbackArgs) => void): void;
     createSubscriptionServer(config: ISubServerConfig): SubscriptionServer;
     createApp(): {
         app: import("express-serve-static-core").Express;
@@ -67,4 +67,13 @@ export interface IContext {
 export interface ISubServerConfig {
     schema: GraphQLSchema;
     server: Server;
+}
+export interface IBootstrapCallbackArgs {
+    port: number;
+    resolveUrl: {
+        graphql: string;
+        auth: string;
+        playground?: string;
+        voyager?: string;
+    };
 }
