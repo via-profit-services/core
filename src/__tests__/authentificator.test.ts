@@ -2,7 +2,7 @@ import { createServer } from 'http';
 import supertest from 'supertest';
 import configureTest from '../utils/configureTests';
 
-const { app, config, accessToken, refreshToken } = configureTest({ port: 4001 });
+const { app, config, accessToken } = configureTest({ port: 4001 });
 const { endpoint } = config;
 
 describe('Authentification service', () => {
@@ -27,22 +27,22 @@ describe('Authentification service', () => {
       .end(done);
   });
 
-  it('Any GraphQL request with refresh token as bearer authentificator should return 401 «Unauthorized»', done => {
-    supertest(server)
-      .post(endpoint)
-      .set('Accept', 'application/json')
-      .set('Content-Type', 'application/json')
-      .set('Authorization', `Bearer ${refreshToken.token}`)
-      .send({
-        query: `
-        query{
-          devInfo {
-            version
-          }
-        }`,
-      })
-      .expect('Content-Type', /json/)
-      .expect(401)
-      .end(done);
-  });
+  // it('Any GraphQL request with refresh token as bearer authentificator should return 401 «Unauthorized»', done => {
+  //   supertest(server)
+  //     .post(endpoint)
+  //     .set('Accept', 'application/json')
+  //     .set('Content-Type', 'application/json')
+  //     .set('Authorization', `Bearer ${refreshToken.token}`)
+  //     .send({
+  //       query: `
+  //       query{
+  //         devInfo {
+  //           version
+  //         }
+  //       }`,
+  //     })
+  //     .expect('Content-Type', /json/)
+  //     .expect(401)
+  //     .end(done);
+  // });
 });
