@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 import { IInitProps } from '~/app';
@@ -38,6 +39,10 @@ const serverConfig: IInitProps = {
   jwt: jwtConfig,
   logger,
   schemas: [],
+  serverOptions: {
+    key: fs.readFileSync(path.resolve(process.env.SSL_KEY)),
+    cert: fs.readFileSync(path.resolve(process.env.SSL_CERT)),
+  },
 };
 
 const configureApp = (props: IProps): IInitProps => {

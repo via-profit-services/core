@@ -1,6 +1,6 @@
 /* eslint-disable import/max-dependencies */
 import { EventEmitter } from 'events';
-import { createServer, Server } from 'http';
+import { createServer, Server, ServerOptions } from 'https';
 import chalk from 'chalk';
 import cors from 'cors';
 import express from 'express';
@@ -42,9 +42,9 @@ class App {
   }
 
   public bootstrap(callback?: (args: IBootstrapCallbackArgs) => void) {
-    const { port, usePlayground, useVoyager, endpoint, routes } = this.props;
+    const { port, usePlayground, useVoyager, endpoint, routes, serverOptions } = this.props;
     const { app, schema, context } = this.createApp();
-    const server = createServer(app);
+    const server = createServer(serverOptions, app);
 
     // Run HTTP server
     server.listen(port, () => {
@@ -225,6 +225,12 @@ export interface IInitProps {
   };
   usePlayground?: boolean;
   useVoyager?: boolean;
+  serverOptions: IServerOptions;
+}
+
+interface IServerOptions extends ServerOptions {
+  key: ServerOptions['key'];
+  cert: ServerOptions['cert'];
 }
 
 interface IInitDefaultProps extends IInitProps {
