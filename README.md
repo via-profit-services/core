@@ -20,6 +20,8 @@
 yarn add ssh://git@gitlab.com:via-profit-services/core.git#1.0.0
 ```
 
+**Замечание:** Чтобы запустить localhost на SSL используйте [mkcert](https://github.com/FiloSottile/mkcert) 
+
 Для работы [JWT](https://github.com/auth0/node-jsonwebtoken) необходимо сгенерировать SSH-ключи используя алгоритм, например, `RS256`.
 
 **Замечание:** При запросе `passphrase` просто нажмите _Enter_ для того, чтобы этот параметр остался пустым. То же самое необходимо сделать при подтверждении `passphrase`.
@@ -31,6 +33,7 @@ ssh-keygen -t rsa -b 4096 -m PEM -f jwtRS256.key
 openssl rsa -in jwtRS256.key -pubout -outform PEM -out jwtRS256.key.pub
 ```
 После выполнения команд будут создан приватный ключ(`jwtRS256.key`) и публичный ключ (`jwtRS256.key.pub`) 
+
 
 Для хранения реквизитов доступа и прочих настроек, зависящих от устройства, на котором разрабатывается и запускается проект, используется [DotEnv](https://github.com/motdotla/dotenv).
 
@@ -55,6 +58,9 @@ JWT_ISSUER=viaprofit-services
 JWT_PRIVATEKEY=./keys/jwtRS256.key
 JWT_PUBLICKEY=./keys/jwtRS256.key.pub
 
+SSL_KEY=/home/me/.local/share/mkcert/localhost-key.pem
+SSL_CERT=/home/me/.local/share/mkcert/localhost.pem
+
 TIMEZONE=Asia/Yekaterinburg
 ```
 
@@ -68,6 +74,7 @@ TIMEZONE=Asia/Yekaterinburg
 ```ts
 import { App, configureLogger } from '@via-profit-services/core';
 import myGraphQLSchema from './my-graphql-schema';
+import fs from 'fs';
 
 // configure main logger
 const logger = configureLogger({
@@ -80,6 +87,10 @@ const app = new App({
   logger,
   jwt: { ... },
   database: { ... },
+  serverOptions: {
+    key: fs.readFileSync('/path/to/cert-key.pem'),
+    cert: fs.readFileSync('/path/to/cert.pem'),
+  },
   ...
 });
 

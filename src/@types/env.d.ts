@@ -26,5 +26,8 @@ declare namespace NodeJS {
     JWT_PUBLICKEY: string;
 
     TIMEZONE: string;
+
+    SSL_KEY: string;
+    SSL_CERT: string;
   }
 }
