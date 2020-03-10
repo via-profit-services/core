@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { EventEmitter } from 'events';
-import { Server } from 'http';
+import { Server, ServerOptions } from 'https';
 import { GraphQLSchema } from 'graphql';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { IJwtConfig } from "../authentificator/authentificator";
@@ -41,6 +41,11 @@ export interface IInitProps {
     };
     usePlayground?: boolean;
     useVoyager?: boolean;
+    serverOptions: IServerOptions;
+}
+interface IServerOptions extends ServerOptions {
+    key: ServerOptions['key'];
+    cert: ServerOptions['cert'];
 }
 interface IInitDefaultProps extends IInitProps {
     port: number;
