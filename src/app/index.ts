@@ -52,16 +52,16 @@ class App {
       this.createSubscriptionServer({ schema, server });
 
       const resolveUrl: IBootstrapCallbackArgs['resolveUrl'] = {
-        graphql: `http://localhost:${port}${endpoint}`,
-        auth: `http://localhost:${port}${routes.auth}`,
+        graphql: `https://localhost:${port}${endpoint}`,
+        auth: `https://localhost:${port}${routes.auth}`,
       };
 
       if (usePlayground) {
-        resolveUrl.playground = `http://localhost:${port}${routes.playground}`;
+        resolveUrl.playground = `https://localhost:${port}${routes.playground}`;
       }
 
       if (useVoyager) {
-        resolveUrl.voyager = `http://localhost:${port}${routes.voyager}`;
+        resolveUrl.voyager = `https://localhost:${port}${routes.voyager}`;
       }
 
       if (callback !== undefined) {
