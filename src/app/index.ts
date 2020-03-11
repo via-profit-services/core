@@ -10,12 +10,12 @@ import expressPlayground from 'graphql-playground-middleware-express';
 import { mergeSchemas } from 'graphql-tools';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
-import { IJwtConfig } from '~/authentificator/authentificator';
-import { authentificatorMiddleware } from '~/authentificator/authentificatorMiddleware';
-import { knexProvider, DBConfig, KnexInstance } from '~/databaseManager';
-import { errorHandlerMiddleware, requestHandlerMiddleware, ILoggerCollection } from '~/logger';
-import { accountsSchema } from '~/schemas';
-import { configureTokens } from '~/utils/configureTokens';
+import { IJwtConfig } from '../authentificator/authentificator';
+import { authentificatorMiddleware } from '../authentificator/authentificatorMiddleware';
+import { knexProvider, DBConfig, KnexInstance } from '../databaseManager';
+import { errorHandlerMiddleware, requestHandlerMiddleware, ILoggerCollection } from '../logger';
+import { accountsSchema } from '../schemas';
+import { configureTokens } from '../utils/configureTokens';
 
 class App {
   public props: IInitDefaultProps;

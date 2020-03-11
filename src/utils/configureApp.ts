@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
-import { IInitProps } from '~/app';
-import { configureLogger } from '~/logger';
+import { IInitProps } from '../app';
+import { configureLogger } from '../logger';
 
 const logger = configureLogger({
   logDir: 'log',
@@ -19,11 +19,16 @@ const databaseConfig: IInitProps['database'] = {
     password: process.env.DB_PASSWORD,
     user: process.env.DB_USER,
   },
+  migrations: {
+    directory: process.env.DB_MIGRATIONS_DIRECTORY,
+    tableName: process.env.DB_MIGRATIONS_TABLENAME,
+    extension: process.env.DB_MIGRATIONS_EXTENSION,
+  },
 };
 
 const jwtConfig: IInitProps['jwt'] = {
   accessTokenExpiresIn: Number(process.env.JWT_ACCESSTOKENEXPIRESIN),
-  algorithm: process.env.JWT_ALGORITHM,
+  algorithm: process.env.JWT_ALGORITHM as IInitProps['jwt']['algorithm'],
   issuer: process.env.JWT_ISSUER,
   privateKey: path.resolve(process.cwd(), process.env.JWT_PRIVATEKEY),
   publicKey: path.resolve(process.cwd(), process.env.JWT_PUBLICKEY),
@@ -45,8 +50,8 @@ const serverConfig: IInitProps = {
   },
 };
 
-const configureApp = (props: IProps): IInitProps => {
-  const { schemas } = props;
+const configureApp = (props?: IProps): IInitProps => {
+  const { schemas } = props || {};
   return {
     ...serverConfig,
     schemas,

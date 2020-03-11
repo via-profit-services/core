@@ -1,7 +1,7 @@
-import { App } from '~/app';
-import catalogSchema from '~/playground/schemas/catalog';
-import simpleSchema from '~/playground/schemas/simple';
-import { configureApp } from '~/utils/configureApp';
+import { App } from '../app';
+import { configureApp } from '../utils/configureApp';
+import catalogSchema from './schemas/catalog';
+import simpleSchema from './schemas/simple';
 
 const config = configureApp({ schemas: [simpleSchema, catalogSchema] });
 const app = new App(config);

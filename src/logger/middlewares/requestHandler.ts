@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { IContext } from '~/app';
+import { IContext } from '../../app';
 
 export default (config: ILoggerMiddlewareConfig) => {
   const { context } = config;

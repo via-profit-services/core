@@ -1,7 +1,7 @@
 import { IResolverObject } from 'graphql-tools';
-import { IContext } from '~/app';
-import { Authentificator, IAccountsFilter, OrderRange, AccountStatus } from '~/authentificator';
-import { buildCursorBundle, cursorToString } from '~/utils/generateCursorBundle';
+import { IContext } from '../../../app';
+import { Authentificator, IAccountsFilter, OrderRange, AccountStatus } from '../../../authentificator';
+import { buildCursorBundle, cursorToString } from '../../../utils/generateCursorBundle';
 
 export const AccountsQueries: IResolverObject<any, IContext, IListArgs> = {
   list: async (_, args, context) => {

@@ -14,6 +14,7 @@ declare namespace NodeJS {
     DB_PASSWORD: string;
     DB_MIGRATIONS_DIRECTORY: string;
     DB_MIGRATIONS_TABLENAME: string;
+    DB_MIGRATIONS_EXTENSION: 'js' | 'ts';
 
     JWT_ALGORITHM:
     'HS256' | 'HS384' | 'HS512' |

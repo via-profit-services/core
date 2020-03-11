@@ -50,8 +50,9 @@ DB_HOST= <-- Хост базы данных
 DB_USER= <-- Имя пользователя базы данных
 DB_NAME= <-- Название базы данных
 DB_PASSWORD= <-- Пароль базы данных
-DB_MIGRATIONS_DIRECTORY= <-- Путь до директории файлов миграций Knex
-DB_MIGRATIONS_TABLENAME= <-- Имя служебной таблицы миграций Knex
+DB_MIGRATIONS_DIRECTORY= <-- Путь до директории файлов миграций Knex (должна быть внутри src)
+DB_MIGRATIONS_TABLENAME=knex_migrations
+DB_MIGRATIONS_EXTENSION=ts
 
 JWT_ALGORITHM=RS256
 JWT_ACCESSTOKENEXPIRESIN=1800

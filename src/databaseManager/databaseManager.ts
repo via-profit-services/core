@@ -1,6 +1,6 @@
 import { performance } from 'perf_hooks';
 import knex from 'knex';
-import { ILoggerCollection, ServerError } from '~/logger';
+import { ILoggerCollection, ServerError } from '../logger';
 
 const knexProvider = (config: IConfig) => {
   const { database, logger } = config;
