@@ -1,5 +1,5 @@
 import knex from 'knex';
-import { ILoggerCollection } from "../logger";
+import { ILoggerCollection } from '../logger';
 declare const knexProvider: (config: IConfig) => knex<any, unknown[]>;
 export default knexProvider;
 export { knexProvider };

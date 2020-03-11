@@ -1,8 +1,8 @@
-import { IInitProps, App } from '~/app';
-import CatalogSchema from '~/playground/schemas/catalog';
-import SimpleSchema from '~/playground/schemas/simple';
-import { configureApp } from '~/utils/configureApp';
-import { configureTokens } from '~/utils/configureTokens';
+import { IInitProps, App } from '../app';
+import CatalogSchema from '../playground/schemas/catalog';
+import SimpleSchema from '../playground/schemas/simple';
+import { configureApp } from './configureApp';
+import { configureTokens } from './configureTokens';
 
 const configureTest = (config?: Partial<IInitProps>) => {
   const newConfig = {
