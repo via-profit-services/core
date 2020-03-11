@@ -1,6 +1,6 @@
 import { IResolverObject } from 'graphql-tools';
-import { IContext } from "../../../app";
-import { OrderRange, AccountStatus } from "../../../authentificator";
+import { IContext } from '../../../app';
+import { OrderRange, AccountStatus } from '../../../authentificator';
 export declare const AccountsQueries: IResolverObject<any, IContext, IListArgs>;
 interface IListArgs {
     first?: number;

@@ -1,5 +1,5 @@
-import { IInitProps } from "../app";
-declare const configureApp: (props: IProps) => IInitProps;
+import { IInitProps } from '../app';
+declare const configureApp: (props?: IProps) => IInitProps;
 interface IProps {
     schemas: IInitProps['schemas'];
 }
