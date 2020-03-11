@@ -53,7 +53,7 @@ export { knexProvider };
 export type DBConfig = knex.Config;
 export type KnexInstance = knex;
 
-interface IConfig {
+export interface IConfig {
   logger: ILoggerCollection;
   database: DBConfig;
 }
