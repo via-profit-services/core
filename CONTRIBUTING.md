@@ -86,7 +86,6 @@ TIMEZONE=Asia/Yekaterinburg
  - [Cборка проекта для development](#build-dev)
  - [Запуск линтера](#lint)
  - [Запуск тестов](#test)
- - [Релиз](#release)
 
 
 ### <a name="start-dev"></a> Запуск проекта в `development` режиме
@@ -170,19 +169,6 @@ yarn test
 
 Данный скрипт запустит все имеющиеся тесты.
 
-### <a name="release"></a>Релизы
-
-Для возможности выпуска автоматического релиза необходим `Gitlab` Token. ([подробнее](https://github.com/release-it/release-it#gitlab-releases)) Токен записывается в `.env` файл:
-```dosini
-GITLAB_TOKEN=secrettokenstring
-```
-Для запуска интерактивного режима релизов используется скрипт:
-
-```bash
-yarn release
-```
-
-Данный скрипт запустит [release-it](https://github.com/release-it/release-it).
 
 
 ## <a name="playground"></a> Playground 
