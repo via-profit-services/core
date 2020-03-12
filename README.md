@@ -14,11 +14,20 @@
 
 ## <a name="setup"></a> Установка и настройка
 
-Необходимо указать необходимую версию вместо `#1.0.0`.
+Для установки последней версии:
 
 ```bash
-yarn add ssh://git@gitlab.com:via-profit-services/core.git#1.0.0
+yarn add ssh://git@gitlab.com:via-profit-services/core.git
 ```
+
+Для установки последней определенной версии, например, `0.1.6`:
+
+```bash
+yarn add ssh://git@gitlab.com:via-profit-services/core.git#0.1.6
+```
+
+Список версий см. [здесь](https://gitlab.com/via-profit-services/core/-/tags/)
+
 
 **Замечание:** Чтобы запустить localhost на SSL используйте [mkcert](https://github.com/FiloSottile/mkcert) 
 
