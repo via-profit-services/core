@@ -4,12 +4,17 @@ import dotenv from 'dotenv';
 import { IInitProps } from '../app';
 import { configureLogger } from '../logger';
 
-const logger = configureLogger({
-  logDir: 'log',
-});
+// project root path
+const rootPath = path.join(__dirname, '..', '..');
 
 // dotenv configuration
-dotenv.config();
+dotenv.config({
+  path: path.resolve(__dirname, '../../.env'),
+});
+
+const logger = configureLogger({
+  logDir: path.resolve(rootPath, process.env.LOG),
+});
 
 const databaseConfig: IInitProps['database'] = {
   client: process.env.DB_CLIENT,
@@ -20,7 +25,7 @@ const databaseConfig: IInitProps['database'] = {
     user: process.env.DB_USER,
   },
   migrations: {
-    directory: process.env.DB_MIGRATIONS_DIRECTORY,
+    directory: path.resolve(rootPath, process.env.DB_MIGRATIONS_DIRECTORY),
     tableName: process.env.DB_MIGRATIONS_TABLENAME,
     extension: process.env.DB_MIGRATIONS_EXTENSION,
   },
@@ -30,8 +35,8 @@ const jwtConfig: IInitProps['jwt'] = {
   accessTokenExpiresIn: Number(process.env.JWT_ACCESSTOKENEXPIRESIN),
   algorithm: process.env.JWT_ALGORITHM as IInitProps['jwt']['algorithm'],
   issuer: process.env.JWT_ISSUER,
-  privateKey: path.resolve(process.cwd(), process.env.JWT_PRIVATEKEY),
-  publicKey: path.resolve(process.cwd(), process.env.JWT_PUBLICKEY),
+  privateKey: path.resolve(rootPath, process.env.JWT_PRIVATEKEY),
+  publicKey: path.resolve(rootPath, process.env.JWT_PUBLICKEY),
   refreshTokenExpiresIn: Number(process.env.JWT_REFRESHTOKENEXPIRESIN),
 };
 
@@ -45,8 +50,8 @@ const serverConfig: IInitProps = {
   logger,
   schemas: [],
   serverOptions: {
-    key: fs.readFileSync(path.resolve(process.env.SSL_KEY)),
-    cert: fs.readFileSync(path.resolve(process.env.SSL_CERT)),
+    key: fs.readFileSync(path.resolve(rootPath, process.env.SSL_KEY)),
+    cert: fs.readFileSync(path.resolve(rootPath, process.env.SSL_CERT)),
   },
 };
 

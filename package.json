@@ -2,7 +2,7 @@
     "name": "@via-profit-services/core",
     "private": true,
     "support": "https://via-profit.ru",
-    "version": "0.1.1",
+    "version": "0.1.4",
     "description": "Via Profit Core service",
     "main": "dist/index.js",
     "scripts": {
@@ -14,9 +14,11 @@
         "start:dist": "yarn dist && node ./dist/playground.js",
         "test": "jest",
         "lint": "eslint --ext .ts ./src/ --fix .",
-        "migrate:test:up": "ts-node ./src/utils/migrate.ts --to up",
-        "migrate:test:down": "ts-node ./src/utils/migrate.ts --to down",
-        "migrate:test:make": "ts-node ./src/utils/migrate.ts --make"
+        "knex:migrate:make": "knex migrate:make --knexfile src/utils/knexfile.ts",
+        "knex:migrate:up": "knex migrate:up --knexfile src/utils/knexfile.ts",
+        "knex:migrate:down": "knex migrate:down --knexfile src/utils/knexfile.ts",
+        "knex:migrate:latest": "knex migrate:latest --knexfile src/utils/knexfile.ts",
+        "release": "yarn dotenv release-it"
     },
     "repository": {
         "type": "git",
@@ -84,6 +86,7 @@
         "child-process-promise": "^2.2.1",
         "clean-webpack-plugin": "^3.0.0",
         "cross-env": "^6.0.3",
+        "dotenv-cli": "^3.1.0",
         "eslint": "^6.8.0",
         "eslint-config-airbnb-base": "^14.0.0",
         "eslint-config-prettier": "^6.10.0",

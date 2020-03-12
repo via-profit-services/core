@@ -3,6 +3,8 @@ declare namespace NodeJS {
     NODE_ENV: 'development' | 'production' | 'test';
 
     PORT: string;
+    
+    LOG: string;
 
     GQL_ENDPOINT: string;
     GQL_SUBSCRIPTIONSENDPOINT: string;

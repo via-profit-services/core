@@ -42,6 +42,8 @@ openssl rsa -in jwtRS256.key -pubout -outform PEM -out jwtRS256.key.pub
 ```dosini
 PORT=4000
 
+LOG=./log
+
 GQL_ENDPOINT=/graphql
 GQL_SUBSCRIPTIONSENDPOINT=/subscriptions
 
@@ -67,6 +69,7 @@ SSL_CERT=/home/me/.local/share/mkcert/localhost.pem
 TIMEZONE=Asia/Yekaterinburg
 ```
 
+**Замечание:** Старайтесь не использовать `process.cwd()` там, где это пересекается с `knex`, т.к. knex переопределяет рабоичю директорию в некоторых случаях, например, при использовании миграций
 
 ## <a name="how-to-use"></a> Как использовать
 
