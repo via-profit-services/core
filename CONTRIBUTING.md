@@ -18,15 +18,13 @@
 
 ## <a name="setup"></a> Установка и настройка
 
-В качестве основного пакетного менеджера используется [yarn](https://yarnpkg.com/), но все действия возможно выполнять и с [npm](https://www.npmjs.com/get-npm)
-
-Склонируйте репозиторий и установите зависимости
+Необходимо указать необходимую версию вместо `#1.0.0`.
 
 ```bash
-git clone git@gitlab.com:via-profit-services/core.git @via-profit-services/core
-cd @via-profit-services/core
-yarn
+yarn add ssh://git@gitlab.com:via-profit-services/core.git#1.0.0
 ```
+
+**Замечание:** Чтобы запустить localhost на SSL используйте [mkcert](https://github.com/FiloSottile/mkcert) 
 
 Для работы [JWT](https://github.com/auth0/node-jsonwebtoken) необходимо сгенерировать SSH-ключи используя алгоритм, например, `RS256`.
 
@@ -40,12 +38,15 @@ openssl rsa -in jwtRS256.key -pubout -outform PEM -out jwtRS256.key.pub
 ```
 После выполнения команд будут создан приватный ключ(`jwtRS256.key`) и публичный ключ (`jwtRS256.key.pub`) 
 
+
 Для хранения реквизитов доступа и прочих настроек, зависящих от устройства, на котором разрабатывается и запускается проект, используется [DotEnv](https://github.com/motdotla/dotenv).
 
 В корне проекта (на том же уровне, что и `package.json`) создайте файл `.env` со следующим содержимым:
 
 ```dosini
 PORT=4000
+
+LOG=./log
 
 GQL_ENDPOINT=/graphql
 GQL_SUBSCRIPTIONSENDPOINT=/subscriptions
@@ -55,6 +56,9 @@ DB_HOST= <-- Хост базы данных
 DB_USER= <-- Имя пользователя базы данных
 DB_NAME= <-- Название базы данных
 DB_PASSWORD= <-- Пароль базы данных
+DB_MIGRATIONS_DIRECTORY= <-- Путь до директории файлов миграций Knex (должна быть внутри src)
+DB_MIGRATIONS_TABLENAME=knex_migrations
+DB_MIGRATIONS_EXTENSION=ts
 
 JWT_ALGORITHM=RS256
 JWT_ACCESSTOKENEXPIRESIN=1800
@@ -63,8 +67,14 @@ JWT_ISSUER=viaprofit-services
 JWT_PRIVATEKEY=./keys/jwtRS256.key
 JWT_PUBLICKEY=./keys/jwtRS256.key.pub
 
+SSL_KEY=/home/me/.local/share/mkcert/localhost-key.pem
+SSL_CERT=/home/me/.local/share/mkcert/localhost.pem
+
 TIMEZONE=Asia/Yekaterinburg
 ```
+
+**Замечание:** Старайтесь не использовать `process.cwd()` там, где это пересекается с `knex`, т.к. knex переопределяет рабоичю директорию в некоторых случаях, например, при использовании миграций
+
 
 ## <a name="scripts"></a> npm-скрипты
 
@@ -76,6 +86,7 @@ TIMEZONE=Asia/Yekaterinburg
  - [Cборка проекта для development](#build-dev)
  - [Запуск линтера](#lint)
  - [Запуск тестов](#test)
+ - [Релиз](#release)
 
 
 ### <a name="start-dev"></a> Запуск проекта в `development` режиме
@@ -158,6 +169,20 @@ yarn test
 ```
 
 Данный скрипт запустит все имеющиеся тесты.
+
+### <a name="release"></a>Релизы
+
+Для возможности выпуска автоматического релиза необходим `Gitlab` Token. ([подробнее](https://github.com/release-it/release-it#gitlab-releases)) Токен записывается в `.env` файл:
+```dosini
+GITLAB_TOKEN=secrettokenstring
+```
+Для запуска интерактивного режима релизов используется скрипт:
+
+```bash
+yarn release
+```
+
+Данный скрипт запустит [release-it](https://github.com/release-it/release-it).
 
 
 ## <a name="playground"></a> Playground 
