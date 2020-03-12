@@ -14,13 +14,10 @@
         "start:dist": "yarn dist && node ./dist/playground.js",
         "test": "jest",
         "lint": "eslint --ext .ts ./src/ --fix .",
-        "knex:migrate:up": "ts-node ./src/utils/migrate.ts --to up",
-        "knex:migrate:down": "ts-node ./src/utils/migrate.ts --to down",
-        "knex:migrate:current": "ts-node ./src/utils/migrate.ts --to current",
-        "knex:migrate:make": "ts-node ./src/utils/migrate.ts --make",
-        "knex:migrate:latest": "ts-node ./src/utils/migrate.ts --latest",
-        "knex:migrate:status": "ts-node ./src/utils/migrate.ts --status",
-        "knex:migrate:list": "ts-node ./src/utils/migrate.ts --list"
+        "knex:migrate:make": "knex migrate:make --knexfile src/utils/knexfile.ts",
+        "knex:migrate:up": "knex migrate:up --knexfile src/utils/knexfile.ts",
+        "knex:migrate:down": "knex migrate:down --knexfile src/utils/knexfile.ts",
+        "knex:migrate:latest": "knex migrate:latest --knexfile src/utils/knexfile.ts"
     },
     "repository": {
         "type": "git",
