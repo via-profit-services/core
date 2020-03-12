@@ -18,8 +18,7 @@
         "knex:migrate:up": "knex migrate:up --knexfile src/utils/knexfile.ts",
         "knex:migrate:down": "knex migrate:down --knexfile src/utils/knexfile.ts",
         "knex:migrate:latest": "knex migrate:latest --knexfile src/utils/knexfile.ts",
-        "release_": "yarn dotenv release-it",
-        "release": "export GITLAB_TOKEN=\"vjAj9ELhVNY5MzRrMnmL\" && release-it"
+        "release": "yarn dotenv release-it"
     },
     "repository": {
         "type": "git",
