@@ -11,3 +11,6 @@
 
 # jwt keys
 /keys
+
+/src/database/migrations/*
+/src/database/seeds/*

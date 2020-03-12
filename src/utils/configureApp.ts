@@ -29,6 +29,10 @@ const databaseConfig: IInitProps['database'] = {
     tableName: process.env.DB_MIGRATIONS_TABLENAME,
     extension: process.env.DB_MIGRATIONS_EXTENSION,
   },
+  seeds: {
+    directory: path.resolve(rootPath, process.env.DB_SEEDS_DIRECTORY),
+    extension: process.env.DB_SEEDS_EXTENSION,
+  },
 };
 
 const jwtConfig: IInitProps['jwt'] = {

@@ -17,7 +17,9 @@
         "knex:migrate:make": "knex migrate:make --knexfile src/utils/knexfile.ts",
         "knex:migrate:up": "knex migrate:up --knexfile src/utils/knexfile.ts",
         "knex:migrate:down": "knex migrate:down --knexfile src/utils/knexfile.ts",
-        "knex:migrate:latest": "knex migrate:latest --knexfile src/utils/knexfile.ts"
+        "knex:migrate:latest": "knex migrate:latest --knexfile src/utils/knexfile.ts",
+        "knex:seed:make": "knex seed:make --knexfile src/utils/knexfile.ts",
+        "knex:seed:run": "knex seed:run --knexfile src/utils/knexfile.ts"
     },
     "repository": {
         "type": "git",

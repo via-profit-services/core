@@ -64,6 +64,8 @@ DB_PASSWORD= <-- Пароль базы данных
 DB_MIGRATIONS_DIRECTORY= <-- Путь до директории файлов миграций Knex (должна быть внутри src)
 DB_MIGRATIONS_TABLENAME=knex_migrations
 DB_MIGRATIONS_EXTENSION=ts
+DB_SEEDS_DIRECTORY= <-- Путь до директории сид файлов Knex (должна быть внутри src)
+DB_SEEDS_EXTENSION=ts
 
 JWT_ALGORITHM=RS256
 JWT_ACCESSTOKENEXPIRESIN=1800
