@@ -17,8 +17,7 @@
         "knex:migrate:make": "knex migrate:make --knexfile src/utils/knexfile.ts",
         "knex:migrate:up": "knex migrate:up --knexfile src/utils/knexfile.ts",
         "knex:migrate:down": "knex migrate:down --knexfile src/utils/knexfile.ts",
-        "knex:migrate:latest": "knex migrate:latest --knexfile src/utils/knexfile.ts",
-        "release": "yarn dotenv release-it"
+        "knex:migrate:latest": "knex migrate:latest --knexfile src/utils/knexfile.ts"
     },
     "repository": {
         "type": "git",
@@ -86,7 +85,6 @@
         "child-process-promise": "^2.2.1",
         "clean-webpack-plugin": "^3.0.0",
         "cross-env": "^6.0.3",
-        "dotenv-cli": "^3.1.0",
         "eslint": "^6.8.0",
         "eslint-config-airbnb-base": "^14.0.0",
         "eslint-config-prettier": "^6.10.0",
@@ -106,7 +104,6 @@
         "nodemon-webpack-plugin": "^4.2.2",
         "npm-run-all": "^4.1.5",
         "prettier": "^1.19.1",
-        "release-it": "^12.4.3",
         "remove-files-webpack-plugin": "^1.2.2",
         "rimraf": "^3.0.0",
         "supertest": "^4.0.2",
