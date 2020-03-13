@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { SignOptions } from 'jsonwebtoken';
 import { IContext } from '../app';
+import { IListResponse } from '../utils/generateCursorBundle';
 export declare enum TokenType {
     access = "access",
     refresh = "refresh"
@@ -38,14 +39,10 @@ export declare class Authentificator {
     checkTokenExist(tokenId: string): Promise<boolean>;
     getAccountByLogin(login: IAccount['login']): Promise<Pick<IAccount, 'id' | 'password' | 'status'>>;
     static sendResponseError(responsetype: ResponseErrorType, resp: Response): Response;
-    getAccounts(filter: IAccountsFilter): Promise<IAccountsListResponse>;
+    getAccounts(filter: IAccountsFilter): Promise<IListResponse<IAccount>>;
 }
 interface IProps {
     context: IContext;
-}
-export interface IAccountsListResponse {
-    totalCount: number;
-    nodes: IAccount[];
 }
 export declare enum OrderRange {
     asc = "asc",
@@ -130,8 +127,8 @@ export interface IAccount {
     password: string;
     status: AccountStatus;
     roles: string[];
-    cursor: number;
     createdAt: string;
     updatedAt: string;
+    cursor: string;
 }
 export {};
