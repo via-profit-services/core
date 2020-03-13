@@ -9,7 +9,6 @@ declare namespace NodeJS {
     GQL_ENDPOINT: string;
     GQL_SUBSCRIPTIONSENDPOINT: string;
 
-    DB_CLIENT: 'pg' | 'postgres';
     DB_HOST: string;
     DB_USER: string;
     DB_NAME: string;

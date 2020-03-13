@@ -17,14 +17,13 @@ const logger = configureLogger({
 });
 
 const databaseConfig: IInitProps['database'] = {
-  client: process.env.DB_CLIENT,
   connection: {
     database: process.env.DB_NAME,
     host: process.env.DB_HOST,
     password: process.env.DB_PASSWORD,
     user: process.env.DB_USER,
-    timezone: process.env.DB_TIMEZONE,
   },
+  timezone: process.env.DB_TIMEZONE,
   migrations: {
     directory: path.resolve(rootPath, process.env.DB_MIGRATIONS_DIRECTORY),
     tableName: process.env.DB_MIGRATIONS_TABLENAME,
