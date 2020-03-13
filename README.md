@@ -47,6 +47,7 @@ openssl rsa -in jwtRS256.key -pubout -outform PEM -out jwtRS256.key.pub
 Для хранения реквизитов доступа и прочих настроек, зависящих от устройства, на котором разрабатывается и запускается проект, используется [DotEnv](https://github.com/motdotla/dotenv).
 
 В корне проекта (на том же уровне, что и `package.json`) создайте файл `.env` со следующим содержимым:
+**Замечание:**: *Ниже представлен фрагмент минимальных настроек для полноценной работы сервера*
 
 ```dosini
 PORT=4000
@@ -61,6 +62,7 @@ DB_HOST= <-- Хост базы данных
 DB_USER= <-- Имя пользователя базы данных
 DB_NAME= <-- Название базы данных
 DB_PASSWORD= <-- Пароль базы данных
+DB_TIMEZONE=UTC
 DB_MIGRATIONS_DIRECTORY= <-- Путь до директории файлов миграций Knex (должна быть внутри src)
 DB_MIGRATIONS_TABLENAME=knex_migrations
 DB_MIGRATIONS_EXTENSION=ts
