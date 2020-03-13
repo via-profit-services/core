@@ -24,18 +24,18 @@ export const cursorToString = (cursor: string) => {
  * @param  {Node} node
  * @returns string
  */
-export const nodeToEdge = (node: Node): { node: Node; cursor: string } => {
+export const nodeToEdge = <TNodeData>(node: Node<TNodeData>): { node: Node<TNodeData>; cursor: string } => {
   return {
     node,
     cursor: stringToCursor(String(node.cursor)),
   };
 };
 
-export const nodesListToEdges = (nodeList: Node[]) => {
-  return nodeList.map(node => nodeToEdge(node));
+export const nodesListToEdges = <T>(nodeList: Node<T>[]) => {
+  return nodeList.map(node => nodeToEdge<T>(node));
 };
 
-const buildCursorConnection = (props: IProps): ICursorConnection => {
+const buildCursorConnection = <T>(props: IProps<T>): ICursorConnection<T> => {
   const { nodes, totalCount } = props;
 
   const cursor = {
@@ -46,7 +46,7 @@ const buildCursorConnection = (props: IProps): ICursorConnection => {
       hasPreviousPage: false,
       hasNextPage: false,
     },
-    edges: nodesListToEdges(nodes),
+    edges: nodesListToEdges<T>(nodes),
   };
 
   return cursor;
@@ -87,18 +87,18 @@ const buildQueryFilter = <TFilter extends TFilterDefaults = TFilterDefaults, TAr
   return filter;
 };
 
-interface IProps {
+interface IProps<T> {
   totalCount: number;
   limit: number;
-  nodes: Node[];
+  nodes: Node<T>[];
 }
 
 /**
  * GraphQL Cursor connection
  * @see https://facebook.github.io/relay/graphql/connections.htm
  */
-export interface ICursorConnection {
-  edges: Edge[];
+export interface ICursorConnection<TNode> {
+  edges: Edge<TNode>[];
   pageInfo: IPageInfo;
   totalCount: number;
 }
@@ -118,19 +118,16 @@ export interface IPageInfo {
  * GraphQL Edge type
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-Edge-Types
  */
-export interface Edge {
+export interface Edge<TNode> {
   cursor: string;
-  node: Node;
+  node: TNode;
 }
 
 /**
  * GraphQL Node type
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-Node
  */
-export interface Node {
-  cursor: number;
-  [key: string]: any;
-}
+export type Node<TNodeData> = TNodeData & { cursor: string };
 
 export interface IListResponse<TNode> {
   totalCount: number;

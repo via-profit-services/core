@@ -5,6 +5,7 @@ import moment from 'moment-timezone';
 import uuidv4 from 'uuid/v4';
 import { IContext } from '../app';
 import { ServerError, UnauthorizedError } from '../logger/errorHandlers';
+import { IListResponse } from '../utils/generateCursorBundle';
 
 export enum TokenType {
   access = 'access',
@@ -264,69 +265,74 @@ export class Authentificator {
     return resp.status(401).json({ errors });
   }
 
-  public getAccounts(filter: IAccountsFilter): Promise<IAccountsListResponse> {
+  public getAccounts(filter: IAccountsFilter): Promise<IListResponse<IAccount>> {
     const { context } = this.props;
     const { knex, timezone } = context;
+    const { limit, orderBy, after, before, where } = filter;
 
-    const responseData: IAccountsListResponse = {
-      totalCount: 0,
-      nodes: [],
-    };
-
-    const query = knex
+    return knex
       .select<any, Array<IAccount & { totalCount: number }>>(['j.totalCount', 'accounts.*'])
       .join(
         knex('accounts')
           .select(['id', knex.raw('count(*) over() as "totalCount"')])
-          .orderBy(filter.orderBy)
-          .limit(filter.limit)
+          .orderBy(orderBy)
+          .limit(limit)
           .where(handle => {
-            if (filter.after !== undefined) {
-              handle.where('cursor', '>', Number(filter.after));
+            if (after !== undefined) {
+              handle.where('cursor', '>', Number(after));
             }
-            if (filter.before !== undefined) {
-              handle.where('cursor', '<', Number(filter.before));
+            if (before !== undefined) {
+              handle.where('cursor', '<', Number(before));
             }
 
-            if (filter.where !== undefined) {
-              handle.where(filter.where);
+            if (where !== undefined) {
+              handle.where(where);
             }
           })
           .as('j'),
         'j.id',
         'accounts.id',
       )
-      .orderBy(filter.orderBy)
+      .orderBy(orderBy)
       .from('accounts')
       .then(nodes => {
-        return nodes.map(node => {
-          const { totalCount, ...nodeData } = node;
-          responseData.totalCount = totalCount;
-          return {
-            ...nodeData,
-            createdAt: moment.tz(nodeData.createdAt, timezone).format(),
-            updatedAt: moment.tz(nodeData.updatedAt, timezone).format(),
-          };
-        });
-      })
-      .then(nodes => {
-        responseData.totalCount = Number(responseData.totalCount);
-        responseData.nodes = nodes;
-
-        return responseData;
+        const { totalCount } = nodes[0];
+        return {
+          totalCount,
+          nodes: nodes.map(node => {
+            const { createdAt, updatedAt } = node;
+            console.log(typeof node.createdAt);
+            return {
+              ...node,
+              createdAt: moment.tz(createdAt, timezone).format(),
+              updatedAt: moment.tz(updatedAt, timezone).format(),
+            };
+          }),
+          limit,
+        };
+        // return nodes.map(node => {
+        //   const { totalCount, ...nodeData } = node;
+        //   responseData.totalCount = totalCount;
+        //   return {
+        //     ...nodeData,
+        //     createdAt: moment.tz(nodeData.createdAt, timezone).format(),
+        //     updatedAt: moment.tz(nodeData.updatedAt, timezone).format(),
+        //   };
+        // });
       });
+    // .then(nodes => {
+    //   responseData.totalCount = Number(responseData.totalCount);
+    //   responseData.nodes = nodes;
 
-    return query;
+    //   return responseData;
+    // });
+
+    // return query;
   }
 }
 
 interface IProps {
   context: IContext;
-}
-
-export interface IAccountsListResponse {
-  totalCount: number;
-  nodes: IAccount[];
 }
 
 export enum OrderRange {
@@ -424,7 +430,7 @@ export interface IAccount {
   password: string;
   status: AccountStatus;
   roles: string[];
-  cursor: number;
   createdAt: string;
   updatedAt: string;
+  cursor: string;
 }
