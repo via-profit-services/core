@@ -14,6 +14,7 @@ declare namespace NodeJS {
     DB_USER: string;
     DB_NAME: string;
     DB_PASSWORD: string;
+    DB_TIMEZONE: string;
     DB_MIGRATIONS_DIRECTORY: string;
     DB_MIGRATIONS_TABLENAME: string;
     DB_MIGRATIONS_EXTENSION: 'js' | 'ts';

@@ -23,6 +23,7 @@ const databaseConfig: IInitProps['database'] = {
     host: process.env.DB_HOST,
     password: process.env.DB_PASSWORD,
     user: process.env.DB_USER,
+    timezone: process.env.DB_TIMEZONE,
   },
   migrations: {
     directory: path.resolve(rootPath, process.env.DB_MIGRATIONS_DIRECTORY),
