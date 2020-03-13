@@ -17,30 +17,33 @@ export declare const cursorToString: (cursor: string) => string;
  * @param  {Node} node
  * @returns string
  */
-export declare const nodeToEdge: <TNodeData>(node: Node<TNodeData>) => {
-    node: Node<TNodeData>;
+export declare const nodeToEdge: <TNodeData>(node: TNodeData & {
+    cursor: number;
+}) => {
+    node: TNodeData;
     cursor: string;
 };
-export declare const nodesListToEdges: <T>(nodeList: Node<T>[]) => {
-    node: Node<T>;
-    cursor: string;
-}[];
-declare const buildCursorConnection: <T>(props: IProps<T>) => ICursorConnection<T>;
-declare const buildQueryFilter: <TFilter extends TFilterDefaults = TFilterDefaults, TArgs extends TArgsDefaults = {}>(args: TArgs) => TFilter & TFilterDefaults;
-interface IProps<T> {
-    totalCount: number;
-    limit: number;
-    nodes: Node<T>[];
-}
 /**
  * GraphQL Cursor connection
  * @see https://facebook.github.io/relay/graphql/connections.htm
  */
-export interface ICursorConnection<TNode> {
-    edges: Edge<TNode>[];
+export interface ICursorConnection<TNodeData> {
+    edges: Array<{
+        node: TNodeData;
+        cursor: string;
+    }>;
     pageInfo: IPageInfo;
     totalCount: number;
 }
+interface ICursorConnectionProps<TNodeData> {
+    totalCount: number;
+    limit: number;
+    nodes: Array<TNodeData & {
+        cursor: number;
+    }>;
+}
+declare const buildCursorConnection: <TNodeData>(props: ICursorConnectionProps<TNodeData>) => ICursorConnection<TNodeData>;
+declare const buildQueryFilter: <TFilter extends TFilterDefaults = TFilterDefaults, TArgs extends TArgsDefaults = {}>(args: TArgs) => TFilter & TFilterDefaults;
 /**
  * GraphQL PageInfo
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-undefined.PageInfo
@@ -55,20 +58,18 @@ export interface IPageInfo {
  * GraphQL Edge type
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-Edge-Types
  */
-export interface Edge<TNode> {
+export interface Edge<TNodeData> {
+    node: TNodeData;
     cursor: string;
-    node: TNode;
 }
 /**
  * GraphQL Node type
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-Node
  */
-export declare type Node<TNodeData> = TNodeData & {
-    cursor: string;
-};
-export interface IListResponse<TNode> {
+export declare type Node<TNodeData> = TNodeData;
+export interface IListResponse<TNodeData> {
     totalCount: number;
-    nodes: TNode[];
+    nodes: Node<TNodeData>[];
     limit: number;
 }
 interface TArgsDefaults {
