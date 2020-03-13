@@ -8,6 +8,8 @@
 
  - [Установка и настройка](#setup)
  - [Как использовать](#how-to-use)
+ - [Параметры](#options)
+ - [Контекст](#context)
  - [Логгер](#logger)
  - [Error handlers (исключения)](#error-handlers)
  - [Contributing](./CONTRIBUTING.md)
@@ -97,7 +99,7 @@ import fs from 'fs';
 
 // configure main logger
 const logger = configureLogger({
-  logDir: 'log', // you should pass the path relative to the project root
+  logDir: path.resolve(__dirname, './log'), // you should pass the path relative to the project root
 });
 
 // create application
@@ -117,6 +119,23 @@ const app = new App({
 app.bootstrap();
 
 ```
+
+## <a name="options"></a> Параметры
+
+Список поддерживаемых опций:
+
+| Параметр | Тип | Описание |
+|:---------|:---------|:---------|
+| `port`   | `number` | Номер порта на котором должен запуститься сервер |
+| `endpoint`   | `string` | endpoint graphql сервера, например, `/graphql` |
+| `subscriptionsEndpoint`   | `string` | endpoint graphql сервера subscriptions, например, `/subscriptions` |
+
+TODO: Дополнить описание параметров
+
+## <a name="context"></a> Контекст
+
+TODO: Дополнить описание контекста
+
 
 ## <a name="logger"></a> Логгер
 
