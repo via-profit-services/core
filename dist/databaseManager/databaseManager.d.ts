@@ -1,11 +1,13 @@
-import knex from 'knex';
+import knex, { PgConnectionConfig, MigratorConfig, SeedsConfig } from 'knex';
 import { ILoggerCollection } from '../logger';
-declare const knexProvider: (config: IConfig) => knex<any, unknown[]>;
+declare const knexProvider: (config: IDBConfig) => knex<any, unknown[]>;
 export default knexProvider;
 export { knexProvider };
-export declare type DBConfig = knex.Config;
 export declare type KnexInstance = knex;
-export interface IConfig {
+export interface IDBConfig {
     logger: ILoggerCollection;
-    database: DBConfig;
+    connection: PgConnectionConfig;
+    timezone: string;
+    migrations?: MigratorConfig;
+    seeds?: SeedsConfig;
 }

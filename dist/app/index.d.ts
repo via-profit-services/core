@@ -4,7 +4,7 @@ import { Server, ServerOptions } from 'https';
 import { GraphQLSchema } from 'graphql';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { IJwtConfig } from '../authentificator/authentificator';
-import { DBConfig, KnexInstance } from '../databaseManager';
+import { IDBConfig, KnexInstance } from '../databaseManager';
 import { ILoggerCollection } from '../logger';
 declare class App {
     props: IInitDefaultProps;
@@ -32,7 +32,7 @@ export interface IInitProps {
     timezone?: string;
     schemas: GraphQLSchema[];
     jwt: IJwtConfig;
-    database: DBConfig;
+    database: Omit<IDBConfig, 'logger'>;
     logger: ILoggerCollection;
     routes?: {
         auth?: string;
