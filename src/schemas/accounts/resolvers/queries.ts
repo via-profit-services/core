@@ -4,7 +4,7 @@ import { Authentificator, IAccountsFilter, OrderRange, AccountStatus } from '../
 import { buildCursorConnection, cursorToString } from '../../../utils/generateCursorBundle';
 
 export const AccountsQueries: IResolverObject<any, IContext, IListArgs> = {
-  list: async (_, args, context) => {
+  list: async (source, args, context) => {
     const { first, last, after, before, orderBy, status } = args;
     const authentificator = new Authentificator({ context });
 
@@ -36,15 +36,9 @@ export const AccountsQueries: IResolverObject<any, IContext, IListArgs> = {
       filter.where.status = status;
     }
 
-    const accountsList = await authentificator.getAccounts(filter);
-    const { totalCount, nodes } = accountsList;
-
-    const res = buildCursorConnection({
-      nodes,
-      totalCount,
-      limit: filter.limit,
-    });
-    return res;
+    const cursorConnection = await authentificator.getAccounts(filter);
+    const { limit, totalCount, nodes } = cursorConnection;
+    return buildCursorConnection({ limit, totalCount, nodes });
   },
 };
 
