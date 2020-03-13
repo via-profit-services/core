@@ -432,5 +432,5 @@ export interface IAccount {
   roles: string[];
   createdAt: string;
   updatedAt: string;
-  cursor: string;
+  cursor: number;
 }

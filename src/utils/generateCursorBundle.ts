@@ -24,21 +24,39 @@ export const cursorToString = (cursor: string) => {
  * @param  {Node} node
  * @returns string
  */
-export const nodeToEdge = <TNodeData>(node: Node<TNodeData>): { node: Node<TNodeData>; cursor: string } => {
+export const nodeToEdge = <TNodeData>(
+  node: Node<TNodeData & { cursor: number }>,
+): { node: TNodeData; cursor: string } => {
+  const { cursor } = node;
   return {
     node,
-    cursor: stringToCursor(String(node.cursor)),
+    cursor: stringToCursor(cursor.toString()),
   };
 };
 
-export const nodesListToEdges = <T>(nodeList: Node<T>[]) => {
-  return nodeList.map(node => nodeToEdge<T>(node));
-};
+/**
+ * GraphQL Cursor connection
+ * @see https://facebook.github.io/relay/graphql/connections.htm
+ */
+export interface ICursorConnection<TNodeData> {
+  edges: Array<{
+    node: TNodeData;
+    cursor: string;
+  }>;
+  pageInfo: IPageInfo;
+  totalCount: number;
+}
 
-const buildCursorConnection = <T>(props: IProps<T>): ICursorConnection<T> => {
+interface ICursorConnectionProps<TNodeData> {
+  totalCount: number;
+  limit: number;
+  nodes: Array<TNodeData & { cursor: number }>;
+}
+
+const buildCursorConnection = <TNodeData>(props: ICursorConnectionProps<TNodeData>): ICursorConnection<TNodeData> => {
   const { nodes, totalCount } = props;
 
-  const cursor = {
+  return {
     totalCount,
     pageInfo: {
       startCursor: nodes.length ? stringToCursor(String(nodes[0].cursor)) : undefined,
@@ -46,10 +64,8 @@ const buildCursorConnection = <T>(props: IProps<T>): ICursorConnection<T> => {
       hasPreviousPage: false,
       hasNextPage: false,
     },
-    edges: nodesListToEdges<T>(nodes),
+    edges: nodes.map(node => nodeToEdge<TNodeData>(node)),
   };
-
-  return cursor;
 };
 
 const buildQueryFilter = <TFilter extends TFilterDefaults = TFilterDefaults, TArgs extends TArgsDefaults = {}>(
@@ -87,22 +103,6 @@ const buildQueryFilter = <TFilter extends TFilterDefaults = TFilterDefaults, TAr
   return filter;
 };
 
-interface IProps<T> {
-  totalCount: number;
-  limit: number;
-  nodes: Node<T>[];
-}
-
-/**
- * GraphQL Cursor connection
- * @see https://facebook.github.io/relay/graphql/connections.htm
- */
-export interface ICursorConnection<TNode> {
-  edges: Edge<TNode>[];
-  pageInfo: IPageInfo;
-  totalCount: number;
-}
-
 /**
  * GraphQL PageInfo
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-undefined.PageInfo
@@ -118,20 +118,20 @@ export interface IPageInfo {
  * GraphQL Edge type
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-Edge-Types
  */
-export interface Edge<TNode> {
+export interface Edge<TNodeData> {
+  node: TNodeData;
   cursor: string;
-  node: TNode;
 }
 
 /**
  * GraphQL Node type
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-Node
  */
-export type Node<TNodeData> = TNodeData & { cursor: string };
+export type Node<TNodeData> = TNodeData;
 
-export interface IListResponse<TNode> {
+export interface IListResponse<TNodeData> {
   totalCount: number;
-  nodes: TNode[];
+  nodes: Node<TNodeData>[];
   limit: number;
 }
 
