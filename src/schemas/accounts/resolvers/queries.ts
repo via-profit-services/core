@@ -1,7 +1,7 @@
 import { IResolverObject } from 'graphql-tools';
 import { IContext } from '../../../app';
 import { Authentificator, IAccountsFilter, OrderRange, AccountStatus } from '../../../authentificator';
-import { buildCursorBundle, cursorToString } from '../../../utils/generateCursorBundle';
+import { buildCursorConnection, cursorToString } from '../../../utils/generateCursorBundle';
 
 export const AccountsQueries: IResolverObject<any, IContext, IListArgs> = {
   list: async (_, args, context) => {
@@ -39,7 +39,7 @@ export const AccountsQueries: IResolverObject<any, IContext, IListArgs> = {
     const accountsList = await authentificator.getAccounts(filter);
     const { totalCount, nodes } = accountsList;
 
-    const res = buildCursorBundle({
+    const res = buildCursorConnection({
       nodes,
       totalCount,
       limit: filter.limit,
