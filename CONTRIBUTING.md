@@ -51,7 +51,6 @@ LOG=./log
 GQL_ENDPOINT=/graphql
 GQL_SUBSCRIPTIONSENDPOINT=/subscriptions
 
-DB_CLIENT=pg
 DB_HOST= <-- Хост базы данных
 DB_USER= <-- Имя пользователя базы данных
 DB_NAME= <-- Название базы данных

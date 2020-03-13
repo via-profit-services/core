@@ -1,0 +1,19 @@
+{
+  "schemaPath": "schema.graphql",
+  "extensions": {
+    "endpoints": {
+      "development": {
+        "url": "https://localhost:${env:PORT}${env:GQL_ENDPOINT}",
+        "headers": {
+          "Authorization": "Bearer ${env:AUTH_TOKEN}"
+        },
+        "subscription": {
+          "url": "ws://localhost:${env:PORT}${env:GQL_SUBSCRIPTIONSENDPOINT}",
+          "connectionParams": {
+            "Token": "${env:AUTH_TOKEN}"
+          }
+        }
+      }
+    }
+  }
+}

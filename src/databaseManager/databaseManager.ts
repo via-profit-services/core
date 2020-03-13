@@ -1,12 +1,38 @@
 import { performance } from 'perf_hooks';
-import knex from 'knex';
+import knex, { PgConnectionConfig, MigratorConfig, SeedsConfig } from 'knex';
 import { ILoggerCollection, ServerError } from '../logger';
 
-const knexProvider = (config: IConfig) => {
-  const { database, logger } = config;
+const CHARSET = 'UTF8';
+const CLIENT = 'pg';
+
+const knexProvider = (config: IDBConfig) => {
+  const { connection, logger, timezone } = config;
   const times: { [key: string]: any } = {};
   let count = 0;
-  const instance = knex(database);
+  const instance = knex({
+    client: CLIENT,
+    connection,
+    pool: {
+      afterCreate: (conn: any, done: Function) => {
+        conn.query(
+          `
+            SET TIMEZONE = '${timezone}';
+            SET CLIENT_ENCODING = ${CHARSET};
+          `,
+          (err: any) => {
+            if (err) {
+              logger.sql.debug('Connection error', { err });
+            } else {
+              logger.sql.debug(`The TIMEZONE was set to "${timezone}"`);
+              logger.sql.debug(`The charset was set to "${CHARSET}"`);
+            }
+
+            done(err, conn);
+          },
+        );
+      },
+    },
+  });
 
   instance
     .on('query', query => {
@@ -50,10 +76,12 @@ const knexProvider = (config: IConfig) => {
 export default knexProvider;
 export { knexProvider };
 
-export type DBConfig = knex.Config;
 export type KnexInstance = knex;
 
-export interface IConfig {
+export interface IDBConfig {
   logger: ILoggerCollection;
-  database: DBConfig;
+  connection: PgConnectionConfig;
+  timezone: string;
+  migrations?: MigratorConfig;
+  seeds?: SeedsConfig;
 }

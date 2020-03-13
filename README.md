@@ -1,13 +1,17 @@
 # Via Profit services / Core
 
+
 ![via-profit-services-cover](./assets/via-profit-services-cover.png)
 
 > Via Profit services / **Core** - это основной пакет `via-profit-services` предоставляющий [GraphQL](https://graphql.org/)-сервер и сервер аутентификации. Пакет осуществляет обвязку между всеми имеющимися модулями данной системы и реализует собой приложение.
+
 
 ## Содержание
 
  - [Установка и настройка](#setup)
  - [Как использовать](#how-to-use)
+ - [Параметры](#options)
+ - [Контекст](#context)
  - [Логгер](#logger)
  - [Error handlers (исключения)](#error-handlers)
  - [Contributing](./CONTRIBUTING.md)
@@ -57,7 +61,6 @@ LOG=./log
 GQL_ENDPOINT=/graphql
 GQL_SUBSCRIPTIONSENDPOINT=/subscriptions
 
-DB_CLIENT=pg
 DB_HOST= <-- Хост базы данных
 DB_USER= <-- Имя пользователя базы данных
 DB_NAME= <-- Название базы данных
@@ -97,7 +100,7 @@ import fs from 'fs';
 
 // configure main logger
 const logger = configureLogger({
-  logDir: 'log', // you should pass the path relative to the project root
+  logDir: path.resolve(__dirname, './log'), // you should pass the path relative to the project root
 });
 
 // create application
@@ -117,6 +120,23 @@ const app = new App({
 app.bootstrap();
 
 ```
+
+## <a name="options"></a> Параметры
+
+Список поддерживаемых опций:
+
+| Параметр | Тип | Описание |
+|:---------|:---------|:---------|
+| `port`   | `number` | Номер порта на котором должен запуститься сервер |
+| `endpoint`   | `string` | endpoint graphql сервера, например, `/graphql` |
+| `subscriptionsEndpoint`   | `string` | endpoint graphql сервера subscriptions, например, `/subscriptions` |
+
+TODO: Дополнить описание параметров
+
+## <a name="context"></a> Контекст
+
+TODO: Дополнить описание контекста
+
 
 ## <a name="logger"></a> Логгер
 

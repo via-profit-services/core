@@ -12,7 +12,7 @@ import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { IJwtConfig } from '../authentificator/authentificator';
 import { authentificatorMiddleware } from '../authentificator/authentificatorMiddleware';
-import { knexProvider, DBConfig, KnexInstance } from '../databaseManager';
+import { knexProvider, IDBConfig, KnexInstance } from '../databaseManager';
 import { errorHandlerMiddleware, requestHandlerMiddleware, ILoggerCollection } from '../logger';
 import { accountsSchema } from '../schemas';
 import { configureTokens } from '../utils/configureTokens';
@@ -113,7 +113,10 @@ class App {
     const schema = mergeSchemas({ schemas: [...schemas, accountsSchema] });
 
     // define knex instance
-    const knex = knexProvider({ logger, database });
+    const knex = knexProvider({
+      logger,
+      ...database,
+    });
 
     // define EventEmittre instance
     const emitter = new EventEmitter();
@@ -216,7 +219,7 @@ export interface IInitProps {
   timezone?: string;
   schemas: GraphQLSchema[];
   jwt: IJwtConfig;
-  database: DBConfig;
+  database: Omit<IDBConfig, 'logger'>;
   logger: ILoggerCollection;
   routes?: {
     auth?: string;
