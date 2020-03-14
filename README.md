@@ -185,6 +185,8 @@ export const MyQueries: IResolverObject<any, IContext> = {
 
 ## <a name="options"></a> Параметры
 
+Параметры определяются интерфейсом <IInitProps>.
+
 Список поддерживаемых опций:
 
 | Параметр | Тип | Описание |
@@ -192,12 +194,40 @@ export const MyQueries: IResolverObject<any, IContext> = {
 | `port`   | `number` | Номер порта на котором должен запуститься сервер |
 | `endpoint`   | `string` | endpoint graphql сервера, например, `/graphql` |
 | `subscriptionsEndpoint`   | `string` | endpoint graphql сервера subscriptions, например, `/subscriptions` |
+| `timezone` | `string` | Временная зона. Значение будет добавлено в контекст |
+| `database` | `Knex.Config` | Объект параметров для работы с базой данных. Соответствует типу `Knex.Config`, но  |
+| `database.connection` | `Knex.PgConnectionConfig` | Объект подключения к базе данных. Соответствует конфигурации `Postgresql` (см `Knex.PgConnectionConfig`) |
+| `database.connection.database` | `string` | Название базы данных |
+| `database.connection.host` | `string` | Хост базы данных |
+| `database.connection.user` | `string` | Имя пользователя базы данных |
+| `database.connection.password` | `string` | Пароль подключения к базе данных |
+| `database.timezone` | `string` | Временная зона базы данных. Данное значение будет передано в запросе `SET TIMEZONE = ...` при установлении подключения к базе |
+| `database.migrations` | `Knex.MigratorConfig` | Объект настроек миграций |
+| `database.migrations.directory` | `string` | Путь до директории с миграциями |
+| `database.migrations.tableName` | `string` | Название служебной таблицы миграций Knex |
+| `database.migrations.extension` | `enum` | Расшерение файлов миграций (`ts` или `js`) |
+| `database.seeds` | `Knex.SeedsConfig` | Объект настроек сидов |
+| `database.seeds.directory` | `string` | Путь до директории с сидами |
+| `database.seeds.extension` | `enum` | Расшерение файлов сидов (`ts` или `js`) |
+| `jwt` | `IJwtConfig` | Объект настроек [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken). Значение будет добавлено в контекст |
+| `jwt.accessTokenExpiresIn` | `number` | Время в формате Unix Time, определяющее момент, когда токен станет не валидным (время жизни Access токена в секундах) |
+| `jwt.algorithm` | `enum` |  Алгоритм подписи JWT |
+| `jwt.issuer` | `string` | Чувствительная к регистру строка или URI, которая является уникальным идентификатором стороны, генерирующей токен |
+| `jwt.privateKey` | `string` | Путь до файла приватного ключа |
+| `jwt.publicKey` | `string` | Путь до файла с публичным ключом |
+| `jwt.refreshTokenExpiresIn` | `number` | Время в формате Unix Time, определяющее момент, когда токен станет не валидным (время жизни Refresh токена в секундах)  |
+| `logger` | `ILoggerConfig` | Объект настроек логгера |
+| `logger.logDir` | `string` | Путь расположения директории логов |
+| `logger.logDir.loggers` | `{ [key: string]: Logger }` | Объект произвольных логгеров, котрые будут доступны в контексте |
+| `schemas` | `graphql.GraphQLSchema[]` | Массив GraphQL схем |
+| `serverOptions` | `https.ServerOptions` | Объект настроек `https` сервера |
+| `serverOptions.key` | `string` | Путь до файла приватного ключа сертификата домена (SSL) |
+| `serverOptions.cert` | `string` | Путь до файла сертификата домена (SSL) |
 
-TODO: Дополнить описание параметров
 
 ## <a name="context"></a> Контекст
 
-Объект контекст передается в соответствии со спецификацией GraphQL и доступен во всех резолверов.
+Объект контекст передается в соответствии со спецификацией GraphQL и доступен из всех резолверов.
 
 Контекст имеет тип `<IContext>`:
 ```ts
