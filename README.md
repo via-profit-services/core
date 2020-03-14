@@ -13,6 +13,7 @@
  - [Параметры](#options)
  - [Контекст](#context)
  - [Логгер](#logger)
+ - [Типы и интерфейсы](#types)
  - [Error handlers (исключения)](#error-handlers)
  - [Contributing](./CONTRIBUTING.md)
 
@@ -89,21 +90,21 @@ TIMEZONE=Asia/Yekaterinburg
 
 ## <a name="how-to-use"></a> Как использовать
 
-Для создания сервера необходимо сконфигурировать [логгер](#logger), создать инстанс приложения и запустить `bootstrap` метод.
+### Сервер
 
-При запуске в `development` режиме в консоли будет отображена информация для отладки
+Для создания сервера необходимо сконфигурировать [логгер](#logger), создать инстанс приложения и запустить `bootstrap` метод.
 
 ```ts
 import { App, configureLogger } from '@via-profit-services/core';
 import myGraphQLSchema from './my-graphql-schema';
 import fs from 'fs';
 
-// configure main logger
+// Конфигурируем логгер
 const logger = configureLogger({
-  logDir: path.resolve(__dirname, './log'), // you should pass the path relative to the project root
+  logDir: path.resolve(__dirname, './log'), // Необходимо передать относительный путь от корня проекта
 });
 
-// create application
+// Создание объекта приложения
 const app = new App({
   schemas: [myGraphQLSchema],
   logger,
@@ -116,12 +117,75 @@ const app = new App({
   ...
 });
 
-// autostart server
+// Запуск сервера
 app.bootstrap();
 
 ```
 
+### `buildQueryFilter`
+
+Принимает объект `filter`, принимаемый резолвером и возвращает объект `filter`, готовый для передачи в любую модель/сервис для выборки списка каких-либо данных, например:
+
+```ts
+import { IContext, buildQueryFilter, IDirectionRange } from '@via-profit-services/core';
+import { IResolverObject } from 'graphql-tools';
+import MyService from './my-service';
+
+interface MyFilter {
+  limit: number;
+  after?: number;
+  before?: number;
+  orderBy: [
+    {
+      column: string;
+      order: IDirectionRange;
+    },
+  ];
+}
+
+export const MyQueries: IResolverObject<any, IContext> = {
+  list: async (obj, args, context) => {
+    const { first, last, after, before, orderBy } = args;
+
+    // Преобразование входных данных в фильтр для модели сервиса
+    const filter = buildQueryFilter<MyFilter>({ first, last, after, before, orderBy });
+
+    // Инициализация какого-либо сервиса
+    const service = new MyService({ context });
+
+    // Вызов метода сервиса, который принимает преобразованный фильтр
+    // Метод сервиса должен возвращать объект типа <IListResponse>:
+    // interface IListResponse<TNodeData> {
+    //   totalCount: number;
+    //   nodes: Node<TNodeData>[]; // <-- массив объектов, содержащих ключ cursor типа number
+    //   limit: number;
+    // }
+    const { totalCount, nodes, limit } = await service.getListOfMyData(filter);
+
+    // Преобразовываем полученные данные в GraphQL Cursor Connections (см. след пример)
+    const connection = buildCursorConnection({ totalCount, nodes, limit });
+
+    return connection;
+  },
+};
+```
+
+### `buildCursorConnection`
+
+Принимает в качестве единственного аргумента объект типа `<IListResponse>` и возвращает объект типа `<ICursorConnectionProps>`, который соответствует возвращаемому значению [GraphQL Cursor Connections](https://facebook.github.io/relay/graphql/connections.htm) (см. предыдущий пример):
+
+### `stringToCursor`
+
+Принимает в качестве единственного аргумента строку или число и возвращает `base64` закодированную строку. Применяется для кодирования курсоров.
+
+### `cursorToString`
+
+Принимает в качестве единственного аргумента `base64` строку, и возвращает ее декодированное значение. Применяется для декодирования курсоров.
+
+
 ## <a name="options"></a> Параметры
+
+Параметры определяются интерфейсом <IInitProps>.
 
 Список поддерживаемых опций:
 
@@ -130,13 +194,52 @@ app.bootstrap();
 | `port`   | `number` | Номер порта на котором должен запуститься сервер |
 | `endpoint`   | `string` | endpoint graphql сервера, например, `/graphql` |
 | `subscriptionsEndpoint`   | `string` | endpoint graphql сервера subscriptions, например, `/subscriptions` |
+| `timezone` | `string` | Временная зона. Значение будет добавлено в контекст |
+| `database` | `Knex.Config` | Объект параметров для работы с базой данных. Соответствует типу `Knex.Config`, но  |
+| `database.connection` | `Knex.PgConnectionConfig` | Объект подключения к базе данных. Соответствует конфигурации `Postgresql` (см `Knex.PgConnectionConfig`) |
+| `database.connection.database` | `string` | Название базы данных |
+| `database.connection.host` | `string` | Хост базы данных |
+| `database.connection.user` | `string` | Имя пользователя базы данных |
+| `database.connection.password` | `string` | Пароль подключения к базе данных |
+| `database.timezone` | `string` | Временная зона базы данных. Данное значение будет передано в запросе `SET TIMEZONE = ...` при установлении подключения к базе |
+| `database.migrations` | `Knex.MigratorConfig` | Объект настроек миграций |
+| `database.migrations.directory` | `string` | Путь до директории с миграциями |
+| `database.migrations.tableName` | `string` | Название служебной таблицы миграций Knex |
+| `database.migrations.extension` | `enum` | Расшерение файлов миграций (`ts` или `js`) |
+| `database.seeds` | `Knex.SeedsConfig` | Объект настроек сидов |
+| `database.seeds.directory` | `string` | Путь до директории с сидами |
+| `database.seeds.extension` | `enum` | Расшерение файлов сидов (`ts` или `js`) |
+| `jwt` | `IJwtConfig` | Объект настроек [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken). Значение будет добавлено в контекст |
+| `jwt.accessTokenExpiresIn` | `number` | Время в формате Unix Time, определяющее момент, когда токен станет не валидным (время жизни Access токена в секундах) |
+| `jwt.algorithm` | `enum` |  Алгоритм подписи JWT |
+| `jwt.issuer` | `string` | Чувствительная к регистру строка или URI, которая является уникальным идентификатором стороны, генерирующей токен |
+| `jwt.privateKey` | `string` | Путь до файла приватного ключа |
+| `jwt.publicKey` | `string` | Путь до файла с публичным ключом |
+| `jwt.refreshTokenExpiresIn` | `number` | Время в формате Unix Time, определяющее момент, когда токен станет не валидным (время жизни Refresh токена в секундах)  |
+| `logger` | `ILoggerConfig` | Объект настроек логгера |
+| `logger.logDir` | `string` | Путь расположения директории логов |
+| `logger.logDir.loggers` | `{ [key: string]: Logger }` | Объект произвольных логгеров, котрые будут доступны в контексте |
+| `schemas` | `graphql.GraphQLSchema[]` | Массив GraphQL схем |
+| `serverOptions` | `https.ServerOptions` | Объект настроек `https` сервера |
+| `serverOptions.key` | `string` | Путь до файла приватного ключа сертификата домена (SSL) |
+| `serverOptions.cert` | `string` | Путь до файла сертификата домена (SSL) |
 
-TODO: Дополнить описание параметров
 
 ## <a name="context"></a> Контекст
 
-TODO: Дополнить описание контекста
+Объект контекст передается в соответствии со спецификацией GraphQL и доступен из всех резолверов.
 
+Контекст имеет тип `<IContext>`:
+```ts
+interface IContext {
+  endpoint: string; // GraphQL endpoint
+  jwt: IJwtConfig; // Параметры JSON web token
+  knex: KnexInstance; // Инстанс Knex
+  logger: ILoggerCollection; // Объект логгеров
+  emitter: EventEmitter; // Стандартный nodejs EventEmitter
+  timezone: string; // Текущая временная зона
+}
+```
 
 ## <a name="logger"></a> Логгер
 
@@ -193,6 +296,50 @@ const logger = configureLogger({
 });
 
 ```
+
+## <a name="types"></a> Типы и интерфейсы
+
+```ts
+// ENUM, который применяется в сортировках OrderBy
+enum IDirectionRange {
+  ASC = 'ASC',
+  DESC = 'DESC',
+}
+
+// GraphQL Cursor Connection (см https://facebook.github.io/relay/graphql/connections.htm)
+interface ICursorConnection<TNodeData> {
+  edges: Array<{
+    node: TNodeData;
+    cursor: string;
+  }>;
+  pageInfo: IPageInfo;
+  totalCount: number;
+}
+
+// GraphQL PageInfo (см https://facebook.github.io/relay/graphql/connections.htm#sec-undefined.PageInfo)
+interface IPageInfo {
+  startCursor?: string;
+  endCursor?: string;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}
+
+// GraphQL Edge (см https://facebook.github.io/relay/graphql/connections.htm#sec-Edge-Types)
+interface Edge<TNodeData> {
+  node: TNodeData;
+  cursor: string;
+}
+
+// Интерфейс ожидаемый от метода модели/сервиса при выборке списка данных содержащих постраничную пагинацию
+interface IListResponse<TNodeData> {
+  totalCount: number;
+  nodes: Node<TNodeData>[];
+  limit: number;
+}
+
+```
+
+
 
 ## <a name="error-handlers"></a> Error handlers (исключения)
 
