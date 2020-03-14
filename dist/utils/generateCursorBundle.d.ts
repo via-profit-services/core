@@ -6,7 +6,7 @@ export declare enum IDirectionRange {
  * Convert string to cursor base64 string
  * @param  {string} str
  */
-export declare const stringToCursor: (str: string) => string;
+export declare const stringToCursor: (str: string | number) => string;
 /**
  * Convert base64 cursor to string
  * @param  {string} str
