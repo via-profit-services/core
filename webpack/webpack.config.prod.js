@@ -1,5 +1,6 @@
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 const RemovePlugin = require('remove-files-webpack-plugin');
 const { ProgressPlugin, IgnorePlugin } = require('webpack');
 const merge = require('webpack-merge');
@@ -19,6 +20,7 @@ module.exports = merge(baseConfig, {
   mode: 'production',
   plugins: [
     new ProgressPlugin(),
+
     new CleanWebpackPlugin({
       verbose: true,
     }),
@@ -30,6 +32,13 @@ module.exports = merge(baseConfig, {
     new IgnorePlugin(/m[sy]sql2?|oracle(db)?|sqlite3/),
     new IgnorePlugin(/pg-native/),
     new IgnorePlugin(/pg-query-stream/),
+    new CopyPlugin([
+      {
+        from: 'src/database/migrations/*',
+        to: 'database/migrations/[name].[ext]',
+        toType: 'template',
+      },
+    ]),
   ],
 
   externals: [nodeExternals()],
