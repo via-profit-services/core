@@ -1,16 +1,16 @@
 const path = require('path');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
-const RemovePlugin = require('remove-files-webpack-plugin');
-const { ProgressPlugin, IgnorePlugin } = require('webpack');
+const FileManagerPlugin = require('filemanager-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
+const { ProgressPlugin, IgnorePlugin, BannerPlugin } = require('webpack');
 const merge = require('webpack-merge');
 const nodeExternals = require('webpack-node-externals');
+const WebpackShellPlugin = require('webpack-shell-plugin');
 const baseConfig = require('./webpack.config.base');
 
 module.exports = merge(baseConfig, {
   entry: {
     index: path.resolve(__dirname, '../src/index.ts'),
-    // playground: path.resolve(__dirname, '../src/playground/index.ts'),
+    'bin/cli': path.resolve(__dirname, '../src/bin/cli.ts'),
   },
   output: {
     path: path.join(__dirname, '../dist/'),
@@ -18,27 +18,44 @@ module.exports = merge(baseConfig, {
     libraryTarget: 'commonjs2',
   },
   mode: 'production',
+  optimization: {
+    minimizer: [
+      new TerserPlugin({
+        exclude: [/cli\.js/],
+      }),
+    ],
+  },
   plugins: [
     new ProgressPlugin(),
-
-    new CleanWebpackPlugin({
-      verbose: true,
-    }),
-    new RemovePlugin({
-      after: {
-        include: [path.join(__dirname, '../dist/playground')],
-      },
-    }),
     new IgnorePlugin(/m[sy]sql2?|oracle(db)?|sqlite3/),
     new IgnorePlugin(/pg-native/),
     new IgnorePlugin(/pg-query-stream/),
-    new CopyPlugin([
-      {
-        from: 'src/database/migrations/*',
-        to: 'database/migrations/[name].[ext]',
-        toType: 'template',
+    new BannerPlugin({
+      banner: '#!/usr/bin/env node\n/* eslint-disable */',
+      raw: true,
+      test: /cli\.js/,
+    }),
+    new FileManagerPlugin({
+      onStart: {
+        delete: ['./dist'],
       },
-    ]),
+      onEnd: {
+        copy: [
+          {
+            source: './src/database/migrations/*',
+            destination: './dist/database/migrations/',
+          },
+          {
+            source: './src/database/seeds/*',
+            destination: './dist/database/seeds/',
+          },
+        ],
+        delete: ['./dist/playground'],
+      },
+    }),
+    new WebpackShellPlugin({
+      onBuildEnd: ['chmod +x ./dist/bin/cli.js'],
+    }),
   ],
 
   externals: [nodeExternals()],
