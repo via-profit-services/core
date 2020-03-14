@@ -7,8 +7,8 @@ export enum IDirectionRange {
  * Convert string to cursor base64 string
  * @param  {string} str
  */
-export const stringToCursor = (str: string) => {
-  return Buffer.from(str, 'binary').toString('base64');
+export const stringToCursor = (str: string | number) => {
+  return Buffer.from(String(str), 'binary').toString('base64');
 };
 
 /**
