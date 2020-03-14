@@ -357,4 +357,6 @@ interface IListResponse<TNodeData> {
 
 ```ts
 import { BadRequestError } from '@via-profit-services/core';
+
+throw new BadRequestError('Some Error');
 ```
