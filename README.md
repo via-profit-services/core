@@ -86,7 +86,7 @@ SSL_CERT=/home/me/.local/share/mkcert/localhost.pem
 TIMEZONE=Asia/Yekaterinburg
 ```
 
-**Замечание:** Старайтесь не использовать `process.cwd()` там, где это пересекается с `knex`, т.к. knex переопределяет рабоичю директорию в некоторых случаях, например, при использовании миграций
+**Замечание:** Старайтесь не использовать `process.cwd()` там, где это пересекается с `knex`, т.к. knex переопределяет рабочию директорию в некоторых случаях, например, при использовании миграций
 
 ## <a name="how-to-use"></a> Как использовать
 
@@ -218,7 +218,7 @@ export const MyQueries: IResolverObject<any, IContext> = {
 | `jwt.refreshTokenExpiresIn` | `number` | Время в формате Unix Time, определяющее момент, когда токен станет не валидным (время жизни Refresh токена в секундах)  |
 | `logger` | `ILoggerConfig` | Объект настроек логгера |
 | `logger.logDir` | `string` | Путь расположения директории логов |
-| `logger.logDir.loggers` | `{ [key: string]: Logger }` | Объект произвольных логгеров, котрые будут доступны в контексте |
+| `logger.logDir.loggers` | `{ [key: string]: Logger }` | Объект произвольных логгеров, которые будут доступны в контексте |
 | `schemas` | `graphql.GraphQLSchema[]` | Массив GraphQL схем |
 | `serverOptions` | `https.ServerOptions` | Объект настроек `https` сервера |
 | `serverOptions.key` | `string` | Путь до файла приватного ключа сертификата домена (SSL) |
