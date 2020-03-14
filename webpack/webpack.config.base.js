@@ -26,6 +26,9 @@ module.exports = {
               },
             },
           },
+          {
+            loader: 'shebang-loader',
+          },
         ],
       },
       {
