@@ -103,7 +103,7 @@ const buildQueryFilter = <TArgs extends TArgsDefaults = {}>(args: TArgs): IKnexF
     orderBy: [
       {
         column: 'cursor',
-        order: after !== undefined ? IDirectionRange.ASC : IDirectionRange.DESC,
+        order: IDirectionRange.ASC,
       },
     ],
     where: {},
@@ -118,11 +118,11 @@ const buildQueryFilter = <TArgs extends TArgsDefaults = {}>(args: TArgs): IKnexF
 
   filter.where = builder => {
     if (after !== undefined) {
-      builder.where('cursor', '>', Number(after));
+      builder.where('cursor', '>', Number(cursorToString(after)));
     }
 
     if (before !== undefined) {
-      builder.where('cursor', '<', Number(before));
+      builder.where('cursor', '<', Number(cursorToString(before)));
     }
 
     if (where !== undefined) {

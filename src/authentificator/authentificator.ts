@@ -285,7 +285,7 @@ export class Authentificator {
       .orderBy(orderBy)
       .from('accounts')
       .then(nodes => {
-        const { totalCount } = nodes[0];
+        const { totalCount } = nodes.length ? nodes[0] : { totalCount: 0 };
         return {
           totalCount,
           nodes: nodes.map(node => {
