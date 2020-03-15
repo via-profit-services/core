@@ -1,3 +1,5 @@
+import * as Knex from 'knex';
+
 export enum IDirectionRange {
   ASC = 'ASC',
   DESC = 'DESC',
@@ -68,10 +70,32 @@ const buildCursorConnection = <TNodeData>(props: ICursorConnectionProps<TNodeDat
   };
 };
 
-const buildQueryFilter = <TFilter extends TFilterDefaults = TFilterDefaults, TArgs extends TArgsDefaults = {}>(
-  args: TArgs,
-): TFilter & TFilterDefaults => {
-  const { first, last, after, before, orderBy } = args;
+export interface IGraphQLFilterDefaults {
+  first?: number;
+  last?: number;
+  after?: string;
+  before?: string;
+  limit?: number;
+  orderBy?: Array<{
+    field: string;
+    direction: IDirectionRange;
+  }>;
+  where: {
+    [key: string]: string;
+  };
+}
+
+export interface IKnexFilterDefaults {
+  where: (builder: Knex.QueryBuilder) => Knex.QueryBuilder;
+  limit: number;
+  orderBy?: Array<{
+    column: string;
+    order: IDirectionRange;
+  }>;
+}
+
+const buildQueryFilter = <TArgs extends TArgsDefaults = {}>(args: TArgs): IKnexFilterDefaults => {
+  const { first, last, after, before, orderBy, where } = args;
 
   // combine filter
   const filter = {
@@ -79,19 +103,11 @@ const buildQueryFilter = <TFilter extends TFilterDefaults = TFilterDefaults, TAr
     orderBy: [
       {
         column: 'cursor',
-        order: after !== undefined ? IDirectionRange.ASC : IDirectionRange.DESC,
+        order: IDirectionRange.ASC,
       },
     ],
     where: {},
-  } as TFilter;
-
-  if (after !== undefined) {
-    filter.after = Number(cursorToString(after));
-  }
-
-  if (before !== undefined) {
-    filter.before = Number(cursorToString(before));
-  }
+  } as IKnexFilterDefaults;
 
   if (typeof orderBy === 'object') {
     filter.orderBy.unshift({
@@ -99,6 +115,22 @@ const buildQueryFilter = <TFilter extends TFilterDefaults = TFilterDefaults, TAr
       order: orderBy.direction,
     });
   }
+
+  filter.where = builder => {
+    if (after !== undefined) {
+      builder.where('cursor', '>', Number(cursorToString(after)));
+    }
+
+    if (before !== undefined) {
+      builder.where('cursor', '<', Number(cursorToString(before)));
+    }
+
+    if (where !== undefined) {
+      builder.where(where);
+    }
+
+    return builder;
+  };
 
   return filter;
 };
@@ -144,17 +176,7 @@ interface TArgsDefaults {
     field: string;
     direction: IDirectionRange;
   };
-}
-
-interface TFilterDefaults {
-  after?: number;
-  before?: number;
-  limit?: number;
-  orderBy?: Array<{
-    column: string;
-    order: IDirectionRange;
-  }>;
-  where?: {};
+  where?: Knex.Where;
 }
 
 export { buildCursorConnection, buildQueryFilter };
