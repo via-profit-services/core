@@ -15,6 +15,7 @@
  - [Логгер](#logger)
  - [Типы и интерфейсы](#types)
  - [Error handlers (исключения)](#error-handlers)
+ - [CLI](#cli)
  - [Contributing](./CONTRIBUTING.md)
 
 ## <a name="setup"></a> Установка и настройка
@@ -360,3 +361,13 @@ import { BadRequestError } from '@via-profit-services/core';
 
 throw new BadRequestError('Some Error');
 ```
+
+## <a name="cli"></a> CLI
+
+Пакет имеет `cli` интерфейс `via-profit-core`
+
+Список команд:
+
+| Команда | Параметры | Описание | Пример |
+|:--------|:----------|:---------|:-------|
+| `get-migrations` | `--migrations` (alis `-m`) - Копировать миграции<br>`--seeds` (alis `-s`) - копировать сиды | Осуществляет поиск файлов миграций во всех пакетах из `node_modules` и копирует их в директорию миграций текущего проекта | `via-profit-core get-migrations -ms` |

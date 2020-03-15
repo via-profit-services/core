@@ -89,11 +89,113 @@ module.exports =
 /************************************************************************/
 /******/ ({
 
-/***/ 56:
+/***/ 4:
 /***/ (function(module, exports) {
 
-console.log('OK');
+module.exports = require("chalk");
 
+/***/ }),
+
+/***/ 56:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+/* eslint-disable import/no-extraneous-dependencies */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const fs_1 = __importDefault(__webpack_require__(6));
+const path_1 = __importDefault(__webpack_require__(57));
+const chalk_1 = __importDefault(__webpack_require__(4));
+const dotenv_1 = __importDefault(__webpack_require__(58));
+const glob_1 = __importDefault(__webpack_require__(59));
+const yargs_1 = __importDefault(__webpack_require__(60));
+const getMigrations = (params) => {
+    const dotenvFile = path_1.default.resolve(process.cwd(), '.env');
+    const MIGRATIONS_DIR_PATTERN = 'migrations';
+    const SEEDS_DIT_PATTERN = 'seeds';
+    const searchPathPattern = `${process.cwd()}/node_modules/@via-profit-services/*/dist/database/@(${MIGRATIONS_DIR_PATTERN}|${SEEDS_DIT_PATTERN})/*.ts`;
+    if (fs_1.default.existsSync(dotenvFile)) {
+        const dotEnvData = dotenv_1.default.config({ path: dotenvFile }).parsed;
+        if (dotEnvData.DB_MIGRATIONS_DIRECTORY !== undefined || dotEnvData.DB_SEEDS_DIRECTORY !== undefined) {
+            glob_1.default(searchPathPattern, (err, files) => {
+                files.forEach(filename => {
+                    if (!filename.match(/\.d\.ts$/)) {
+                        const dir = path_1.default.basename(path_1.default.dirname(filename));
+                        const migrationsDestPath = path_1.default.resolve(process.cwd(), dotEnvData.DB_MIGRATIONS_DIRECTORY);
+                        const seedsDestPath = path_1.default.resolve(process.cwd(), dotEnvData.DB_SEEDS_DIRECTORY);
+                        // copy migrations
+                        if (params.migrations && dir === MIGRATIONS_DIR_PATTERN && fs_1.default.existsSync(migrationsDestPath)) {
+                            fs_1.default.copyFileSync(filename, migrationsDestPath);
+                            console.log(`${chalk_1.default.yellow('Copy migration file')} from ${chalk_1.default.cyan(filename)}`);
+                        }
+                        // copy seeds
+                        if (params.seeds && dir === SEEDS_DIT_PATTERN && fs_1.default.existsSync(seedsDestPath)) {
+                            fs_1.default.copyFileSync(filename, seedsDestPath);
+                            console.log(`${chalk_1.default.yellow('Copy seed file')} from ${chalk_1.default.cyan(filename)}`);
+                        }
+                    }
+                });
+            });
+        }
+    }
+};
+const args = yargs_1.default
+    .command('get-migrations', 'Copy all migration and/or seed files from @via-profit-services modules into your project', () => { }, action => {
+    const { migrations, seeds } = action;
+    getMigrations({ migrations, seeds });
+})
+    .options({
+    migrations: {
+        alias: 'm',
+        type: 'boolean',
+        description: 'Get migration files',
+    },
+    seeds: {
+        alias: 's',
+        type: 'boolean',
+        description: 'Get seed files',
+    },
+}).argv;
+exports.default = args;
+
+
+/***/ }),
+
+/***/ 57:
+/***/ (function(module, exports) {
+
+module.exports = require("path");
+
+/***/ }),
+
+/***/ 58:
+/***/ (function(module, exports) {
+
+module.exports = require("dotenv");
+
+/***/ }),
+
+/***/ 59:
+/***/ (function(module, exports) {
+
+module.exports = require("glob");
+
+/***/ }),
+
+/***/ 6:
+/***/ (function(module, exports) {
+
+module.exports = require("fs");
+
+/***/ }),
+
+/***/ 60:
+/***/ (function(module, exports) {
+
+module.exports = require("yargs");
 
 /***/ })
 
