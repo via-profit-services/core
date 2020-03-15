@@ -29,14 +29,14 @@ const getMigrations = (params: { migrations: boolean; seeds: boolean }) => {
             if (params.migrations && dir === MIGRATIONS_DIR_PATTERN && fs.existsSync(migrationsDestPath)) {
               const destinationFile = path.join(migrationsDestPath, path.basename(filename));
               fs.copyFileSync(filename, destinationFile);
-              console.log(`${chalk.yellow('Copy migration file')} from ${chalk.cyan(filename)}`);
+              console.log(`${chalk.yellow('Copy migration file')} ${chalk.cyan(path.basename(filename))}`);
             }
 
             // copy seeds
             if (params.seeds && dir === SEEDS_DIT_PATTERN && fs.existsSync(seedsDestPath)) {
               const destinationFile = path.join(seedsDestPath, path.basename(filename));
               fs.copyFileSync(filename, destinationFile);
-              console.log(`${chalk.yellow('Copy seed file')} from ${chalk.cyan(filename)}`);
+              console.log(`${chalk.yellow('Copy seed file')} from ${chalk.cyan(path.basename(filename))}`);
             }
           }
         });
