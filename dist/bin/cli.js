@@ -124,8 +124,8 @@ const getMigrations = (params) => {
                 files.forEach(filename => {
                     if (!filename.match(/\.d\.ts$/)) {
                         const dir = path_1.default.basename(path_1.default.dirname(filename));
-                        const migrationsDestPath = path_1.default.resolve(process.cwd(), dotEnvData.DB_MIGRATIONS_DIRECTORY);
-                        const seedsDestPath = path_1.default.resolve(process.cwd(), dotEnvData.DB_SEEDS_DIRECTORY);
+                        const migrationsDestPath = path_1.default.resolve(process.cwd(), dotEnvData.DB_MIGRATIONS_DIRECTORY, '/');
+                        const seedsDestPath = path_1.default.resolve(process.cwd(), dotEnvData.DB_SEEDS_DIRECTORY, '/');
                         // copy migrations
                         if (params.migrations && dir === MIGRATIONS_DIR_PATTERN && fs_1.default.existsSync(migrationsDestPath)) {
                             fs_1.default.copyFileSync(filename, migrationsDestPath);
