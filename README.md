@@ -125,31 +125,30 @@ app.bootstrap();
 
 ### `buildQueryFilter`
 
-Принимает объект `filter`, принимаемый резолвером и возвращает объект `filter`, готовый для передачи в любую модель/сервис для выборки списка каких-либо данных, например:
+Принимает объект входных фильтров согласно спецификации GraphQL и возвращает объект, готовый для передачи в любой сервис для выборки списка каких-либо данных, например:
 
 ```ts
 import { IContext, buildQueryFilter, IDirectionRange } from '@via-profit-services/core';
 import { IResolverObject } from 'graphql-tools';
 import MyService from './my-service';
 
-interface MyFilter {
-  limit: number;
-  after?: number;
-  before?: number;
-  orderBy: [
-    {
-      column: string;
-      order: IDirectionRange;
-    },
-  ];
+interface IListArgs {
+  first?: number;
+  last?: number;
+  after?: string;
+  before?: string;
+  orderBy?: {
+    field: string;
+    direction: IDirectionRange;
+  };
 }
 
-export const MyQueries: IResolverObject<any, IContext> = {
+export const MyQueries: IResolverObject<any, IContext, IListArgs> = {
   list: async (obj, args, context) => {
-    const { first, last, after, before, orderBy } = args;
+    // аргумент args = { first, last, after, before, orderBy } 
 
     // Преобразование входных данных в фильтр для модели сервиса
-    const filter = buildQueryFilter<MyFilter>({ first, last, after, before, orderBy });
+    const queryFilter = buildQueryFilter(args);
 
     // Инициализация какого-либо сервиса
     const service = new MyService({ context });
@@ -161,7 +160,7 @@ export const MyQueries: IResolverObject<any, IContext> = {
     //   nodes: Node<TNodeData>[]; // <-- массив объектов, содержащих ключ cursor типа number
     //   limit: number;
     // }
-    const { totalCount, nodes, limit } = await service.getListOfMyData(filter);
+    const { totalCount, nodes, limit } = await service.getListOfMyData(queryFilter);
 
     // Преобразовываем полученные данные в GraphQL Cursor Connections (см. след пример)
     const connection = buildCursorConnection({ totalCount, nodes, limit });

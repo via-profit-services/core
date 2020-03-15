@@ -5,7 +5,7 @@ import moment from 'moment-timezone';
 import uuidv4 from 'uuid/v4';
 import { IContext } from '../app';
 import { ServerError, UnauthorizedError } from '../logger/errorHandlers';
-import { IListResponse } from '../utils/generateCursorBundle';
+import { IListResponse, IKnexFilterDefaults } from '../utils/generateCursorBundle';
 
 export enum TokenType {
   access = 'access',
@@ -265,10 +265,10 @@ export class Authentificator {
     return resp.status(401).json({ errors });
   }
 
-  public getAccounts(filter: IAccountsFilter): Promise<IListResponse<IAccount>> {
+  public getAccounts(filter: IKnexFilterDefaults): Promise<IListResponse<IAccount>> {
     const { context } = this.props;
     const { knex, timezone } = context;
-    const { limit, orderBy, after, before, where } = filter;
+    const { limit, orderBy, where } = filter;
 
     return knex
       .select<any, Array<IAccount & { totalCount: number }>>(['j.totalCount', 'accounts.*'])
@@ -277,17 +277,7 @@ export class Authentificator {
           .select(['id', knex.raw('count(*) over() as "totalCount"')])
           .orderBy(orderBy)
           .limit(limit)
-          .where(handle => {
-            if (after !== undefined) {
-              handle.where('cursor', '>', Number(after));
-            }
-            if (before !== undefined) {
-              handle.where('cursor', '<', Number(before));
-            }
-            if (where !== undefined) {
-              handle.where(where);
-            }
-          })
+          .where(where)
           .as('j'),
         'j.id',
         'accounts.id',
@@ -332,26 +322,6 @@ export class Authentificator {
 
 interface IProps {
   context: IContext;
-}
-
-export enum OrderRange {
-  asc = 'asc',
-  desc = 'desc',
-}
-
-export interface IAccountsFilter {
-  limit: number;
-  after?: number;
-  before?: number;
-  where?: {
-    status?: AccountStatus;
-  };
-  orderBy: [
-    {
-      column: string;
-      order: OrderRange;
-    },
-  ];
 }
 
 /**
