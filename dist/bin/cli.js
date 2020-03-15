@@ -128,12 +128,12 @@ const getMigrations = (params) => {
                         const seedsDestPath = path_1.default.resolve(process.cwd(), dotEnvData.DB_SEEDS_DIRECTORY, '/');
                         // copy migrations
                         if (params.migrations && dir === MIGRATIONS_DIR_PATTERN && fs_1.default.existsSync(migrationsDestPath)) {
-                            fs_1.default.copyFileSync(filename, migrationsDestPath);
+                            fs_1.default.copyFileSync(filename, path_1.default.resolve(migrationsDestPath, path_1.default.basename(filename)));
                             console.log(`${chalk_1.default.yellow('Copy migration file')} from ${chalk_1.default.cyan(filename)}`);
                         }
                         // copy seeds
                         if (params.seeds && dir === SEEDS_DIT_PATTERN && fs_1.default.existsSync(seedsDestPath)) {
-                            fs_1.default.copyFileSync(filename, seedsDestPath);
+                            fs_1.default.copyFileSync(filename, path_1.default.resolve(seedsDestPath, path_1.default.basename(filename)));
                             console.log(`${chalk_1.default.yellow('Copy seed file')} from ${chalk_1.default.cyan(filename)}`);
                         }
                     }
