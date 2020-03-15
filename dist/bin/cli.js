@@ -129,14 +129,18 @@ const getMigrations = (params) => {
                         // copy migrations
                         if (params.migrations && dir === MIGRATIONS_DIR_PATTERN && fs_1.default.existsSync(migrationsDestPath)) {
                             const destinationFile = path_1.default.join(migrationsDestPath, path_1.default.basename(filename));
-                            fs_1.default.copyFileSync(filename, destinationFile);
-                            console.log(`${chalk_1.default.yellow('Copy migration file')} ${chalk_1.default.cyan(path_1.default.basename(filename))}`);
+                            if (!fs_1.default.existsSync(destinationFile)) {
+                                fs_1.default.copyFileSync(filename, destinationFile);
+                                console.log(`${chalk_1.default.yellow('Was created migration file')} ${chalk_1.default.cyan(path_1.default.basename(filename))}`);
+                            }
                         }
                         // copy seeds
                         if (params.seeds && dir === SEEDS_DIT_PATTERN && fs_1.default.existsSync(seedsDestPath)) {
                             const destinationFile = path_1.default.join(seedsDestPath, path_1.default.basename(filename));
-                            fs_1.default.copyFileSync(filename, destinationFile);
-                            console.log(`${chalk_1.default.yellow('Copy seed file')} from ${chalk_1.default.cyan(path_1.default.basename(filename))}`);
+                            if (!fs_1.default.existsSync(destinationFile)) {
+                                fs_1.default.copyFileSync(filename, destinationFile);
+                                console.log(`${chalk_1.default.yellow('Was created seed file')} from ${chalk_1.default.cyan(path_1.default.basename(filename))}`);
+                            }
                         }
                     }
                 });
