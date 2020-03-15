@@ -284,7 +284,6 @@ export class Authentificator {
             if (before !== undefined) {
               handle.where('cursor', '<', Number(before));
             }
-
             if (where !== undefined) {
               handle.where(where);
             }
@@ -301,7 +300,7 @@ export class Authentificator {
           totalCount,
           nodes: nodes.map(node => {
             const { createdAt, updatedAt } = node;
-            console.log(typeof node.createdAt);
+            // console.log(typeof node.createdAt);
             return {
               ...node,
               createdAt: moment.tz(createdAt, timezone).format(),
