@@ -124,16 +124,18 @@ const getMigrations = (params) => {
                 files.forEach(filename => {
                     if (!filename.match(/\.d\.ts$/)) {
                         const dir = path_1.default.basename(path_1.default.dirname(filename));
-                        const migrationsDestPath = path_1.default.resolve(process.cwd(), dotEnvData.DB_MIGRATIONS_DIRECTORY, '/');
-                        const seedsDestPath = path_1.default.resolve(process.cwd(), dotEnvData.DB_SEEDS_DIRECTORY, '/');
+                        const migrationsDestPath = path_1.default.resolve(process.cwd(), dotEnvData.DB_MIGRATIONS_DIRECTORY);
+                        const seedsDestPath = path_1.default.resolve(process.cwd(), dotEnvData.DB_SEEDS_DIRECTORY);
                         // copy migrations
                         if (params.migrations && dir === MIGRATIONS_DIR_PATTERN && fs_1.default.existsSync(migrationsDestPath)) {
-                            fs_1.default.copyFileSync(filename, path_1.default.resolve(migrationsDestPath, path_1.default.basename(filename)));
+                            const destinationFile = path_1.default.join(migrationsDestPath, path_1.default.basename(filename));
+                            fs_1.default.copyFileSync(filename, destinationFile);
                             console.log(`${chalk_1.default.yellow('Copy migration file')} from ${chalk_1.default.cyan(filename)}`);
                         }
                         // copy seeds
                         if (params.seeds && dir === SEEDS_DIT_PATTERN && fs_1.default.existsSync(seedsDestPath)) {
-                            fs_1.default.copyFileSync(filename, path_1.default.resolve(seedsDestPath, path_1.default.basename(filename)));
+                            const destinationFile = path_1.default.join(seedsDestPath, path_1.default.basename(filename));
+                            fs_1.default.copyFileSync(filename, destinationFile);
                             console.log(`${chalk_1.default.yellow('Copy seed file')} from ${chalk_1.default.cyan(filename)}`);
                         }
                     }
