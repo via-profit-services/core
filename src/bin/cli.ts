@@ -22,18 +22,20 @@ const getMigrations = (params: { migrations: boolean; seeds: boolean }) => {
         files.forEach(filename => {
           if (!filename.match(/\.d\.ts$/)) {
             const dir = path.basename(path.dirname(filename));
-            const migrationsDestPath = path.resolve(process.cwd(), dotEnvData.DB_MIGRATIONS_DIRECTORY, '/');
-            const seedsDestPath = path.resolve(process.cwd(), dotEnvData.DB_SEEDS_DIRECTORY, '/');
+            const migrationsDestPath = path.resolve(process.cwd(), dotEnvData.DB_MIGRATIONS_DIRECTORY);
+            const seedsDestPath = path.resolve(process.cwd(), dotEnvData.DB_SEEDS_DIRECTORY);
 
             // copy migrations
             if (params.migrations && dir === MIGRATIONS_DIR_PATTERN && fs.existsSync(migrationsDestPath)) {
-              fs.copyFileSync(filename, path.resolve(migrationsDestPath, path.basename(filename)));
+              const destinationFile = path.join(migrationsDestPath, path.basename(filename));
+              fs.copyFileSync(filename, destinationFile);
               console.log(`${chalk.yellow('Copy migration file')} from ${chalk.cyan(filename)}`);
             }
 
             // copy seeds
             if (params.seeds && dir === SEEDS_DIT_PATTERN && fs.existsSync(seedsDestPath)) {
-              fs.copyFileSync(filename, path.resolve(seedsDestPath, path.basename(filename)));
+              const destinationFile = path.join(seedsDestPath, path.basename(filename));
+              fs.copyFileSync(filename, destinationFile);
               console.log(`${chalk.yellow('Copy seed file')} from ${chalk.cyan(filename)}`);
             }
           }
