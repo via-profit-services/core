@@ -123,6 +123,7 @@ class App {
 
     // define knex instance
     const knex = knexProvider({
+      localTimezone: timezone,
       logger,
       ...database,
     });
@@ -236,7 +237,7 @@ export interface IInitProps {
   timezone?: string;
   schemas: GraphQLSchema[];
   jwt: IJwtConfig;
-  database: Omit<IDBConfig, 'logger'>;
+  database: Omit<IDBConfig, 'logger' | 'localTimezone'>;
   logger: ILoggerCollection;
   routes?: {
     auth?: string;

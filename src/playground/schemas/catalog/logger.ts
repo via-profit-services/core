@@ -20,7 +20,7 @@ export default (config: Config) => {
     ),
     transports: [
       new transports.DailyRotateFile({
-        filename: `${logDir}/%DATE%-catalog.log`,
+        filename: `${logDir}/catalog-%DATE%-.log`,
         level: 'debug',
         datePattern: 'YYYY-MM-DD',
         zippedArchive: true,

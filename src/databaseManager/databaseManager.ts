@@ -1,16 +1,34 @@
 import { performance } from 'perf_hooks';
 import knex, { PgConnectionConfig, MigratorConfig, SeedsConfig } from 'knex';
+import moment from 'moment-timezone';
+import { types } from 'pg';
 import { ServerError } from '../errorHandlers';
 import { ILoggerCollection } from '../logger';
 
 const CHARSET = 'UTF8';
 const CLIENT = 'pg';
+const ENABLE_PG_TYPES = true;
 
 const knexProvider = (config: IDBConfig) => {
-  const { connection, logger, timezone } = config;
+  const { connection, logger, timezone, localTimezone } = config;
   const times: { [key: string]: any } = {};
 
-  logger.server.debug('Knex provider configured');
+  if (ENABLE_PG_TYPES) {
+    // Timestamp
+    types.setTypeParser(types.builtins.TIMESTAMP, 'text', value => {
+      return moment.tz(value, localTimezone).format();
+    });
+
+    // timestamptz
+    types.setTypeParser(types.builtins.TIMESTAMPTZ, 'text', value => {
+      return moment.tz(value, localTimezone).format();
+    });
+
+    // Numeric to float
+    types.setTypeParser(types.builtins.NUMERIC, parseFloat);
+
+    logger.server.debug('pg-types configured');
+  }
 
   let count = 0;
   const instance = knex({
@@ -63,6 +81,8 @@ const knexProvider = (config: IDBConfig) => {
       logger.sql.error(query.sql, { bindings: query.bindings, err });
     });
 
+  logger.server.debug('Knex provider configured');
+
   instance
     .raw('SELECT 1+1 AS result')
     .then(() => {
@@ -86,6 +106,7 @@ export interface IDBConfig {
   logger: ILoggerCollection;
   connection: PgConnectionConfig;
   timezone: string;
+  localTimezone: string;
   migrations?: MigratorConfig;
   seeds?: SeedsConfig;
 }

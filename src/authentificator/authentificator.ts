@@ -267,7 +267,7 @@ export class Authentificator {
 
   public getAccounts(filter: IKnexFilterDefaults): Promise<IListResponse<IAccount>> {
     const { context } = this.props;
-    const { knex, timezone } = context;
+    const { knex } = context;
     const { limit, orderBy, where } = filter;
 
     return knex
@@ -285,38 +285,12 @@ export class Authentificator {
       .orderBy(orderBy)
       .from('accounts')
       .then(nodes => {
-        const { totalCount } = nodes.length ? nodes[0] : { totalCount: 0 };
         return {
-          totalCount,
-          nodes: nodes.map(node => {
-            const { createdAt, updatedAt } = node;
-            // console.log(typeof node.createdAt);
-            return {
-              ...node,
-              createdAt: moment.tz(createdAt, timezone).format(),
-              updatedAt: moment.tz(updatedAt, timezone).format(),
-            };
-          }),
+          totalCount: nodes.length ? nodes[0].totalCount : 0,
+          nodes,
           limit,
         };
-        // return nodes.map(node => {
-        //   const { totalCount, ...nodeData } = node;
-        //   responseData.totalCount = totalCount;
-        //   return {
-        //     ...nodeData,
-        //     createdAt: moment.tz(nodeData.createdAt, timezone).format(),
-        //     updatedAt: moment.tz(nodeData.updatedAt, timezone).format(),
-        //   };
-        // });
       });
-    // .then(nodes => {
-    //   responseData.totalCount = Number(responseData.totalCount);
-    //   responseData.nodes = nodes;
-
-    //   return responseData;
-    // });
-
-    // return query;
   }
 }
 

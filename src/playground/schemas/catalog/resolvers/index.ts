@@ -2,8 +2,8 @@ import { CategoryMutations, ItemMutations } from './mutations';
 import { CatalogQueries } from './queries';
 
 const resolvers = {
-  Query: { news: () => ({}) },
-  Mutation: { news: () => ({}) },
+  Query: { catalog: () => ({}) },
+  Mutation: { catalog: () => ({}) },
 
   CatalogQueries,
   CatalogMutations: {

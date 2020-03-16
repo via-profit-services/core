@@ -20,15 +20,11 @@ export const CatalogQueries: IResolverObject<any, IContext> = {
     const catalogService = new CatalogService();
     return catalogService.getItemsList().find(i => i.id === String(id));
   },
-  items: async (source, args, context) => {
-    const { logger, knex } = context;
-
-    const res = await knex.raw('SHOW TIMEZONE;');
-    console.log('res', res);
+  items: async () => {
     const catalogService = new CatalogService();
+    const items = catalogService.getItemsList();
 
-    logger.catalog.debug('Returns Items list');
-    return catalogService.getItemsList();
+    return items;
   },
 };
 

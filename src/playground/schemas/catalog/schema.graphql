@@ -1,14 +1,14 @@
 type Query {
-  news: CatalogQueries!
+  catalog: CatalogQueries!
 }
 
 type Mutation {
-  news: CatalogMutations!
+  catalog: CatalogMutations!
 }
 
 type CatalogQueries {
   categories: [Category]!
-  items: [Item]!
+  items: [Item]
   item(id: ID!): Item
 }
 
