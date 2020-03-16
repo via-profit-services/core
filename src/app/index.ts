@@ -16,6 +16,7 @@ import { knexProvider, IDBConfig, KnexInstance } from '../databaseManager';
 import { errorHandlerMiddleware, requestHandlerMiddleware, ILoggerCollection } from '../logger';
 import { accountsSchema } from '../schemas';
 import { configureTokens } from '../utils/configureTokens';
+import { cronJobManager } from '../utils/cronJobManager';
 
 class App {
   public props: IInitDefaultProps;
@@ -44,13 +45,12 @@ class App {
   public bootstrap(callback?: (args: IBootstrapCallbackArgs) => void) {
     const { port, usePlayground, useVoyager, endpoint, routes, serverOptions } = this.props;
     const { app, schema, context } = this.createApp();
+    const { logger } = context;
     const server = createServer(serverOptions, app);
 
     // Run HTTP server
     server.listen(port, () => {
-      // connect websockrt subscriptions werver
-      this.createSubscriptionServer({ schema, server });
-
+      // set resolver URL's list
       const resolveUrl: IBootstrapCallbackArgs['resolveUrl'] = {
         graphql: `https://localhost:${port}${endpoint}`,
         auth: `https://localhost:${port}${routes.auth}`,
@@ -63,6 +63,12 @@ class App {
       if (useVoyager) {
         resolveUrl.voyager = `https://localhost:${port}${routes.voyager}`;
       }
+
+      // log
+      logger.server.debug(`App server started at «${resolveUrl.graphql}»`);
+
+      // connect websockrt subscriptions werver
+      this.createSubscriptionServer({ schema, server });
 
       if (callback !== undefined) {
         callback({
@@ -120,6 +126,9 @@ class App {
 
     // define EventEmittre instance
     const emitter = new EventEmitter();
+
+    // configure cron job manager
+    cronJobManager.configure({ logger });
 
     // combine finally context object
     const context: IContext = {
