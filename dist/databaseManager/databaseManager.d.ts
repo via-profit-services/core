@@ -8,6 +8,7 @@ export interface IDBConfig {
     logger: ILoggerCollection;
     connection: PgConnectionConfig;
     timezone: string;
+    localTimezone: string;
     migrations?: MigratorConfig;
     seeds?: SeedsConfig;
 }

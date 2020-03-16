@@ -195,7 +195,7 @@ export const MyQueries: IResolverObject<any, IContext, IListArgs> = {
 | `port`   | `number` | Номер порта на котором должен запуститься сервер |
 | `endpoint`   | `string` | endpoint graphql сервера, например, `/graphql` |
 | `subscriptionsEndpoint`   | `string` | endpoint graphql сервера subscriptions, например, `/subscriptions` |
-| `timezone` | `string` | Временная зона. Значение будет добавлено в контекст |
+| `timezone` | `string` | Временная зона сервера. `timestamp` значения из базы данных бедет преобразованы в соответствующее часовому поясу время Значение будет добавлено в контекст.  |
 | `database` | `Knex.Config` | Объект параметров для работы с базой данных. Соответствует типу `Knex.Config`, но  |
 | `database.connection` | `Knex.PgConnectionConfig` | Объект подключения к базе данных. Соответствует конфигурации `Postgresql` (см `Knex.PgConnectionConfig`) |
 | `database.connection.database` | `string` | Название базы данных |
