@@ -84,7 +84,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 56);
+/******/ 	return __webpack_require__(__webpack_require__.s = 58);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -96,7 +96,7 @@ module.exports = require("chalk");
 
 /***/ }),
 
-/***/ 56:
+/***/ 58:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -106,12 +106,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs_1 = __importDefault(__webpack_require__(6));
-const path_1 = __importDefault(__webpack_require__(57));
+const fs_1 = __importDefault(__webpack_require__(7));
+const path_1 = __importDefault(__webpack_require__(59));
 const chalk_1 = __importDefault(__webpack_require__(4));
-const dotenv_1 = __importDefault(__webpack_require__(58));
-const glob_1 = __importDefault(__webpack_require__(59));
-const yargs_1 = __importDefault(__webpack_require__(60));
+const dotenv_1 = __importDefault(__webpack_require__(60));
+const glob_1 = __importDefault(__webpack_require__(61));
+const yargs_1 = __importDefault(__webpack_require__(62));
 const getMigrations = (params) => {
     const dotenvFile = path_1.default.resolve(process.cwd(), '.env');
     const MIGRATIONS_DIR_PATTERN = 'migrations';
@@ -170,38 +170,38 @@ exports.default = args;
 
 /***/ }),
 
-/***/ 57:
+/***/ 59:
 /***/ (function(module, exports) {
 
 module.exports = require("path");
 
 /***/ }),
 
-/***/ 58:
+/***/ 60:
 /***/ (function(module, exports) {
 
 module.exports = require("dotenv");
 
 /***/ }),
 
-/***/ 59:
+/***/ 61:
 /***/ (function(module, exports) {
 
 module.exports = require("glob");
 
 /***/ }),
 
-/***/ 6:
-/***/ (function(module, exports) {
-
-module.exports = require("fs");
-
-/***/ }),
-
-/***/ 60:
+/***/ 62:
 /***/ (function(module, exports) {
 
 module.exports = require("yargs");
+
+/***/ }),
+
+/***/ 7:
+/***/ (function(module, exports) {
+
+module.exports = require("fs");
 
 /***/ })
 

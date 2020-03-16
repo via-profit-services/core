@@ -1,6 +1,7 @@
 import { IResolverObject } from 'graphql-tools';
 import { IContext } from '../../../app';
-import { OrderRange, AccountStatus } from '../../../authentificator';
+import { AccountStatus } from '../../../authentificator';
+import { IDirectionRange } from '../../../utils/generateCursorBundle';
 export declare const AccountsQueries: IResolverObject<any, IContext, IListArgs>;
 interface IListArgs {
     first?: number;
@@ -10,7 +11,7 @@ interface IListArgs {
     status?: AccountStatus;
     orderBy?: {
         field: string;
-        direction: OrderRange;
+        direction: IDirectionRange;
     };
 }
 export default AccountsQueries;

@@ -13,6 +13,7 @@
  - [Параметры](#options)
  - [Контекст](#context)
  - [Логгер](#logger)
+ - [Cron](#cron)
  - [Типы и интерфейсы](#types)
  - [Error handlers (исключения)](#error-handlers)
  - [CLI](#cli)
@@ -296,6 +297,28 @@ const logger = configureLogger({
 });
 
 ```
+
+## <a name="cron"></a> Cron
+
+Для реализации Cron-подобных заданий используется `CronJobManager` - статический класс, являющийся оберткой над пакетом [Node-Cron](https://github.com/kelektiv/node-cron).
+
+
+### Методы
+
+**CronJobManager.`configure`** - Служебный метод первичной конфигурации клсаа. Вызывается единожды при инициализации приложения.
+
+**CronJobManager.`addJob`** - Добавляет новое `Cron` задание и возвращает инстанс `CronJob`
+
+*Параметры:*
+ - *jobName* `string` - Уникальное имя задания
+ - *jobConfig* `CronJobParameters` - Объект параметров [Node-cron](https://github.com/kelektiv/node-cron#api)
+
+**CronJobManager.`getJob`** - Возвращает инстанс `CronJob` или `undefined`, если искомое задание не зарегистрировано
+*Параметры:*
+ - *jobName* `string` - Имя задания
+
+**CronJobManager.`getPool`** - Возвращает весь пул заданий, которые имеются в памяти. Пул представлен стандартным типом `Map`
+
 
 ## <a name="types"></a> Типы и интерфейсы
 

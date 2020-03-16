@@ -1,3 +1,4 @@
+import * as Knex from 'knex';
 export declare enum IDirectionRange {
     ASC = "ASC",
     DESC = "DESC"
@@ -43,7 +44,29 @@ interface ICursorConnectionProps<TNodeData> {
     }>;
 }
 declare const buildCursorConnection: <TNodeData>(props: ICursorConnectionProps<TNodeData>) => ICursorConnection<TNodeData>;
-declare const buildQueryFilter: <TFilter extends TFilterDefaults = TFilterDefaults, TArgs extends TArgsDefaults = {}>(args: TArgs) => TFilter & TFilterDefaults;
+export interface IGraphQLFilterDefaults {
+    first?: number;
+    last?: number;
+    after?: string;
+    before?: string;
+    limit?: number;
+    orderBy?: Array<{
+        field: string;
+        direction: IDirectionRange;
+    }>;
+    where: {
+        [key: string]: string;
+    };
+}
+export interface IKnexFilterDefaults {
+    where: (builder: Knex.QueryBuilder) => Knex.QueryBuilder;
+    limit: number;
+    orderBy?: Array<{
+        column: string;
+        order: IDirectionRange;
+    }>;
+}
+declare const buildQueryFilter: <TArgs extends TArgsDefaults = {}>(args: TArgs) => IKnexFilterDefaults;
 /**
  * GraphQL PageInfo
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-undefined.PageInfo
@@ -81,15 +104,6 @@ interface TArgsDefaults {
         field: string;
         direction: IDirectionRange;
     };
-}
-interface TFilterDefaults {
-    after?: number;
-    before?: number;
-    limit?: number;
-    orderBy?: Array<{
-        column: string;
-        order: IDirectionRange;
-    }>;
-    where?: {};
+    where?: Knex.Where;
 }
 export { buildCursorConnection, buildQueryFilter };

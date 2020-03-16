@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { Request, Response, NextFunction } from 'express';
 import { IContext } from '../../app';
-import { ErrorHandler } from '../errorHandlers';
+import { ErrorHandler } from '../../errorHandlers';
 import responseFormatter from '../utils/responseFormatter';
 
 export default (config: ILoggerMiddlewareConfig) => {
