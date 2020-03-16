@@ -14,13 +14,13 @@ export async function up(knex: Knex): Promise<any> {
 
     CREATE TABLE tokens (
       "type" "tokenType" NOT NULL DEFAULT 'access'::"tokenType",
-      "createdAt" timestamp NOT NULL DEFAULT now(),
+      "createdAt" timestamptz NOT NULL DEFAULT now(),
+      "updatedAt" timestamptz NOT NULL DEFAULT now(),
+      "expiredAt" timestamptz NOT NULL,
       account uuid NULL,
       id uuid NOT NULL,
-      "updatedAt" timestamp NOT NULL DEFAULT now(),
       associated uuid NULL,
       "deviceInfo" json NULL,
-      "expiredAt" timestamp NOT NULL,
       CONSTRAINT tokens_pk PRIMARY KEY (id)
     );
 
