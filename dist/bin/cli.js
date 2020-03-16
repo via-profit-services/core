@@ -112,40 +112,78 @@ const chalk_1 = __importDefault(__webpack_require__(4));
 const dotenv_1 = __importDefault(__webpack_require__(60));
 const glob_1 = __importDefault(__webpack_require__(61));
 const yargs_1 = __importDefault(__webpack_require__(62));
+const listMigrationsPerPackage = () => {
+    const list = [];
+    const projectsList = glob_1.default.sync(`${process.cwd()}/node_modules/@via-profit-services/*/`);
+    projectsList.forEach(projectPath => {
+        const projectName = path_1.default.basename(projectPath);
+        const projectInfo = {
+            migrations: [],
+            seeds: [],
+        };
+        const migrationSearchPattern = `${projectPath}dist/database/@(migrations|seeds)/*.ts`;
+        const projectMigrationFiles = glob_1.default.sync(migrationSearchPattern);
+        projectMigrationFiles.forEach(filename => {
+            if (!filename.match(/\.d\.ts$/)) {
+                const dir = path_1.default.basename(path_1.default.dirname(filename));
+                projectInfo[dir].push(filename);
+            }
+        });
+        list.push({
+            project: projectName,
+            files: projectInfo,
+        });
+    });
+    return list;
+};
 const getMigrations = (params) => {
-    const dotenvFile = path_1.default.resolve(process.cwd(), '.env');
-    const MIGRATIONS_DIR_PATTERN = 'migrations';
-    const SEEDS_DIT_PATTERN = 'seeds';
-    const searchPathPattern = `${process.cwd()}/node_modules/@via-profit-services/*/dist/database/@(${MIGRATIONS_DIR_PATTERN}|${SEEDS_DIT_PATTERN})/*.ts`;
-    if (fs_1.default.existsSync(dotenvFile)) {
-        const dotEnvData = dotenv_1.default.config({ path: dotenvFile }).parsed;
-        if (dotEnvData.DB_MIGRATIONS_DIRECTORY !== undefined || dotEnvData.DB_SEEDS_DIRECTORY !== undefined) {
-            glob_1.default(searchPathPattern, (err, files) => {
-                files.forEach(filename => {
-                    if (!filename.match(/\.d\.ts$/)) {
-                        const dir = path_1.default.basename(path_1.default.dirname(filename));
-                        const migrationsDestPath = path_1.default.resolve(process.cwd(), dotEnvData.DB_MIGRATIONS_DIRECTORY);
-                        const seedsDestPath = path_1.default.resolve(process.cwd(), dotEnvData.DB_SEEDS_DIRECTORY);
-                        // copy migrations
-                        if (params.migrations && dir === MIGRATIONS_DIR_PATTERN && fs_1.default.existsSync(migrationsDestPath)) {
-                            const destinationFile = path_1.default.join(migrationsDestPath, path_1.default.basename(filename));
-                            if (!fs_1.default.existsSync(destinationFile)) {
-                                fs_1.default.copyFileSync(filename, destinationFile);
-                                console.log(`${chalk_1.default.yellow('Was created migration file')} ${chalk_1.default.cyan(path_1.default.basename(filename))}`);
-                            }
-                        }
-                        // copy seeds
-                        if (params.seeds && dir === SEEDS_DIT_PATTERN && fs_1.default.existsSync(seedsDestPath)) {
-                            const destinationFile = path_1.default.join(seedsDestPath, path_1.default.basename(filename));
-                            if (!fs_1.default.existsSync(destinationFile)) {
-                                fs_1.default.copyFileSync(filename, destinationFile);
-                                console.log(`${chalk_1.default.yellow('Was created seed file')} from ${chalk_1.default.cyan(path_1.default.basename(filename))}`);
-                            }
-                        }
+    const localDotEnvFile = path_1.default.resolve(process.cwd(), '.env');
+    if (fs_1.default.existsSync(localDotEnvFile)) {
+        const dotEnvData = dotenv_1.default.config({ path: localDotEnvFile }).parsed;
+        const migrationsListPerPackage = listMigrationsPerPackage();
+        migrationsListPerPackage.forEach(projectData => {
+            const { files, project } = projectData;
+            if (params.migrations && dotEnvData.DB_MIGRATIONS_DIRECTORY !== undefined) {
+                let affected = 0;
+                console.log('');
+                console.log(`Migrations from project ${chalk_1.default.magenta(project)}`);
+                const migrationsDestPath = path_1.default.resolve(process.cwd(), dotEnvData.DB_MIGRATIONS_DIRECTORY);
+                files.migrations.forEach(migrationSourceFile => {
+                    const destinationFile = path_1.default.join(migrationsDestPath, path_1.default.basename(migrationSourceFile));
+                    if (!fs_1.default.existsSync(destinationFile)) {
+                        affected += 1;
+                        fs_1.default.copyFileSync(migrationSourceFile, destinationFile);
+                        console.log(`${chalk_1.default.yellow('Was created migration file')} ${chalk_1.default.cyan(path_1.default.basename(migrationSourceFile))}`);
                     }
                 });
-            });
-        }
+                if (affected) {
+                    console.log(`${chalk_1.default.bold.green(affected.toString())} ${chalk_1.default.yellow('file[s] was copied')}`);
+                }
+                else {
+                    console.log(chalk_1.default.grey('No files was copied'));
+                }
+            }
+            if (params.seeds && dotEnvData.DB_SEEDS_DIRECTORY !== undefined) {
+                let affected = 0;
+                console.log('');
+                console.log(`Seeds for ${chalk_1.default.magenta(project)}`);
+                const seedsDestPath = path_1.default.resolve(process.cwd(), dotEnvData.DB_SEEDS_DIRECTORY);
+                files.seeds.forEach(seedSourceFile => {
+                    const destinationFile = path_1.default.join(seedsDestPath, path_1.default.basename(seedSourceFile));
+                    if (!fs_1.default.existsSync(destinationFile)) {
+                        affected += 1;
+                        fs_1.default.copyFileSync(seedSourceFile, destinationFile);
+                        console.log(`${chalk_1.default.yellow('Was created seed file')} ${chalk_1.default.cyan(path_1.default.basename(seedSourceFile))}`);
+                    }
+                });
+                if (affected) {
+                    console.log(`${chalk_1.default.bold.green(affected.toString())} ${chalk_1.default.yellow('file[s] was copied')}`);
+                }
+                else {
+                    console.log(chalk_1.default.grey('No files was copied'));
+                }
+            }
+        });
     }
 };
 const args = yargs_1.default
@@ -157,12 +195,10 @@ const args = yargs_1.default
     migrations: {
         alias: 'm',
         type: 'boolean',
-        description: 'Get migration files',
     },
     seeds: {
         alias: 's',
         type: 'boolean',
-        description: 'Get seed files',
     },
 }).argv;
 exports.default = args;
