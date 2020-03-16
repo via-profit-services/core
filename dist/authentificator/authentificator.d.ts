@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { SignOptions } from 'jsonwebtoken';
 import { IContext } from '../app';
-import { IListResponse } from '../utils/generateCursorBundle';
+import { IListResponse, IKnexFilterDefaults } from '../utils/generateCursorBundle';
 export declare enum TokenType {
     access = "access",
     refresh = "refresh"
@@ -39,26 +39,10 @@ export declare class Authentificator {
     checkTokenExist(tokenId: string): Promise<boolean>;
     getAccountByLogin(login: IAccount['login']): Promise<Pick<IAccount, 'id' | 'password' | 'status'>>;
     static sendResponseError(responsetype: ResponseErrorType, resp: Response): Response;
-    getAccounts(filter: IAccountsFilter): Promise<IListResponse<IAccount>>;
+    getAccounts(filter: IKnexFilterDefaults): Promise<IListResponse<IAccount>>;
 }
 interface IProps {
     context: IContext;
-}
-export declare enum OrderRange {
-    asc = "asc",
-    desc = "desc"
-}
-export interface IAccountsFilter {
-    limit: number;
-    after?: number;
-    before?: number;
-    where?: {
-        status?: AccountStatus;
-    };
-    orderBy: [{
-        column: string;
-        order: OrderRange;
-    }];
 }
 /**
  * @see: JWT configuration. See [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)
