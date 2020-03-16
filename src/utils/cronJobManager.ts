@@ -1,6 +1,6 @@
 import { job, CronJobParameters, CronJob } from 'cron';
+import { ServerError } from '../errorHandlers';
 import { ILoggerCollection } from '../logger';
-import { ServerError } from '../logger/errorHandlers';
 
 /**
  * Cron pool incapsulated container

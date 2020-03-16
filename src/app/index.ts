@@ -16,7 +16,7 @@ import { knexProvider, IDBConfig, KnexInstance } from '../databaseManager';
 import { errorHandlerMiddleware, requestHandlerMiddleware, ILoggerCollection } from '../logger';
 import { accountsSchema } from '../schemas';
 import { configureTokens } from '../utils/configureTokens';
-import { cronJobManager } from '../utils/cronJobManager';
+import { CronJobManager } from '../utils/cronJobManager';
 
 class App {
   public props: IInitDefaultProps;
@@ -99,8 +99,6 @@ class App {
   }
 
   public createApp() {
-    const app = express();
-
     const {
       schemas,
       endpoint,
@@ -115,6 +113,11 @@ class App {
       useVoyager,
     } = this.props as IInitDefaultProps;
 
+    logger.server.debug('Create application proc was started');
+
+    // init main server handle
+    const app = express();
+
     // merge user schemas and legacy
     const schema = mergeSchemas({ schemas: [...schemas, accountsSchema] });
 
@@ -128,7 +131,7 @@ class App {
     const emitter = new EventEmitter();
 
     // configure cron job manager
-    cronJobManager.configure({ logger });
+    CronJobManager.configure({ logger });
 
     // combine finally context object
     const context: IContext = {
@@ -166,6 +169,7 @@ class App {
     // GraohQL Voyager middleware
     if (useVoyager) {
       const { accessToken } = configureTokens([''], context);
+      logger.server.debug('New AccessToken was created special for GraphQL voyager', { accessToken });
       console.log('');
       console.log(
         `${chalk.yellow.bold('Note: ')}${chalk.yellow('An access token was created specifically for GraphQL voyager')}`,
@@ -188,6 +192,8 @@ class App {
     // only in dev mode you should have tokens with over then 8400 sec.
     if (process.env.NODE_ENV === 'development') {
       const { accessToken } = configureTokens([''], context);
+
+      logger.server.debug('New AccessToken was created special for development', { accessToken });
       console.log('');
       console.log(chalk.yellow(`Your development Access token is: ${chalk.magenta(accessToken.token)}`));
     }
@@ -208,6 +214,8 @@ class App {
     // Error handler middleware
     // This middleware most be defined first
     app.use(errorHandlerMiddleware({ context }));
+
+    logger.server.debug('Application was created');
 
     return {
       app,

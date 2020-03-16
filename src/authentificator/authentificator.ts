@@ -4,7 +4,7 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 import moment from 'moment-timezone';
 import uuidv4 from 'uuid/v4';
 import { IContext } from '../app';
-import { ServerError, UnauthorizedError } from '../logger/errorHandlers';
+import { ServerError, UnauthorizedError } from '../errorHandlers';
 import { IListResponse, IKnexFilterDefaults } from '../utils/generateCursorBundle';
 
 export enum TokenType {

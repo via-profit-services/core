@@ -1,6 +1,7 @@
 import { performance } from 'perf_hooks';
 import knex, { PgConnectionConfig, MigratorConfig, SeedsConfig } from 'knex';
-import { ILoggerCollection, ServerError } from '../logger';
+import { ServerError } from '../errorHandlers';
+import { ILoggerCollection } from '../logger';
 
 const CHARSET = 'UTF8';
 const CLIENT = 'pg';
@@ -8,6 +9,9 @@ const CLIENT = 'pg';
 const knexProvider = (config: IDBConfig) => {
   const { connection, logger, timezone } = config;
   const times: { [key: string]: any } = {};
+
+  logger.server.debug('Knex provider configured');
+
   let count = 0;
   const instance = knex({
     client: CLIENT,
