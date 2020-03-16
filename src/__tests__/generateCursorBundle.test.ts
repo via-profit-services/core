@@ -2,8 +2,9 @@ import {
   nodeToEdge,
   stringToCursor,
   buildCursorConnection,
-  // buildQueryFilter,
+  buildQueryFilter,
   ICursorConnection,
+  IKnexFilterDefaults,
   IPageInfo,
   Edge,
 } from '../utils';
@@ -68,13 +69,23 @@ describe('Cursor utils', () => {
     done();
   });
 
-  // it('buildQueryFilter. Should return filter object', done => {
-  //   const queryFilter = {};
-  //   const filter = buildQueryFilter(queryFilter);
+  it('buildQueryFilter. Should return filter object for Knex', done => {
+    const queryFilter = {
+      first: 6,
+    };
+    const knexFilter = buildQueryFilter(queryFilter);
 
-  //   expect(filter).toMatchObject({
+    expect(knexFilter).toMatchObject<IKnexFilterDefaults>({
+      limit: expect.any(Number),
+      where: expect.any(Function),
+      orderBy: expect.arrayContaining<IKnexFilterDefaults['orderBy']>([
+        expect.objectContaining<IKnexFilterDefaults['orderBy'][0]>({
+          column: 'cursor',
+          order: expect.any(String),
+        }),
+      ]),
+    });
 
-  //   });
-  //   done();
-  // });
+    done();
+  });
 });
