@@ -1,9 +1,8 @@
-import bcryptjs from 'bcryptjs';
 import DeviceDetector from 'device-detector-js';
 import { NextFunction, Request, Response, Router } from 'express';
 import asyncHandler from 'express-async-handler';
 import { IContext } from '../app';
-import { AccountStatus, Authentificator, ResponseErrorType, TokenType } from './authentificator';
+import { Authentificator, ResponseErrorType, TokenType } from './authentificator';
 
 const authentificatorMiddleware = (config: IMiddlewareConfig) => {
   const { context, authUrl, allowedUrl } = config;
@@ -41,36 +40,25 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
 
       logger.auth.info('Access token request', { login });
 
-      const account = await authentificator.getAccountByLogin(login);
+      const { error, account } = await authentificator.getAccountByLogin(login, password);
 
-      // account not found
-      if (!account || !bcryptjs.compareSync(password, account.password)) {
-        logger.auth.error('Account not found', { login });
-        return Authentificator.sendResponseError(ResponseErrorType.accountNotFound, res);
-      }
-
-      // account locked
-      if (account.status === AccountStatus.forbidden && bcryptjs.compareSync(password, account.password)) {
-        logger.auth.info('Authentification forbidden', { login });
-        return Authentificator.sendResponseError(ResponseErrorType.accountForbidden, res);
+      if (typeof error !== 'undefined' || account === false) {
+        logger.auth.error(error, { login });
+        return Authentificator.sendResponseError(error, res);
       }
 
       // success
-      if (account.status === AccountStatus.allowed && bcryptjs.compareSync(password, account.password)) {
-        const tokens = await authentificator.registerTokens({
-          uuid: account.id,
-          deviceInfo,
-        });
+      const tokens = await authentificator.registerTokens({
+        uuid: account.id,
+        deviceInfo,
+      });
 
-        return res.status(200).json({
-          accessToken: tokens.accessToken.token,
-          tokenType: 'bearer',
-          expiresIn: config.context.jwt.accessTokenExpiresIn,
-          refreshToken: tokens.refreshToken.token,
-        });
-      }
-
-      return Authentificator.sendResponseError(ResponseErrorType.accountNotFound, res);
+      return res.status(200).json({
+        accessToken: tokens.accessToken.token,
+        tokenType: 'bearer',
+        expiresIn: config.context.jwt.accessTokenExpiresIn,
+        refreshToken: tokens.refreshToken.token,
+      });
     }),
   );
 

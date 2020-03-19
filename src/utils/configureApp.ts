@@ -9,7 +9,7 @@ const rootPath = path.join(__dirname, '..', '..');
 
 // dotenv configuration
 dotenv.config({
-  path: path.resolve(__dirname, '../../.env'),
+  path: path.resolve(rootPath, '.env'),
 });
 
 const logger = configureLogger({
