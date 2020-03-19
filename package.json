@@ -21,8 +21,11 @@
         "knex:seed:make": "knex seed:make --knexfile src/utils/knexfile.ts",
         "knex:seed:run": "knex seed:run --knexfile src/utils/knexfile.ts",
         "preversion": "yarn dist",
-        "postversion": "echo \"now you can push tags to origin\"",
-        "release:patch": "yarn dist && git add --all && git commit -m \"Build with patch\" yarn version --patch && git push --tags"
+        "postversion": "git push --tags",
+        "release:patch": "yarn version --patch",
+        "release:minor": "yarn version --minor",
+        "release:major": "yarn version --major",
+        "release:prerelease": "yarn version --prerelease"
     },
     "bin": {
         "via-profit-core": "./dist/bin/cli.js"

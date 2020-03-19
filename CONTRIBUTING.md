@@ -88,6 +88,7 @@ TIMEZONE=Asia/Yekaterinburg
  - [Cборка проекта для development](#build-dev)
  - [Запуск линтера](#lint)
  - [Запуск тестов](#test)
+ - [Релизы / патчи / пререлизы и т.д.](#release)
 
 
 ### <a name="start-dev"></a> Запуск проекта в `development` режиме
@@ -170,6 +171,15 @@ yarn test
 ```
 
 Данный скрипт запустит все имеющиеся тесты.
+
+### <a name="release"></a>Релизы / патчи / пререлизы и т.д.
+
+```bash
+yarn release:patch
+yarn release:minor
+yarn release:major
+yarn release:prerelease
+```
 
 
 
