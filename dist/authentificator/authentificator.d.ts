@@ -6,9 +6,29 @@ export declare enum TokenType {
     access = "access",
     refresh = "refresh"
 }
+export declare enum AccountStatus {
+    allowed = "allowed",
+    forbidden = "forbidden"
+}
+export declare enum ResponseErrorType {
+    authentificationRequired = "authentificationRequired",
+    accountNotFound = "accountNotFound",
+    accountForbidden = "accountForbidden",
+    invalidLoginOrPassword = "invalidLoginOrPassword",
+    tokenExpired = "tokenExpired",
+    isNotAnAccessToken = "isNotAnAccessToken",
+    isNotARefreshToken = "isNotARefreshToken",
+    tokenWasRevoked = "tokenWasRevoked"
+}
 export declare class Authentificator {
     private props;
     constructor(props: IProps);
+    /**
+     * Crypt password string by bcryptjs
+     * @param  {string} password
+     * @returns password hash
+     */
+    static cryptUserPassword(password: string): string;
     /**
      * Extract Token from HTTP request headers
      * @param  {Request} request
@@ -37,13 +57,17 @@ export declare class Authentificator {
     }): ITokenPackage;
     revokeToken(tokenId: string): Promise<void>;
     checkTokenExist(tokenId: string): Promise<boolean>;
-    getAccountByLogin(login: IAccount['login']): Promise<Pick<IAccount, 'id' | 'password' | 'status'>>;
+    getAccountByLogin(login: IAccount['login'], password?: string): AccountByLoginResponse;
     static sendResponseError(responsetype: ResponseErrorType, resp: Response): Response;
     getAccounts(filter: IKnexFilterDefaults): Promise<IListResponse<IAccount>>;
 }
 interface IProps {
     context: IContext;
 }
+export declare type AccountByLoginResponse = Promise<{
+    error?: ResponseErrorType;
+    account: Pick<IAccount, 'id' | 'password' | 'status'> | false;
+}>;
 /**
  * @see: JWT configuration. See [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)
  */
@@ -87,23 +111,9 @@ export interface IRefreshToken {
         iss: string;
     };
 }
-export declare enum ResponseErrorType {
-    authentificationRequired = "authentificationRequired",
-    accountNotFound = "accountNotFound",
-    accountForbidden = "accountForbidden",
-    invalidLoginOrPassword = "invalidLoginOrPassword",
-    tokenExpired = "tokenExpired",
-    isNotAnAccessToken = "isNotAnAccessToken",
-    isNotARefreshToken = "isNotARefreshToken",
-    tokenWasRevoked = "tokenWasRevoked"
-}
 export interface IResponseError {
     name: string;
     message: string;
-}
-export declare enum AccountStatus {
-    allowed = "allowed",
-    forbidden = "forbidden"
 }
 export interface IAccount {
     id: string;

@@ -84,7 +84,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 59);
+/******/ 	return __webpack_require__(__webpack_require__.s = 60);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -96,7 +96,7 @@ module.exports = require("chalk");
 
 /***/ }),
 
-/***/ 59:
+/***/ 60:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -107,11 +107,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(__webpack_require__(7));
-const path_1 = __importDefault(__webpack_require__(60));
+const path_1 = __importDefault(__webpack_require__(61));
 const chalk_1 = __importDefault(__webpack_require__(4));
-const dotenv_1 = __importDefault(__webpack_require__(61));
-const glob_1 = __importDefault(__webpack_require__(62));
-const yargs_1 = __importDefault(__webpack_require__(63));
+const dotenv_1 = __importDefault(__webpack_require__(62));
+const glob_1 = __importDefault(__webpack_require__(63));
+const yargs_1 = __importDefault(__webpack_require__(64));
 const listMigrationsPerPackage = () => {
     const list = [];
     const projectsList = glob_1.default.sync(`${process.cwd()}/node_modules/@via-profit-services/*/`);
@@ -206,28 +206,28 @@ exports.default = args;
 
 /***/ }),
 
-/***/ 60:
+/***/ 61:
 /***/ (function(module, exports) {
 
 module.exports = require("path");
 
 /***/ }),
 
-/***/ 61:
+/***/ 62:
 /***/ (function(module, exports) {
 
 module.exports = require("dotenv");
 
 /***/ }),
 
-/***/ 62:
+/***/ 63:
 /***/ (function(module, exports) {
 
 module.exports = require("glob");
 
 /***/ }),
 
-/***/ 63:
+/***/ 64:
 /***/ (function(module, exports) {
 
 module.exports = require("yargs");
