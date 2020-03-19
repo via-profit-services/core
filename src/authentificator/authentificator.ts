@@ -203,7 +203,7 @@ export class Authentificator {
         login,
       })
       .first();
-
+    console.log('account', account);
     return {
       id: account.id,
       password: account.password,
