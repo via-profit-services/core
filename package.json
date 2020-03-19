@@ -22,7 +22,7 @@
         "knex:migrate:rollback:all": "knex migrate:rollback --all --knexfile src/utils/knexfile.ts",
         "knex:seed:make": "knex seed:make --knexfile src/utils/knexfile.ts",
         "knex:seed:run": "knex seed:run --knexfile src/utils/knexfile.ts",
-        "preversion": "yarn dist",
+        "preversion": "yarn dist && git add --all && git commit -m \"Build\"",
         "postversion": "git push --tags",
         "release:patch": "yarn version --patch",
         "release:minor": "yarn version --minor",
