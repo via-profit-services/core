@@ -2,7 +2,7 @@
     "name": "@via-profit-services/core",
     "private": true,
     "support": "https://via-profit.ru",
-    "version": "0.2.6",
+    "version": "0.2.7",
     "description": "Via Profit Core service",
     "main": "dist/index.js",
     "scripts": {
@@ -19,7 +19,13 @@
         "knex:migrate:down": "knex migrate:down --knexfile src/utils/knexfile.ts",
         "knex:migrate:latest": "knex migrate:latest --knexfile src/utils/knexfile.ts",
         "knex:seed:make": "knex seed:make --knexfile src/utils/knexfile.ts",
-        "knex:seed:run": "knex seed:run --knexfile src/utils/knexfile.ts"
+        "knex:seed:run": "knex seed:run --knexfile src/utils/knexfile.ts",
+        "preversion": "yarn dist",
+        "postversion": "git push --tags",
+        "release:patch": "yarn version --patch",
+        "release:minor": "yarn version --minor",
+        "release:major": "yarn version --major",
+        "release:prerelease": "yarn version --prerelease"
     },
     "bin": {
         "via-profit-core": "./dist/bin/cli.js"
