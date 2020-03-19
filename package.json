@@ -2,7 +2,7 @@
     "name": "@via-profit-services/core",
     "private": true,
     "support": "https://via-profit.ru",
-    "version": "0.2.6",
+    "version": "0.2.7",
     "description": "Via Profit Core service",
     "main": "dist/index.js",
     "scripts": {
@@ -20,6 +20,8 @@
         "knex:migrate:latest": "knex migrate:latest --knexfile src/utils/knexfile.ts",
         "knex:seed:make": "knex seed:make --knexfile src/utils/knexfile.ts",
         "knex:seed:run": "knex seed:run --knexfile src/utils/knexfile.ts",
+        "preversion": "yarn dist",
+        "postversion": "echo \"now you can push tags to origin\"",
         "release:patch": "yarn dist && git add --all && git commit -m \"Build with patch\" yarn version --patch && git push --tags"
     },
     "bin": {
