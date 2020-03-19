@@ -1,8 +1,10 @@
 import fs from 'fs';
+import bcryptjs from 'bcryptjs';
 import { Request, Response } from 'express';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import moment from 'moment-timezone';
-import uuidv4 from 'uuid/v4';
+import { v4 as uuidv4 } from 'uuid';
+
 import { IContext } from '../app';
 import { ServerError, UnauthorizedError } from '../errorHandlers';
 import { IListResponse, IKnexFilterDefaults } from '../utils/generateCursorBundle';
@@ -12,11 +14,37 @@ export enum TokenType {
   refresh = 'refresh',
 }
 
+export enum AccountStatus {
+  allowed = 'allowed',
+  forbidden = 'forbidden',
+}
+
+export enum ResponseErrorType {
+  authentificationRequired = 'authentificationRequired',
+  accountNotFound = 'accountNotFound',
+  accountForbidden = 'accountForbidden',
+  invalidLoginOrPassword = 'invalidLoginOrPassword',
+  tokenExpired = 'tokenExpired',
+  isNotAnAccessToken = 'isNotAnAccessToken',
+  isNotARefreshToken = 'isNotARefreshToken',
+  tokenWasRevoked = 'tokenWasRevoked',
+}
+
 export class Authentificator {
   private props: IProps;
 
   public constructor(props: IProps) {
     this.props = props;
+  }
+
+  /**
+   * Crypt password string by bcryptjs
+   * @param  {string} password
+   * @returns password hash
+   */
+  public static cryptUserPassword(password: string) {
+    const salt = bcryptjs.genSaltSync(10);
+    return bcryptjs.hashSync(password, salt);
   }
 
   /**
@@ -192,7 +220,7 @@ export class Authentificator {
     return tokenData !== null;
   }
 
-  public async getAccountByLogin(login: IAccount['login']): Promise<Pick<IAccount, 'id' | 'password' | 'status'>> {
+  public async getAccountByLogin(login: IAccount['login'], password?: string): AccountByLoginResponse {
     const { context } = this.props;
     const { knex } = context;
 
@@ -204,10 +232,39 @@ export class Authentificator {
       })
       .first();
 
+    // check account exist
+    if (typeof account === 'undefined') {
+      return {
+        error: ResponseErrorType.accountNotFound,
+        account: false,
+      };
+    }
+
+    // compare bcrypt password
+    if (typeof password === 'string') {
+      if (!bcryptjs.compareSync(password, account.password)) {
+        return {
+          error: ResponseErrorType.invalidLoginOrPassword,
+          account: false,
+        };
+      }
+    }
+
+    // check status
+    if (account.status === AccountStatus.forbidden) {
+      return {
+        error: ResponseErrorType.accountForbidden,
+        account: false,
+      };
+    }
+
+    // if success
     return {
-      id: account.id,
-      password: account.password,
-      status: account.status,
+      account: {
+        id: account.id,
+        password: account.password,
+        status: account.status,
+      },
     };
   }
 
@@ -298,6 +355,11 @@ interface IProps {
   context: IContext;
 }
 
+export type AccountByLoginResponse = Promise<{
+  error?: ResponseErrorType;
+  account: Pick<IAccount, 'id' | 'password' | 'status'> | false;
+}>;
+
 /**
  * @see: JWT configuration. See [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)
  */
@@ -346,25 +408,9 @@ export interface IRefreshToken {
   };
 }
 
-export enum ResponseErrorType {
-  authentificationRequired = 'authentificationRequired',
-  accountNotFound = 'accountNotFound',
-  accountForbidden = 'accountForbidden',
-  invalidLoginOrPassword = 'invalidLoginOrPassword',
-  tokenExpired = 'tokenExpired',
-  isNotAnAccessToken = 'isNotAnAccessToken',
-  isNotARefreshToken = 'isNotARefreshToken',
-  tokenWasRevoked = 'tokenWasRevoked',
-}
-
 export interface IResponseError {
   name: string;
   message: string;
-}
-
-export enum AccountStatus {
-  allowed = 'allowed',
-  forbidden = 'forbidden',
 }
 
 export interface IAccount {
