@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import moment from 'moment-timezone';
 import { v4 as uuidv4 } from 'uuid';
+
 import { IContext } from '../app';
 import { ServerError, UnauthorizedError } from '../errorHandlers';
 import { IListResponse, IKnexFilterDefaults } from '../utils/generateCursorBundle';
@@ -257,6 +258,7 @@ export class Authentificator {
       };
     }
 
+    // if success
     return {
       account: {
         id: account.id,

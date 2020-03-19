@@ -21,7 +21,7 @@ export async function seed(knex: Knex): Promise<any> {
           type: 'stuff',
           roles: knex.raw("'[]'"),
           cursor: knex.raw('DEFAULT'),
-          comment: 'Account was created with KNEX seed file from module via-profit-services/core',
+          comment: 'This Account was created by KNEX seed file from module via-profit-services/core',
         },
       ]);
     });
