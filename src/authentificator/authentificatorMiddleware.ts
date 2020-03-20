@@ -60,12 +60,11 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
       });
 
       // set cookie
-      // TODO: uncomment secur params
       res.cookie('Authorization', tokens.accessToken.token, {
-        maxAge: config.context.jwt.accessTokenExpiresIn,
+        maxAge: config.context.jwt.accessTokenExpiresIn * 1000,
         signed: true,
-        // httpOnly: true,
-        // secure: true,
+        httpOnly: true,
+        secure: true,
       });
 
       return res.status(200).json({
