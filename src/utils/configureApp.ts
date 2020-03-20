@@ -56,6 +56,7 @@ const serverConfig: IInitProps = {
   serverOptions: {
     key: fs.readFileSync(path.resolve(rootPath, process.env.SSL_KEY)),
     cert: fs.readFileSync(path.resolve(rootPath, process.env.SSL_CERT)),
+    cookieSign: process.env.COOKIES_SIGN_SECRET,
   },
 };
 

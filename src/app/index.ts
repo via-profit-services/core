@@ -2,14 +2,17 @@
 import { EventEmitter } from 'events';
 import { createServer, Server, ServerOptions } from 'https';
 import chalk from 'chalk';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
+import bearerToken from 'express-bearer-token';
 import graphqlHTTP, { OptionsData } from 'express-graphql';
 import { GraphQLSchema, execute, subscribe } from 'graphql';
 import expressPlayground from 'graphql-playground-middleware-express';
 import { mergeSchemas } from 'graphql-tools';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
+
 import { IJwtConfig } from '../authentificator/authentificator';
 import { authentificatorMiddleware } from '../authentificator/authentificatorMiddleware';
 import { knexProvider, IDBConfig, KnexInstance } from '../databaseManager';
@@ -17,6 +20,7 @@ import { errorHandlerMiddleware, requestHandlerMiddleware, ILoggerCollection } f
 import { accountsSchema } from '../schemas';
 import { configureTokens } from '../utils/configureTokens';
 import { CronJobManager } from '../utils/cronJobManager';
+import { headersMiddleware } from '../utils/headersMiddleware';
 
 class App {
   public props: IInitDefaultProps;
@@ -111,7 +115,10 @@ class App {
       subscriptionsEndpoint,
       usePlayground,
       useVoyager,
+      serverOptions,
     } = this.props as IInitDefaultProps;
+
+    const { cookieSign } = serverOptions;
 
     logger.server.debug('Create application proc was started');
 
@@ -144,10 +151,31 @@ class App {
       emitter,
     };
 
-    // Base middlewares
-    app.use(cors());
+    app.use(
+      cors({
+        credentials: true,
+        origin: (origin, callback) => {
+          return callback(null, true);
+        },
+      }),
+    );
     app.use(express.json({ limit: '50mb' }));
     app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+    app.use(cookieParser(cookieSign));
+    app.use(
+      bearerToken({
+        bodyKey: 'AccessToken',
+        queryKey: 'AccessToken',
+        headerKey: 'Bearer',
+        reqKey: 'Authorization',
+        cookie: {
+          signed: true,
+          secret: 'YOUR_APP_SECRET',
+          key: 'AccessToken',
+        },
+      }),
+    );
+    app.use(headersMiddleware());
 
     // Request handler (request logger) middleware
     // This middleware must be defined first
@@ -252,6 +280,7 @@ export interface IInitProps {
 interface IServerOptions extends ServerOptions {
   key: ServerOptions['key'];
   cert: ServerOptions['cert'];
+  cookieSign: string;
 }
 
 interface IInitDefaultProps extends IInitProps {

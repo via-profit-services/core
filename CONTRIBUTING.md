@@ -72,7 +72,9 @@ JWT_PUBLICKEY=./keys/jwtRS256.key.pub
 SSL_KEY=/home/me/.local/share/mkcert/localhost-key.pem
 SSL_CERT=/home/me/.local/share/mkcert/localhost.pem
 
-TIMEZONE=Asia/Yekaterinburg
+TIMEZONE=UTC
+
+COOKIES_SIGN_SECRET= <-- Секрет для подписи Cookies
 ```
 
 **Замечание:** Старайтесь не использовать `process.cwd()` там, где это пересекается с `knex`, т.к. knex переопределяет рабоичю директорию в некоторых случаях, например, при использовании миграций

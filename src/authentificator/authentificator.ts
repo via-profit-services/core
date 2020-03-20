@@ -55,9 +55,17 @@ export class Authentificator {
   public static extractToken(request: Request): string | undefined {
     const { headers } = request;
     const { authorization } = headers;
-    const bearer = String(authorization).split(' ')[0];
-    const token = String(authorization).split(' ')[1];
-    return bearer.toLocaleLowerCase() === 'bearer' ? token : '';
+    const [bearer, tokenFromHeader] = String(authorization).split(' ');
+
+    if (bearer.toLocaleLowerCase() === 'bearer' && tokenFromHeader !== '') {
+      return tokenFromHeader;
+    }
+
+    if ('Authorization' in request.signedCookies) {
+      return request.signedCookies.Authorization;
+    }
+
+    return undefined;
   }
 
   /**
@@ -364,8 +372,8 @@ export type AccountByLoginResponse = Promise<{
  * @see: JWT configuration. See [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)
  */
 export interface IJwtConfig extends Pick<SignOptions, 'algorithm' | 'issuer'> {
-  accessTokenExpiresIn: SignOptions['expiresIn'];
-  refreshTokenExpiresIn: SignOptions['expiresIn'];
+  accessTokenExpiresIn: number;
+  refreshTokenExpiresIn: number;
   /**
    * Cert private key file path
    */

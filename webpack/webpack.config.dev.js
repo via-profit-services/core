@@ -1,5 +1,4 @@
 const path = require('path');
-const FileManagerPlugin = require('filemanager-webpack-plugin');
 const NodemonPlugin = require('nodemon-webpack-plugin');
 const { ProgressPlugin } = require('webpack');
 const merge = require('webpack-merge');
@@ -21,14 +20,10 @@ module.exports = merge(baseConfig, {
   devtool: 'inline-source-map',
   plugins: [
     new ProgressPlugin(),
-    new FileManagerPlugin({
-      onStart: {
-        delete: ['./build'],
-      },
-    }),
     new NodemonPlugin({
       script: path.resolve(__dirname, '../build/playground.js'),
       watch: path.resolve(__dirname, '../build'),
+      verbose: true,
     }),
   ],
   externals: [nodeExternals()],
