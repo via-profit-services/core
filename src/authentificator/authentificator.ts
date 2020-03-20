@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { IContext } from '../app';
 import { ServerError, UnauthorizedError } from '../errorHandlers';
+import { AUTHORIZATION_KEY, ACCESS_TOKEN_BEARER } from '../utils';
 import { IListResponse, IKnexFilterDefaults } from '../utils/generateCursorBundle';
 
 export enum TokenType {
@@ -45,27 +46,6 @@ export class Authentificator {
   public static cryptUserPassword(password: string) {
     const salt = bcryptjs.genSaltSync(10);
     return bcryptjs.hashSync(password, salt);
-  }
-
-  /**
-   * Extract Token from HTTP request headers
-   * @param  {Request} request
-   * @returns string
-   */
-  public static extractToken(request: Request): string | undefined {
-    const { headers } = request;
-    const { authorization } = headers;
-    const [bearer, tokenFromHeader] = String(authorization).split(' ');
-
-    if (bearer.toLocaleLowerCase() === 'bearer' && tokenFromHeader !== '') {
-      return tokenFromHeader;
-    }
-
-    if ('Authorization' in request.signedCookies) {
-      return request.signedCookies.Authorization;
-    }
-
-    return undefined;
   }
 
   /**
@@ -213,6 +193,29 @@ export class Authentificator {
     await knex.del('tokens').where({
       id: tokenId,
     });
+  }
+
+  /**
+   * Extract Token from HTTP request headers
+   * @param  {Request} request
+   * @returns string
+   */
+  public static extractToken(request: Request): string {
+    const { headers } = request;
+
+    if (AUTHORIZATION_KEY in headers) {
+      const [bearer, tokenFromHeader] = String(headers[AUTHORIZATION_KEY]).split(' ');
+
+      if (bearer === ACCESS_TOKEN_BEARER && tokenFromHeader !== '') {
+        return String(tokenFromHeader);
+      }
+    }
+
+    if (AUTHORIZATION_KEY in request.signedCookies) {
+      return String(request.signedCookies[AUTHORIZATION_KEY]);
+    }
+
+    return '';
   }
 
   public async checkTokenExist(tokenId: string): Promise<boolean> {

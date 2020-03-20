@@ -1,0 +1,12 @@
+export const AUTHORIZATION_KEY = 'Authorization';
+export const ACCESS_TOKEN_BEARER = 'Bearer';
+export const DATABASE_CHARSET = 'UTF8';
+export const DATABASE_CLIENT = 'pg';
+export const DEFAULT_SERVER_PORT = 4000;
+export const DEFAULT_GRAPHQL_ENDPOINT = '/graphql';
+export const DEFAULT_GRAPHQL_SUBSCRIPTIONS_ENDPOINT = '/subscriptions';
+export const DEFAULT_SERVER_TIMEZONE = 'UTC';
+export const DEFAULT_ROUTE_AUTH = '/auth';
+export const DEFAULT_ROUTE_PLAYGROUND = '/playground';
+export const DEFAULT_ROUTE_VOYAGER = '/voyager';
+export const MAXIMUM_REQUEST_BODY_SIZE = '50mb';
