@@ -61,7 +61,7 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
 
       // set cookie
       res.cookie('Authorization', tokens.accessToken.token, {
-        maxAge: config.context.jwt.accessTokenExpiresIn * 1000,
+        expires: new Date(new Date().getTime() + config.context.jwt.accessTokenExpiresIn * 1000),
         signed: true,
         httpOnly: true,
         secure: true,
