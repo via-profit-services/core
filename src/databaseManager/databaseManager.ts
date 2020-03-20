@@ -4,9 +4,8 @@ import moment from 'moment-timezone';
 import { types } from 'pg';
 import { ServerError } from '../errorHandlers';
 import { ILoggerCollection } from '../logger';
+import { DATABASE_CHARSET, DATABASE_CLIENT } from '../utils';
 
-const CHARSET = 'UTF8';
-const CLIENT = 'pg';
 const ENABLE_PG_TYPES = true;
 
 const knexProvider = (config: IDBConfig) => {
@@ -32,21 +31,21 @@ const knexProvider = (config: IDBConfig) => {
 
   let count = 0;
   const instance = knex({
-    client: CLIENT,
+    client: DATABASE_CLIENT,
     connection,
     pool: {
       afterCreate: (conn: any, done: Function) => {
         conn.query(
           `
             SET TIMEZONE = '${timezone}';
-            SET CLIENT_ENCODING = ${CHARSET};
+            SET CLIENT_ENCODING = ${DATABASE_CHARSET};
           `,
           (err: any) => {
             if (err) {
               logger.sql.debug('Connection error', { err });
             } else {
               logger.sql.debug(`The TIMEZONE was set to "${timezone}"`);
-              logger.sql.debug(`The charset was set to "${CHARSET}"`);
+              logger.sql.debug(`The charset was set to "${DATABASE_CHARSET}"`);
             }
 
             done(err, conn);

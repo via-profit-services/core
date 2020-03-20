@@ -5,7 +5,6 @@ import chalk from 'chalk';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
-import bearerToken from 'express-bearer-token';
 import graphqlHTTP, { OptionsData } from 'express-graphql';
 import { GraphQLSchema, execute, subscribe } from 'graphql';
 import expressPlayground from 'graphql-playground-middleware-express';
@@ -18,6 +17,18 @@ import { authentificatorMiddleware } from '../authentificator/authentificatorMid
 import { knexProvider, IDBConfig, KnexInstance } from '../databaseManager';
 import { errorHandlerMiddleware, requestHandlerMiddleware, ILoggerCollection } from '../logger';
 import { accountsSchema } from '../schemas';
+import {
+  // AUTHORIZATION_KEY,
+  // ACCESS_TOKEN_BEARER,
+  DEFAULT_SERVER_PORT,
+  DEFAULT_GRAPHQL_ENDPOINT,
+  DEFAULT_GRAPHQL_SUBSCRIPTIONS_ENDPOINT,
+  DEFAULT_SERVER_TIMEZONE,
+  DEFAULT_ROUTE_AUTH,
+  DEFAULT_ROUTE_PLAYGROUND,
+  DEFAULT_ROUTE_VOYAGER,
+  MAXIMUM_REQUEST_BODY_SIZE,
+} from '../utils';
 import { configureTokens } from '../utils/configureTokens';
 import { CronJobManager } from '../utils/cronJobManager';
 import { headersMiddleware } from '../utils/headersMiddleware';
@@ -28,10 +39,10 @@ class App {
   public constructor(props: IInitProps) {
     // combine default props with passed props
     this.props = {
-      port: 4000,
-      endpoint: '/graphql',
-      timezone: 'UTC',
-      subscriptionsEndpoint: '/subscriptions',
+      port: DEFAULT_SERVER_PORT,
+      endpoint: DEFAULT_GRAPHQL_ENDPOINT,
+      timezone: DEFAULT_SERVER_TIMEZONE,
+      subscriptionsEndpoint: DEFAULT_GRAPHQL_SUBSCRIPTIONS_ENDPOINT,
       usePlayground: process.env.NODE_ENV === 'development',
       useVoyager: process.env.NODE_ENV === 'development',
       ...props,
@@ -39,9 +50,9 @@ class App {
 
     // combine default routes with passed
     this.props.routes = {
-      auth: '/auth',
-      playground: '/playground',
-      voyager: '/voyager',
+      auth: DEFAULT_ROUTE_AUTH,
+      playground: DEFAULT_ROUTE_PLAYGROUND,
+      voyager: DEFAULT_ROUTE_VOYAGER,
       ...this.props.routes,
     } as IInitDefaultProps['routes'];
   }
@@ -159,22 +170,9 @@ class App {
         },
       }),
     );
-    app.use(express.json({ limit: '50mb' }));
-    app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+    app.use(express.json({ limit: MAXIMUM_REQUEST_BODY_SIZE }));
+    app.use(express.urlencoded({ extended: true, limit: MAXIMUM_REQUEST_BODY_SIZE }));
     app.use(cookieParser(cookieSign));
-    app.use(
-      bearerToken({
-        bodyKey: 'AccessToken',
-        queryKey: 'AccessToken',
-        headerKey: 'Bearer',
-        reqKey: 'Authorization',
-        cookie: {
-          signed: true,
-          secret: 'YOUR_APP_SECRET',
-          key: 'AccessToken',
-        },
-      }),
-    );
     app.use(headersMiddleware());
 
     // Request handler (request logger) middleware

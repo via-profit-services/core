@@ -3,6 +3,7 @@ import { NextFunction, Request, Response, Router } from 'express';
 import asyncHandler from 'express-async-handler';
 import { IContext } from '../app';
 import { BadRequestError } from '../errorHandlers';
+import { AUTHORIZATION_KEY, ACCESS_TOKEN_BEARER } from '../utils';
 import { Authentificator, ResponseErrorType, TokenType } from './authentificator';
 
 const authentificatorMiddleware = (config: IMiddlewareConfig) => {
@@ -59,8 +60,17 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
         deviceInfo,
       });
 
-      // set cookie
-      res.cookie('Authorization', tokens.accessToken.token, {
+      const cookiesExpires = new Date(new Date().getTime() + config.context.jwt.accessTokenExpiresIn * 1000);
+
+      res.cookie('uuid', account.id, {
+        expires: cookiesExpires,
+        signed: false, // this is not a typo. In this case «signed» need to be a false
+        httpOnly: false, // this is not a typo. In this case «httpOnly» need to be a false
+        secure: true,
+      });
+
+      // set Authorization cookie
+      res.cookie(AUTHORIZATION_KEY, tokens.accessToken.token, {
         expires: new Date(new Date().getTime() + config.context.jwt.accessTokenExpiresIn * 1000),
         signed: true,
         httpOnly: true,
@@ -69,7 +79,7 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
 
       return res.status(200).json({
         accessToken: tokens.accessToken.token,
-        tokenType: 'bearer',
+        tokenType: ACCESS_TOKEN_BEARER,
         expiresIn: config.context.jwt.accessTokenExpiresIn,
         refreshToken: tokens.refreshToken.token,
       });
@@ -93,11 +103,12 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
   router.post(
     `${authUrl}/refresh-token`,
     asyncHandler(async (req: Request, res: Response) => {
-      const { body, headers } = req;
-      const { token } = body;
+      const { headers } = req;
+
+      const token = Authentificator.extractToken(req);
 
       // try to verify refresh token
-      const tokenPayload = Authentificator.verifyToken(String(token), context.jwt.publicKey);
+      const tokenPayload = Authentificator.verifyToken(token, context.jwt.publicKey);
 
       if (tokenPayload.type !== TokenType.refresh) {
         logger.auth.info('Tried to refresh token by access token. Rejected', { payload: tokenPayload });
@@ -165,7 +176,7 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
       }
 
       const token = Authentificator.extractToken(req);
-      const payload = Authentificator.verifyToken(token, publicKey);
+      const payload = Authentificator.verifyToken(String(token), publicKey);
 
       if (payload.type !== TokenType.access) {
         return Authentificator.sendResponseError(ResponseErrorType.isNotAnAccessToken, res);
