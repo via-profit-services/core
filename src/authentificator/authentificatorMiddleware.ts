@@ -2,6 +2,7 @@ import DeviceDetector from 'device-detector-js';
 import { NextFunction, Request, Response, Router } from 'express';
 import asyncHandler from 'express-async-handler';
 import { IContext } from '../app';
+import { BadRequestError } from '../errorHandlers';
 import { Authentificator, ResponseErrorType, TokenType } from './authentificator';
 
 const authentificatorMiddleware = (config: IMiddlewareConfig) => {
@@ -33,10 +34,15 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
     `${authUrl}/access-token`,
     asyncHandler(async (req: Request, res: Response) => {
       const { body, headers } = req;
-      const { login, password } = body;
 
       const deviceDetector = new DeviceDetector();
       const deviceInfo = deviceDetector.parse(headers['user-agent']);
+
+      const { login, password } = body;
+
+      if (typeof login !== 'string' || typeof password !== 'string') {
+        throw new BadRequestError('login and password must be provied');
+      }
 
       logger.auth.info('Access token request', { login });
 
@@ -51,6 +57,15 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
       const tokens = await authentificator.registerTokens({
         uuid: account.id,
         deviceInfo,
+      });
+
+      // set cookie
+      // TODO: uncomment secur params
+      res.cookie('Authorization', tokens.accessToken.token, {
+        maxAge: config.context.jwt.accessTokenExpiresIn,
+        signed: true,
+        // httpOnly: true,
+        // secure: true,
       });
 
       return res.status(200).json({
@@ -83,7 +98,7 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
       const { token } = body;
 
       // try to verify refresh token
-      const tokenPayload = Authentificator.verifyToken(token, context.jwt.publicKey);
+      const tokenPayload = Authentificator.verifyToken(String(token), context.jwt.publicKey);
 
       if (tokenPayload.type !== TokenType.refresh) {
         logger.auth.info('Tried to refresh token by access token. Rejected', { payload: tokenPayload });
@@ -134,7 +149,7 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
       const { body } = req;
       const { token } = body;
 
-      const payload = Authentificator.verifyToken(token, publicKey);
+      const payload = Authentificator.verifyToken(String(token), publicKey);
 
       res.json(payload);
     }),

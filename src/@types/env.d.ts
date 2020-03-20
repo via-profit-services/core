@@ -36,5 +36,7 @@ declare namespace NodeJS {
 
     SSL_KEY: string;
     SSL_CERT: string;
+
+    COOKIES_SIGN_SECRET: string;
   }
 }
