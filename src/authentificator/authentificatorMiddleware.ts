@@ -3,7 +3,7 @@ import { NextFunction, Request, Response, Router } from 'express';
 import asyncHandler from 'express-async-handler';
 import { IContext } from '../app';
 import { BadRequestError } from '../errorHandlers';
-import { AUTHORIZATION_KEY, ACCESS_TOKEN_BEARER } from '../utils';
+import { TOKEN_AUTHORIZATION_KEY, TOKEN_BEARER } from '../utils';
 import { Authentificator, ResponseErrorType, TokenType } from './authentificator';
 
 const authentificatorMiddleware = (config: IMiddlewareConfig) => {
@@ -70,7 +70,7 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
       });
 
       // set Authorization cookie
-      res.cookie(AUTHORIZATION_KEY, tokens.accessToken.token, {
+      res.cookie(TOKEN_AUTHORIZATION_KEY, tokens.accessToken.token, {
         expires: new Date(new Date().getTime() + config.context.jwt.accessTokenExpiresIn * 1000),
         signed: true,
         httpOnly: true,
@@ -79,7 +79,7 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
 
       return res.status(200).json({
         accessToken: tokens.accessToken.token,
-        tokenType: ACCESS_TOKEN_BEARER,
+        tokenType: TOKEN_BEARER,
         expiresIn: config.context.jwt.accessTokenExpiresIn,
         refreshToken: tokens.refreshToken.token,
       });
