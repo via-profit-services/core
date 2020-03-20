@@ -226,6 +226,7 @@ export const MyQueries: IResolverObject<any, IContext, IListArgs> = {
 | `serverOptions` | `https.ServerOptions` | Объект настроек `https` сервера |
 | `serverOptions.key` | `string` | Путь до файла приватного ключа сертификата домена (SSL) |
 | `serverOptions.cert` | `string` | Путь до файла сертификата домена (SSL) |
+| `serverOptions.cookieSign` | `string` | Секретный ключ для подписи Cookies |
 
 
 ## <a name="context"></a> Контекст

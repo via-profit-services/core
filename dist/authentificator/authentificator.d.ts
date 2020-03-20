@@ -72,8 +72,8 @@ export declare type AccountByLoginResponse = Promise<{
  * @see: JWT configuration. See [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)
  */
 export interface IJwtConfig extends Pick<SignOptions, 'algorithm' | 'issuer'> {
-    accessTokenExpiresIn: SignOptions['expiresIn'];
-    refreshTokenExpiresIn: SignOptions['expiresIn'];
+    accessTokenExpiresIn: number;
+    refreshTokenExpiresIn: number;
     /**
      * Cert private key file path
      */
