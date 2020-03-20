@@ -46,6 +46,7 @@ export interface IInitProps {
 interface IServerOptions extends ServerOptions {
     key: ServerOptions['key'];
     cert: ServerOptions['cert'];
+    cookieSign: string;
 }
 interface IInitDefaultProps extends IInitProps {
     port: number;
