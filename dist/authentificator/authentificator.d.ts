@@ -30,12 +30,6 @@ export declare class Authentificator {
      */
     static cryptUserPassword(password: string): string;
     /**
-     * Extract Token from HTTP request headers
-     * @param  {Request} request
-     * @returns string
-     */
-    static extractToken(request: Request): string | undefined;
-    /**
      * Verify JWT token
      * @param  {string} token
      * @param  {string} publicKeyPath
@@ -56,6 +50,12 @@ export declare class Authentificator {
         refresh: number;
     }): ITokenPackage;
     revokeToken(tokenId: string): Promise<void>;
+    /**
+     * Extract Token from HTTP request headers
+     * @param  {Request} request
+     * @returns string
+     */
+    static extractToken(request: Request): string;
     checkTokenExist(tokenId: string): Promise<boolean>;
     getAccountByLogin(login: IAccount['login'], password?: string): AccountByLoginResponse;
     static sendResponseError(responsetype: ResponseErrorType, resp: Response): Response;
