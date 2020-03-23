@@ -56,7 +56,7 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
 
       // success
       const tokens = await authentificator.registerTokens({
-        id: account.id,
+        uuid: account.id,
         deviceInfo,
       });
 
@@ -128,7 +128,7 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
 
       // create new tokens
       const tokens = await authentificator.registerTokens({
-        id: tokenPayload.id,
+        uuid: tokenPayload.uuid,
         deviceInfo,
       });
 
