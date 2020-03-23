@@ -70,10 +70,10 @@ export class Authentificator {
 
   /**
    * Register tokens
-   * @param  {{id:string;deviceInfo:{};}} data
+   * @param  {{uuid:string;deviceInfo:{};}} data
    * @returns ITokenInfo
    */
-  public async registerTokens(data: { id: string; deviceInfo: {} }): Promise<ITokenPackage> {
+  public async registerTokens(data: { uuid: string; deviceInfo: {} }): Promise<ITokenPackage> {
     const { context } = this.props;
     const { knex, logger } = context;
 
@@ -81,12 +81,16 @@ export class Authentificator {
       .select<any, Pick<IAccount, 'id' | 'roles'>[]>(['id', 'roles'])
       .from('accounts')
       .where({
-        id: data.id,
+        id: data.uuid,
       })
       .first();
 
+    if (typeof account.id !== 'string') {
+      throw new ServerError(`Account with id[${account.id}] not found`);
+    }
+
     const tokens = this.generateTokens({
-      id: account.id,
+      uuid: account.id,
       roles: account.roles,
     });
 
@@ -94,7 +98,7 @@ export class Authentificator {
     try {
       await knex('tokens').insert({
         id: tokens.accessToken.payload.id,
-        account: tokens.accessToken.payload.id,
+        account: tokens.accessToken.payload.uuid,
         type: TokenType.access,
         deviceInfo: data.deviceInfo,
         expiredAt: moment(tokens.accessToken.payload.exp).format(),
@@ -107,7 +111,7 @@ export class Authentificator {
     try {
       await knex('tokens').insert({
         id: tokens.refreshToken.payload.id,
-        account: tokens.refreshToken.payload.id,
+        account: tokens.refreshToken.payload.uuid,
         type: TokenType.refresh,
         associated: tokens.accessToken.payload.id,
         deviceInfo: data.deviceInfo,
@@ -123,7 +127,7 @@ export class Authentificator {
   }
 
   public generateTokens(
-    payload: Pick<ITokenInfo['payload'], 'id' | 'roles'>,
+    payload: Pick<ITokenInfo['payload'], 'uuid' | 'roles'>,
     exp?: {
       access: number;
       refresh: number;
@@ -398,23 +402,41 @@ export interface ITokenPackage {
 export interface IAccessToken {
   token: string;
   payload: {
+    /**
+     * Token type (only for internal identify)
+     */
     type: TokenType.access;
+    /**
+     * Token ID
+     */
     id: string;
+
+    /**
+     * Account ID
+     */
+    uuid: string;
+
+    /**
+     * Account roles array
+     */
     roles: string[];
     exp: number;
     iss: string;
   };
 }
 
-export interface IRefreshToken {
+interface IRefreshToken {
   token: string;
-  payload: {
+  payload: Omit<IAccessToken['payload'], 'type'> & {
+    /**
+     * Token type (only for internal identify)
+     */
     type: TokenType.refresh;
-    id: string;
-    roles: string[];
+
+    /**
+     * Access token ID associated value
+     */
     associated: string;
-    exp: number;
-    iss: string;
   };
 }
 
