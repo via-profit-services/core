@@ -6,7 +6,7 @@ const configureTokens = (roles: string[], context: IContext) => {
   const authentificator = new Authentificator({ context });
   const tokens = authentificator.generateTokens(
     {
-      uuid: uuidv4(),
+      id: uuidv4(),
       roles,
     },
     {
