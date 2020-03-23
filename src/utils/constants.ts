@@ -1,5 +1,5 @@
-export const AUTHORIZATION_KEY = 'Authorization';
-export const ACCESS_TOKEN_BEARER = 'Bearer';
+export const TOKEN_AUTHORIZATION_KEY = 'Authorization';
+export const TOKEN_BEARER = 'Bearer';
 export const DATABASE_CHARSET = 'UTF8';
 export const DATABASE_CLIENT = 'pg';
 export const DEFAULT_SERVER_PORT = 4000;

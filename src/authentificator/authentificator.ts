@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { IContext } from '../app';
 import { ServerError, UnauthorizedError } from '../errorHandlers';
-import { AUTHORIZATION_KEY, ACCESS_TOKEN_BEARER } from '../utils';
+import { TOKEN_AUTHORIZATION_KEY, TOKEN_BEARER } from '../utils';
 import { IListResponse, IKnexFilterDefaults } from '../utils/generateCursorBundle';
 
 export enum TokenType {
@@ -203,16 +203,16 @@ export class Authentificator {
   public static extractToken(request: Request): string {
     const { headers } = request;
 
-    if (AUTHORIZATION_KEY in headers) {
-      const [bearer, tokenFromHeader] = String(headers[AUTHORIZATION_KEY]).split(' ');
+    if (TOKEN_AUTHORIZATION_KEY.toLocaleLowerCase() in headers) {
+      const [bearer, tokenFromHeader] = String(headers[TOKEN_AUTHORIZATION_KEY.toLocaleLowerCase()]).split(' ');
 
-      if (bearer === ACCESS_TOKEN_BEARER && tokenFromHeader !== '') {
+      if (bearer === TOKEN_BEARER && tokenFromHeader !== '') {
         return String(tokenFromHeader);
       }
     }
 
-    if (AUTHORIZATION_KEY in request.signedCookies) {
-      return String(request.signedCookies[AUTHORIZATION_KEY]);
+    if (TOKEN_AUTHORIZATION_KEY in request.signedCookies) {
+      return String(request.signedCookies[TOKEN_AUTHORIZATION_KEY]);
     }
 
     return '';
@@ -236,7 +236,7 @@ export class Authentificator {
     const { knex } = context;
 
     const account = await knex
-      .select<any, Pick<IAccount, 'id' | 'password' | 'status'>>(['id', 'password', 'status'])
+      .select<any, Pick<IAccount, 'id' | 'password' | 'status' | 'roles'>>(['id', 'password', 'status', 'roles'])
       .from('accounts')
       .where({
         login,
@@ -275,6 +275,7 @@ export class Authentificator {
         id: account.id,
         password: account.password,
         status: account.status,
+        roles: account.roles,
       },
     };
   }
@@ -368,7 +369,7 @@ interface IProps {
 
 export type AccountByLoginResponse = Promise<{
   error?: ResponseErrorType;
-  account: Pick<IAccount, 'id' | 'password' | 'status'> | false;
+  account: Pick<IAccount, 'id' | 'password' | 'status' | 'roles'> | false;
 }>;
 
 /**
