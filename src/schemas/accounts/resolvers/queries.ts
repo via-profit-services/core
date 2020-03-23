@@ -3,7 +3,7 @@ import { IContext } from '../../../app';
 import { Authentificator, AccountStatus } from '../../../authentificator';
 import { buildCursorConnection, buildQueryFilter, IDirectionRange } from '../../../utils/generateCursorBundle';
 
-export const AccountsQueries: IResolverObject<any, IContext, IListArgs> = {
+export const AccountsQuery: IResolverObject<any, IContext, IListArgs> = {
   list: async (source, args, context) => {
     const authentificator = new Authentificator({ context });
     const knexBuilderFilter = buildQueryFilter(args);
@@ -25,4 +25,4 @@ interface IListArgs {
   };
 }
 
-export default AccountsQueries;
+export default AccountsQuery;

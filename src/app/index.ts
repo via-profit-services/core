@@ -16,7 +16,7 @@ import { IJwtConfig } from '../authentificator/authentificator';
 import { authentificatorMiddleware } from '../authentificator/authentificatorMiddleware';
 import { knexProvider, IDBConfig, KnexInstance } from '../databaseManager';
 import { errorHandlerMiddleware, requestHandlerMiddleware, ILoggerCollection } from '../logger';
-import { accountsSchema } from '../schemas';
+import { accountsSchema, InfoSchema } from '../schemas';
 import {
   DEFAULT_SERVER_PORT,
   DEFAULT_GRAPHQL_ENDPOINT,
@@ -135,7 +135,7 @@ class App {
     const app = express();
 
     // merge user schemas and legacy
-    const schema = mergeSchemas({ schemas: [...schemas, accountsSchema] });
+    const schema = mergeSchemas({ schemas: [...schemas, accountsSchema, InfoSchema] });
 
     // define knex instance
     const knex = knexProvider({

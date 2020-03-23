@@ -1,10 +1,10 @@
-import { AccountsQueries } from './queries';
+import { AccountsQuery } from './queries';
 
 const resolvers = {
   Query: {
     accounts: () => ({}),
   },
-  AccountsQueries,
+  AccountsQuery,
 };
 
 export default resolvers;

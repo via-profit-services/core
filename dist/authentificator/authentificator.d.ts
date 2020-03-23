@@ -38,14 +38,14 @@ export declare class Authentificator {
     static verifyToken(token: string, publicKeyPath: string): ITokenInfo['payload'];
     /**
      * Register tokens
-     * @param  {{id:string;deviceInfo:{};}} data
+     * @param  {{uuid:string;deviceInfo:{};}} data
      * @returns ITokenInfo
      */
     registerTokens(data: {
-        id: string;
+        uuid: string;
         deviceInfo: {};
     }): Promise<ITokenPackage>;
-    generateTokens(payload: Pick<ITokenInfo['payload'], 'id' | 'roles'>, exp?: {
+    generateTokens(payload: Pick<ITokenInfo['payload'], 'uuid' | 'roles'>, exp?: {
         access: number;
         refresh: number;
     }): ITokenPackage;
@@ -91,22 +91,37 @@ export interface ITokenPackage {
 export interface IAccessToken {
     token: string;
     payload: {
+        /**
+         * Token type (only for internal identify)
+         */
         type: TokenType.access;
+        /**
+         * Token ID
+         */
         id: string;
+        /**
+         * Account ID
+         */
+        uuid: string;
+        /**
+         * Account roles array
+         */
         roles: string[];
         exp: number;
         iss: string;
     };
 }
-export interface IRefreshToken {
+interface IRefreshToken {
     token: string;
-    payload: {
+    payload: Omit<IAccessToken['payload'], 'type'> & {
+        /**
+         * Token type (only for internal identify)
+         */
         type: TokenType.refresh;
-        id: string;
-        roles: string[];
+        /**
+         * Access token ID associated value
+         */
         associated: string;
-        exp: number;
-        iss: string;
     };
 }
 export interface IResponseError {

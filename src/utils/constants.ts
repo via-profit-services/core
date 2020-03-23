@@ -10,3 +10,5 @@ export const DEFAULT_ROUTE_AUTH = '/auth';
 export const DEFAULT_ROUTE_PLAYGROUND = '/playground';
 export const DEFAULT_ROUTE_VOYAGER = '/voyager';
 export const MAXIMUM_REQUEST_BODY_SIZE = '50mb';
+export const DEV_INFO_DEVELOPER_NAME = 'Via Profit';
+export const DEV_INFO_DEVELOPER_URL = 'https://via-profit.ru';

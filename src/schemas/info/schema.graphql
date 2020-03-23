@@ -1,0 +1,30 @@
+type Query {
+  info: InfoQuery!
+}
+
+"""
+Info module queries
+"""
+type InfoQuery {
+
+  """
+  Returns developer info
+  """
+  developer: DeveloperInfo!
+}
+
+  """
+  Developer info
+  """
+type DeveloperInfo {
+
+  """
+  Returns developer company name
+  """
+  name: String!
+
+  """
+  Returns developer url
+  """
+  url: String!
+}
