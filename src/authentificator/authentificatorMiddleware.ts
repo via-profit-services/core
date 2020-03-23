@@ -205,6 +205,10 @@ export { authentificatorMiddleware };
 interface AuthorizationResponse {
   accessToken: string;
   tokenType: typeof TOKEN_BEARER;
+
+  /**
+   * Token expires time in seconds
+   */
   expiresIn: number;
   refreshToken: string;
 }
