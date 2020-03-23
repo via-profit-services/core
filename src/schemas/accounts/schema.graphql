@@ -1,5 +1,5 @@
 type Query {
-  accounts: AccountsQueries!
+  accounts: AccountsQuery!
 }
 
 """
@@ -23,7 +23,7 @@ type AccountsEdge {
 """
 Accounts module queries
 """
-type AccountsQueries {
+type AccountsQuery {
 
   """
   Returns Accounts list bundle
