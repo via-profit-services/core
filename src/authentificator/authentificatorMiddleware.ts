@@ -4,7 +4,7 @@ import asyncHandler from 'express-async-handler';
 import { IContext } from '../app';
 import { BadRequestError } from '../errorHandlers';
 import { TOKEN_AUTHORIZATION_KEY, TOKEN_BEARER } from '../utils';
-import { Authentificator, ResponseErrorType, TokenType } from './authentificator';
+import { Authentificator, ResponseErrorType, TokenType, IAccount } from './authentificator';
 
 const authentificatorMiddleware = (config: IMiddlewareConfig) => {
   const { context, authUrl, allowedUrl } = config;
@@ -60,14 +60,14 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
         deviceInfo,
       });
 
-      const cookiesExpires = new Date(new Date().getTime() + config.context.jwt.accessTokenExpiresIn * 1000);
+      // const cookiesExpires = new Date(new Date().getTime() + config.context.jwt.accessTokenExpiresIn * 1000);
 
-      res.cookie('uuid', account.id, {
-        expires: cookiesExpires,
-        signed: false, // this is not a typo. In this case «signed» need to be a false
-        httpOnly: false, // this is not a typo. In this case «httpOnly» need to be a false
-        secure: true,
-      });
+      // res.cookie('uuid', account.id, {
+      //   expires: cookiesExpires,
+      //   signed: false, // this is not a typo. In this case «signed» need to be a false
+      //   httpOnly: false, // this is not a typo. In this case «httpOnly» need to be a false
+      //   secure: true,
+      // });
 
       // set Authorization cookie
       res.cookie(TOKEN_AUTHORIZATION_KEY, tokens.accessToken.token, {
@@ -77,12 +77,16 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
         secure: true,
       });
 
-      return res.status(200).json({
+      const authResponse: AuthorizationResponse = {
         accessToken: tokens.accessToken.token,
         tokenType: TOKEN_BEARER,
         expiresIn: config.context.jwt.accessTokenExpiresIn,
         refreshToken: tokens.refreshToken.token,
-      });
+        id: account.id,
+        roles: account.roles,
+      };
+
+      return res.status(200).json(authResponse);
     }),
   );
 
@@ -191,6 +195,15 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
 
 export default authentificatorMiddleware;
 export { authentificatorMiddleware };
+
+interface AuthorizationResponse {
+  accessToken: string;
+  tokenType: typeof TOKEN_BEARER;
+  expiresIn: number;
+  refreshToken: string;
+  id: IAccount['id'];
+  roles: IAccount['roles'];
+}
 
 interface IMiddlewareConfig {
   context: IContext;

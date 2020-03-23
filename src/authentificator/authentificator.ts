@@ -236,7 +236,7 @@ export class Authentificator {
     const { knex } = context;
 
     const account = await knex
-      .select<any, Pick<IAccount, 'id' | 'password' | 'status'>>(['id', 'password', 'status'])
+      .select<any, Pick<IAccount, 'id' | 'password' | 'status' | 'roles'>>(['id', 'password', 'status', 'roles'])
       .from('accounts')
       .where({
         login,
@@ -275,6 +275,7 @@ export class Authentificator {
         id: account.id,
         password: account.password,
         status: account.status,
+        roles: account.roles,
       },
     };
   }
@@ -368,7 +369,7 @@ interface IProps {
 
 export type AccountByLoginResponse = Promise<{
   error?: ResponseErrorType;
-  account: Pick<IAccount, 'id' | 'password' | 'status'> | false;
+  account: Pick<IAccount, 'id' | 'password' | 'status' | 'roles'> | false;
 }>;
 
 /**
