@@ -66,7 +66,7 @@ interface IProps {
 }
 export declare type AccountByLoginResponse = Promise<{
     error?: ResponseErrorType;
-    account: Pick<IAccount, 'id' | 'password' | 'status'> | false;
+    account: Pick<IAccount, 'id' | 'password' | 'status' | 'roles'> | false;
 }>;
 /**
  * @see: JWT configuration. See [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)
