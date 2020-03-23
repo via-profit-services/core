@@ -1,3 +1,3 @@
 import accountsSchema from './accounts';
-export default accountsSchema;
-export { accountsSchema };
+import InfoSchema from './info';
+export { accountsSchema, InfoSchema };

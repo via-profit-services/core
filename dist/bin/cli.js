@@ -84,7 +84,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 63);
+/******/ 	return __webpack_require__(__webpack_require__.s = 67);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -96,7 +96,7 @@ module.exports = require("chalk");
 
 /***/ }),
 
-/***/ 63:
+/***/ 67:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -106,12 +106,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs_1 = __importDefault(__webpack_require__(8));
-const path_1 = __importDefault(__webpack_require__(64));
+const fs_1 = __importDefault(__webpack_require__(9));
+const path_1 = __importDefault(__webpack_require__(68));
 const chalk_1 = __importDefault(__webpack_require__(6));
-const dotenv_1 = __importDefault(__webpack_require__(65));
-const glob_1 = __importDefault(__webpack_require__(66));
-const yargs_1 = __importDefault(__webpack_require__(67));
+const dotenv_1 = __importDefault(__webpack_require__(69));
+const glob_1 = __importDefault(__webpack_require__(70));
+const yargs_1 = __importDefault(__webpack_require__(71));
 const listMigrationsPerPackage = () => {
     const list = [];
     const projectsList = glob_1.default.sync(`${process.cwd()}/node_modules/@via-profit-services/*/`);
@@ -206,35 +206,35 @@ exports.default = args;
 
 /***/ }),
 
-/***/ 64:
+/***/ 68:
 /***/ (function(module, exports) {
 
 module.exports = require("path");
 
 /***/ }),
 
-/***/ 65:
+/***/ 69:
 /***/ (function(module, exports) {
 
 module.exports = require("dotenv");
 
 /***/ }),
 
-/***/ 66:
+/***/ 70:
 /***/ (function(module, exports) {
 
 module.exports = require("glob");
 
 /***/ }),
 
-/***/ 67:
+/***/ 71:
 /***/ (function(module, exports) {
 
 module.exports = require("yargs");
 
 /***/ }),
 
-/***/ 8:
+/***/ 9:
 /***/ (function(module, exports) {
 
 module.exports = require("fs");

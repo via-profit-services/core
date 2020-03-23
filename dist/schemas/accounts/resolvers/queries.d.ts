@@ -2,7 +2,7 @@ import { IResolverObject } from 'graphql-tools';
 import { IContext } from '../../../app';
 import { AccountStatus } from '../../../authentificator';
 import { IDirectionRange } from '../../../utils/generateCursorBundle';
-export declare const AccountsQueries: IResolverObject<any, IContext, IListArgs>;
+export declare const AccountsQuery: IResolverObject<any, IContext, IListArgs>;
 interface IListArgs {
     first?: number;
     last?: number;
@@ -14,4 +14,4 @@ interface IListArgs {
         direction: IDirectionRange;
     };
 }
-export default AccountsQueries;
+export default AccountsQuery;
