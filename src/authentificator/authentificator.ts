@@ -70,10 +70,10 @@ export class Authentificator {
 
   /**
    * Register tokens
-   * @param  {{uuid:string;deviceInfo:{};}} data
+   * @param  {{id:string;deviceInfo:{};}} data
    * @returns ITokenInfo
    */
-  public async registerTokens(data: { uuid: string; deviceInfo: {} }): Promise<ITokenPackage> {
+  public async registerTokens(data: { id: string; deviceInfo: {} }): Promise<ITokenPackage> {
     const { context } = this.props;
     const { knex, logger } = context;
 
@@ -81,12 +81,12 @@ export class Authentificator {
       .select<any, Pick<IAccount, 'id' | 'roles'>[]>(['id', 'roles'])
       .from('accounts')
       .where({
-        id: data.uuid,
+        id: data.id,
       })
       .first();
 
     const tokens = this.generateTokens({
-      uuid: account.id,
+      id: account.id,
       roles: account.roles,
     });
 
@@ -94,7 +94,7 @@ export class Authentificator {
     try {
       await knex('tokens').insert({
         id: tokens.accessToken.payload.id,
-        account: tokens.accessToken.payload.uuid,
+        account: tokens.accessToken.payload.id,
         type: TokenType.access,
         deviceInfo: data.deviceInfo,
         expiredAt: moment(tokens.accessToken.payload.exp).format(),
@@ -107,7 +107,7 @@ export class Authentificator {
     try {
       await knex('tokens').insert({
         id: tokens.refreshToken.payload.id,
-        account: tokens.refreshToken.payload.uuid,
+        account: tokens.refreshToken.payload.id,
         type: TokenType.refresh,
         associated: tokens.accessToken.payload.id,
         deviceInfo: data.deviceInfo,
@@ -123,7 +123,7 @@ export class Authentificator {
   }
 
   public generateTokens(
-    payload: Pick<ITokenInfo['payload'], 'uuid' | 'roles'>,
+    payload: Pick<ITokenInfo['payload'], 'id' | 'roles'>,
     exp?: {
       access: number;
       refresh: number;
@@ -399,7 +399,6 @@ export interface IAccessToken {
   token: string;
   payload: {
     type: TokenType.access;
-    uuid: string;
     id: string;
     roles: string[];
     exp: number;
@@ -411,7 +410,6 @@ export interface IRefreshToken {
   token: string;
   payload: {
     type: TokenType.refresh;
-    uuid: string;
     id: string;
     roles: string[];
     associated: string;

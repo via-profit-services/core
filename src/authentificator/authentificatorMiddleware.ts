@@ -4,7 +4,7 @@ import asyncHandler from 'express-async-handler';
 import { IContext } from '../app';
 import { BadRequestError } from '../errorHandlers';
 import { TOKEN_AUTHORIZATION_KEY, TOKEN_BEARER } from '../utils';
-import { Authentificator, ResponseErrorType, TokenType, IAccount } from './authentificator';
+import { Authentificator, ResponseErrorType, TokenType } from './authentificator';
 
 const authentificatorMiddleware = (config: IMiddlewareConfig) => {
   const { context, authUrl, allowedUrl } = config;
@@ -56,18 +56,9 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
 
       // success
       const tokens = await authentificator.registerTokens({
-        uuid: account.id,
+        id: account.id,
         deviceInfo,
       });
-
-      // const cookiesExpires = new Date(new Date().getTime() + config.context.jwt.accessTokenExpiresIn * 1000);
-
-      // res.cookie('uuid', account.id, {
-      //   expires: cookiesExpires,
-      //   signed: false, // this is not a typo. In this case «signed» need to be a false
-      //   httpOnly: false, // this is not a typo. In this case «httpOnly» need to be a false
-      //   secure: true,
-      // });
 
       // set Authorization cookie
       res.cookie(TOKEN_AUTHORIZATION_KEY, tokens.accessToken.token, {
@@ -82,8 +73,6 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
         tokenType: TOKEN_BEARER,
         expiresIn: config.context.jwt.accessTokenExpiresIn,
         refreshToken: tokens.refreshToken.token,
-        id: account.id,
-        roles: account.roles,
       };
 
       return res.status(200).json(authResponse);
@@ -107,9 +96,12 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
   router.post(
     `${authUrl}/refresh-token`,
     asyncHandler(async (req: Request, res: Response) => {
-      const { headers } = req;
+      const { body, headers } = req;
+      const { token } = body;
 
-      const token = Authentificator.extractToken(req);
+      if (typeof token !== 'string') {
+        throw new BadRequestError('token must be provied');
+      }
 
       // try to verify refresh token
       const tokenPayload = Authentificator.verifyToken(token, context.jwt.publicKey);
@@ -136,16 +128,26 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
 
       // create new tokens
       const tokens = await authentificator.registerTokens({
-        uuid: tokenPayload.uuid,
+        id: tokenPayload.id,
         deviceInfo,
       });
 
-      return res.status(200).json({
+      // set Authorization cookie
+      res.cookie(TOKEN_AUTHORIZATION_KEY, tokens.accessToken.token, {
+        expires: new Date(new Date().getTime() + config.context.jwt.accessTokenExpiresIn * 1000),
+        signed: true,
+        httpOnly: true,
+        secure: true,
+      });
+
+      const authResponse: AuthorizationResponse = {
         accessToken: tokens.accessToken.token,
-        tokenType: 'bearer',
+        tokenType: TOKEN_BEARER,
         expiresIn: config.context.jwt.accessTokenExpiresIn,
         refreshToken: tokens.refreshToken.token,
-      });
+      };
+
+      return res.status(200).json(authResponse);
     }),
   );
 
@@ -162,6 +164,10 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
     asyncHandler(async (req: Request, res: Response) => {
       const { body } = req;
       const { token } = body;
+
+      if (typeof token !== 'string') {
+        throw new BadRequestError('token must be provied');
+      }
 
       const payload = Authentificator.verifyToken(String(token), publicKey);
 
@@ -201,8 +207,6 @@ interface AuthorizationResponse {
   tokenType: typeof TOKEN_BEARER;
   expiresIn: number;
   refreshToken: string;
-  id: IAccount['id'];
-  roles: IAccount['roles'];
 }
 
 interface IMiddlewareConfig {
