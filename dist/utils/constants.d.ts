@@ -10,3 +10,5 @@ export declare const DEFAULT_ROUTE_AUTH = "/auth";
 export declare const DEFAULT_ROUTE_PLAYGROUND = "/playground";
 export declare const DEFAULT_ROUTE_VOYAGER = "/voyager";
 export declare const MAXIMUM_REQUEST_BODY_SIZE = "50mb";
+export declare const DEV_INFO_DEVELOPER_NAME = "Via Profit";
+export declare const DEV_INFO_DEVELOPER_URL = "https://via-profit.ru";
