@@ -1,23 +1,22 @@
 # Via Profit services / Core
 
-
 ![via-profit-services-cover](./assets/via-profit-services-cover.png)
 
 > Via Profit services / **Core** - это основной пакет `via-profit-services` предоставляющий [GraphQL](https://graphql.org/)-сервер и сервер аутентификации. Пакет осуществляет обвязку между всеми имеющимися модулями данной системы и реализует собой приложение.
 
-
 ## Содержание
 
- - [Установка и настройка](#setup)
- - [Как использовать](#how-to-use)
- - [Параметры](#options)
- - [Контекст](#context)
- - [Логгер](#logger)
- - [Cron](#cron)
- - [Типы и интерфейсы](#types)
- - [Error handlers (исключения)](#error-handlers)
- - [CLI](#cli)
- - [Contributing](./CONTRIBUTING.md)
+- [Установка и настройка](#setup)
+- [Как использовать](#how-to-use)
+- [Аутентификация](#authentication)
+- [Параметры инициализации](#options)
+- [Контекст](#context)
+- [Логгер](#logger)
+- [Cron](#cron)
+- [Типы и интерфейсы](#types)
+- [Error handlers (исключения)](#error-handlers)
+- [CLI](#cli)
+- [Contributing](./CONTRIBUTING.md)
 
 ## <a name="setup"></a> Установка и настройка
 
@@ -35,8 +34,7 @@ yarn add ssh://git@gitlab.com:via-profit-services/core.git#0.1.6
 
 Список версий см. [здесь](https://gitlab.com/via-profit-services/core/-/tags/)
 
-
-**Замечание:** Чтобы запустить localhost на SSL используйте [mkcert](https://github.com/FiloSottile/mkcert) 
+**Замечание:** Чтобы запустить localhost на SSL используйте [mkcert](https://github.com/FiloSottile/mkcert)
 
 Для работы [JWT](https://github.com/auth0/node-jsonwebtoken) необходимо сгенерировать SSH-ключи используя алгоритм, например, `RS256`.
 
@@ -48,13 +46,13 @@ yarn add ssh://git@gitlab.com:via-profit-services/core.git#0.1.6
 ssh-keygen -t rsa -b 4096 -m PEM -f jwtRS256.key
 openssl rsa -in jwtRS256.key -pubout -outform PEM -out jwtRS256.key.pub
 ```
-После выполнения команд будут создан приватный ключ(`jwtRS256.key`) и публичный ключ (`jwtRS256.key.pub`) 
 
+После выполнения команд будут создан приватный ключ(`jwtRS256.key`) и публичный ключ (`jwtRS256.key.pub`)
 
 Для хранения реквизитов доступа и прочих настроек, зависящих от устройства, на котором разрабатывается и запускается проект, используется [DotEnv](https://github.com/motdotla/dotenv).
 
 В корне проекта (на том же уровне, что и `package.json`) создайте файл `.env` со следующим содержимым:
-**Замечание:**: *Ниже представлен фрагмент минимальных настроек для полноценной работы сервера*
+**Замечание:**: _Ниже представлен фрагмент минимальных настроек для полноценной работы сервера_
 
 ```dosini
 PORT=4000
@@ -148,7 +146,7 @@ interface IListArgs {
 
 export const MyQueries: IResolverObject<any, IContext, IListArgs> = {
   list: async (obj, args, context) => {
-    // аргумент args = { first, last, after, before, orderBy } 
+    // аргумент args = { first, last, after, before, orderBy }
 
     // Преобразование входных данных в фильтр для модели сервиса
     const queryFilter = buildQueryFilter(args);
@@ -185,55 +183,140 @@ export const MyQueries: IResolverObject<any, IContext, IListArgs> = {
 
 Принимает в качестве единственного аргумента `base64` строку, и возвращает ее декодированное значение. Применяется для декодирования курсоров.
 
+## <a name="authentication"></a> Аутентификация
 
-## <a name="options"></a> Параметры
+Сервер аутентификации работает по протоколу [REST](https://ru.wikipedia.org/wiki/REST), т.к. любое обращение к GraphQL требует наличие авторизации, включая интроспекцию схемы.
+
+URL адрес сервера аутентификации определяется по шаблону: `https://localhost:[port][routes.auth]`, по умолчанию - `https://localhost:4000/auth`
+
+### Схема взаимодействия
+
+Сервер аутентификации позволяет получать `Access` токен и обменивать `Refresh` токен на новую пару токенов в соответствии с соглашением об аутентификации JWT. После успешного получения Access токена, сервер сам установит *httpOnly* и *secure* **cookies** с именем `Authorization` и с Access токеном в качестве значения. Это необходимо для того, чтобы ваше клиентское web-приложение автоматически передавало токен авторизации при каждом запросе к GraphQL, но при этом не имело доступа к самому токену ([httpOnly Cookies](https://developer.mozilla.org/ru/docs/Web/HTTP/%D0%9A%D1%83%D0%BA%D0%B8)). Сервер GraphQL, в свою очередь, принимая запрос от клиента проверяет наличие токена авторизации сначала в заголовке `Authorization` и если не находит его там, то ищет значение cookies с именем `Authorization`, ожидая там наличие соответствующего токена. Время жизни таких кук равняется сроку истечения токена.
+
+**Замечание:** Все данные передаются в теле запроса в формате [JSON](https://ru.wikipedia.org/wiki/JSON), а сам запрос доступен только через **POST**.
+
+
+### Методы сервера аутентификации
+
+#### `/access-token`
+
+Метод принимает данные аутентификации и возвращает, в случае успеха, токен 
+
+**Параметры запроса:**
+```json
+{
+  "login": "My login",
+  "password": "My password"
+}
+```
+**Пример ответа:**
+```json
+{
+  "accessToken": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiMGE1YTQyMGUtODJiNS00NGM5LTk...",
+  "tokenType": "Bearer",
+  "expiresIn": 1800,
+  "refreshToken": "2ddhjIOcb8sJLV79Z0ZJNduELR4tBlPe0jc2s2vK3fqaDWJo1EXZ_UHLDLGCDyt0dOLR4tBlPe0..."
+}
+```
+
+В случае ошибки будет возвращен `UnauthorizedError` с кодом **401**
+
+#### `/refresh-token`
+
+**Параметры запроса:**
+```json
+{
+  "token": "2ddhjIOcb8sJLV79Z0ZJNduELR4tBlPe0jc2s2vK3fqaDWJo1EXZ_UHLDLGCDyt0dOLR4tBlPe0...",
+}
+```
+**Пример ответа:**
+```json
+{
+  "accessToken": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiMGE1YTQyMGUtODJiNS00NGM5LTk...",
+  "tokenType": "Bearer",
+  "expiresIn": 1800,
+  "refreshToken": "iWRnvXZ4tnu-lsJOb65ujm43SqEcTERpF_Am7kIfLjCouENyo4nq5sJOb65ujm43SqEcTERsJO..."
+}
+```
+
+В случае ошибки будет возвращен `UnauthorizedError` с кодом **401**
+
+#### `/validate-token`
+
+**Параметры запроса:**
+```json
+{
+  "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiMGE1YTQyMGUtODJiNS00NGM5LTk...",
+}
+```
+**Пример ответа:**
+```json
+{
+  "type": "access",
+  "id": "b485d679-facc-4afe-b6a0-f17ab387db9b",
+  "roles": ["manager", "writer"],
+  "exp": 1584939413,
+  "iss": "viaprofit-services"
+}
+```
+
+В случае ошибки будет возвращен `UnauthorizedError` с кодом **401**
+
+
+## <a name="options"></a> Параметры инициализации
 
 Параметры определяются интерфейсом <IInitProps>.
 
 Список поддерживаемых опций:
 
-| Параметр | Тип | Описание |
-|:---------|:---------|:---------|
-| `port`   | `number` | Номер порта на котором должен запуститься сервер |
-| `endpoint`   | `string` | endpoint graphql сервера, например, `/graphql` |
-| `subscriptionsEndpoint`   | `string` | endpoint graphql сервера subscriptions, например, `/subscriptions` |
-| `timezone` | `string` | Временная зона сервера. `timestamp` значения из базы данных бедет преобразованы в соответствующее часовому поясу время Значение будет добавлено в контекст.  |
-| `database` | `Knex.Config` | Объект параметров для работы с базой данных. Соответствует типу `Knex.Config`, но  |
-| `database.connection` | `Knex.PgConnectionConfig` | Объект подключения к базе данных. Соответствует конфигурации `Postgresql` (см `Knex.PgConnectionConfig`) |
-| `database.connection.database` | `string` | Название базы данных |
-| `database.connection.host` | `string` | Хост базы данных |
-| `database.connection.user` | `string` | Имя пользователя базы данных |
-| `database.connection.password` | `string` | Пароль подключения к базе данных |
-| `database.timezone` | `string` | Временная зона базы данных. Данное значение будет передано в запросе `SET TIMEZONE = ...` при установлении подключения к базе |
-| `database.migrations` | `Knex.MigratorConfig` | Объект настроек миграций |
-| `database.migrations.directory` | `string` | Путь до директории с миграциями |
-| `database.migrations.tableName` | `string` | Название служебной таблицы миграций Knex |
-| `database.migrations.extension` | `enum` | Расшерение файлов миграций (`ts` или `js`) |
-| `database.seeds` | `Knex.SeedsConfig` | Объект настроек сидов |
-| `database.seeds.directory` | `string` | Путь до директории с сидами |
-| `database.seeds.extension` | `enum` | Расшерение файлов сидов (`ts` или `js`) |
-| `jwt` | `IJwtConfig` | Объект настроек [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken). Значение будет добавлено в контекст |
-| `jwt.accessTokenExpiresIn` | `number` | Время в формате Unix Time, определяющее момент, когда токен станет не валидным (время жизни Access токена в секундах) |
-| `jwt.algorithm` | `enum` |  Алгоритм подписи JWT |
-| `jwt.issuer` | `string` | Чувствительная к регистру строка или URI, которая является уникальным идентификатором стороны, генерирующей токен |
-| `jwt.privateKey` | `string` | Путь до файла приватного ключа |
-| `jwt.publicKey` | `string` | Путь до файла с публичным ключом |
-| `jwt.refreshTokenExpiresIn` | `number` | Время в формате Unix Time, определяющее момент, когда токен станет не валидным (время жизни Refresh токена в секундах)  |
-| `logger` | `ILoggerConfig` | Объект настроек логгера |
-| `logger.logDir` | `string` | Путь расположения директории логов |
-| `logger.logDir.loggers` | `{ [key: string]: Logger }` | Объект произвольных логгеров, которые будут доступны в контексте |
-| `schemas` | `graphql.GraphQLSchema[]` | Массив GraphQL схем |
-| `serverOptions` | `https.ServerOptions` | Объект настроек `https` сервера |
-| `serverOptions.key` | `string` | Путь до файла приватного ключа сертификата домена (SSL) |
-| `serverOptions.cert` | `string` | Путь до файла сертификата домена (SSL) |
-| `serverOptions.cookieSign` | `string` | Секретный ключ для подписи Cookies |
-
+| Параметр                        | Тип                         | Обязательный | Описание                                                                                                                                                                         |
+| :------------------------------ | :-------------------------- | :----------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `port`                          | `number`                    |              | Номер порта на котором должен запуститься сервер, по умолчанию - `4000`                                                                                                          |
+| `endpoint`                      | `string`                    |              | endpoint graphql сервера, по умолчанию - `/graphql`                                                                                                                              |
+| `subscriptionsEndpoint`         | `string`                    |              | endpoint graphql сервера subscriptions, по умолчанию - `/subscriptions`                                                                                                          |
+| `timezone`                      | `string`                    |              | Временная зона сервера. `timestamp` значения из базы данных бедет преобразованы в соответствующее часовому поясу время Значение будет добавлено в контекст. По умолчанию - `UTC` |
+| `database`                      | `Knex.Config`               |      Да      | Объект параметров для работы с базой данных. Соответствует типу `Knex.Config`, но                                                                                                |
+| `database.connection`           | `Knex.PgConnectionConfig`   |      Да      | Объект подключения к базе данных. Соответствует конфигурации `Postgresql` (см `Knex.PgConnectionConfig`)                                                                         |
+| `database.connection.database`  | `string`                    |      Да      | Название базы данных                                                                                                                                                             |
+| `database.connection.host`      | `string`                    |      Да      | Хост базы данных                                                                                                                                                                 |
+| `database.connection.user`      | `string`                    |      Да      | Имя пользователя базы данных                                                                                                                                                     |
+| `database.connection.password`  | `string`                    |      Да      | Пароль подключения к базе данных                                                                                                                                                 |
+| `database.timezone`             | `string`                    |      Да      | Временная зона базы данных. Данное значение будет передано в запросе `SET TIMEZONE = ...` при установлении подключения к базе                                                    |
+| `database.migrations`           | `Knex.MigratorConfig`       |      Да      | Объект настроек миграций                                                                                                                                                         |
+| `database.migrations.directory` | `string`                    |      Да      | Путь до директории с миграциями                                                                                                                                                  |
+| `database.migrations.tableName` | `string`                    |      Да      | Название служебной таблицы миграций Knex                                                                                                                                         |
+| `database.migrations.extension` | `enum`                      |      Да      | Расширение файлов миграций (`ts` или `js`)                                                                                                                                       |
+| `database.seeds`                | `Knex.SeedsConfig`          |      Да      | Объект настроек сидов                                                                                                                                                            |
+| `database.seeds.directory`      | `string`                    |      Да      | Путь до директории с сидами                                                                                                                                                      |
+| `database.seeds.extension`      | `enum`                      |      Да      | Расширение файлов сидов (`ts` или `js`)                                                                                                                                          |
+| `jwt`                           | `IJwtConfig`                |      Да      | Объект настроек [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken). Значение будет добавлено в контекст                                                                  |
+| `jwt.accessTokenExpiresIn`      | `number`                    |      Да      | Время в формате Unix Time, определяющее момент, когда токен станет не валидным (время жизни Access токена в секундах)                                                            |
+| `jwt.algorithm`                 | `enum`                      |      Да      | Алгоритм подписи JWT                                                                                                                                                             |
+| `jwt.issuer`                    | `string`                    |      Да      | Чувствительная к регистру строка или URI, которая является уникальным идентификатором стороны, генерирующей токен                                                                |
+| `jwt.privateKey`                | `string`                    |      Да      | Путь до файла приватного ключа                                                                                                                                                   |
+| `jwt.publicKey`                 | `string`                    |      Да      | Путь до файла с публичным ключом                                                                                                                                                 |
+| `jwt.refreshTokenExpiresIn`     | `number`                    |      Да      | Время в формате Unix Time, определяющее момент, когда токен станет не валидным (время жизни Refresh токена в секундах)                                                           |
+| `logger`                        | `ILoggerConfig`             |      Да      | Объект настроек логгера                                                                                                                                                          |
+| `logger.logDir`                 | `string`                    |      Да      | Путь расположения директории логов                                                                                                                                               |
+| `logger.logDir.loggers`         | `{ [key: string]: Logger }` |      Да      | Объект произвольных логгеров, которые будут доступны в контексте                                                                                                                 |
+| `schemas`                       | `graphql.GraphQLSchema[]`   |      Да      | Массив GraphQL схем                                                                                                                                                              |
+| `serverOptions`                 | `https.ServerOptions`       |      Да      | Объект настроек `https` сервера                                                                                                                                                  |
+| `serverOptions.key`             | `string`                    |      Да      | Путь до файла приватного ключа сертификата домена (SSL)                                                                                                                          |
+| `serverOptions.cert`            | `string`                    |      Да      | Путь до файла сертификата домена (SSL)                                                                                                                                           |
+| `serverOptions.cookieSign`      | `string`                    |      Да      | Секретный ключ для подписи Cookies                                                                                                                                               |
+| `routes`                        | `object`                    |              | Объект URL адресов                                                                                                                                                               |
+| `routes.auth`                   | `string`                    |              | URL путь (без схемы и протокола) нахождения сервера аутентификации, по умолчанию - `/auth`                                                                                       |
+| `routes.playground`             | `string`                    |              | URL путь (без схемы и протокола) нахождения Graphiql playground, по умолчанию - `/playground`                                                                                    |
+| `routes.voyager`                | `string`                    |              | URL путь (без схемы и протокола) нахождения Graphiql voyager, по умолчанию - `/voyager`                                                                                          |
+| `usePlayground`                 | `boolean`                   |              | Включить Graphiql Playground (Всегда включен в `development` режиме)                                                                                                             |
+| `useVoyager`                    | `boolean`                   |              | Включить GraphQL Voyager (Всегда включен в `development` режиме)                                                                                                                 |
 
 ## <a name="context"></a> Контекст
 
 Объект контекст передается в соответствии со спецификацией GraphQL и доступен из всех резолверов.
 
 Контекст имеет тип `<IContext>`:
+
 ```ts
 interface IContext {
   endpoint: string; // GraphQL endpoint
@@ -252,6 +335,7 @@ interface IContext {
 При возникновении ошибок, например, если бросить исключение `throw new Error('message')`, текст ошибки и стек вызова будет зарегистрирован в файле `errors-%DATE%.log`. Поэтому везде, где это необходимо, следует использовать [исключения](#error-handlers).
 
 Пример использования логгера в резолвере:
+
 ```ts
 ...
 const { logger } = context;
@@ -261,17 +345,18 @@ logger.server.debug('My debug message');
 ```
 
 Логгер всегда содержит дочерние логгеры:
- - `server` - серверный логгер уровня `debug` для регистрации ошибок и отладочных данных. Имеет два транспорта:
-   - DailyRotateFile уровня `error`. Записывает в файл `errors-%DATE%.log`
-   - DailyRotateFile уровня `debug`. Записывает в файл `debug-%DATE%.log`
- - `sql` - логгер запросов в базу данных. Уровень логгера - `debug`. Имеет два транспорта:
-   - DailyRotateFile уровня `debug`. Записывает в файл `sql-%DATE%.log`
-   - Console уровня `error`. Выводит в консоль
- - `auth` - логгер авторизации. Уровень логгера - `info`. Имеет два транспорта:
-   - DailyRotateFile уровня `info`. Записывает в файл `auth-%DATE%.log`
-   - DailyRotateFile уровня `debug`. Записывает в файл `debug-%DATE%.log`
- - `http` - логгер регистрации всех HTTP запросов к серверу. Уровень логгера - `info`. Имеет один транспорт:
-   - DailyRotateFile уровня `info`. Записывает в файл `http-%DATE%.log`
+
+- `server` - серверный логгер уровня `debug` для регистрации ошибок и отладочных данных. Имеет два транспорта:
+  - DailyRotateFile уровня `error`. Записывает в файл `errors-%DATE%.log`
+  - DailyRotateFile уровня `debug`. Записывает в файл `debug-%DATE%.log`
+- `sql` - логгер запросов в базу данных. Уровень логгера - `debug`. Имеет два транспорта:
+  - DailyRotateFile уровня `debug`. Записывает в файл `sql-%DATE%.log`
+  - Console уровня `error`. Выводит в консоль
+- `auth` - логгер авторизации. Уровень логгера - `info`. Имеет два транспорта:
+  - DailyRotateFile уровня `info`. Записывает в файл `auth-%DATE%.log`
+  - DailyRotateFile уровня `debug`. Записывает в файл `debug-%DATE%.log`
+- `http` - логгер регистрации всех HTTP запросов к серверу. Уровень логгера - `info`. Имеет один транспорт:
+  - DailyRotateFile уровня `info`. Записывает в файл `http-%DATE%.log`
 
 ### Добавление собственных логгеров
 
@@ -295,16 +380,14 @@ const catalogLogger = configureCatalogLogger({
 const logger = configureLogger({
   logDir: LOG_DIR,
   loggers: {
-    catalog: catalogLogger,  // <-- your logger is here
-  }
+    catalog: catalogLogger, // <-- your logger is here
+  },
 });
-
 ```
 
 ## <a name="cron"></a> Cron
 
 Для реализации Cron-подобных заданий используется `CronJobManager` - статический класс, являющийся оберткой над пакетом [Node-Cron](https://github.com/kelektiv/node-cron).
-
 
 ### Методы
 
@@ -312,16 +395,17 @@ const logger = configureLogger({
 
 **CronJobManager.`addJob`** - Добавляет новое `Cron` задание и возвращает инстанс `CronJob`
 
-*Параметры:*
- - *jobName* `string` - Уникальное имя задания
- - *jobConfig* `CronJobParameters` - Объект параметров [Node-cron](https://github.com/kelektiv/node-cron#api)
+_Параметры:_
+
+- _jobName_ `string` - Уникальное имя задания
+- _jobConfig_ `CronJobParameters` - Объект параметров [Node-cron](https://github.com/kelektiv/node-cron#api)
 
 **CronJobManager.`getJob`** - Возвращает инстанс `CronJob` или `undefined`, если искомое задание не зарегистрировано
-*Параметры:*
- - *jobName* `string` - Имя задания
+_Параметры:_
+
+- _jobName_ `string` - Имя задания
 
 **CronJobManager.`getPool`** - Возвращает весь пул заданий, которые имеются в памяти. Пул представлен стандартным типом `Map`
-
 
 ## <a name="types"></a> Типы и интерфейсы
 
@@ -362,10 +446,7 @@ interface IListResponse<TNodeData> {
   nodes: Node<TNodeData>[];
   limit: number;
 }
-
 ```
-
-
 
 ## <a name="error-handlers"></a> Error handlers (исключения)
 
@@ -373,11 +454,11 @@ interface IListResponse<TNodeData> {
 
 Доступные хэндлеры:
 
- - **BadRequestError**. Код состояния ответа **400 Bad Request**.
- - **UnauthorizedError**. Код состояния ответа **401 Unauthorized**.
- - **ForbiddenError**. Код состояния ответа **403 Forbidden**.
- - **NotFoundError**. Код состояния ответа **404 Not Found**.
- - **ServerError**. Код состояния ответа **500 Internal Server Error**.
+- **BadRequestError**. Код состояния ответа **400 Bad Request**.
+- **UnauthorizedError**. Код состояния ответа **401 Unauthorized**.
+- **ForbiddenError**. Код состояния ответа **403 Forbidden**.
+- **NotFoundError**. Код состояния ответа **404 Not Found**.
+- **ServerError**. Код состояния ответа **500 Internal Server Error**.
 
 Пример регистрации ошибки:
 
@@ -393,6 +474,6 @@ throw new BadRequestError('Some Error');
 
 Список команд:
 
-| Команда | Параметры | Описание | Пример |
-|:--------|:----------|:---------|:-------|
+| Команда          | Параметры                                                                                   | Описание                                                                                                                  | Пример                               |
+| :--------------- | :------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------ | :----------------------------------- |
 | `get-migrations` | `--migrations` (alis `-m`) - Копировать миграции<br>`--seeds` (alis `-s`) - копировать сиды | Осуществляет поиск файлов миграций во всех пакетах из `node_modules` и копирует их в директорию миграций текущего проекта | `via-profit-core get-migrations -ms` |

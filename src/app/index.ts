@@ -18,8 +18,6 @@ import { knexProvider, IDBConfig, KnexInstance } from '../databaseManager';
 import { errorHandlerMiddleware, requestHandlerMiddleware, ILoggerCollection } from '../logger';
 import { accountsSchema } from '../schemas';
 import {
-  // TOKEN_AUTHORIZATION_KEY,
-  // TOKEN_BEARER,
   DEFAULT_SERVER_PORT,
   DEFAULT_GRAPHQL_ENDPOINT,
   DEFAULT_GRAPHQL_SUBSCRIPTIONS_ENDPOINT,

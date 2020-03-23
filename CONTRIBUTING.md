@@ -113,8 +113,8 @@ yarn start
 После запуска будет инициализирован:
   - Основной сервер
   - GraphQL-сервер
-  - [GraphQL-playground](./graphql-playground.md)
-  - [GraphQL-voyager](./graphql-voyager.md)
+  - [GraphQL-playground](#graphql-playground)
+  - [GraphQL-voyager](#graphql-voyager)
 
 
 ### <a name="start-dist"></a> Запуск проекта в `production` режиме
