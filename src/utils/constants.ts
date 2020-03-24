@@ -1,4 +1,6 @@
-export const TOKEN_AUTHORIZATION_KEY = 'Authorization';
+export const TOKEN_BEARER_KEY = 'Authorization';
+export const TOKEN_ACCESS_TOKEN_COOKIE_KEY = 'AccessToken';
+export const TOKEN_REFRESH_TOKEN_COOKIE_KEY = 'RefreshToken';
 export const TOKEN_BEARER = 'Bearer';
 export const DATABASE_CHARSET = 'UTF8';
 export const DATABASE_CLIENT = 'pg';

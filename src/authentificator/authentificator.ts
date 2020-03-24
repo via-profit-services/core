@@ -7,7 +7,12 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { IContext } from '../app';
 import { ServerError, UnauthorizedError } from '../errorHandlers';
-import { TOKEN_AUTHORIZATION_KEY, TOKEN_BEARER } from '../utils';
+import {
+  TOKEN_BEARER_KEY,
+  TOKEN_BEARER,
+  TOKEN_ACCESS_TOKEN_COOKIE_KEY,
+  TOKEN_REFRESH_TOKEN_COOKIE_KEY,
+} from '../utils';
 import { IListResponse, IKnexFilterDefaults } from '../utils/generateCursorBundle';
 
 export enum TokenType {
@@ -201,22 +206,46 @@ export class Authentificator {
 
   /**
    * Extract Token from HTTP request headers
+   * @param  {TokenType} tokenType
    * @param  {Request} request
    * @returns string
    */
-  public static extractToken(request: Request): string {
-    const { headers } = request;
+  public static extractToken(tokenType: TokenType, request: Request): string {
+    const { headers, body } = request;
 
-    if (TOKEN_AUTHORIZATION_KEY.toLocaleLowerCase() in headers) {
-      const [bearer, tokenFromHeader] = String(headers[TOKEN_AUTHORIZATION_KEY.toLocaleLowerCase()]).split(' ');
+    // Access token
+    if (tokenType === TokenType.access) {
+      // try to get access token from headers
+      if (TOKEN_BEARER_KEY.toLocaleLowerCase() in headers) {
+        const [bearer, tokenFromHeader] = String(headers[TOKEN_BEARER_KEY.toLocaleLowerCase()]).split(' ');
 
-      if (bearer === TOKEN_BEARER && tokenFromHeader !== '') {
-        return String(tokenFromHeader);
+        if (bearer === TOKEN_BEARER && tokenFromHeader !== '') {
+          return String(tokenFromHeader);
+        }
+      }
+
+      // try to get access token from cookies
+      if (TOKEN_ACCESS_TOKEN_COOKIE_KEY in request.signedCookies) {
+        return String(request.signedCookies[TOKEN_ACCESS_TOKEN_COOKIE_KEY]);
+      }
+
+      // try to get access token from body request
+      if (TOKEN_ACCESS_TOKEN_COOKIE_KEY in body) {
+        return String(body[TOKEN_ACCESS_TOKEN_COOKIE_KEY]);
       }
     }
 
-    if (TOKEN_AUTHORIZATION_KEY in request.signedCookies) {
-      return String(request.signedCookies[TOKEN_AUTHORIZATION_KEY]);
+    // Refresh token
+    if (tokenType === TokenType.refresh) {
+      // try to get refresh token from cookies
+      if (TOKEN_REFRESH_TOKEN_COOKIE_KEY in request.signedCookies) {
+        return String(request.signedCookies[TOKEN_REFRESH_TOKEN_COOKIE_KEY]);
+      }
+
+      // try to get refresh token from body request
+      if (TOKEN_REFRESH_TOKEN_COOKIE_KEY in body) {
+        return String(body[TOKEN_REFRESH_TOKEN_COOKIE_KEY]);
+      }
     }
 
     return '';
