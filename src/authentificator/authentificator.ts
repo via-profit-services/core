@@ -199,9 +199,12 @@ export class Authentificator {
     const { context } = this.props;
     const { knex } = context;
 
-    await knex.del('tokens').where({
-      id: tokenId,
-    });
+    await knex
+      .del()
+      .from('tokens')
+      .where({
+        id: tokenId,
+      });
   }
 
   /**
