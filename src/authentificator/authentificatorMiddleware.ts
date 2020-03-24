@@ -3,7 +3,7 @@ import { NextFunction, Request, Response, Router } from 'express';
 import asyncHandler from 'express-async-handler';
 import { IContext } from '../app';
 import { BadRequestError } from '../errorHandlers';
-import { TOKEN_AUTHORIZATION_KEY, TOKEN_BEARER } from '../utils';
+import { TOKEN_BEARER, TOKEN_ACCESS_TOKEN_COOKIE_KEY, TOKEN_REFRESH_TOKEN_COOKIE_KEY } from '../utils';
 import { Authentificator, ResponseErrorType, TokenType } from './authentificator';
 
 const authentificatorMiddleware = (config: IMiddlewareConfig) => {
@@ -60,9 +60,17 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
         deviceInfo,
       });
 
-      // set Authorization cookie
-      res.cookie(TOKEN_AUTHORIZATION_KEY, tokens.accessToken.token, {
+      // set Access token cookie
+      res.cookie(TOKEN_ACCESS_TOKEN_COOKIE_KEY, tokens.accessToken.token, {
         expires: new Date(new Date().getTime() + config.context.jwt.accessTokenExpiresIn * 1000),
+        signed: true,
+        httpOnly: true,
+        secure: true,
+      });
+
+      // set Access token cookie
+      res.cookie(TOKEN_REFRESH_TOKEN_COOKIE_KEY, tokens.refreshToken.token, {
+        expires: new Date(new Date().getTime() + config.context.jwt.refreshTokenExpiresIn * 1000),
         signed: true,
         httpOnly: true,
         secure: true,
@@ -90,16 +98,17 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
    * }
    * @param  {Request} req The request
    * @param  {Response} res The response
-   * @param  {string} req.token Valid refresh token
+   * @param  {string} req.RefreshToken Valid refresh token
    * @param  {Response} res
    */
   router.post(
     `${authUrl}/refresh-token`,
     asyncHandler(async (req: Request, res: Response) => {
-      const { body, headers } = req;
-      const { token } = body;
+      const { headers } = req;
 
-      if (typeof token !== 'string') {
+      const token = Authentificator.extractToken(TokenType.refresh, req);
+
+      if (token === '') {
         throw new BadRequestError('token must be provied');
       }
 
@@ -132,9 +141,17 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
         deviceInfo,
       });
 
-      // set Authorization cookie
-      res.cookie(TOKEN_AUTHORIZATION_KEY, tokens.accessToken.token, {
+      // set Access token cookie
+      res.cookie(TOKEN_ACCESS_TOKEN_COOKIE_KEY, tokens.accessToken.token, {
         expires: new Date(new Date().getTime() + config.context.jwt.accessTokenExpiresIn * 1000),
+        signed: true,
+        httpOnly: true,
+        secure: true,
+      });
+
+      // set Refresh token cookie
+      res.cookie(TOKEN_REFRESH_TOKEN_COOKIE_KEY, tokens.refreshToken.token, {
+        expires: new Date(new Date().getTime() + config.context.jwt.refreshTokenExpiresIn * 1000),
         signed: true,
         httpOnly: true,
         secure: true,
@@ -185,7 +202,7 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
         return next();
       }
 
-      const token = Authentificator.extractToken(req);
+      const token = Authentificator.extractToken(TokenType.access, req);
       const payload = Authentificator.verifyToken(String(token), publicKey);
 
       if (payload.type !== TokenType.access) {

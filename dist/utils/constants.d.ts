@@ -1,4 +1,4 @@
-export declare const TOKEN_AUTHORIZATION_KEY = "Authorization";
+export declare const TOKEN_BEARER_KEY = "Authorization";
 export declare const TOKEN_BEARER = "Bearer";
 export declare const DATABASE_CHARSET = "UTF8";
 export declare const DATABASE_CLIENT = "pg";
