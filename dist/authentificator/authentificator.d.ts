@@ -52,10 +52,11 @@ export declare class Authentificator {
     revokeToken(tokenId: string): Promise<void>;
     /**
      * Extract Token from HTTP request headers
+     * @param  {TokenType} tokenType
      * @param  {Request} request
      * @returns string
      */
-    static extractToken(request: Request): string;
+    static extractToken(tokenType: TokenType, request: Request): string;
     checkTokenExist(tokenId: string): Promise<boolean>;
     getAccountByLogin(login: IAccount['login'], password?: string): AccountByLoginResponse;
     static sendResponseError(responsetype: ResponseErrorType, resp: Response): Response;
