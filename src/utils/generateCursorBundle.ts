@@ -173,7 +173,6 @@ export type Node<TNodeData> = TNodeData;
 export interface IListResponse<TNodeData> {
   totalCount: number;
   nodes: Node<TNodeData>[];
-  limit: number;
 }
 
 interface TArgsDefaults {

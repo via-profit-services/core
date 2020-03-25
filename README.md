@@ -507,7 +507,6 @@ interface Edge<TNodeData> {
 interface IListResponse<TNodeData> {
   totalCount: number;
   nodes: Node<TNodeData>[];
-  limit: number;
 }
 ```
 
