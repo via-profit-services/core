@@ -38,7 +38,6 @@ export interface ICursorConnection<TNodeData> {
 }
 interface ICursorConnectionProps<TNodeData> {
     totalCount: number;
-    limit: number;
     nodes: Array<TNodeData & {
         cursor: number;
     }>;
