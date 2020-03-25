@@ -8,7 +8,30 @@ import { DATABASE_CHARSET, DATABASE_CLIENT } from '../utils';
 
 const ENABLE_PG_TYPES = true;
 
-const knexProvider = (config: IDBConfig) => {
+let instance: knex;
+
+export const recalculateCursor = (sequenceName: string, tableName: string, cursorColumnName: string = 'cursor') => {
+  if (!instance) {
+    throw new ServerError("You can't call this method until Knex is initialized");
+  }
+  instance.raw(`
+    BEGIN;
+    ALTER SEQUENCE "${sequenceName}" RESTART;
+    UPDATE
+      "${tableName}"
+    SET 
+      "${cursorColumnName}" = DEFAULT 
+    WHERE
+      "${cursorColumnName}" IN (
+        SELECT "${cursorColumnName}" FROM "${tableName}"
+        ORDER BY "${cursorColumnName}" ASC
+        FOR UPDATE
+      );
+    COMMIT;
+  `);
+};
+
+export const knexProvider = (config: IDBConfig) => {
   const { connection, logger, timezone, localTimezone } = config;
   const times: { [key: string]: any } = {};
 
@@ -30,7 +53,7 @@ const knexProvider = (config: IDBConfig) => {
   }
 
   let count = 0;
-  const instance = knex({
+  instance = knex({
     client: DATABASE_CLIENT,
     connection,
     pool: {
@@ -97,7 +120,6 @@ const knexProvider = (config: IDBConfig) => {
 };
 
 export default knexProvider;
-export { knexProvider };
 
 export type KnexInstance = knex;
 
