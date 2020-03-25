@@ -58,15 +58,22 @@ interface ICursorConnectionProps<TNodeData> {
 const buildCursorConnection = <TNodeData>(props: ICursorConnectionProps<TNodeData>): ICursorConnection<TNodeData> => {
   const { nodes, totalCount } = props;
 
+  const startCursor = nodes.length ? stringToCursor(String(nodes[0].cursor)) : undefined;
+  const endCursor = nodes.length ? stringToCursor(String(nodes[nodes.length - 1].cursor)) : undefined;
+
+  const edges = nodes.map(node => nodeToEdge<TNodeData>(node));
+  const hasPreviousPage = nodes.length ? edges[0].cursor !== startCursor : false;
+  const hasNextPage = nodes.length ? edges[edges.length - 1].cursor !== endCursor : false;
+
   return {
     totalCount,
+    edges,
     pageInfo: {
-      startCursor: nodes.length ? stringToCursor(String(nodes[0].cursor)) : undefined,
-      endCursor: nodes.length ? stringToCursor(String(nodes[nodes.length - 1].cursor)) : undefined,
-      hasPreviousPage: false,
-      hasNextPage: false,
+      startCursor,
+      endCursor,
+      hasPreviousPage,
+      hasNextPage,
     },
-    edges: nodes.map(node => nodeToEdge<TNodeData>(node)),
   };
 };
 
