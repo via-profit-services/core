@@ -8,29 +8,6 @@ import { DATABASE_CHARSET, DATABASE_CLIENT } from '../utils';
 
 const ENABLE_PG_TYPES = true;
 
-let instance: knex;
-
-export const recalculateCursor = (sequenceName: string, tableName: string, cursorColumnName: string = 'cursor') => {
-  if (!instance) {
-    throw new ServerError("You can't call this method until Knex is initialized");
-  }
-  instance.raw(`
-    BEGIN;
-    ALTER SEQUENCE "${sequenceName}" RESTART;
-    UPDATE
-      "${tableName}"
-    SET 
-      "${cursorColumnName}" = DEFAULT 
-    WHERE
-      "${cursorColumnName}" IN (
-        SELECT "${cursorColumnName}" FROM "${tableName}"
-        ORDER BY "${cursorColumnName}" ASC
-        FOR UPDATE
-      );
-    COMMIT;
-  `);
-};
-
 export const knexProvider = (config: IDBConfig) => {
   const { connection, logger, timezone, localTimezone } = config;
   const times: { [key: string]: any } = {};
@@ -38,12 +15,12 @@ export const knexProvider = (config: IDBConfig) => {
   if (ENABLE_PG_TYPES) {
     // Timestamp
     types.setTypeParser(types.builtins.TIMESTAMP, 'text', value => {
-      return moment.tz(value, localTimezone).format();
+      return moment.tz(value, localTimezone).toDate();
     });
 
     // timestamptz
     types.setTypeParser(types.builtins.TIMESTAMPTZ, 'text', value => {
-      return moment.tz(value, localTimezone).format();
+      return moment.tz(value, localTimezone).toDate();
     });
 
     // Numeric to float
@@ -53,7 +30,7 @@ export const knexProvider = (config: IDBConfig) => {
   }
 
   let count = 0;
-  instance = knex({
+  const instance = knex({
     client: DATABASE_CLIENT,
     connection,
     pool: {
@@ -85,7 +62,7 @@ export const knexProvider = (config: IDBConfig) => {
 
       times[uid] = {
         position: count,
-        query,
+        // query,
         startTime: performance.now(),
         finished: false,
       };

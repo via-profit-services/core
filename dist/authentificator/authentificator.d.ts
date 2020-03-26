@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { SignOptions } from 'jsonwebtoken';
 import { IContext } from '../app';
-import { IListResponse, IKnexFilterDefaults } from '../utils/generateCursorBundle';
+import { IListResponse, TOutputFilter } from '../utils/generateCursorBundle';
 export declare enum TokenType {
     access = "access",
     refresh = "refresh"
@@ -60,7 +60,7 @@ export declare class Authentificator {
     checkTokenExist(tokenId: string): Promise<boolean>;
     getAccountByLogin(login: IAccount['login'], password?: string): AccountByLoginResponse;
     static sendResponseError(responsetype: ResponseErrorType, resp: Response): Response;
-    getAccounts(filter: IKnexFilterDefaults): Promise<IListResponse<IAccount>>;
+    getAccounts(filter: TOutputFilter): Promise<IListResponse<IAccount>>;
 }
 interface IProps {
     context: IContext;

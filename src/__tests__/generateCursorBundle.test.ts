@@ -4,7 +4,7 @@ import {
   buildCursorConnection,
   buildQueryFilter,
   ICursorConnection,
-  IKnexFilterDefaults,
+  TOutputFilter,
   IPageInfo,
   Edge,
 } from '../utils';
@@ -75,11 +75,11 @@ describe('Cursor utils', () => {
     };
     const knexFilter = buildQueryFilter(queryFilter);
 
-    expect(knexFilter).toMatchObject<IKnexFilterDefaults>({
+    expect(knexFilter).toMatchObject<TOutputFilter>({
       limit: expect.any(Number),
       where: expect.any(Function),
-      orderBy: expect.arrayContaining<IKnexFilterDefaults['orderBy']>([
-        expect.objectContaining<IKnexFilterDefaults['orderBy'][0]>({
+      orderBy: expect.arrayContaining<TOutputFilter['orderBy']>([
+        expect.objectContaining<TOutputFilter['orderBy'][0]>({
           column: 'cursor',
           order: expect.any(String),
         }),
