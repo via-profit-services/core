@@ -81,7 +81,6 @@ interface ICursorConnectionProps<TNodeData> {
   offset: number;
   limit: number;
   orderBy: TOrderBy;
-  cursor: ICursor;
   nodes: Array<Node<TNodeData>>;
 }
 
@@ -89,6 +88,7 @@ export const buildCursorConnection = <TNodeData>(
   props: ICursorConnectionProps<TNodeData>,
 ): ICursorConnection<TNodeData> => {
   const { nodes, totalCount, offset, limit, orderBy } = props;
+
   const edges = nodesToEdges(nodes, orderBy);
   const startCursor = edges.length ? edges[0].cursor : undefined;
   const endCursor = edges.length ? edges[edges.length - 1].cursor : undefined;
