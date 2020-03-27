@@ -497,7 +497,7 @@ const logger = configureLogger({
 
 ### Методы
 
-**CronJobManager.`configure`** - Служебный метод первичной конфигурации клсаа. Вызывается единожды при инициализации приложения.
+**CronJobManager.`configure`** - Служебный метод первичной конфигурации класса. Вызывается единожды при инициализации приложения.
 
 **CronJobManager.`addJob`** - Добавляет новое `Cron` задание и возвращает инстанс `CronJob`
 
@@ -523,9 +523,9 @@ enum IDirectionRange {
 }
 
 // GraphQL Cursor Connection (см https://facebook.github.io/relay/graphql/connections.htm)
-interface ICursorConnection<TNodeData> {
+interface ICursorConnection<T> {
   edges: Array<{
-    node: TNodeData;
+    node: Node<T>;
     cursor: string;
   }>;
   pageInfo: IPageInfo;
@@ -541,16 +541,43 @@ interface IPageInfo {
 }
 
 // GraphQL Edge (см https://facebook.github.io/relay/graphql/connections.htm#sec-Edge-Types)
-interface Edge<TNodeData> {
-  node: TNodeData;
+interface Edge<T> {
+  node: Node<T>;
   cursor: string;
 }
 
-// Интерфейс ожидаемый от метода модели/сервиса при выборке списка данных содержащих постраничную пагинацию
-interface IListResponse<TNodeData> {
-  totalCount: number;
-  nodes: Node<TNodeData>[];
+// Интерфейс входных данных от GraphQL клиента
+interface TInputFilter {
+  first?: number;
+  offset?: number;
+  last?: number;
+  after?: string;
+  before?: string;
+  orderBy?: TOrderBy;
+  filter?: {
+    [key: string]: string | number | boolean | null;
+  };
 }
+
+// Интерфейс, возвращаемый методом buildQueryFilter
+interface TOutputFilter {
+  where: Array<[string, '=' | '<' | '>', string | number | boolean | null]>;
+  cursor: ICursor;
+  offset: number;
+  limit: number;
+  revert: boolean;
+  orderBy?: TOrderBy;
+}
+
+// Интерфейс ожидаемый от метода модели/сервиса при выборке списка данных содержащих постраничную пагинацию
+export interface IListResponse<T> {
+  totalCount: number;
+  offset: number;
+  limit: number;
+  orderBy: TOrderBy;
+  nodes: Node<T>[];
+}
+
 ```
 
 ## <a name="error-handlers"></a> Error handlers (исключения)
