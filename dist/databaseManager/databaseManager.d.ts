@@ -1,7 +1,6 @@
 import knex, { PgConnectionConfig, MigratorConfig, SeedsConfig } from 'knex';
 import { ILoggerCollection } from '../logger';
-export declare const recalculateCursor: (sequenceName: string, tableName: string, cursorColumnName?: string) => void;
-export declare const knexProvider: (config: IDBConfig) => knex<any, any[]>;
+export declare const knexProvider: (config: IDBConfig) => knex<any, unknown[]>;
 export default knexProvider;
 export declare type KnexInstance = knex;
 export interface IDBConfig {

@@ -135,8 +135,7 @@ export interface IAccount {
     password: string;
     status: AccountStatus;
     roles: string[];
-    createdAt: string;
-    updatedAt: string;
-    cursor: number;
+    createdAt: Date;
+    updatedAt: Date;
 }
 export {};
