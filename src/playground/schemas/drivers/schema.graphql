@@ -34,7 +34,7 @@ type DriversQueries {
     first: Int
     offset: Int
     after: String
-     orderBy: [OrderBy]
+    orderBy: [OrderBy]
     filter: DriversListFilter
   ): DriversListConnection!
 
