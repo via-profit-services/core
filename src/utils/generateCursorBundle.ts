@@ -44,8 +44,9 @@ export const getNodeCursor = (cursor: string): Array<[string, string | number | 
 /**
  * Wrap node to cursor object
  * @param  {Node} node
+ * @param  {TOrderBy} order
  */
-export const nodeToEdge = <TNodeData>(node: Node<TNodeData>, order: TOrderBy): { node: TNodeData; cursor: string } => {
+export const nodeToEdge = <T>(node: Node<T>, order: TOrderBy): { node: T; cursor: string } => {
   return {
     node,
     cursor: makeNodeCursor(node, order),
@@ -56,37 +57,43 @@ export const nodeToEdge = <TNodeData>(node: Node<TNodeData>, order: TOrderBy): {
  * Convert nodes array to array of cursors
  * @param {Array} nodes
  */
-export const nodesToEdges = <TNodeData>(
-  nodes: Array<Node<TNodeData>>,
-  order: TOrderBy,
-): Array<{ node: TNodeData; cursor: string }> => {
-  return nodes.map(node => nodeToEdge<TNodeData>(node, order));
+export const nodesToEdges = <T>(nodes: Array<Node<T>>, order: TOrderBy): Array<{ node: T; cursor: string }> => {
+  return nodes.map(node => nodeToEdge<T>(node, order));
+};
+
+/**
+ * Convert GraphQL OrderBy array to Knex OrderBy array format
+ * @param { TOrderBy } orderBy Array of objects econtains { field: "", direction: "" }
+ */
+export const convertOrderByToKnex = (orderBy: TOrderBy): TOrderByKnex => {
+  return orderBy.map(({ field, direction }) => ({
+    column: field,
+    order: direction,
+  }));
 };
 
 /**
  * GraphQL Cursor connection
  * @see https://facebook.github.io/relay/graphql/connections.htm
  */
-export interface ICursorConnection<TNodeData> {
+export interface ICursorConnection<T> {
   edges: Array<{
-    node: TNodeData;
+    node: T;
     cursor: string;
   }>;
   pageInfo: IPageInfo;
   totalCount: number;
 }
 
-interface ICursorConnectionProps<TNodeData> {
+interface ICursorConnectionProps<T> {
   totalCount: number;
   offset: number;
   limit: number;
   orderBy: TOrderBy;
-  nodes: Array<Node<TNodeData>>;
+  nodes: Array<Node<T>>;
 }
 
-export const buildCursorConnection = <TNodeData>(
-  props: ICursorConnectionProps<TNodeData>,
-): ICursorConnection<TNodeData> => {
+export const buildCursorConnection = <T>(props: ICursorConnectionProps<T>): ICursorConnection<T> => {
   const { nodes, totalCount, offset, limit, orderBy } = props;
 
   const edges = nodesToEdges(nodes, orderBy);
@@ -159,8 +166,8 @@ export interface IPageInfo {
  * GraphQL Edge type
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-Edge-Types
  */
-export interface Edge<TNodeData> {
-  node: TNodeData;
+export interface Edge<T> {
+  node: T;
   cursor: string;
 }
 
@@ -168,19 +175,19 @@ export interface Edge<TNodeData> {
  * GraphQL Node type
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-Node
  */
-export type Node<TNodeData> = TNodeData & {
+export type Node<T> = T & {
   id: string;
   createdAt: Date;
 };
 
 export type ICursor = Array<[string, '=' | '<' | '>', string | number | boolean | null]>;
 
-export interface IListResponse<TNodeData> {
+export interface IListResponse<T> {
   totalCount: number;
   offset: number;
   limit: number;
   orderBy: TOrderBy;
-  nodes: Node<TNodeData>[];
+  nodes: Node<T>[];
 }
 
 export interface TInputFilter {
@@ -198,4 +205,9 @@ export interface TInputFilter {
 export type TOrderBy = Array<{
   field: string;
   direction: IDirectionRange;
+}>;
+
+export type TOrderByKnex = Array<{
+  column: string;
+  order: IDirectionRange;
 }>;

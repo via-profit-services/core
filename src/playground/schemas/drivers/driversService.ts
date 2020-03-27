@@ -1,5 +1,5 @@
 import { IContext } from '../../../app';
-import { IListResponse, TOutputFilter } from '../../../utils';
+import { IListResponse, TOutputFilter, convertOrderByToKnex } from '../../../utils';
 
 export enum IDriverLegalStatus {
   PERSON = 'person',
@@ -28,27 +28,20 @@ class DriversService {
     const { knex } = context;
     const { limit, offset, orderBy, where, cursor } = filter;
 
-    const knexOrderBy = orderBy.map(({ field, direction }) => {
-      return {
-        column: field,
-        order: direction,
-      };
-    });
-
     const nodes = await knex
-      .select<any, Array<IDriver & { totalCount: number }>>(['j.totalCount', 'drivers.*'])
+      .select<any, Array<IDriver & { totalCount: number }>>(['joined.totalCount', 'drivers.*'])
       .join(
         knex('drivers')
           .select(['id', knex.raw('count(*) over() as "totalCount"')])
           .limit(limit)
           .offset(offset)
           .where(builder => [...where, ...cursor].forEach(data => builder.where(...data)))
-          .orderBy(knexOrderBy)
-          .as('j'),
-        'j.id',
+          .orderBy(convertOrderByToKnex(orderBy))
+          .as('joined'),
+        'joined.id',
         'drivers.id',
       )
-      .orderBy(knexOrderBy)
+      .orderBy(convertOrderByToKnex(orderBy))
       .from('drivers');
 
     return {
