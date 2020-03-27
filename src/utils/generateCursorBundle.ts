@@ -30,13 +30,14 @@ export const makeNodeCursor = <T>(node: Node<T> & { [key: string]: any }, order:
   return stringToCursor(JSON.stringify(payload));
 };
 
-export const getNodeCursor = (cursor: string): ICursor => {
+export const getNodeCursor = (cursor: string, revert?: boolean): ICursor => {
   const payload = cursorToString(cursor);
 
   try {
     const cursorData = JSON.parse(payload) as Array<[string, string | number | boolean, IDirectionRange]>;
-    return cursorData.map(([field, value, direction]) => {
-      return [field, direction === IDirectionRange.ASC ? '>' : '<', value];
+    return cursorData.map(([field, value]) => {
+      // return [field, direction === IDirectionRange.ASC ? '>' : '<', value];
+      return [field, revert ? '<' : '>', value];
     });
   } catch (err) {
     throw new ServerError(`The cursor «${cursor}» is invalid because it contains the wrong JSON data`);
@@ -60,7 +61,7 @@ export const nodeToEdge = <T>(node: Node<T>, order: TOrderBy): { node: Node<T>; 
  * @param {Array} nodes
  */
 export const nodesToEdges = <T>(nodes: Node<T>[], order: TOrderBy): Edge<T>[] => {
-  return nodes.map(node => nodeToEdge<T>(node, order));
+  return [...(nodes || [])].map(node => nodeToEdge<T>(node, order));
 };
 
 /**
@@ -68,7 +69,7 @@ export const nodesToEdges = <T>(nodes: Node<T>[], order: TOrderBy): Edge<T>[] =>
  * @param { TOrderBy } orderBy Array of objects econtains { field: "", direction: "" }
  */
 export const convertOrderByToKnex = (orderBy: TOrderBy): TOrderByKnex => {
-  return orderBy.map(({ field, direction }) => ({
+  return [...(orderBy || [])].map(({ field, direction }) => ({
     column: field,
     order: direction,
   }));
@@ -88,14 +89,14 @@ interface ICursorConnectionProps<T> {
   totalCount: number;
   offset: number;
   limit: number;
-  orderBy: TOrderBy;
+  orderBy?: TOrderBy;
   nodes: Node<T>[];
 }
 
 export const buildCursorConnection = <T>(props: ICursorConnectionProps<T>): ICursorConnection<T> => {
   const { nodes, totalCount, offset, limit, orderBy } = props;
 
-  const edges = nodesToEdges(nodes, orderBy);
+  const edges = nodesToEdges(nodes, orderBy || []);
   const startCursor = edges.length ? edges[0].cursor : undefined;
   const endCursor = edges.length ? edges[edges.length - 1].cursor : undefined;
   const hasPreviousPage = offset > 0;
@@ -119,25 +120,37 @@ export interface TOutputFilter {
   offset: number;
   limit: number;
   revert: boolean;
-  orderBy?: TOrderBy;
+  orderBy: TOrderBy;
 }
 
-export const buildQueryFilter = <TArgs extends TInputFilter = {}>(args: TArgs): TOutputFilter => {
+export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutputFilter => {
   const { first, last, after, before, offset, orderBy, filter } = args;
 
   const DEFAULT_LIMIT = 30;
 
   // combine filter
   const outputFilter = {
-    cursor: after || before ? getNodeCursor(after || before) : [],
+    cursor: after || before ? getNodeCursor(after || before, !!last) : [],
     limit: first || last || DEFAULT_LIMIT,
-    orderBy,
+    orderBy: orderBy || [],
     revert: !!last,
     where: [],
     offset: Number(offset) || 0,
   } as TOutputFilter;
 
-  Object.entries(filter).forEach(([field, value]) => {
+  if (!outputFilter.orderBy.length) {
+    outputFilter.orderBy.push({
+      field: 'createdAt',
+      direction: IDirectionRange.DESC,
+    });
+  }
+
+  outputFilter.orderBy.push({
+    field: 'id',
+    direction: IDirectionRange.DESC,
+  });
+
+  Object.entries(filter || {}).forEach(([field, value]) => {
     outputFilter.where.push([field, '=', value]);
   });
 
