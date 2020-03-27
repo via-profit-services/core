@@ -38,7 +38,6 @@ export interface ICursorConnection<TNodeData> {
 }
 interface ICursorConnectionProps<TNodeData> {
     totalCount: number;
-    limit: number;
     nodes: Array<TNodeData & {
         cursor: number;
     }>;
@@ -58,7 +57,7 @@ export interface IGraphQLFilterDefaults {
         [key: string]: string;
     };
 }
-export interface IKnexFilterDefaults {
+export interface TOutputFilter {
     where: (builder: Knex.QueryBuilder) => Knex.QueryBuilder;
     limit: number;
     orderBy?: Array<{
@@ -66,7 +65,7 @@ export interface IKnexFilterDefaults {
         order: IDirectionRange;
     }>;
 }
-declare const buildQueryFilter: <TArgs extends TArgsDefaults = {}>(args: TArgs) => IKnexFilterDefaults;
+declare const buildQueryFilter: <TArgs extends TArgsDefaults = {}>(args: TArgs) => TOutputFilter;
 /**
  * GraphQL PageInfo
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-undefined.PageInfo

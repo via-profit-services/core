@@ -13,7 +13,7 @@ import {
   TOKEN_ACCESS_TOKEN_COOKIE_KEY,
   TOKEN_REFRESH_TOKEN_COOKIE_KEY,
 } from '../utils';
-import { IListResponse, IKnexFilterDefaults } from '../utils/generateCursorBundle';
+import { IListResponse, TOutputFilter, convertOrderByToKnex } from '../utils/generateCursorBundle';
 
 export enum TokenType {
   access = 'access',
@@ -370,30 +370,40 @@ export class Authentificator {
     return resp.status(401).json({ errors });
   }
 
-  public getAccounts(filter: IKnexFilterDefaults): Promise<IListResponse<IAccount>> {
+  public getAccounts(filter: TOutputFilter): Promise<IListResponse<IAccount>> {
     const { context } = this.props;
     const { knex } = context;
-    const { limit, orderBy, where } = filter;
+    const { limit, offset, orderBy, where, cursor } = filter;
 
     return knex
       .select<any, Array<IAccount & { totalCount: number }>>(['j.totalCount', 'accounts.*'])
       .join(
         knex('accounts')
           .select(['id', knex.raw('count(*) over() as "totalCount"')])
-          .orderBy(orderBy)
+          .orderBy(convertOrderByToKnex(orderBy))
           .limit(limit)
+          .offset(offset)
           .where(where)
           .as('j'),
         'j.id',
         'accounts.id',
       )
-      .orderBy(orderBy)
+      .orderBy(convertOrderByToKnex(orderBy))
       .from('accounts')
       .then(nodes => {
+        const node = nodes.length
+          ? nodes[0]
+          : {
+              totalCount: 0,
+            };
+
         return {
-          totalCount: nodes.length ? nodes[0].totalCount : 0,
-          nodes,
+          totalCount: node.totalCount,
           limit,
+          offset,
+          cursor,
+          nodes,
+          orderBy,
         };
       });
   }
@@ -483,7 +493,6 @@ export interface IAccount {
   password: string;
   status: AccountStatus;
   roles: string[];
-  createdAt: string;
-  updatedAt: string;
-  cursor: number;
+  createdAt: Date;
+  updatedAt: Date;
 }

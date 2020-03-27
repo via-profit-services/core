@@ -8,19 +8,19 @@ import { DATABASE_CHARSET, DATABASE_CLIENT } from '../utils';
 
 const ENABLE_PG_TYPES = true;
 
-const knexProvider = (config: IDBConfig) => {
+export const knexProvider = (config: IDBConfig) => {
   const { connection, logger, timezone, localTimezone } = config;
   const times: { [key: string]: any } = {};
 
   if (ENABLE_PG_TYPES) {
     // Timestamp
     types.setTypeParser(types.builtins.TIMESTAMP, 'text', value => {
-      return moment.tz(value, localTimezone).format();
+      return moment.tz(value, localTimezone).toDate();
     });
 
     // timestamptz
     types.setTypeParser(types.builtins.TIMESTAMPTZ, 'text', value => {
-      return moment.tz(value, localTimezone).format();
+      return moment.tz(value, localTimezone).toDate();
     });
 
     // Numeric to float
@@ -62,7 +62,7 @@ const knexProvider = (config: IDBConfig) => {
 
       times[uid] = {
         position: count,
-        query,
+        // query,
         startTime: performance.now(),
         finished: false,
       };
@@ -97,7 +97,6 @@ const knexProvider = (config: IDBConfig) => {
 };
 
 export default knexProvider;
-export { knexProvider };
 
 export type KnexInstance = knex;
 

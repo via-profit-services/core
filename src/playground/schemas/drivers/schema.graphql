@@ -1,0 +1,108 @@
+type Query {
+  drivers: DriversQueries!
+}
+
+scalar Date
+
+"""
+Information about pagination in a connection.
+"""
+type PageInfo {
+  hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+"""
+Drivers adge bundle
+"""
+type DriversEdge {
+  node: Driver!
+  cursor: String!
+}
+
+"""
+Drivers module queries
+"""
+type DriversQueries {
+
+  """
+  Returns Drivers list bundle
+  """
+  list(
+    first: Int
+    offset: Int
+    after: String
+    orderBy: [OrderBy]
+    filter: DriversListFilter
+  ): DriversListConnection!
+
+  """
+  Test
+  """
+  t: String
+}
+
+input DriversListFilter {
+  status: DriverStatus
+  legalStatus: DriverLegalStatus
+    
+}
+
+
+
+"""
+Drivers list bundle
+"""
+type DriversListConnection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [DriversEdge]!
+}
+
+"""
+Ordering options for accounts returned from the connection
+"""
+input OrderBy {
+  field: DriversOrderField!
+  direction: OrderDirection!
+}
+
+enum DriversOrderField {
+  name
+  createdAt
+  updatedAt
+}
+
+enum OrderDirection {
+  ASC
+  DESC
+}
+
+enum DriverLegalStatus {
+  person
+  legal
+  entrepreneur
+}
+
+enum DriverStatus {
+  active
+  inactive
+  dismissed
+  sick
+  blocked
+  holiday
+}
+
+"""
+Driver data
+"""
+type Driver {
+  id: ID!
+  name: String!
+  createdAt: Date!
+  updatedAt: Date!
+  legalStatus: DriverLegalStatus!
+  status: DriverStatus!
+}

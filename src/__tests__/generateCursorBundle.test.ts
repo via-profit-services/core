@@ -1,25 +1,35 @@
 import {
   nodeToEdge,
   stringToCursor,
+  makeNodeCursor,
   buildCursorConnection,
   buildQueryFilter,
   ICursorConnection,
-  IKnexFilterDefaults,
+  TOutputFilter,
   IPageInfo,
+  IDirectionRange,
   Edge,
 } from '../utils';
 
 describe('Cursor utils', () => {
   it('nodeToEdge. Should return GraphQL Edge', done => {
-    const edge = nodeToEdge({
-      cursor: 1,
-      name: 'Some name',
-    });
+    const edge = nodeToEdge(
+      {
+        id: 'xxx',
+        name: 'Some name',
+        createdAt: new Date('2020-01-02 12:56:33'),
+      },
+      [
+        {
+          direction: IDirectionRange.DESC,
+          field: 'createdAt',
+        },
+      ],
+    );
 
     expect(edge).toMatchObject({
       cursor: expect.any(String),
       node: {
-        cursor: expect.any(Number),
         name: expect.any(String),
       },
     });
@@ -27,7 +37,8 @@ describe('Cursor utils', () => {
     done();
   });
 
-  it('stringToCursor. Should return string', done => {
+  it('makeNodeCursor. Should return string', done => {
+    const a = makeNodeCursor();
     expect(typeof stringToCursor(123)).toBe('string');
     expect(typeof stringToCursor('123')).toBe('string');
     done();
@@ -75,11 +86,11 @@ describe('Cursor utils', () => {
     };
     const knexFilter = buildQueryFilter(queryFilter);
 
-    expect(knexFilter).toMatchObject<IKnexFilterDefaults>({
+    expect(knexFilter).toMatchObject<TOutputFilter>({
       limit: expect.any(Number),
       where: expect.any(Function),
-      orderBy: expect.arrayContaining<IKnexFilterDefaults['orderBy']>([
-        expect.objectContaining<IKnexFilterDefaults['orderBy'][0]>({
+      orderBy: expect.arrayContaining<TOutputFilter['orderBy']>([
+        expect.objectContaining<TOutputFilter['orderBy'][0]>({
           column: 'cursor',
           order: expect.any(String),
         }),
