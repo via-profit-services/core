@@ -21,7 +21,7 @@ export const cursorToString = (cursor: string) => {
   return Buffer.from(cursor, 'base64').toString('utf8');
 };
 
-export const makeNodeCursor = <T>(node: Node<T> & { [key: string]: any }, order: TOrderBy) => {
+export const makeNodeCursor = <T>(node: Node<T> & { [key: string]: any }, order: TOrderBy): string => {
   const payload = order.map(({ field, direction }) => {
     const value = field in node ? node[field] : '';
     return [field, value, direction];
@@ -34,7 +34,10 @@ export const getNodeCursor = (cursor: string): ICursor => {
   const payload = cursorToString(cursor);
 
   try {
-    return JSON.parse(payload);
+    const cursorData = JSON.parse(payload) as Array<[string, string | number | boolean, IDirectionRange]>;
+    return cursorData.map(([field, value, direction]) => {
+      return [field, direction === IDirectionRange.ASC ? '>' : '<', value];
+    });
   } catch (err) {
     throw new ServerError(`The cursor «${cursor}» is invalid because it contains the wrong JSON data`);
   }
@@ -45,7 +48,7 @@ export const getNodeCursor = (cursor: string): ICursor => {
  * @param  {Node} node
  * @param  {TOrderBy} order
  */
-export const nodeToEdge = <T>(node: Node<T>, order: TOrderBy): { node: T; cursor: string } => {
+export const nodeToEdge = <T>(node: Node<T>, order: TOrderBy): { node: Node<T>; cursor: string } => {
   return {
     node,
     cursor: makeNodeCursor(node, order),
@@ -56,7 +59,7 @@ export const nodeToEdge = <T>(node: Node<T>, order: TOrderBy): { node: T; cursor
  * Convert nodes array to array of cursors
  * @param {Array} nodes
  */
-export const nodesToEdges = <T>(nodes: Array<Node<T>>, order: TOrderBy): Array<{ node: T; cursor: string }> => {
+export const nodesToEdges = <T>(nodes: Node<T>[], order: TOrderBy): Edge<T>[] => {
   return nodes.map(node => nodeToEdge<T>(node, order));
 };
 
@@ -76,10 +79,7 @@ export const convertOrderByToKnex = (orderBy: TOrderBy): TOrderByKnex => {
  * @see https://facebook.github.io/relay/graphql/connections.htm
  */
 export interface ICursorConnection<T> {
-  edges: Array<{
-    node: T;
-    cursor: string;
-  }>;
+  edges: Edge<T>[];
   pageInfo: IPageInfo;
   totalCount: number;
 }
@@ -89,7 +89,7 @@ interface ICursorConnectionProps<T> {
   offset: number;
   limit: number;
   orderBy: TOrderBy;
-  nodes: Array<Node<T>>;
+  nodes: Node<T>[];
 }
 
 export const buildCursorConnection = <T>(props: ICursorConnectionProps<T>): ICursorConnection<T> => {
@@ -127,15 +127,9 @@ export const buildQueryFilter = <TArgs extends TInputFilter = {}>(args: TArgs): 
 
   const DEFAULT_LIMIT = 30;
 
-  // convert cursor string to where clause array
-  const cursorData = after || before ? getNodeCursor(after || before) : [];
-  const cursor = cursorData.map(([field, value, direction]) => {
-    return [field, direction === IDirectionRange.ASC ? '>' : '<', value];
-  });
-
   // combine filter
   const outputFilter = {
-    cursor,
+    cursor: after || before ? getNodeCursor(after || before) : [],
     limit: first || last || DEFAULT_LIMIT,
     orderBy,
     revert: !!last,
@@ -162,15 +156,6 @@ export interface IPageInfo {
 }
 
 /**
- * GraphQL Edge type
- * @see https://facebook.github.io/relay/graphql/connections.htm#sec-Edge-Types
- */
-export interface Edge<T> {
-  node: T;
-  cursor: string;
-}
-
-/**
  * GraphQL Node type
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-Node
  */
@@ -179,6 +164,15 @@ export type Node<T> = T & {
   createdAt: Date;
 };
 
+/**
+ * GraphQL Edge type
+ * @see https://facebook.github.io/relay/graphql/connections.htm#sec-Edge-Types
+ */
+export interface Edge<T> {
+  node: Node<T>;
+  cursor: string;
+}
+
 export type ICursor = Array<[string, '=' | '<' | '>', string | number | boolean | null]>;
 
 export interface IListResponse<T> {
@@ -186,7 +180,7 @@ export interface IListResponse<T> {
   offset: number;
   limit: number;
   orderBy: TOrderBy;
-  nodes: Node<T>[];
+  nodes: Array<Node<T>>;
 }
 
 export interface TInputFilter {

@@ -1,31 +1,34 @@
+import faker from 'faker/locale/ru';
+import { v4 as uuidv4 } from 'uuid';
 import {
   nodeToEdge,
-  stringToCursor,
   makeNodeCursor,
+  getNodeCursor,
   buildCursorConnection,
-  buildQueryFilter,
   ICursorConnection,
-  TOutputFilter,
   IPageInfo,
   IDirectionRange,
   Edge,
+  Node,
 } from '../utils';
+
+const generateNodes = (quantity: number): Node<{ name: string }>[] => {
+  return [...new Array(quantity).keys()].map(() => ({
+    id: uuidv4(),
+    name: faker.name.findName(),
+    createdAt: faker.date.past(),
+  }));
+};
 
 describe('Cursor utils', () => {
   it('nodeToEdge. Should return GraphQL Edge', done => {
-    const edge = nodeToEdge(
+    const node = generateNodes(1)[0];
+    const edge = nodeToEdge(node, [
       {
-        id: 'xxx',
-        name: 'Some name',
-        createdAt: new Date('2020-01-02 12:56:33'),
+        direction: IDirectionRange.DESC,
+        field: 'createdAt',
       },
-      [
-        {
-          direction: IDirectionRange.DESC,
-          field: 'createdAt',
-        },
-      ],
-    );
+    ]);
 
     expect(edge).toMatchObject({
       cursor: expect.any(String),
@@ -37,10 +40,24 @@ describe('Cursor utils', () => {
     done();
   });
 
-  it('makeNodeCursor. Should return string', done => {
-    const a = makeNodeCursor();
-    expect(typeof stringToCursor(123)).toBe('string');
-    expect(typeof stringToCursor('123')).toBe('string');
+  it('getNodeCursor. Should return an array of ICursor implementation', done => {
+    const node = generateNodes(1)[0];
+    const cursor = makeNodeCursor(
+      {
+        ...node,
+        createdAt: new Date('2020-01-02 12:56:33'),
+      },
+      [
+        {
+          direction: IDirectionRange.DESC,
+          field: 'createdAt',
+        },
+      ],
+    );
+    expect(typeof cursor).toBe('string');
+    expect(getNodeCursor(cursor)).toEqual(
+      expect.arrayContaining([['createdAt', '<', new Date('2020-01-02 12:56:33').toISOString()]]),
+    );
     done();
   });
 
@@ -48,51 +65,37 @@ describe('Cursor utils', () => {
     const connection = buildCursorConnection({
       totalCount: 15,
       limit: 2,
-      nodes: [
+      nodes: generateNodes(2),
+      offset: 1,
+      orderBy: [
         {
-          cursor: 1,
-          name: 'Jack',
-        },
-        {
-          cursor: 2,
-          name: 'Michael',
+          field: 'name',
+          direction: IDirectionRange.DESC,
         },
       ],
     });
 
-    expect(connection).toMatchObject<ICursorConnection<{ name: string; cursor: number }>>({
+    interface NodeData {
+      id: string;
+      name: string;
+      createdAt: Date;
+    }
+
+    expect(connection).toMatchObject<ICursorConnection<NodeData>>({
       totalCount: expect.any(Number),
       pageInfo: expect.objectContaining<IPageInfo>({
+        endCursor: expect.any(String),
+        startCursor: expect.any(String),
         hasPreviousPage: expect.any(Boolean),
         hasNextPage: expect.any(Boolean),
       }),
-      edges: expect.arrayContaining<Array<Edge<{ cursor: number; name: string }>>>([
+      edges: expect.arrayContaining<Array<Edge<NodeData>>>([
         expect.objectContaining({
           cursor: expect.any(String),
           node: expect.objectContaining({
             name: expect.any(String),
-            cursor: expect.any(Number),
+            createdAt: expect.any(Date),
           }),
-        }),
-      ]),
-    });
-
-    done();
-  });
-
-  it('buildQueryFilter. Should return filter object for Knex', done => {
-    const queryFilter = {
-      first: 6,
-    };
-    const knexFilter = buildQueryFilter(queryFilter);
-
-    expect(knexFilter).toMatchObject<TOutputFilter>({
-      limit: expect.any(Number),
-      where: expect.any(Function),
-      orderBy: expect.arrayContaining<TOutputFilter['orderBy']>([
-        expect.objectContaining<TOutputFilter['orderBy'][0]>({
-          column: 'cursor',
-          order: expect.any(String),
         }),
       ]),
     });
