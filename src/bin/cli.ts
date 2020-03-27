@@ -7,6 +7,7 @@ import chalk from 'chalk';
 import dotenv from 'dotenv';
 import glob from 'glob';
 import yargs, { Arguments } from 'yargs';
+import { downloadSchema, IDownloadSchemaOptions } from '../utils/downloadSchema';
 
 const listMigrationsPerPackage = () => {
   const list: Array<{
@@ -100,29 +101,47 @@ const getMigrations = (params: { migrations: boolean; seeds: boolean }) => {
 };
 
 const args = yargs
-  .command<
-    Arguments<{
-      migrations: boolean;
-      seeds: boolean;
-    }>
-  >(
+  .usage('usage: $0 <command>')
+  .command(
     'get-migrations',
     'Copy all migration and/or seed files from @via-profit-services modules into your project',
-    () => {},
-    action => {
-      const { migrations, seeds } = action;
+    builder => {
+      return builder.options({
+        migrations: {
+          alias: 'm',
+          type: 'boolean',
+        },
+        seeds: {
+          alias: 's',
+          type: 'boolean',
+        },
+      });
+    },
+    ({ migrations, seeds }) => {
       getMigrations({ migrations, seeds });
     },
   )
-  .options({
-    migrations: {
-      alias: 'm',
-      type: 'boolean',
+  .command(
+    'download-schema <endpoint> <token> [filename] [method]',
+    'Download GraphQL schema by introspection',
+    builder => builder,
+    async (action: Arguments<IDownloadSchemaOptions>) => {
+      const { endpoint, token, filename, method } = action;
+      await downloadSchema({
+        endpoint,
+        method,
+        token,
+        filename,
+      });
     },
-    seeds: {
-      alias: 's',
-      type: 'boolean',
-    },
-  }).argv;
+  )
+  .usage('usage: $0 download-schema <endpoint> <token> [filename] [method]')
+  .example(
+    '$0 download-schema https://example.com/gql iDtWsH3Di ./schema.graphql',
+    'Download GraphQL schema into the ./schema.graphql file',
+  )
+  .example('$0 download-schema https://example.com/gql iDtWsH3Di', 'Download GraphQL schema and return this as string')
+  .help()
+  .wrap(120).argv;
 
 export default args;
