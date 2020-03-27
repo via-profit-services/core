@@ -13,7 +13,7 @@ import {
   TOKEN_ACCESS_TOKEN_COOKIE_KEY,
   TOKEN_REFRESH_TOKEN_COOKIE_KEY,
 } from '../utils';
-import { IListResponse, TOutputFilter, IDirectionRange } from '../utils/generateCursorBundle';
+import { IListResponse, TOutputFilter, convertOrderByToKnex } from '../utils/generateCursorBundle';
 
 export enum TokenType {
   access = 'access',
@@ -375,19 +375,12 @@ export class Authentificator {
     const { knex } = context;
     const { limit, offset, orderBy, where, cursor } = filter;
 
-    const knexOrderBy = orderBy.map(({ field, direction }) => {
-      return {
-        column: field,
-        order: direction,
-      };
-    });
-
     return knex
       .select<any, Array<IAccount & { totalCount: number }>>(['j.totalCount', 'accounts.*'])
       .join(
         knex('accounts')
           .select(['id', knex.raw('count(*) over() as "totalCount"')])
-          .orderBy(knexOrderBy)
+          .orderBy(convertOrderByToKnex(orderBy))
           .limit(limit)
           .offset(offset)
           .where(where)
@@ -395,7 +388,7 @@ export class Authentificator {
         'j.id',
         'accounts.id',
       )
-      .orderBy(knexOrderBy)
+      .orderBy(convertOrderByToKnex(orderBy))
       .from('accounts')
       .then(nodes => {
         const node = nodes.length
@@ -410,7 +403,7 @@ export class Authentificator {
           offset,
           cursor,
           nodes,
-          orderBy: [{ field: 'name', direction: IDirectionRange.ASC }],
+          orderBy,
         };
       });
   }

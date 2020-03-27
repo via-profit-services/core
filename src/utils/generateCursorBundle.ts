@@ -1,4 +1,3 @@
-// import * as Knex from 'knex';
 import { ServerError } from '~/errorHandlers';
 
 export enum IDirectionRange {
@@ -31,7 +30,7 @@ export const makeNodeCursor = <T>(node: Node<T> & { [key: string]: any }, order:
   return stringToCursor(JSON.stringify(payload));
 };
 
-export const getNodeCursor = (cursor: string): Array<[string, string | number | boolean, IDirectionRange]> => {
+export const getNodeCursor = (cursor: string): ICursor => {
   const payload = cursorToString(cursor);
 
   try {
