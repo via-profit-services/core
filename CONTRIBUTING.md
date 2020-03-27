@@ -9,6 +9,7 @@
 ## Содержание
 
  - [Установка и настройка](#setup)
+ - [Конвенция](./README.md#convention)
  - [npm-скрипты](#scripts)
  - [Playground](#playground)
  - [GraphQL Playground](#graphql-playground)
