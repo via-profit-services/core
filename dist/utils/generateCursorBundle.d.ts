@@ -18,7 +18,7 @@ export declare const makeNodeCursor: <T>(node: T & {
 } & {
     [key: string]: any;
 }, order: TOrderBy) => string;
-export declare const getNodeCursor: (cursor: string) => ICursor;
+export declare const getNodeCursor: (cursor: string, revert?: boolean) => ICursor;
 /**
  * Wrap node to cursor object
  * @param  {Node} node
@@ -51,7 +51,7 @@ interface ICursorConnectionProps<T> {
     totalCount: number;
     offset: number;
     limit: number;
-    orderBy: TOrderBy;
+    orderBy?: TOrderBy;
     nodes: Node<T>[];
 }
 export declare const buildCursorConnection: <T>(props: ICursorConnectionProps<T>) => ICursorConnection<T>;
@@ -61,9 +61,9 @@ export interface TOutputFilter {
     offset: number;
     limit: number;
     revert: boolean;
-    orderBy?: TOrderBy;
+    orderBy: TOrderBy;
 }
-export declare const buildQueryFilter: <TArgs extends TInputFilter = {}>(args: TArgs) => TOutputFilter;
+export declare const buildQueryFilter: <TArgs extends TInputFilter>(args: TArgs) => TOutputFilter;
 /**
  * GraphQL PageInfo
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-undefined.PageInfo

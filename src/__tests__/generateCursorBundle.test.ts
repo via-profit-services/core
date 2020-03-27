@@ -56,7 +56,7 @@ describe('Cursor utils', () => {
     );
     expect(typeof cursor).toBe('string');
     expect(getNodeCursor(cursor)).toEqual(
-      expect.arrayContaining([['createdAt', '<', new Date('2020-01-02 12:56:33').toISOString()]]),
+      expect.arrayContaining([['createdAt', '>', new Date('2020-01-02 12:56:33').toISOString()]]),
     );
     done();
   });

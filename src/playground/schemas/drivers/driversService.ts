@@ -27,7 +27,6 @@ class DriversService {
     const { context } = this.props;
     const { knex } = context;
     const { limit, offset, orderBy, where, cursor } = filter;
-
     const nodes = await knex
       .select<any, Array<IDriver & { totalCount: number }>>(['joined.totalCount', 'drivers.*'])
       .join(

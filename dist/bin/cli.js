@@ -84,41 +84,97 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 67);
+/******/ 	return __webpack_require__(__webpack_require__.s = 70);
 /******/ })
 /************************************************************************/
 /******/ ({
 
 /***/ 10:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const fs_1 = __importDefault(__webpack_require__(2));
+const path_1 = __importDefault(__webpack_require__(8));
+const utilities_1 = __webpack_require__(11);
+exports.downloadSchema = (options) => __awaiter(void 0, void 0, void 0, function* () {
+    const { endpoint, method, token, filename, headers } = options;
+    const response = yield fetch(endpoint, {
+        method: method || 'POST',
+        headers: Object.assign({ 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, headers),
+        body: JSON.stringify({ query: utilities_1.getIntrospectionQuery() }),
+    });
+    if (response.status !== 200) {
+        throw new Error(`Failed to send introspection request with status code ${response.status}`);
+    }
+    const schemaJSON = yield response.json();
+    const clientSchema = utilities_1.printSchema(utilities_1.buildClientSchema(schemaJSON.data));
+    return fs_1.default.writeFileSync(path_1.default.resolve(filename), clientSchema);
+});
+
+
+/***/ }),
+
+/***/ 11:
+/***/ (function(module, exports) {
+
+module.exports = require("graphql/utilities");
+
+/***/ }),
+
+/***/ 2:
 /***/ (function(module, exports) {
 
 module.exports = require("fs");
 
 /***/ }),
 
-/***/ 6:
+/***/ 7:
 /***/ (function(module, exports) {
 
 module.exports = require("chalk");
 
 /***/ }),
 
-/***/ 67:
+/***/ 70:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 /* eslint-disable import/no-extraneous-dependencies */
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs_1 = __importDefault(__webpack_require__(10));
-const path_1 = __importDefault(__webpack_require__(68));
-const chalk_1 = __importDefault(__webpack_require__(6));
-const dotenv_1 = __importDefault(__webpack_require__(69));
-const glob_1 = __importDefault(__webpack_require__(70));
-const yargs_1 = __importDefault(__webpack_require__(71));
+const fs_1 = __importDefault(__webpack_require__(2));
+const path_1 = __importDefault(__webpack_require__(8));
+const chalk_1 = __importDefault(__webpack_require__(7));
+const dotenv_1 = __importDefault(__webpack_require__(71));
+const glob_1 = __importDefault(__webpack_require__(72));
+const yargs_1 = __importDefault(__webpack_require__(73));
+const downloadSchema_1 = __webpack_require__(10);
 const listMigrationsPerPackage = () => {
     const list = [];
     const projectsList = glob_1.default.sync(`${process.cwd()}/node_modules/@via-profit-services/*/`);
@@ -194,50 +250,65 @@ const getMigrations = (params) => {
     }
 };
 const args = yargs_1.default
-    .command('get-migrations', 'Copy all migration and/or seed files from @via-profit-services modules into your project', () => { }, action => {
-    const { migrations, seeds } = action;
+    .usage('usage: $0 <command>')
+    .command('get-migrations', 'Copy all migration and/or seed files from @via-profit-services modules into your project', builder => {
+    return builder.options({
+        migrations: {
+            alias: 'm',
+            type: 'boolean',
+        },
+        seeds: {
+            alias: 's',
+            type: 'boolean',
+        },
+    });
+}, ({ migrations, seeds }) => {
     getMigrations({ migrations, seeds });
 })
-    .options({
-    migrations: {
-        alias: 'm',
-        type: 'boolean',
-    },
-    seeds: {
-        alias: 's',
-        type: 'boolean',
-    },
-}).argv;
+    .command('download-schema <endpoint> <token> [filename] [method]', 'Download GraphQL schema by introspection', builder => builder, (action) => __awaiter(void 0, void 0, void 0, function* () {
+    const { endpoint, token, filename, method } = action;
+    yield downloadSchema_1.downloadSchema({
+        endpoint,
+        method,
+        token,
+        filename,
+    });
+}))
+    .usage('usage: $0 download-schema <endpoint> <token> [filename] [method]')
+    .example('$0 download-schema https://example.com/gql iDtWsH3Di ./schema.graphql', 'Download GraphQL schema into the ./schema.graphql file')
+    .example('$0 download-schema https://example.com/gql iDtWsH3Di', 'Download GraphQL schema and return this as string')
+    .help()
+    .wrap(120).argv;
 exports.default = args;
 
-
-/***/ }),
-
-/***/ 68:
-/***/ (function(module, exports) {
-
-module.exports = require("path");
-
-/***/ }),
-
-/***/ 69:
-/***/ (function(module, exports) {
-
-module.exports = require("dotenv");
-
-/***/ }),
-
-/***/ 70:
-/***/ (function(module, exports) {
-
-module.exports = require("glob");
 
 /***/ }),
 
 /***/ 71:
 /***/ (function(module, exports) {
 
+module.exports = require("dotenv");
+
+/***/ }),
+
+/***/ 72:
+/***/ (function(module, exports) {
+
+module.exports = require("glob");
+
+/***/ }),
+
+/***/ 73:
+/***/ (function(module, exports) {
+
 module.exports = require("yargs");
+
+/***/ }),
+
+/***/ 8:
+/***/ (function(module, exports) {
+
+module.exports = require("path");
 
 /***/ })
 
