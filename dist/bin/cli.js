@@ -275,8 +275,8 @@ const args = yargs_1.default
     });
 }))
     .usage('usage: $0 download-schema <endpoint> <token> [filename] [method]')
-    .example('$0 download-schema https://example.com/gql iDtWsH3Di ./schema.graphql', 'Download GraphQL schema into the ./schema.graphql file')
-    .example('$0 download-schema https://example.com/gql iDtWsH3Di', 'Download GraphQL schema and return this as string')
+    .example('$0 download-schema https://example.com/gql MyToken ./schema.graphql', 'Download GraphQL schema into the ./schema.graphql file')
+    .example('$0 download-schema https://example.com/gql MyToken', 'Download GraphQL schema and return this as string')
     .help()
     .wrap(120).argv;
 exports.default = args;
