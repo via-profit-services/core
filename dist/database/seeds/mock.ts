@@ -25,22 +25,17 @@ export async function seed(knex: Knex): Promise<any> {
   return (
     knex('mock')
       // .del()
-      .then(() => {
-        // Inserts seed entries
-        return knex('mock').insert(
-          [...Array(RECORDS_QUANTITY).keys()].map(() => {
-            return {
-              id: faker.random.uuid(),
-              createdAt: moment().format(),
-              email: faker.helpers.userCard().email,
-              name: faker.name.findName(),
-              birthday: moment()
-                .subtract(randomInt(30, 55), 'years')
-                .subtract(randomInt(1, 365), 'days'),
-              text: faker.lorem.paragraphs(),
-            };
-          }),
-        );
-      })
+      .then(() => knex('mock').insert(
+        [...Array(RECORDS_QUANTITY).keys()].map(() => ({
+          id: faker.random.uuid(),
+          createdAt: moment().format(),
+          email: faker.helpers.userCard().email,
+          name: faker.name.findName(),
+          birthday: moment()
+            .subtract(randomInt(30, 55), 'years')
+            .subtract(randomInt(1, 365), 'days'),
+          text: faker.lorem.paragraphs(),
+        })),
+      ))
   );
 }

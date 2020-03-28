@@ -84,51 +84,12 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 70);
+/******/ 	return __webpack_require__(__webpack_require__.s = 72);
 /******/ })
 /************************************************************************/
 /******/ ({
 
 /***/ 10:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const fs_1 = __importDefault(__webpack_require__(2));
-const path_1 = __importDefault(__webpack_require__(8));
-const utilities_1 = __webpack_require__(11);
-exports.downloadSchema = (options) => __awaiter(void 0, void 0, void 0, function* () {
-    const { endpoint, method, token, filename, headers } = options;
-    const response = yield fetch(endpoint, {
-        method: method || 'POST',
-        headers: Object.assign({ 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, headers),
-        body: JSON.stringify({ query: utilities_1.getIntrospectionQuery() }),
-    });
-    if (response.status !== 200) {
-        throw new Error(`Failed to send introspection request with status code ${response.status}`);
-    }
-    const schemaJSON = yield response.json();
-    const clientSchema = utilities_1.printSchema(utilities_1.buildClientSchema(schemaJSON.data));
-    return fs_1.default.writeFileSync(path_1.default.resolve(filename), clientSchema);
-});
-
-
-/***/ }),
-
-/***/ 11:
 /***/ (function(module, exports) {
 
 module.exports = require("graphql/utilities");
@@ -149,7 +110,7 @@ module.exports = require("chalk");
 
 /***/ }),
 
-/***/ 70:
+/***/ 72:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -171,14 +132,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(__webpack_require__(2));
 const path_1 = __importDefault(__webpack_require__(8));
 const chalk_1 = __importDefault(__webpack_require__(7));
-const dotenv_1 = __importDefault(__webpack_require__(71));
-const glob_1 = __importDefault(__webpack_require__(72));
-const yargs_1 = __importDefault(__webpack_require__(73));
-const downloadSchema_1 = __webpack_require__(10);
+const dotenv_1 = __importDefault(__webpack_require__(73));
+const glob_1 = __importDefault(__webpack_require__(74));
+const yargs_1 = __importDefault(__webpack_require__(75));
+const downloadSchema_1 = __webpack_require__(9);
 const listMigrationsPerPackage = () => {
     const list = [];
     const projectsList = glob_1.default.sync(`${process.cwd()}/node_modules/@via-profit-services/*/`);
-    projectsList.forEach(projectPath => {
+    projectsList.forEach((projectPath) => {
         const projectName = path_1.default.basename(projectPath);
         const projectInfo = {
             migrations: [],
@@ -186,7 +147,7 @@ const listMigrationsPerPackage = () => {
         };
         const migrationSearchPattern = `${projectPath}dist/database/@(migrations|seeds)/*.ts`;
         const projectMigrationFiles = glob_1.default.sync(migrationSearchPattern);
-        projectMigrationFiles.forEach(filename => {
+        projectMigrationFiles.forEach((filename) => {
             if (!filename.match(/\.d\.ts$/)) {
                 const dir = path_1.default.basename(path_1.default.dirname(filename));
                 projectInfo[dir].push(filename);
@@ -204,14 +165,14 @@ const getMigrations = (params) => {
     if (fs_1.default.existsSync(localDotEnvFile)) {
         const dotEnvData = dotenv_1.default.config({ path: localDotEnvFile }).parsed;
         const migrationsListPerPackage = listMigrationsPerPackage();
-        migrationsListPerPackage.forEach(projectData => {
+        migrationsListPerPackage.forEach((projectData) => {
             const { files, project } = projectData;
             if (params.migrations && dotEnvData.DB_MIGRATIONS_DIRECTORY !== undefined) {
                 let affected = 0;
                 console.log('');
                 console.log(`Migrations from project ${chalk_1.default.magenta(project)}`);
                 const migrationsDestPath = path_1.default.resolve(process.cwd(), dotEnvData.DB_MIGRATIONS_DIRECTORY);
-                files.migrations.forEach(migrationSourceFile => {
+                files.migrations.forEach((migrationSourceFile) => {
                     const destinationFile = path_1.default.join(migrationsDestPath, path_1.default.basename(migrationSourceFile));
                     if (!fs_1.default.existsSync(destinationFile)) {
                         affected += 1;
@@ -231,7 +192,7 @@ const getMigrations = (params) => {
                 console.log('');
                 console.log(`Seeds for ${chalk_1.default.magenta(project)}`);
                 const seedsDestPath = path_1.default.resolve(process.cwd(), dotEnvData.DB_SEEDS_DIRECTORY);
-                files.seeds.forEach(seedSourceFile => {
+                files.seeds.forEach((seedSourceFile) => {
                     const destinationFile = path_1.default.join(seedsDestPath, path_1.default.basename(seedSourceFile));
                     if (!fs_1.default.existsSync(destinationFile)) {
                         affected += 1;
@@ -251,22 +212,20 @@ const getMigrations = (params) => {
 };
 const args = yargs_1.default
     .usage('usage: $0 <command>')
-    .command('get-migrations', 'Copy all migration and/or seed files from @via-profit-services modules into your project', builder => {
-    return builder.options({
-        migrations: {
-            alias: 'm',
-            type: 'boolean',
-        },
-        seeds: {
-            alias: 's',
-            type: 'boolean',
-        },
-    });
-}, ({ migrations, seeds }) => {
+    .command('get-migrations', 'Copy all migration and/or seed files from @via-profit-services modules into your project', (builder) => builder.options({
+    migrations: {
+        alias: 'm',
+        type: 'boolean',
+    },
+    seeds: {
+        alias: 's',
+        type: 'boolean',
+    },
+}), ({ migrations, seeds }) => {
     getMigrations({ migrations, seeds });
 })
-    .command('download-schema <endpoint> <token> [filename] [method]', 'Download GraphQL schema by introspection', builder => builder, (action) => __awaiter(void 0, void 0, void 0, function* () {
-    const { endpoint, token, filename, method } = action;
+    .command('download-schema <endpoint> <token> [filename] [method]', 'Download GraphQL schema by introspection', (builder) => builder, (action) => __awaiter(void 0, void 0, void 0, function* () {
+    const { endpoint, token, filename, method, } = action;
     yield downloadSchema_1.downloadSchema({
         endpoint,
         method,
@@ -284,21 +243,21 @@ exports.default = args;
 
 /***/ }),
 
-/***/ 71:
+/***/ 73:
 /***/ (function(module, exports) {
 
 module.exports = require("dotenv");
 
 /***/ }),
 
-/***/ 72:
+/***/ 74:
 /***/ (function(module, exports) {
 
 module.exports = require("glob");
 
 /***/ }),
 
-/***/ 73:
+/***/ 75:
 /***/ (function(module, exports) {
 
 module.exports = require("yargs");
@@ -309,6 +268,45 @@ module.exports = require("yargs");
 /***/ (function(module, exports) {
 
 module.exports = require("path");
+
+/***/ }),
+
+/***/ 9:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const fs_1 = __importDefault(__webpack_require__(2));
+const path_1 = __importDefault(__webpack_require__(8));
+const utilities_1 = __webpack_require__(10);
+exports.downloadSchema = (options) => __awaiter(void 0, void 0, void 0, function* () {
+    const { endpoint, method, token, filename, headers, } = options;
+    const response = yield fetch(endpoint, {
+        method: method || 'POST',
+        headers: Object.assign({ 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, headers),
+        body: JSON.stringify({ query: utilities_1.getIntrospectionQuery() }),
+    });
+    if (response.status !== 200) {
+        throw new Error(`Failed to send introspection request with status code ${response.status}`);
+    }
+    const schemaJSON = yield response.json();
+    const clientSchema = utilities_1.printSchema(utilities_1.buildClientSchema(schemaJSON.data));
+    return fs_1.default.writeFileSync(path_1.default.resolve(filename), clientSchema);
+});
+
 
 /***/ })
 

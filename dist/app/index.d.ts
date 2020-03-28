@@ -2,6 +2,7 @@
 import { EventEmitter } from 'events';
 import { Server, ServerOptions } from 'https';
 import { GraphQLSchema } from 'graphql';
+import { ITypedef, IResolvers } from 'graphql-tools';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { IJwtConfig } from '../authentificator/authentificator';
 import { IDBConfig, KnexInstance } from '../databaseManager';
@@ -30,7 +31,8 @@ export interface IInitProps {
     endpoint?: string;
     subscriptionsEndpoint?: string;
     timezone?: string;
-    schemas: GraphQLSchema[];
+    typeDefs?: ITypedef[];
+    resolvers?: Array<IResolvers<any, IContext>>;
     jwt: IJwtConfig;
     database: Omit<IDBConfig, 'logger' | 'localTimezone'>;
     logger: ILoggerCollection;
