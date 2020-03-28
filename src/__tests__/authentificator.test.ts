@@ -9,7 +9,7 @@ const { endpoint } = config;
 describe('Authentification service', () => {
   const server = createServer(app);
 
-  it('Any NOT authorized request must return 401 «Unauthorized»', done => {
+  it('Any NOT authorized request must return 401 «Unauthorized»', (done) => {
     supertest(server)
       .post(endpoint)
       .set('Content-Type', 'application/json')
@@ -18,7 +18,7 @@ describe('Authentification service', () => {
       .end(done);
   });
 
-  it('Any authorized request must return 400 «Bad Request Error»', done => {
+  it('Any authorized request must return 400 «Bad Request Error»', (done) => {
     supertest(server)
       .post(`${endpoint}`)
       .set(TOKEN_BEARER_KEY, `${TOKEN_BEARER} ${accessToken.token}`)

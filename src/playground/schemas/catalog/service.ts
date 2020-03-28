@@ -54,10 +54,10 @@ export default class CatalogService {
   }
 
   public getItem(id: string) {
-    return this.getItemsList().find(i => i.id === id);
+    return this.getItemsList().find((i) => i.id === id);
   }
 
   public getCategory(id: string) {
-    return this.getCategoriesList().find(c => c.id === id);
+    return this.getCategoriesList().find((c) => c.id === id);
   }
 }

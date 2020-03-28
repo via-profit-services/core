@@ -63,8 +63,8 @@ type Account implements Node {
   login: String!
   password: String!
   status: AccountStatus!
-  createdAt: String!
-  updatedAt: String!
+  createdAt: Date!
+  updatedAt: Date!
   roles: [String]!
 }
 

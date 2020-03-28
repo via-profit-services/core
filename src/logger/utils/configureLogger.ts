@@ -1,6 +1,8 @@
 import { Logger } from 'winston';
 import 'winston-daily-rotate-file';
-import { authLogger, httpLogger, serverLogger, sqlLogger } from '../loggers';
+import {
+  authLogger, httpLogger, serverLogger, sqlLogger,
+} from '../loggers';
 
 // eslint-disable-next-line import/no-mutable-exports
 let logger: ILoggerCollection;

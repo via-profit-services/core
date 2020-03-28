@@ -56,7 +56,9 @@ class App {
   }
 
   public bootstrap(callback?: (args: IBootstrapCallbackArgs) => void) {
-    const { port, usePlayground, useVoyager, endpoint, routes, serverOptions } = this.props;
+    const {
+      port, usePlayground, useVoyager, endpoint, routes, serverOptions,
+    } = this.props;
     const { app, schema, context } = this.createApp();
     const { logger } = context;
     const server = createServer(serverOptions, app);
@@ -181,9 +183,7 @@ class App {
     app.use(
       cors({
         credentials: true,
-        origin: (origin, callback) => {
-          return callback(null, true);
-        },
+        origin: (origin, callback) => callback(null, true),
       }),
     );
     app.use(express.json({ limit: MAXIMUM_REQUEST_BODY_SIZE }));

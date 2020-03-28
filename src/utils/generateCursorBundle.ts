@@ -9,20 +9,18 @@ export enum IDirectionRange {
  * Convert string to cursor base64 string
  * @param  {string} str
  */
-export const stringToCursor = (str: string) => {
-  return Buffer.from(String(str), 'utf8').toString('base64');
-};
+export const stringToCursor = (str: string) => Buffer.from(String(str), 'utf8').toString('base64');
 
 /**
  * Convert base64 cursor to string
  * @param  {string} str
  */
-export const cursorToString = (cursor: string) => {
-  return Buffer.from(cursor, 'base64').toString('utf8');
-};
+export const cursorToString = (cursor: string) => Buffer.from(cursor, 'base64').toString('utf8');
 
 export const makeNodeCursor = (payload: ICursorPayload): string => {
-  const { limit, offset, revert, id } = payload;
+  const {
+    limit, offset, revert, id,
+  } = payload;
   return stringToCursor(JSON.stringify([limit, offset, revert, id]));
 };
 
@@ -50,31 +48,29 @@ export const getNodeCursor = (cursor: string): ICursorPayload => {
 export const nodeToEdge = <T>(
   node: Node<T>,
   payload: Omit<ICursorPayload, 'id'>,
-): { node: Node<T>; cursor: string } => {
-  return {
+): { node: Node<T>; cursor: string } => ({
     node,
     cursor: makeNodeCursor({ ...payload, id: node.id }),
-  };
-};
+  });
 
 /**
  * Convert nodes array to array of cursors
  * @param {Array} nodes
  */
-export const nodesToEdges = <T>(nodes: Node<T>[], payload: Omit<ICursorPayload, 'id'>): Edge<T>[] => {
-  return [...(nodes || [])].map(node => nodeToEdge<T>(node, payload));
-};
+export const nodesToEdges = <T>(
+  nodes: Node<T>[],
+  payload: Omit<ICursorPayload, 'id'>):
+    Edge<T>[] => [...(nodes || [])].map((node) => nodeToEdge<T>(node, payload));
 
 /**
  * Convert GraphQL OrderBy array to Knex OrderBy array format
  * @param { TOrderBy } orderBy Array of objects econtains { field: "", direction: "" }
  */
-export const convertOrderByToKnex = (orderBy: TOrderBy): TOrderByKnex => {
-  return [...(orderBy || [])].map(({ field, direction }) => ({
-    column: field,
-    order: direction,
-  }));
-};
+export const convertOrderByToKnex = (orderBy: TOrderBy):
+  TOrderByKnex => [...(orderBy || [])].map(({ field, direction }) => ({
+  column: field,
+  order: direction,
+}));
 
 /**
  * GraphQL Cursor connection
@@ -86,8 +82,11 @@ export interface ICursorConnection<T> {
   totalCount: number;
 }
 
-export const buildCursorConnection = <T>(props: ICursorConnectionProps<T>): ICursorConnection<T> => {
-  const { nodes, totalCount, offset, limit, revert } = props;
+export const buildCursorConnection = <T>(
+  props: ICursorConnectionProps<T>): ICursorConnection<T> => {
+  const {
+    nodes, totalCount, offset, limit, revert,
+  } = props;
 
   const edges = nodesToEdges(nodes, {
     limit,
@@ -121,7 +120,9 @@ export interface TOutputFilter {
 }
 
 export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutputFilter => {
-  const { first, last, after, before, offset, orderBy, filter } = args;
+  const {
+    first, last, after, before, offset, orderBy, filter,
+  } = args;
 
   const DEFAULT_LIMIT = 30;
 

@@ -2,6 +2,9 @@ extend type Query {
   drivers: DriversQuery!
 }
 
+extend type Mutation {
+  drivers: DriversMutation!
+}
 
 enum DriversOrderField {
   name
@@ -39,12 +42,24 @@ type DriversQuery {
     orderBy: [OrderBy]
     filter: DriversListFilter
   ): DriversListConnection!
-
-  """
-  Test
-  """
-  t: String
 }
+
+type Error {
+  name: String!
+  msg: String
+}
+
+type DriversMutationPayload {
+  driver: Driver
+}
+
+type DriversMutation {
+  updateDriver(
+    id: ID!
+    data: InputDriverData!
+  ): DriversMutationPayload!
+}
+
 
 input DriversListFilter {
   status: DriverStatus
@@ -82,4 +97,10 @@ type Driver implements Node {
   updatedAt: Date!
   legalStatus: DriverLegalStatus!
   status: DriverStatus!
+}
+
+input InputDriverData {
+  name: String
+  legalStatus: DriverLegalStatus
+  status: DriverStatus
 }

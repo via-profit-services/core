@@ -18,7 +18,7 @@ export const CatalogQuery: IResolverObject<any, IContext> = {
     logger.catalog.debug('Returns Item');
 
     const catalogService = new CatalogService();
-    return catalogService.getItemsList().find(i => i.id === String(id));
+    return catalogService.getItemsList().find((i) => i.id === String(id));
   },
   items: async () => {
     const catalogService = new CatalogService();
