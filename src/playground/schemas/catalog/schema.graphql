@@ -1,18 +1,18 @@
-type Query {
-  catalog: CatalogQueries!
+extend type Query {
+  catalog: CatalogQuery!
 }
 
-type Mutation {
-  catalog: CatalogMutations!
+extend type Mutation {
+  catalog: CatalogMutation!
 }
 
-type CatalogQueries {
+type CatalogQuery {
   categories: [Category]!
   items: [Item]
   item(id: ID!): Item
 }
 
-type CatalogMutations {
+type CatalogMutation {
   category: CategoryMutations!
   item: ItemMutations!
 }

@@ -2,7 +2,7 @@ import { IResolverObject } from 'graphql-tools';
 import { IContext } from '../../../../app';
 import CatalogService from '../service';
 
-export const CatalogQueries: IResolverObject<any, IContext> = {
+export const CatalogQuery: IResolverObject<any, IContext> = {
   categories: (source, args, context) => {
     const { logger } = context;
 
@@ -28,4 +28,4 @@ export const CatalogQueries: IResolverObject<any, IContext> = {
   },
 };
 
-export default CatalogQueries;
+export default CatalogQuery;

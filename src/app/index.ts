@@ -8,7 +8,7 @@ import express from 'express';
 import graphqlHTTP, { OptionsData } from 'express-graphql';
 import { GraphQLSchema, execute, subscribe } from 'graphql';
 import expressPlayground from 'graphql-playground-middleware-express';
-import { mergeSchemas } from 'graphql-tools';
+import { makeExecutableSchema, ITypedef, IResolvers } from 'graphql-tools';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 
@@ -16,7 +16,7 @@ import { IJwtConfig } from '../authentificator/authentificator';
 import { authentificatorMiddleware } from '../authentificator/authentificatorMiddleware';
 import { knexProvider, IDBConfig, KnexInstance } from '../databaseManager';
 import { errorHandlerMiddleware, requestHandlerMiddleware, ILoggerCollection } from '../logger';
-import { accountsSchema, InfoSchema } from '../schemas';
+import { info, accounts, common } from '../schemas';
 import {
   DEFAULT_SERVER_PORT,
   DEFAULT_GRAPHQL_ENDPOINT,
@@ -113,7 +113,8 @@ class App {
 
   public createApp() {
     const {
-      schemas,
+      typeDefs,
+      resolvers,
       endpoint,
       timezone,
       port,
@@ -134,8 +135,25 @@ class App {
     // init main server handle
     const app = express();
 
-    // merge user schemas and legacy
-    const schema = mergeSchemas({ schemas: [...schemas, accountsSchema, InfoSchema] });
+    const schema = makeExecutableSchema({
+      typeDefs: [
+        // Common type definitions
+        common.typeDefs,
+
+        // user type definitions
+        ...typeDefs,
+
+        // developer schema defs
+        info.typeDefs,
+
+        // authentificator schema defs
+        accounts.typeDefs,
+      ],
+      resolvers: [...resolvers, info.resolvers, accounts.resolvers],
+      resolverValidationOptions: {
+        requireResolversForResolveType: false,
+      },
+    });
 
     // define knex instance
     const knex = knexProvider({
@@ -259,7 +277,8 @@ export interface IInitProps {
   endpoint?: string;
   subscriptionsEndpoint?: string;
   timezone?: string;
-  schemas: GraphQLSchema[];
+  typeDefs?: ITypedef[];
+  resolvers?: Array<IResolvers<any, IContext>>;
   jwt: IJwtConfig;
   database: Omit<IDBConfig, 'logger' | 'localTimezone'>;
   logger: ILoggerCollection;

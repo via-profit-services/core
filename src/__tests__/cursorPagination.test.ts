@@ -1,6 +1,6 @@
 import faker from 'faker/locale/ru';
 import { v4 as uuidv4 } from 'uuid';
-import { buildCursorConnection, IDirectionRange, Node } from '../utils';
+import { buildCursorConnection, Node } from '../utils';
 
 const generateNodes = (quantity: number): Node<{ name: string }>[] => {
   return [...new Array(quantity).keys()].map(() => ({
@@ -17,12 +17,6 @@ describe('Cursor Pagination', () => {
       totalCount: 11,
       limit: 2,
       offset: 0,
-      orderBy: [
-        {
-          field: 'name',
-          direction: IDirectionRange.DESC,
-        },
-      ],
     });
     expect(connection.pageInfo.hasPreviousPage).toBeFalsy();
     expect(connection.pageInfo.hasNextPage).toBeTruthy();
@@ -35,12 +29,6 @@ describe('Cursor Pagination', () => {
       totalCount: 11,
       limit: 2,
       offset: 1,
-      orderBy: [
-        {
-          field: 'name',
-          direction: IDirectionRange.DESC,
-        },
-      ],
     });
     expect(connection.pageInfo.hasPreviousPage).toBeTruthy();
     expect(connection.pageInfo.hasNextPage).toBeTruthy();
@@ -53,12 +41,6 @@ describe('Cursor Pagination', () => {
       totalCount: 11,
       limit: 2,
       offset: 10,
-      orderBy: [
-        {
-          field: 'name',
-          direction: IDirectionRange.DESC,
-        },
-      ],
     });
     expect(connection.pageInfo.hasPreviousPage).toBeTruthy();
     expect(connection.pageInfo.hasNextPage).toBeFalsy();
@@ -71,12 +53,6 @@ describe('Cursor Pagination', () => {
       totalCount: 11,
       limit: 15,
       offset: 0,
-      orderBy: [
-        {
-          field: 'name',
-          direction: IDirectionRange.DESC,
-        },
-      ],
     });
     expect(connection.pageInfo.hasPreviousPage).toBeFalsy();
     expect(connection.pageInfo.hasNextPage).toBeFalsy();

@@ -1,0 +1,41 @@
+enum OrderDirection {
+  ASC
+  DESC
+}
+
+scalar Date
+
+"""
+Ordering options for accounts returned from the connection
+"""
+input OrderBy {
+  field: DriversOrderField!
+  direction: OrderDirection!
+}
+
+"""
+Information about pagination in a connection.
+"""
+interface PageInfo {
+  hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+interface Node {
+  id: ID!
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+interface Edge {
+  node: Node!
+  cursor: String!
+}
+
+interface Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [Edge]!
+}

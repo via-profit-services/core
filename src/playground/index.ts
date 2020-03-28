@@ -1,10 +1,13 @@
 import { App } from '../app';
 import { configureApp } from '../utils/configureApp';
-import catalogSchema from './schemas/catalog';
-import driversSchema from './schemas/drivers';
-import simpleSchema from './schemas/simple';
+import * as catalog from './schemas/catalog';
+import * as drivers from './schemas/drivers';
 
-const config = configureApp({ schemas: [simpleSchema, catalogSchema, driversSchema] });
+const config = configureApp({
+  typeDefs: [catalog.typeDefs, drivers.typeDefs],
+  resolvers: [catalog.resolvers, drivers.resolvers],
+});
+
 const app = new App(config);
 app.bootstrap(({ resolveUrl }) => {
   const { graphql, auth } = resolveUrl;

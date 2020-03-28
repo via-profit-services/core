@@ -52,7 +52,6 @@ const serverConfig: IInitProps = {
   database: databaseConfig,
   jwt: jwtConfig,
   logger,
-  schemas: [],
   serverOptions: {
     key: fs.readFileSync(path.resolve(rootPath, process.env.SSL_KEY)),
     cert: fs.readFileSync(path.resolve(rootPath, process.env.SSL_CERT)),
@@ -61,15 +60,17 @@ const serverConfig: IInitProps = {
 };
 
 const configureApp = (props?: IProps): IInitProps => {
-  const { schemas } = props || {};
+  const { typeDefs, resolvers } = props || {};
   return {
     ...serverConfig,
-    schemas,
+    typeDefs,
+    resolvers,
   };
 };
 
 interface IProps {
-  schemas: IInitProps['schemas'];
+  typeDefs: IInitProps['typeDefs'];
+  resolvers: IInitProps['resolvers'];
 }
 
 export default configureApp;

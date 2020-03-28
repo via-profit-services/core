@@ -26,7 +26,8 @@ class DriversService {
   public async getDrivers(filter: TOutputFilter): Promise<IListResponse<IDriver>> {
     const { context } = this.props;
     const { knex } = context;
-    const { limit, offset, orderBy, where, cursor } = filter;
+    const { limit, offset, orderBy, where } = filter;
+
     const nodes = await knex
       .select<any, Array<IDriver & { totalCount: number }>>(['joined.totalCount', 'drivers.*'])
       .join(
@@ -34,7 +35,7 @@ class DriversService {
           .select(['id', knex.raw('count(*) over() as "totalCount"')])
           .limit(limit)
           .offset(offset)
-          .where(builder => [...where, ...cursor].forEach(data => builder.where(...data)))
+          .where(builder => where.forEach(data => builder.where(...data)))
           .orderBy(convertOrderByToKnex(orderBy))
           .as('joined'),
         'joined.id',
@@ -44,7 +45,6 @@ class DriversService {
       .from('drivers');
 
     return {
-      orderBy,
       totalCount: nodes.length ? nodes[0].totalCount : 0,
       limit,
       offset,

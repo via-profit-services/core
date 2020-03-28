@@ -1,4 +1,8 @@
-import accountsSchema from './accounts';
-import InfoSchema from './info';
+import * as accounts from './accounts';
+import commonTypeDefs from './common.graphql';
+import * as info from './info';
 
-export { accountsSchema, InfoSchema };
+const common = {
+  typeDefs: commonTypeDefs,
+};
+export { accounts, info, common };

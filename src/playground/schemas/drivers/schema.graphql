@@ -1,31 +1,33 @@
-type Query {
-  drivers: DriversQueries!
+extend type Query {
+  drivers: DriversQuery!
 }
 
-scalar Date
 
-"""
-Information about pagination in a connection.
-"""
-type PageInfo {
-  hasPreviousPage: Boolean!
-  hasNextPage: Boolean!
-  startCursor: String
-  endCursor: String
+enum DriversOrderField {
+  name
+  createdAt
+  updatedAt
 }
 
-"""
-Drivers adge bundle
-"""
-type DriversEdge {
-  node: Driver!
-  cursor: String!
+enum DriverLegalStatus {
+  person
+  legal
+  entrepreneur
+}
+
+enum DriverStatus {
+  active
+  inactive
+  dismissed
+  sick
+  blocked
+  holiday
 }
 
 """
 Drivers module queries
 """
-type DriversQueries {
+type DriversQuery {
 
   """
   Returns Drivers list bundle
@@ -50,55 +52,30 @@ input DriversListFilter {
     
 }
 
-
+"""
+Drivers adge bundle
+"""
+type DriversEdge implements Edge {
+  node: Driver!
+  cursor: String!
+}
 
 """
 Drivers list bundle
 """
-type DriversListConnection {
+type DriversListConnection implements Connection {
   totalCount: Int!
   pageInfo: PageInfo!
   edges: [DriversEdge]!
 }
 
-"""
-Ordering options for accounts returned from the connection
-"""
-input OrderBy {
-  field: DriversOrderField!
-  direction: OrderDirection!
-}
 
-enum DriversOrderField {
-  name
-  createdAt
-  updatedAt
-}
 
-enum OrderDirection {
-  ASC
-  DESC
-}
-
-enum DriverLegalStatus {
-  person
-  legal
-  entrepreneur
-}
-
-enum DriverStatus {
-  active
-  inactive
-  dismissed
-  sick
-  blocked
-  holiday
-}
 
 """
 Driver data
 """
-type Driver {
+type Driver implements Node {
   id: ID!
   name: String!
   createdAt: Date!

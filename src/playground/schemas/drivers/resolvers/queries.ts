@@ -3,7 +3,7 @@ import { IContext } from '../../../../app';
 import { buildCursorConnection, buildQueryFilter, TInputFilter } from '../../../../utils';
 import DriverService from '../driversService';
 
-export const DriversQueries: IResolvers<any, IContext> = {
+export const DriversQuery: IResolvers<any, IContext> = {
   list: async (obj, args, context) => {
     const filter = buildQueryFilter(args);
     const driverService = new DriverService({ context });
@@ -37,4 +37,4 @@ interface IResolvers<TSource, TContext> extends IResolverObject {
   t: IFieldResolver<TSource, TContext>;
 }
 
-export default DriversQueries;
+export default DriversQuery;

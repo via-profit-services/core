@@ -1,21 +1,11 @@
-type Query {
+extend type Query {
   accounts: AccountsQuery!
-}
-
-"""
-Information about pagination in a connection.
-"""
-type PageInfo {
-  hasPreviousPage: Boolean!
-  hasNextPage: Boolean!
-  startCursor: String
-  endCursor: String
 }
 
 """
 Account adge bundle
 """
-type AccountsEdge {
+type AccountsEdge implements Edge {
   node: Account!
   cursor: String!
 }
@@ -35,7 +25,7 @@ type AccountsQuery {
     before: String
     status: AccountStatus
     orderBy: AccountOrderBy
-  ): AccountListResult!
+  ): AccountListConnection!
 }
 
 """
@@ -54,15 +44,10 @@ enum AccountOrderField {
   updatedAt
 }
 
-enum OrderDirection {
-  ASC
-  DESC
-}
-
 """
 Account object
 """
-type Account {
+type Account implements Node {
   id: ID!
   name: String!
   login: String!
@@ -76,12 +61,11 @@ type Account {
 """
 Accounts list bundle
 """
-type AccountListResult {
+type AccountListConnection implements Connection {
   totalCount: Int!
   pageInfo: PageInfo!
   edges: [AccountsEdge]!
 }
-
 
 """
 Account status

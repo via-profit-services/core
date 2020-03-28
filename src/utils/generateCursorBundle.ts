@@ -21,24 +21,22 @@ export const cursorToString = (cursor: string) => {
   return Buffer.from(cursor, 'base64').toString('utf8');
 };
 
-export const makeNodeCursor = <T>(node: Node<T> & { [key: string]: any }, order: TOrderBy): string => {
-  const payload = order.map(({ field, direction }) => {
-    const value = field in node ? node[field] : '';
-    return [field, value, direction];
-  });
-
-  return stringToCursor(JSON.stringify(payload));
+export const makeNodeCursor = (payload: ICursorPayload): string => {
+  const { limit, offset, revert, id } = payload;
+  return stringToCursor(JSON.stringify([limit, offset, revert, id]));
 };
 
-export const getNodeCursor = (cursor: string, revert?: boolean): ICursor => {
+export const getNodeCursor = (cursor: string): ICursorPayload => {
   const payload = cursorToString(cursor);
 
   try {
-    const cursorData = JSON.parse(payload) as Array<[string, string | number | boolean, IDirectionRange]>;
-    return cursorData.map(([field, value]) => {
-      // return [field, direction === IDirectionRange.ASC ? '>' : '<', value];
-      return [field, revert ? '<' : '>', value];
-    });
+    const [limit, offset, revert, id] = JSON.parse(payload) as [number, number, boolean, string];
+    return {
+      limit,
+      offset,
+      revert,
+      id,
+    };
   } catch (err) {
     throw new ServerError(`The cursor «${cursor}» is invalid because it contains the wrong JSON data`);
   }
@@ -49,10 +47,13 @@ export const getNodeCursor = (cursor: string, revert?: boolean): ICursor => {
  * @param  {Node} node
  * @param  {TOrderBy} order
  */
-export const nodeToEdge = <T>(node: Node<T>, order: TOrderBy): { node: Node<T>; cursor: string } => {
+export const nodeToEdge = <T>(
+  node: Node<T>,
+  payload: Omit<ICursorPayload, 'id'>,
+): { node: Node<T>; cursor: string } => {
   return {
     node,
-    cursor: makeNodeCursor(node, order),
+    cursor: makeNodeCursor({ ...payload, id: node.id }),
   };
 };
 
@@ -60,8 +61,8 @@ export const nodeToEdge = <T>(node: Node<T>, order: TOrderBy): { node: Node<T>; 
  * Convert nodes array to array of cursors
  * @param {Array} nodes
  */
-export const nodesToEdges = <T>(nodes: Node<T>[], order: TOrderBy): Edge<T>[] => {
-  return [...(nodes || [])].map(node => nodeToEdge<T>(node, order));
+export const nodesToEdges = <T>(nodes: Node<T>[], payload: Omit<ICursorPayload, 'id'>): Edge<T>[] => {
+  return [...(nodes || [])].map(node => nodeToEdge<T>(node, payload));
 };
 
 /**
@@ -85,18 +86,14 @@ export interface ICursorConnection<T> {
   totalCount: number;
 }
 
-interface ICursorConnectionProps<T> {
-  totalCount: number;
-  offset: number;
-  limit: number;
-  orderBy?: TOrderBy;
-  nodes: Node<T>[];
-}
-
 export const buildCursorConnection = <T>(props: ICursorConnectionProps<T>): ICursorConnection<T> => {
-  const { nodes, totalCount, offset, limit, orderBy } = props;
+  const { nodes, totalCount, offset, limit, revert } = props;
 
-  const edges = nodesToEdges(nodes, orderBy || []);
+  const edges = nodesToEdges(nodes, {
+    limit,
+    offset,
+    revert: Boolean(revert),
+  });
   const startCursor = edges.length ? edges[0].cursor : undefined;
   const endCursor = edges.length ? edges[edges.length - 1].cursor : undefined;
   const hasPreviousPage = offset > 0;
@@ -115,12 +112,12 @@ export const buildCursorConnection = <T>(props: ICursorConnectionProps<T>): ICur
 };
 
 export interface TOutputFilter {
-  where: Array<[string, '=' | '<' | '>', string | number | boolean | null]>;
-  cursor: ICursor;
+  where: TWhere;
   offset: number;
   limit: number;
   revert: boolean;
   orderBy: TOrderBy;
+  cursor?: ICursorPayload;
 }
 
 export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutputFilter => {
@@ -130,13 +127,20 @@ export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutp
 
   // combine filter
   const outputFilter = {
-    cursor: after || before ? getNodeCursor(after || before, !!last) : [],
-    limit: first || last || DEFAULT_LIMIT,
+    limit: Math.max(Number(first || last) || DEFAULT_LIMIT, 0),
     orderBy: orderBy || [],
     revert: !!last,
     where: [],
-    offset: Number(offset) || 0,
+    offset: Math.max(Number(offset) || 0, 0),
   } as TOutputFilter;
+
+  if (after || before) {
+    const cursor = getNodeCursor(after || before);
+    outputFilter.limit = cursor.limit;
+    outputFilter.offset = cursor.offset;
+    outputFilter.revert = cursor.revert;
+    outputFilter.cursor = cursor;
+  }
 
   if (!outputFilter.orderBy.length) {
     outputFilter.orderBy.push({
@@ -186,15 +190,22 @@ export interface Edge<T> {
   cursor: string;
 }
 
-export type ICursor = Array<[string, '=' | '<' | '>', string | number | boolean | null]>;
+export interface ICursorPayload {
+  limit: number;
+  offset: number;
+  revert: boolean;
+  id: string;
+}
 
 export interface IListResponse<T> {
   totalCount: number;
   offset: number;
   limit: number;
-  orderBy: TOrderBy;
   nodes: Array<Node<T>>;
+  revert?: boolean;
 }
+
+export type ICursorConnectionProps<T> = IListResponse<T>;
 
 export interface TInputFilter {
   first?: number;
@@ -217,3 +228,5 @@ export type TOrderByKnex = Array<{
   column: string;
   order: IDirectionRange;
 }>;
+
+export type TWhere = Array<[string, '=' | '<' | '>', '<=' | '>=' | string | number | boolean | null]>;
