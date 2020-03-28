@@ -248,17 +248,6 @@ enum OrderDirection {
 scalar Date
 
 """
-Information about pagination in a connection.
-"""
-type PageInfo {
-  hasPreviousPage: Boolean!
-  hasNextPage: Boolean!
-  startCursor: String
-  endCursor: String
-}
-
-
-"""
 Ordering options for accounts returned from the connection
 """
 input OrderBy {
@@ -267,30 +256,30 @@ input OrderBy {
 }
 
 """
-Info module queries
+Information about pagination in a connection.
 """
-type InfoQuery {
-
-  """
-  Returns developer info
-  """
-  developer: DeveloperInfo!
+interface PageInfo {
+  hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
+  startCursor: String
+  endCursor: String
 }
 
-"""
-Developer info
-"""
-type DeveloperInfo {
+interface Node {
+  id: ID!
+  createdAt: Date!
+  updatedAt: Date!
+}
 
-  """
-  Returns developer company name
-  """
-  name: String!
+interface Edge {
+  node: Node!
+  cursor: String!
+}
 
-  """
-  Returns developer url
-  """
-  url: String!
+interface Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [Edge]!
 }
 
 ```

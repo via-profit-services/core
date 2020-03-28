@@ -2,6 +2,23 @@ extend type Query {
   accounts: AccountsQuery!
 }
 
+
+"""
+Account status
+"""
+enum AccountStatus {
+  allowed
+  forbidden
+}
+
+enum AccountOrderField {
+  name
+  login
+  createdAt
+  updatedAt
+}
+
+
 """
 Account adge bundle
 """
@@ -37,13 +54,6 @@ input AccountOrderBy {
 }
 
 
-enum AccountOrderField {
-  name
-  login
-  createdAt
-  updatedAt
-}
-
 """
 Account object
 """
@@ -65,12 +75,4 @@ type AccountListConnection implements Connection {
   totalCount: Int!
   pageInfo: PageInfo!
   edges: [AccountsEdge]!
-}
-
-"""
-Account status
-"""
-enum AccountStatus {
-  allowed
-  forbidden
 }
