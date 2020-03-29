@@ -16,7 +16,7 @@ input OrderBy {
 """
 Information about pagination in a connection.
 """
-interface PageInfo {
+type PageInfo {
   hasPreviousPage: Boolean!
   hasNextPage: Boolean!
   startCursor: String
