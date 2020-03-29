@@ -9,6 +9,7 @@
 
 - [Установка и настройка](#setup)
 - [Как использовать](#how-to-use)
+- [GraphQL типы](#graphql-typedefs)
 - [Аутентификация](#authentication)
 - [Параметры инициализации](#options)
 - [Конвенция](#convention)
@@ -100,9 +101,38 @@ COOKIES_SIGN_SECRET= <-- Секрет для подписи Cookies
 
 Для создания сервера необходимо сконфигурировать [логгер](#logger), создать инстанс приложения и запустить `bootstrap` метод.
 
+1. Создайте схему
+**Замечание:** Так как тип данных `Query` может существовать, объявленный в другом модуле, следует декларировать его с ключевым словом `extend`. Это же условие справедлимо и для мутаций
+
+```graphql
+extend type Query {
+  myModule: MyModuleQueries!
+}
+
+type MyModuleQueries {
+  version: String!
+}
+```
+
+2. Создайте резолвер
+```ts
+const resolvers = {
+  Query: {
+    myModule: () => ({}),
+  },
+  MyModuleQueries: {
+    version: () => 'v.0.1.1',
+  },
+};
+
+export default resolvers;
+```
+
+3. Создайте инстанс приложения
 ```ts
 import { App, configureLogger } from '@via-profit-services/core';
-import myGraphQLSchema from './my-graphql-schema';
+import typeDefs from './my-typedefs';
+import resolver from './my-resolver';
 import fs from 'fs';
 
 // Конфигурируем логгер
@@ -112,7 +142,8 @@ const logger = configureLogger({
 
 // Создание объекта приложения
 const app = new App({
-  schemas: [myGraphQLSchema],
+  typeDefs: [ typeDefs ],
+  resolvers: [ resolver ],
   logger,
   jwt: { ... },
   database: { ... },
@@ -156,12 +187,11 @@ export const MyQueries: IResolverObject<any, IContext, TInputFilter> = {
         totalCount: number; // <-- общее количество элементов
         offset: number; // <-- Текущий сдвиг выборки (PostgreSQL offset)
         limit: number; // <-- Текущее ограничение выборки (PostgreSQL limit)
-        orderBy: TOrderBy; // <-- Массив сортировки
         nodes: Node<T>[]; // <-- массив объектов, содержащих ключ cursor типа number
       }
     */
 
-    const myConnection = await service.getListOfMyData(queryFilter); // { totalCount, offset, limit, orderBy, nodes }
+    const myConnection = await service.getListOfMyData(queryFilter); // { totalCount, offset, limit, nodes }
 
     // Преобразовываем полученные данные в GraphQL Cursor Connections (см. след пример)
     return buildCursorConnection(myConnection);
@@ -191,13 +221,13 @@ export const MyQueries: IResolverObject<any, IContext, TInputFilter> = {
 
 *Кодирует данные в курсор*
 
-Принимает объект типа `<Node>`, в качестве первого аргумента, и массив `<TOrderBy>`, в качестве второго. Причем, первый аргумент должен содержать ключи, перечисленные в параметрах `field` типа `<TOrderBy>`. Иными словами, в первом аргументе должны присутствовать все ключи, которые перечислены в полях `field` второго аргумента
+Принимает объект типа `<ICursorPayload>`, в качестве единственного аргумента
 
 ### `getNodeCursor`
 
 *Декодирует курсор в данные*
 
-Принимает в качестве единственного аргумента строку, которая является `base64` закодированным курсором и возвращает массив типа `<ICursor>`, который представляет собой следующий интерфейс: `Array<[string, '=' | '<' | '>', string | number | boolean | null]>`
+Принимает в качестве единственного аргумента строку, которая является `base64` закодированным курсором и возвращает массив типа `<ICursorPayload>`, который представляет собой следующий интерфейс: `{ limit: number; offset: number; revert: boolean; id: string; }`
 
 ### `convertOrderByToKnex`
 
@@ -205,6 +235,54 @@ export const MyQueries: IResolverObject<any, IContext, TInputFilter> = {
 
 Принимает в качестве единственного аргумента массив формата `Array<{field: string; direction: IDirectionRange;}>` и преобразует его в массив формата `Array<{column: string; order: IDirectionRange;}>`
     
+## <a name="graphql-typedefs"></a> GraphQL типы
+
+GraphQL типы, регистрируемые по умолчанию:
+
+```graphql
+enum OrderDirection {
+  ASC
+  DESC
+}
+
+scalar Date
+
+"""
+Ordering options for accounts returned from the connection
+"""
+input OrderBy {
+  field: DriversOrderField!
+  direction: OrderDirection!
+}
+
+"""
+Information about pagination in a connection.
+"""
+interface PageInfo {
+  hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+interface Node {
+  id: ID!
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+interface Edge {
+  node: Node!
+  cursor: String!
+}
+
+interface Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [Edge]!
+}
+
+```
 
 
 ## <a name="authentication"></a> Аутентификация

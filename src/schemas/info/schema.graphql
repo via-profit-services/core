@@ -2,6 +2,17 @@ type Query {
   info: InfoQuery!
 }
 
+type Mutation {
+  info: InfoMutation!
+}
+
+
+type InfoMutation {
+  info: Boolean!
+}
+
+
+
 """
 Info module queries
 """
@@ -13,9 +24,9 @@ type InfoQuery {
   developer: DeveloperInfo!
 }
 
-  """
-  Developer info
-  """
+"""
+Developer info
+"""
 type DeveloperInfo {
 
   """

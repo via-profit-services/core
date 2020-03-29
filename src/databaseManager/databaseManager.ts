@@ -9,19 +9,17 @@ import { DATABASE_CHARSET, DATABASE_CLIENT } from '../utils';
 const ENABLE_PG_TYPES = true;
 
 export const knexProvider = (config: IDBConfig) => {
-  const { connection, logger, timezone, localTimezone } = config;
+  const {
+    connection, logger, timezone, localTimezone,
+  } = config;
   const times: { [key: string]: any } = {};
 
   if (ENABLE_PG_TYPES) {
     // Timestamp
-    types.setTypeParser(types.builtins.TIMESTAMP, 'text', value => {
-      return moment.tz(value, localTimezone).toDate();
-    });
+    types.setTypeParser(types.builtins.TIMESTAMP, 'text', (value) => moment.tz(value, localTimezone).toDate());
 
     // timestamptz
-    types.setTypeParser(types.builtins.TIMESTAMPTZ, 'text', value => {
-      return moment.tz(value, localTimezone).toDate();
-    });
+    types.setTypeParser(types.builtins.TIMESTAMPTZ, 'text', (value) => moment.tz(value, localTimezone).toDate());
 
     // Numeric to float
     types.setTypeParser(types.builtins.NUMERIC, parseFloat);
@@ -56,7 +54,7 @@ export const knexProvider = (config: IDBConfig) => {
   });
 
   instance
-    .on('query', query => {
+    .on('query', (query) => {
       // eslint-disable-next-line no-underscore-dangle
       const uid = query.__knexQueryUid;
 
@@ -88,7 +86,7 @@ export const knexProvider = (config: IDBConfig) => {
       logger.server.debug('Test the connection by trying to authenticate is OK');
       return true;
     })
-    .catch(err => {
+    .catch((err) => {
       logger.server.error(err.name, err);
       throw new ServerError(err);
     });

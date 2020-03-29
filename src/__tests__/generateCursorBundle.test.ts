@@ -7,28 +7,25 @@ import {
   buildCursorConnection,
   ICursorConnection,
   IPageInfo,
-  IDirectionRange,
   Edge,
   Node,
 } from '../utils';
 
-const generateNodes = (quantity: number): Node<{ name: string }>[] => {
-  return [...new Array(quantity).keys()].map(() => ({
-    id: uuidv4(),
-    name: faker.name.findName(),
-    createdAt: faker.date.past(),
-  }));
-};
+const generateNodes = (quantity: number):
+    Node<{ name: string }>[] => [...new Array(quantity).keys()].map(() => ({
+  id: uuidv4(),
+  name: faker.name.findName(),
+  createdAt: faker.date.past(),
+}));
 
 describe('Cursor utils', () => {
-  it('nodeToEdge. Should return GraphQL Edge', done => {
+  it('nodeToEdge. Should return GraphQL Edge', (done) => {
     const node = generateNodes(1)[0];
-    const edge = nodeToEdge(node, [
-      {
-        direction: IDirectionRange.DESC,
-        field: 'createdAt',
-      },
-    ]);
+    const edge = nodeToEdge(node, {
+      limit: 2,
+      offset: 0,
+      revert: false,
+    });
 
     expect(edge).toMatchObject({
       cursor: expect.any(String),
@@ -40,39 +37,30 @@ describe('Cursor utils', () => {
     done();
   });
 
-  it('getNodeCursor. Should return an array of ICursor implementation', done => {
+  it('getNodeCursor. Should return an array of ICursor implementation', (done) => {
     const node = generateNodes(1)[0];
-    const cursor = makeNodeCursor(
-      {
-        ...node,
-        createdAt: new Date('2020-01-02 12:56:33'),
-      },
-      [
-        {
-          direction: IDirectionRange.DESC,
-          field: 'createdAt',
-        },
-      ],
-    );
+    const cursor = makeNodeCursor({
+      limit: 2,
+      offset: 0,
+      revert: false,
+      id: node.id,
+    });
     expect(typeof cursor).toBe('string');
-    expect(getNodeCursor(cursor)).toEqual(
-      expect.arrayContaining([['createdAt', '>', new Date('2020-01-02 12:56:33').toISOString()]]),
-    );
+    expect(getNodeCursor(cursor)).toEqual({
+      limit: 2,
+      offset: 0,
+      revert: false,
+      id: node.id,
+    });
     done();
   });
 
-  it('buildCursorConnection. Should return GraphQL cursor connection object', done => {
+  it('buildCursorConnection. Should return GraphQL cursor connection object', (done) => {
     const connection = buildCursorConnection({
       totalCount: 15,
       limit: 2,
       nodes: generateNodes(2),
       offset: 1,
-      orderBy: [
-        {
-          field: 'name',
-          direction: IDirectionRange.DESC,
-        },
-      ],
     });
 
     interface NodeData {

@@ -4,7 +4,9 @@ import path from 'path';
 import { buildClientSchema, getIntrospectionQuery, printSchema } from 'graphql/utilities';
 
 export const downloadSchema = async (options: IDownloadSchemaOptions) => {
-  const { endpoint, method, token, filename, headers } = options;
+  const {
+    endpoint, method, token, filename, headers,
+  } = options;
 
   const response = await fetch(endpoint, {
     method: method || 'POST',

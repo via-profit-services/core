@@ -373,7 +373,9 @@ export class Authentificator {
   public getAccounts(filter: TOutputFilter): Promise<IListResponse<IAccount>> {
     const { context } = this.props;
     const { knex } = context;
-    const { limit, offset, orderBy, where, cursor } = filter;
+    const {
+      limit, offset, orderBy, where,
+    } = filter;
 
     return knex
       .select<any, Array<IAccount & { totalCount: number }>>(['j.totalCount', 'accounts.*'])
@@ -390,20 +392,18 @@ export class Authentificator {
       )
       .orderBy(convertOrderByToKnex(orderBy))
       .from('accounts')
-      .then(nodes => {
+      .then((nodes) => {
         const node = nodes.length
           ? nodes[0]
           : {
-              totalCount: 0,
-            };
+            totalCount: 0,
+          };
 
         return {
           totalCount: node.totalCount,
           limit,
           offset,
-          cursor,
           nodes,
-          orderBy,
         };
       });
   }

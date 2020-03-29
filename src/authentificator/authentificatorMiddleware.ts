@@ -1,5 +1,7 @@
 import DeviceDetector from 'device-detector-js';
-import { NextFunction, Request, Response, Router } from 'express';
+import {
+  NextFunction, Request, Response, Router,
+} from 'express';
 import asyncHandler from 'express-async-handler';
 import { IContext } from '../app';
 import { BadRequestError } from '../errorHandlers';

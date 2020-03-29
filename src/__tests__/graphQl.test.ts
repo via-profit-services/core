@@ -11,7 +11,7 @@ describe('GraphQL', () => {
   const server = createServer(app);
 
   // it('dummy', done => done());
-  it(`GraphQL «devInfo» query. Must returns full «devInfo»`, done => {
+  it('GraphQL «devInfo» query. Must returns full «devInfo»', (done) => {
     supertest(server)
       .post(endpoint)
       .set('Accept', 'application/json')
@@ -30,7 +30,7 @@ describe('GraphQL', () => {
       })
       .expect('Content-Type', /json/)
       .expect(200)
-      .then(async response => {
+      .then(async (response) => {
         const data = JSON.parse(response.text);
         assert.deepEqual(data, {
           data: {

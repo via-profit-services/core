@@ -1,83 +1,15 @@
-type Query {
-  drivers: DriversQueries!
+extend type Query {
+  drivers: DriversQuery!
 }
 
-scalar Date
-
-"""
-Information about pagination in a connection.
-"""
-type PageInfo {
-  hasPreviousPage: Boolean!
-  hasNextPage: Boolean!
-  startCursor: String
-  endCursor: String
-}
-
-"""
-Drivers adge bundle
-"""
-type DriversEdge {
-  node: Driver!
-  cursor: String!
-}
-
-"""
-Drivers module queries
-"""
-type DriversQueries {
-
-  """
-  Returns Drivers list bundle
-  """
-  list(
-    first: Int
-    offset: Int
-    after: String
-    orderBy: [OrderBy]
-    filter: DriversListFilter
-  ): DriversListConnection!
-
-  """
-  Test
-  """
-  t: String
-}
-
-input DriversListFilter {
-  status: DriverStatus
-  legalStatus: DriverLegalStatus
-    
-}
-
-
-
-"""
-Drivers list bundle
-"""
-type DriversListConnection {
-  totalCount: Int!
-  pageInfo: PageInfo!
-  edges: [DriversEdge]!
-}
-
-"""
-Ordering options for accounts returned from the connection
-"""
-input OrderBy {
-  field: DriversOrderField!
-  direction: OrderDirection!
+extend type Mutation {
+  drivers: DriversMutation!
 }
 
 enum DriversOrderField {
   name
   createdAt
   updatedAt
-}
-
-enum OrderDirection {
-  ASC
-  DESC
 }
 
 enum DriverLegalStatus {
@@ -96,13 +28,79 @@ enum DriverStatus {
 }
 
 """
+Drivers module queries
+"""
+type DriversQuery {
+
+  """
+  Returns Drivers list bundle
+  """
+  list(
+    first: Int
+    offset: Int
+    after: String
+    orderBy: [OrderBy]
+    filter: DriversListFilter
+  ): DriversListConnection!
+}
+
+type Error {
+  name: String!
+  msg: String
+}
+
+type DriversMutationPayload {
+  driver: Driver
+}
+
+type DriversMutation {
+  updateDriver(
+    id: ID!
+    data: InputDriverData!
+  ): DriversMutationPayload!
+}
+
+
+input DriversListFilter {
+  status: DriverStatus
+  legalStatus: DriverLegalStatus
+    
+}
+
+"""
+Drivers adge bundle
+"""
+type DriversEdge implements Edge {
+  node: Driver!
+  cursor: String!
+}
+
+"""
+Drivers list bundle
+"""
+type DriversListConnection implements Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [DriversEdge]!
+}
+
+
+
+
+"""
 Driver data
 """
-type Driver {
+type Driver implements Node {
   id: ID!
   name: String!
   createdAt: Date!
   updatedAt: Date!
   legalStatus: DriverLegalStatus!
   status: DriverStatus!
+}
+
+input InputDriverData {
+  name: String
+  legalStatus: DriverLegalStatus
+  status: DriverStatus
 }
