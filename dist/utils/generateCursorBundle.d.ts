@@ -53,6 +53,10 @@ export interface TOutputFilter {
 }
 export declare const buildQueryFilter: <TArgs extends TInputFilter>(args: TArgs) => TOutputFilter;
 /**
+ * Returns node IDs array
+ */
+export declare const extractNodeIds: <T>(nodes: Node<T>[]) => Node<T>["id"][];
+/**
  * GraphQL PageInfo
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-undefined.PageInfo
  */
