@@ -207,14 +207,19 @@ export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutp
   return outputFilter;
 };
 
+/**
+ * Return array of fields of node
+ */
+export const extractNodeField = <T, K extends keyof Node<T>>(
+  nodes: Node<T>[], field: K): Node<T>[K][] => {
+  const elems = [...nodes].map((n) => n[field]);
+  return elems;
+};
 
 /**
  * Returns node IDs array
  */
-export const extractNodeIds = <T>(nodes: Node<T>[]): Array<Node<T>['id']> => {
-  const ids = nodes.map((n) => n.id as Node<T>['id']);
-  return ids;
-};
+export const extractNodeIds = <T, K extends keyof T>(nodes: Node<T>[]) => extractNodeField<Node<T>, 'id'>(nodes, 'id');
 
 
 /**

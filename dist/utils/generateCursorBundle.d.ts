@@ -49,9 +49,13 @@ export interface ICursorConnection<T> {
 export declare const buildCursorConnection: <T>(props: ICursorConnectionProps<T>) => ICursorConnection<T>;
 export declare const buildQueryFilter: <TArgs extends TInputFilter>(args: TArgs) => TOutputFilter;
 /**
+ * Return array of fields of node
+ */
+export declare const extractNodeField: <T, K extends "id" | keyof T | "createdAt">(nodes: Node<T>[], field: K) => Node<T>[K][];
+/**
  * Returns node IDs array
  */
-export declare const extractNodeIds: <T>(nodes: Node<T>[]) => Node<T>["id"][];
+export declare const extractNodeIds: <T, K extends keyof T>(nodes: Node<T>[]) => Node<T>["id"][];
 /**
  * GraphQL PageInfo
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-undefined.PageInfo
