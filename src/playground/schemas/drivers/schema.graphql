@@ -44,11 +44,6 @@ type DriversQuery {
   ): DriversListConnection!
 }
 
-type Error {
-  name: String!
-  msg: String
-}
-
 type DriversMutationPayload {
   driver: Driver
 }
