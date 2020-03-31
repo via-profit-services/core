@@ -234,7 +234,13 @@ export const MyQueries: IResolverObject<any, IContext, TInputFilter> = {
 *Конвертирует массив типа `<TOrderBy>` в массив `<TOrderByKnex>`*
 
 Принимает в качестве единственного аргумента массив формата `Array<{field: string; direction: IDirectionRange;}>` и преобразует его в массив формата `Array<{column: string; order: IDirectionRange;}>`
-    
+
+### `extractNodeIds`
+
+*Извлекает из массива типа `<Node>` ID и возвращает в виде массива*
+
+Принимает в качестве единственного аргумента массив элементов и возвращает массив их ID
+
 ## <a name="graphql-typedefs"></a> GraphQL типы
 
 Via Profit сервер включает в себя схему, содержащую некоторые GraphQL типы и интерфейсы. 
