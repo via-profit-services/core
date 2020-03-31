@@ -23,6 +23,17 @@ const resolvers: IResolvers<any, IContext> = {
         throw new ServerError('Failed to get Drivers list', { err });
       }
     },
+    test: async (parent, args, context) => {
+      console.log('test');
+      const driverService = new DriverService({ context });
+      const driversConnection = await driverService.getDrivers({
+        offset: 0,
+        limit: 10,
+      });
+
+      console.log('driversConnection', driversConnection);
+      return '';
+    },
   },
   DriversMutation: {
     updateDriver: async (parent, args: {id: string; data: IDriverUpdateInfo}, context) => {

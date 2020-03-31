@@ -13,7 +13,9 @@ import {
   TOKEN_ACCESS_TOKEN_COOKIE_KEY,
   TOKEN_REFRESH_TOKEN_COOKIE_KEY,
 } from '../utils';
-import { IListResponse, TOutputFilter, convertOrderByToKnex } from '../utils/generateCursorBundle';
+import {
+  IListResponse, TOutputFilter, convertOrderByToKnex, convertWhereToKnex,
+} from '../utils/generateCursorBundle';
 
 export enum TokenType {
   access = 'access',
@@ -385,7 +387,7 @@ export class Authentificator {
           .orderBy(convertOrderByToKnex(orderBy))
           .limit(limit)
           .offset(offset)
-          .where(where)
+          .where((builder) => convertWhereToKnex(builder, where))
           .as('j'),
         'j.id',
         'accounts.id',

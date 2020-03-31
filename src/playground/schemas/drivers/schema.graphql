@@ -42,6 +42,8 @@ type DriversQuery {
     orderBy: [OrderBy]
     filter: DriversListFilter
   ): DriversListConnection!
+
+  test: String
 }
 
 type DriversMutationPayload {
@@ -59,7 +61,6 @@ type DriversMutation {
 input DriversListFilter {
   status: DriverStatus
   legalStatus: DriverLegalStatus
-    
 }
 
 """

@@ -1,3 +1,4 @@
+import Knex from 'knex';
 import { ServerError } from '~/errorHandlers';
 
 export enum IDirectionRange {
@@ -60,17 +61,60 @@ export const nodeToEdge = <T>(
 export const nodesToEdges = <T>(
   nodes: Node<T>[],
   payload: Omit<ICursorPayload, 'id'>):
-    Edge<T>[] => [...(nodes || [])].map((node) => nodeToEdge<T>(node, payload));
+  Edge<T>[] => [...(nodes || [])].map((node) => nodeToEdge<T>(node, payload));
 
 /**
  * Convert GraphQL OrderBy array to Knex OrderBy array format
  * @param { TOrderBy } orderBy Array of objects econtains { field: "", direction: "" }
  */
-export const convertOrderByToKnex = (orderBy: TOrderBy):
+export const convertOrderByToKnex = (orderBy: TOrderBy | undefined):
   TOrderByKnex => [...(orderBy || [])].map(({ field, direction }) => ({
   column: field,
   order: direction,
 }));
+
+
+export const convertWhereToKnex = (builder: Knex.QueryBuilder, whereClause: {
+  [key: string]: string | number | boolean | null;
+} | TWhere) => {
+  if (typeof whereClause === 'undefined') {
+    return builder;
+  }
+
+  const whereArray: TWhere = [];
+  // if is an array
+  if (Array.isArray(whereClause)) {
+    whereClause.forEach(([field, action, value]) => {
+      whereArray.push([field, action, value]);
+    });
+  }
+
+  if (!Array.isArray(whereClause)) {
+    Object.entries(whereClause).forEach(([field, value]) => {
+      whereArray.push([field, '=', value]);
+    });
+  }
+
+  whereArray.forEach(([field, action, value]) => {
+    switch (true) {
+      case action === 'in':
+
+        builder.whereIn(field, Array.isArray(value) ? value : [value] as Array<string | number>);
+        break;
+
+      case action === 'notIn':
+        builder.whereNotIn(field, Array.isArray(value) ? value : [value] as Array<string | number>);
+        break;
+
+      default:
+        builder.where(field, action, value as string | number | boolean | null);
+        break;
+    }
+  });
+
+
+  return builder;
+};
 
 /**
  * GraphQL Cursor connection
@@ -110,14 +154,6 @@ export const buildCursorConnection = <T>(
   };
 };
 
-export interface TOutputFilter {
-  where: TWhere;
-  offset: number;
-  limit: number;
-  revert: boolean;
-  orderBy: TOrderBy;
-  cursor?: ICursorPayload;
-}
 
 export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutputFilter => {
   const {
@@ -155,9 +191,18 @@ export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutp
     direction: IDirectionRange.DESC,
   });
 
-  Object.entries(filter || {}).forEach(([field, value]) => {
-    outputFilter.where.push([field, '=', value]);
-  });
+  if (typeof filter !== 'undefined') {
+    // if filter is an array
+    if (Array.isArray(filter)) {
+      outputFilter.where = filter;
+    }
+
+    if (!Array.isArray(filter)) {
+      Object.entries(filter).forEach(([field, value]) => {
+        outputFilter.where.push([field, '=', value]);
+      });
+    }
+  }
 
   return outputFilter;
 };
@@ -227,7 +272,17 @@ export interface TInputFilter {
   orderBy?: TOrderBy;
   filter?: {
     [key: string]: string | number | boolean | null;
-  };
+  } | TWhere;
+}
+
+
+export interface TOutputFilter {
+  offset: number;
+  limit: number;
+  revert?: boolean;
+  orderBy?: TOrderBy;
+  where?: TWhere;
+  cursor?: ICursorPayload;
 }
 
 export type TOrderBy = Array<{
@@ -240,4 +295,4 @@ export type TOrderByKnex = Array<{
   order: IDirectionRange;
 }>;
 
-export type TWhere = Array<[string, '=' | '<' | '>', '<=' | '>=' | string | number | boolean | null]>;
+export type TWhere = Array<[string, '=' | '<' | '>' | '<=' | '>=' | 'in' | 'notIn', string | number | boolean | null | Array<string | number>]>;

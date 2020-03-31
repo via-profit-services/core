@@ -1,6 +1,8 @@
 import moment from 'moment-timezone';
 import { IContext } from '../../../app';
-import { IListResponse, TOutputFilter, convertOrderByToKnex } from '../../../utils';
+import {
+  IListResponse, TOutputFilter, convertOrderByToKnex, convertWhereToKnex,
+} from '../../../utils';
 
 export enum IDriverLegalStatus {
   PERSON = 'person',
@@ -31,6 +33,7 @@ class DriversService {
       limit, offset, orderBy, where,
     } = filter;
 
+
     return knex
       .select<any, Array<IDriver & { totalCount: number }>>(['joined.totalCount', 'drivers.*'])
       .join(
@@ -38,7 +41,7 @@ class DriversService {
           .select(['id', knex.raw('count(*) over() as "totalCount"')])
           .limit(limit)
           .offset(offset)
-          .where((builder) => where.forEach((data) => builder.where(...data)))
+          .where((builder) => convertWhereToKnex(builder, where))
           .orderBy(convertOrderByToKnex(orderBy))
           .as('joined'),
         'joined.id',

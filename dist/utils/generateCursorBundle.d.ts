@@ -1,3 +1,4 @@
+import Knex from 'knex';
 export declare enum IDirectionRange {
     ASC = "ASC",
     DESC = "DESC"
@@ -33,6 +34,9 @@ export declare const nodesToEdges: <T>(nodes: Node<T>[], payload: Pick<ICursorPa
  * @param { TOrderBy } orderBy Array of objects econtains { field: "", direction: "" }
  */
 export declare const convertOrderByToKnex: (orderBy: TOrderBy) => TOrderByKnex;
+export declare const convertWhereToKnex: (builder: Knex.QueryBuilder<any, any>, whereClause: {
+    [key: string]: string | number | boolean;
+} | TWhere) => Knex.QueryBuilder<any, any>;
 /**
  * GraphQL Cursor connection
  * @see https://facebook.github.io/relay/graphql/connections.htm
@@ -43,14 +47,6 @@ export interface ICursorConnection<T> {
     totalCount: number;
 }
 export declare const buildCursorConnection: <T>(props: ICursorConnectionProps<T>) => ICursorConnection<T>;
-export interface TOutputFilter {
-    where: TWhere;
-    offset: number;
-    limit: number;
-    revert: boolean;
-    orderBy: TOrderBy;
-    cursor?: ICursorPayload;
-}
 export declare const buildQueryFilter: <TArgs extends TInputFilter>(args: TArgs) => TOutputFilter;
 /**
  * Returns node IDs array
@@ -105,7 +101,15 @@ export interface TInputFilter {
     orderBy?: TOrderBy;
     filter?: {
         [key: string]: string | number | boolean | null;
-    };
+    } | TWhere;
+}
+export interface TOutputFilter {
+    offset: number;
+    limit: number;
+    revert?: boolean;
+    orderBy?: TOrderBy;
+    where?: TWhere;
+    cursor?: ICursorPayload;
 }
 export declare type TOrderBy = Array<{
     field: string;
@@ -115,4 +119,4 @@ export declare type TOrderByKnex = Array<{
     column: string;
     order: IDirectionRange;
 }>;
-export declare type TWhere = Array<[string, '=' | '<' | '>', '<=' | '>=' | string | number | boolean | null]>;
+export declare type TWhere = Array<[string, '=' | '<' | '>' | '<=' | '>=' | 'in' | 'notIn', string | number | boolean | null | Array<string | number>]>;
