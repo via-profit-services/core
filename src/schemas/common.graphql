@@ -1,9 +1,30 @@
+"""
+Standart ordering options
+"""
 enum OrderDirection {
   ASC
   DESC
 }
 
+"""
+Basic Date type
+"""
 scalar Date
+
+"""
+Error handle interface
+"""
+interface Error {
+  """
+  Error name. Can be short error message
+  """
+  name: String!
+
+  """
+  Error detail message string
+  """
+  msg: String
+}
 
 """
 Ordering options for accounts returned from the connection
@@ -23,17 +44,26 @@ type PageInfo {
   endCursor: String
 }
 
+"""
+GraphQL Node spec. interface
+"""
 interface Node {
   id: ID!
   createdAt: Date!
   updatedAt: Date!
 }
 
+"""
+GraphQL Edge spec. interface
+"""
 interface Edge {
   node: Node!
   cursor: String!
 }
 
+"""
+GraphQL Connection spec. interface
+"""
 interface Connection {
   totalCount: Int!
   pageInfo: PageInfo!
