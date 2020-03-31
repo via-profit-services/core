@@ -11,7 +11,7 @@ export default class CatalogService {
       id: '178900',
       name: 'Item 1',
       category: '100',
-      price: 1600.0,
+      price: '5.0',
     },
     {
       id: '278900',

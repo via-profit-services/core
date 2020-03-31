@@ -237,8 +237,48 @@ export const MyQueries: IResolverObject<any, IContext, TInputFilter> = {
     
 ## <a name="graphql-typedefs"></a> GraphQL типы
 
-Via Profit сервер включает в себя схему, содержащую некоторые скалярные GraphQL типы и интерфейсы. 
+Via Profit сервер включает в себя схему, содержащую некоторые GraphQL типы и интерфейсы. 
 Данные располагаются в схеме [common.graphql](./src/schemas/common.graphql)
+
+Скалярные типы наследуются из пакета [graphql-scalars](https://github.com/Urigo/graphql-scalars#usage) и содержат:
+
+ - scalar DateTime
+ - scalar NegativeInt
+ - scalar EmailAddress
+ - scalar NegativeFloat
+ - scalar NonNegativeFloat
+ - scalar NonNegativeInt
+ - scalar NonPositiveFloat
+ - scalar NonPositiveInt
+ - scalar PhoneNumber
+ - scalar PositiveFloat
+ - scalar PositiveInt
+ - scalar PostalCode
+ - scalar UnsignedFloat
+ - scalar UnsignedInt
+ - scalar URL
+ - scalar ObjectID
+ - scalar BigInt
+ - scalar Long
+ - scalar GUID
+ - scalar HexColorCode
+ - scalar HSL
+ - scalar HSLA
+ - scalar IPv4
+ - scalar IPv6
+ - scalar ISBN
+ - scalar MAC
+ - scalar Port
+ - scalar RGB
+ - scalar RGBA
+ - scalar USCurrency
+ - scalar JSON
+ - scalar JSONObject
+
+Дополнительные типы, добавленные в ядро:
+
+ - scalar Money
+
 
 
 ## <a name="authentication"></a> Аутентификация

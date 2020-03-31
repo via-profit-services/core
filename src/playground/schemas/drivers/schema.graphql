@@ -88,8 +88,8 @@ Driver data
 type Driver implements Node {
   id: ID!
   name: String!
-  createdAt: Date!
-  updatedAt: Date!
+  createdAt: DateTime!
+  updatedAt: DateTime!
   legalStatus: DriverLegalStatus!
   status: DriverStatus!
 }

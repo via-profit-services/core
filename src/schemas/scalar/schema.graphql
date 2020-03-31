@@ -1,0 +1,7 @@
+"""
+Money type.
+The value is stored in the smallest monetary unit (kopecks, cents, etc.)
+Real type - Int
+e.g. For 250 USD this record returns value as 250000 (250$ * 100¢) 
+"""
+scalar Money

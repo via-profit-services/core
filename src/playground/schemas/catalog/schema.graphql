@@ -37,4 +37,5 @@ type Category {
 type Item {
   id: ID!
   name: String!
+  price: Money!
 }
