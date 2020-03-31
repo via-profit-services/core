@@ -7,9 +7,19 @@ enum OrderDirection {
 }
 
 """
-Basic Date type
+Date type equivalent timestamp with timezone
+Real type - String formatted as YYYY-MM-DDTHH:mm:ss.000Z
+e.g. 2000-01-01T05:16:00.000Z
 """
 scalar Date
+
+"""
+Money type.
+The value is stored in the smallest monetary unit (kopecks, cents, etc.)
+Real type - Int
+e.g. For 250 USD this record returns value as 250000 (250$ * 100¢) 
+"""
+scalar Money
 
 """
 Error handle interface
