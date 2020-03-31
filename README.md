@@ -237,52 +237,8 @@ export const MyQueries: IResolverObject<any, IContext, TInputFilter> = {
     
 ## <a name="graphql-typedefs"></a> GraphQL типы
 
-GraphQL типы, регистрируемые по умолчанию:
-
-```graphql
-enum OrderDirection {
-  ASC
-  DESC
-}
-
-scalar Date
-
-"""
-Ordering options for accounts returned from the connection
-"""
-input OrderBy {
-  field: DriversOrderField!
-  direction: OrderDirection!
-}
-
-"""
-Information about pagination in a connection.
-"""
-interface PageInfo {
-  hasPreviousPage: Boolean!
-  hasNextPage: Boolean!
-  startCursor: String
-  endCursor: String
-}
-
-interface Node {
-  id: ID!
-  createdAt: Date!
-  updatedAt: Date!
-}
-
-interface Edge {
-  node: Node!
-  cursor: String!
-}
-
-interface Connection {
-  totalCount: Int!
-  pageInfo: PageInfo!
-  edges: [Edge]!
-}
-
-```
+Via Profit сервер включает в себя схему, содержащую некоторые скалярные GraphQL типы и интерфейсы. 
+Данные располагаются в схеме [common.graphql](./src/schemas/common.graphql)
 
 
 ## <a name="authentication"></a> Аутентификация
