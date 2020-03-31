@@ -8,6 +8,7 @@ import express from 'express';
 import graphqlHTTP, { OptionsData } from 'express-graphql';
 import { GraphQLSchema, execute, subscribe } from 'graphql';
 import expressPlayground from 'graphql-playground-middleware-express';
+import { typeDefs as scalarTypeDefs, resolvers as scalarResolvers } from 'graphql-scalars';
 import { makeExecutableSchema, ITypedef, IResolvers } from 'graphql-tools';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
@@ -16,7 +17,9 @@ import { IJwtConfig } from '../authentificator/authentificator';
 import { authentificatorMiddleware } from '../authentificator/authentificatorMiddleware';
 import { knexProvider, IDBConfig, KnexInstance } from '../databaseManager';
 import { errorHandlerMiddleware, requestHandlerMiddleware, ILoggerCollection } from '../logger';
-import { info, accounts, common } from '../schemas';
+import {
+  info, accounts, common, scalar,
+} from '../schemas';
 import {
   DEFAULT_SERVER_PORT,
   DEFAULT_GRAPHQL_ENDPOINT,
@@ -139,6 +142,13 @@ class App {
 
     const schema = makeExecutableSchema({
       typeDefs: [
+
+        // graphql-scalars
+        ...scalarTypeDefs,
+
+        // Common scalars
+        scalar.typeDefs,
+
         // Common type definitions
         common.typeDefs,
 
@@ -151,7 +161,23 @@ class App {
         // authentificator schema defs
         accounts.typeDefs,
       ],
-      resolvers: [...resolvers, info.resolvers, accounts.resolvers],
+      resolvers: [
+
+        // graphql-scalars
+        scalarResolvers,
+
+        // Common scalars
+        scalar.resolvers,
+
+        // user resolvers
+        ...resolvers,
+
+        // developer info
+        info.resolvers,
+
+        // authentificator
+        accounts.resolvers,
+      ],
       resolverValidationOptions: {
         requireResolversForResolveType: false,
       },
