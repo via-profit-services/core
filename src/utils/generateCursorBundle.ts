@@ -162,6 +162,16 @@ export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutp
   return outputFilter;
 };
 
+
+/**
+ * Returns node IDs array
+ */
+export const extractNodeIds = <T>(nodes: Node<T>[]): Array<Node<T>['id']> => {
+  const ids = nodes.map((n) => n.id as Node<T>['id']);
+  return ids;
+};
+
+
 /**
  * GraphQL PageInfo
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-undefined.PageInfo
