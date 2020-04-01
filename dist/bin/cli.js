@@ -84,7 +84,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 79);
+/******/ 	return __webpack_require__(__webpack_require__.s = 78);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -110,7 +110,7 @@ module.exports = require("chalk");
 
 /***/ }),
 
-/***/ 79:
+/***/ 78:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -132,9 +132,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(__webpack_require__(2));
 const path_1 = __importDefault(__webpack_require__(8));
 const chalk_1 = __importDefault(__webpack_require__(7));
-const dotenv_1 = __importDefault(__webpack_require__(80));
-const glob_1 = __importDefault(__webpack_require__(81));
-const yargs_1 = __importDefault(__webpack_require__(82));
+const dotenv_1 = __importDefault(__webpack_require__(79));
+const glob_1 = __importDefault(__webpack_require__(80));
+const yargs_1 = __importDefault(__webpack_require__(81));
 const downloadSchema_1 = __webpack_require__(9);
 const listMigrationsPerPackage = () => {
     const list = [];
@@ -243,6 +243,13 @@ exports.default = args;
 
 /***/ }),
 
+/***/ 79:
+/***/ (function(module, exports) {
+
+module.exports = require("dotenv");
+
+/***/ }),
+
 /***/ 8:
 /***/ (function(module, exports) {
 
@@ -253,18 +260,11 @@ module.exports = require("path");
 /***/ 80:
 /***/ (function(module, exports) {
 
-module.exports = require("dotenv");
-
-/***/ }),
-
-/***/ 81:
-/***/ (function(module, exports) {
-
 module.exports = require("glob");
 
 /***/ }),
 
-/***/ 82:
+/***/ 81:
 /***/ (function(module, exports) {
 
 module.exports = require("yargs");

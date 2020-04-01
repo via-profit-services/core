@@ -4,13 +4,13 @@ import {
   IListResponse, TOutputFilter, convertOrderByToKnex, convertWhereToKnex, TWhereAction,
 } from '../../../utils';
 
-export enum IDriverLegalStatus {
+export enum DriverLegalStatus {
   PERSON = 'person',
   LEGAL = 'legal',
   ENTREPRENEUR = 'entrepreneur',
 }
 
-export enum IDriverStatus {
+export enum DriverStatus {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
   DISMISSED = 'dismissed',
@@ -90,8 +90,8 @@ export interface IDriver {
   name: string;
   createdAt: Date;
   updatedAt: Date;
-  legalStatus: IDriverLegalStatus;
-  status: IDriverStatus;
+  legalStatus: DriverLegalStatus;
+  status: DriverStatus;
 }
 
 export type IDriverUpdateInfo = Omit<IDriver, 'id' | 'createdAt' | 'updatedAt'> & {

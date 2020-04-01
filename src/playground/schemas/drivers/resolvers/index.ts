@@ -5,11 +5,16 @@ import {
   buildCursorConnection,
   buildQueryFilter,
   TInputFilter,
-  Node,
-  dataloaderManager,
+  DataLoader,
 } from '../../../../utils';
-import DriverService, { IDriverUpdateInfo, IDriver } from '../driversService';
+import DriverService, {
+  IDriverUpdateInfo, IDriver, DriverStatus, DriverLegalStatus,
+} from '../driversService';
 import createDataloader from '../loaders';
+
+const dataloaders: {list: DataLoader<string, IDriver>} = {
+  list: null,
+};
 
 
 const resolvers: IResolvers<any, IContext> = {
@@ -19,50 +24,60 @@ const resolvers: IResolvers<any, IContext> = {
   Mutation: {
     drivers: () => ({}),
   },
-  Driver: dataloaderManager.resolveObject<string, IDriver>(['name', 'status'], createDataloader),
-
+  Driver: {
+    createdAt: async ({ id }: Pick<IDriver, 'id'>, args, context) => {
+      dataloaders.list = dataloaders.list || createDataloader(context);
+      const data = await dataloaders.list.load(id);
+      return data.createdAt;
+    },
+    updatedAt: async ({ id }: Pick<IDriver, 'id'>, args, context) => {
+      dataloaders.list = dataloaders.list || createDataloader(context);
+      const data = await dataloaders.list.load(id);
+      return data.updatedAt;
+    },
+    status: async ({ id }: Pick<IDriver, 'id'>, args, context) => {
+      dataloaders.list = dataloaders.list || createDataloader(context);
+      const data = await dataloaders.list.load(id);
+      return data.status;
+    },
+    legalStatus: async ({ id }: Pick<IDriver, 'id'>, args, context) => {
+      dataloaders.list = dataloaders.list || createDataloader(context);
+      const data = await dataloaders.list.load(id);
+      return data.legalStatus;
+    },
+    name: async ({ id }: Pick<IDriver, 'id'>, args, context) => {
+      dataloaders.list = dataloaders.list || createDataloader(context);
+      const data = await dataloaders.list.load(id);
+      return data.name;
+    },
+  },
   DriversQuery: {
     list: async (parent, args: TInputFilter, context) => {
+      dataloaders.list = dataloaders.list || createDataloader(context);
       const filter = buildQueryFilter(args);
       const driverService = new DriverService({ context });
-      const loader = dataloaderManager.createOrGetDataloader<
-        string, Node<IDriver>
-      >(context, createDataloader);
 
       try {
         const driversConnection = await driverService.getDrivers(filter);
+        const connection = buildCursorConnection(driversConnection);
 
         // fill the cache
         driversConnection.nodes.forEach((node) => {
-          loader.clear(node.id).prime(node.id, node);
+          dataloaders.list.clear(node.id).prime(node.id, node);
         });
-
-        const connection = buildCursorConnection(driversConnection);
 
         return connection;
       } catch (err) {
         throw new ServerError('Failed to get Drivers list', { err });
       }
     },
-    test: async (parent, args, context) => {
-      console.log('test');
-      const driverService = new DriverService({ context });
-      const driversConnection = await driverService.getDrivers({
-        offset: 0,
-        limit: 10,
-      });
-
-      console.log('driversConnection', driversConnection);
-      return '';
-    },
+    statusesList: () => Object.values(DriverStatus),
+    legalStatusesList: () => Object.values(DriverLegalStatus),
   },
   DriversMutation: {
     updateDriver: async (parent, args: { id: string; data: IDriverUpdateInfo }, context) => {
       const { id, ...otherData } = args;
-
-      const loader = dataloaderManager.createOrGetDataloader<
-        string, Node<IDriver>
-      >(context, createDataloader);
+      dataloaders.list = dataloaders.list || createDataloader(context);
       const driverService = new DriverService({ context });
 
       try {
@@ -71,7 +86,8 @@ const resolvers: IResolvers<any, IContext> = {
         throw new ServerError('Failed to update driver');
       }
 
-      loader.clear(id);
+      // clear cache of this driver
+      dataloaders.list.clear(id);
       return { id };
     },
   },
