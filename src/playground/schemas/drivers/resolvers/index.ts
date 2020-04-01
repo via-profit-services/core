@@ -7,7 +7,7 @@ import {
   TInputFilter,
   Node,
   DataLoader,
-  resolveByDataLoader,
+  dataloaderManager,
 } from '../../../../utils';
 import DriverService, { IDriverUpdateInfo, IDriver } from '../driversService';
 import createDataloader from '../loaders';
@@ -23,24 +23,18 @@ const dataloaders: DataloadersPool = {
 
 const resolvers: IResolvers<any, IContext> = {
   Query: {
-    drivers: (parent, args, context) => {
-      dataloaders.drivers = createDataloader(context).drivers;
-      return {};
-    },
+    drivers: () => ({}),
   },
   Mutation: {
-    drivers: (parent, args, context) => {
-      dataloaders.drivers = createDataloader(context).drivers;
-      return {};
-    },
+    drivers: () => ({}),
   },
   Driver: {
     name: async ({ id }: Pick<IDriver, 'id'>) => {
-      const value = await resolveByDataLoader<string, Node<IDriver>>(id, 'name', dataloaders.drivers);
+      const value = await dataloaderManager.resolveByDataLoader<string, Node<IDriver>>(id, 'name', dataloaderManager.get('driversList'));
       return value;
     },
     status: async ({ id }: Pick<IDriver, 'id'>) => {
-      const value = await resolveByDataLoader<string, Node<IDriver>>(id, 'status', dataloaders.drivers);
+      const value = await dataloaderManager.resolveByDataLoader<string, Node<IDriver>>(id, 'status', dataloaderManager.get('driversList'));
       return value;
     },
   },
@@ -53,9 +47,12 @@ const resolvers: IResolvers<any, IContext> = {
       try {
         const driversConnection = await driverService.getDrivers(filter);
 
+        // create dataloader
+        dataloaderManager.set('driversList', createDataloader(context).drivers);
+
         // fill the cache
         driversConnection.nodes.forEach((node) => {
-          dataloaders.drivers.clear(node.id).prime(node.id, node);
+          dataloaderManager.get('driversList').clear(node.id).prime(node.id, node);
         });
 
         const connection = buildCursorConnection(driversConnection);
