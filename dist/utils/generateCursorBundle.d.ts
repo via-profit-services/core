@@ -3,6 +3,16 @@ export declare enum IDirectionRange {
     ASC = "ASC",
     DESC = "DESC"
 }
+export declare enum TWhereAction {
+    EQ = "=",
+    NEQ = "<>",
+    GT = ">",
+    LT = "<",
+    GTE = ">=",
+    LTE = "<=",
+    IN = "in",
+    NOTIN = "notIn"
+}
 /**
  * Convert string to cursor base64 string
  * @param  {string} str
@@ -55,7 +65,7 @@ export declare const extractNodeField: <T, K extends "id" | keyof T | "createdAt
 /**
  * Returns node IDs array
  */
-export declare const extractNodeIds: <T, K extends keyof T>(nodes: Node<T>[]) => Node<T>["id"][];
+export declare const extractNodeIds: <T>(nodes: Node<T>[]) => Node<T>["id"][];
 /**
  * GraphQL PageInfo
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-undefined.PageInfo
@@ -123,4 +133,4 @@ export declare type TOrderByKnex = Array<{
     column: string;
     order: IDirectionRange;
 }>;
-export declare type TWhere = Array<[string, '=' | '<' | '>' | '<=' | '>=' | 'in' | 'notIn', string | number | boolean | null | Array<string | number>]>;
+export declare type TWhere = Array<[string, TWhereAction, string | number | boolean | null | readonly string[] | readonly number[]]>;
