@@ -15,9 +15,5 @@ export default function createDataloader(context: IContext) {
     return nodes;
   };
 
-  return {
-    drivers: new DataLoader<string, Node<IDriver>>((ids) => batchDrivers(ids), {
-      cacheKeyFn: (ids) => ids.toString(),
-    }),
-  };
+  return new DataLoader<string, Node<IDriver>>((ids) => batchDrivers(ids));
 }
