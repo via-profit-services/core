@@ -6,6 +6,17 @@ export enum IDirectionRange {
   DESC = 'DESC',
 }
 
+export enum TWhereAction {
+  EQ = '=',
+  NEQ = '<>',
+  GT = '>',
+  LT = '<',
+  GTE = '>=',
+  LTE = '<=',
+  IN = 'in',
+  NOTIN = 'notIn',
+}
+
 /**
  * Convert string to cursor base64 string
  * @param  {string} str
@@ -91,18 +102,18 @@ export const convertWhereToKnex = (builder: Knex.QueryBuilder, whereClause: {
 
   if (!Array.isArray(whereClause)) {
     Object.entries(whereClause).forEach(([field, value]) => {
-      whereArray.push([field, '=', value]);
+      whereArray.push([field, TWhereAction.EQ, value]);
     });
   }
 
   whereArray.forEach(([field, action, value]) => {
     switch (true) {
-      case action === 'in':
+      case action === TWhereAction.IN:
 
         builder.whereIn(field, Array.isArray(value) ? value : [value] as Array<string | number>);
         break;
 
-      case action === 'notIn':
+      case action === TWhereAction.NOTIN:
         builder.whereNotIn(field, Array.isArray(value) ? value : [value] as Array<string | number>);
         break;
 
@@ -199,7 +210,7 @@ export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutp
 
     if (!Array.isArray(filter)) {
       Object.entries(filter).forEach(([field, value]) => {
-        outputFilter.where.push([field, '=', value]);
+        outputFilter.where.push([field, TWhereAction.EQ, value]);
       });
     }
   }
@@ -219,7 +230,7 @@ export const extractNodeField = <T, K extends keyof Node<T>>(
 /**
  * Returns node IDs array
  */
-export const extractNodeIds = <T, K extends keyof T>(nodes: Node<T>[]) => extractNodeField<Node<T>, 'id'>(nodes, 'id');
+export const extractNodeIds = <T>(nodes: Node<T>[]) => extractNodeField<Node<T>, 'id'>(nodes, 'id');
 
 
 /**
@@ -300,4 +311,9 @@ export type TOrderByKnex = Array<{
   order: IDirectionRange;
 }>;
 
-export type TWhere = Array<[string, '=' | '<' | '>' | '<=' | '>=' | 'in' | 'notIn', string | number | boolean | null | Array<string | number>]>;
+
+export type TWhere = Array<[
+  string,
+  TWhereAction,
+  string | number | boolean | null | readonly string[] | readonly number[]
+]>;

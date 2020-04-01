@@ -46,15 +46,13 @@ type DriversQuery {
   test: String
 }
 
-type DriversMutationPayload {
-  driver: Driver
-}
+
 
 type DriversMutation {
   updateDriver(
     id: ID!
     data: InputDriverData!
-  ): DriversMutationPayload!
+  ): Driver!
 }
 
 

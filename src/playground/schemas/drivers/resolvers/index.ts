@@ -1,14 +1,50 @@
 import { IResolvers } from 'graphql-tools';
 import { IContext } from '../../../../app';
 import { ServerError } from '../../../../errorHandlers';
-import { buildCursorConnection, buildQueryFilter, TInputFilter } from '../../../../utils';
-import DriverService, { IDriverUpdateInfo } from '../driversService';
+import {
+  buildCursorConnection,
+  buildQueryFilter,
+  TInputFilter,
+  Node,
+  DataLoader,
+  resolveByDataLoader,
+} from '../../../../utils';
+import DriverService, { IDriverUpdateInfo, IDriver } from '../driversService';
+import createDataloader from '../loaders';
+
+
+interface DataloadersPool {
+  drivers: DataLoader<string, Node<IDriver>>;
+}
+
+const dataloaders: DataloadersPool = {
+  drivers: null,
+};
 
 const resolvers: IResolvers<any, IContext> = {
   Query: {
-    drivers: () => ({ }),
+    drivers: (parent, args, context) => {
+      dataloaders.drivers = createDataloader(context).drivers;
+      return {};
+    },
   },
-  Mutation: { drivers: () => ({}) },
+  Mutation: {
+    drivers: (parent, args, context) => {
+      dataloaders.drivers = createDataloader(context).drivers;
+      return {};
+    },
+  },
+  Driver: {
+    name: async ({ id }: Pick<IDriver, 'id'>) => {
+      const value = await resolveByDataLoader<string, Node<IDriver>>(id, 'name', dataloaders.drivers);
+      return value;
+    },
+    status: async ({ id }: Pick<IDriver, 'id'>) => {
+      const value = await resolveByDataLoader<string, Node<IDriver>>(id, 'status', dataloaders.drivers);
+      return value;
+    },
+  },
+
   DriversQuery: {
     list: async (parent, args: TInputFilter, context) => {
       const filter = buildQueryFilter(args);
@@ -16,6 +52,12 @@ const resolvers: IResolvers<any, IContext> = {
 
       try {
         const driversConnection = await driverService.getDrivers(filter);
+
+        // fill the cache
+        driversConnection.nodes.forEach((node) => {
+          dataloaders.drivers.clear(node.id).prime(node.id, node);
+        });
+
         const connection = buildCursorConnection(driversConnection);
 
         return connection;
@@ -36,7 +78,7 @@ const resolvers: IResolvers<any, IContext> = {
     },
   },
   DriversMutation: {
-    updateDriver: async (parent, args: {id: string; data: IDriverUpdateInfo}, context) => {
+    updateDriver: async (parent, args: { id: string; data: IDriverUpdateInfo }, context) => {
       const { id, ...otherData } = args;
 
       const driverService = new DriverService({ context });
@@ -47,23 +89,8 @@ const resolvers: IResolvers<any, IContext> = {
         throw new ServerError('Failed to update driver');
       }
 
+      dataloaders.drivers.clear(id);
       return { id };
-    },
-  },
-  DriversMutationPayload: {
-    driver: async (parent: {id: string}, args, context) => {
-      const driverService = new DriverService({ context });
-      const { id } = parent;
-
-      try {
-        const driver = await driverService.getDriver(id);
-        if (!driver) {
-          throw new ServerError(`Driver with id [${id}] not found`, { id });
-        }
-        return driver;
-      } catch (err) {
-        throw new ServerError(`Failed to get driver with id [${id}]`, { err });
-      }
     },
   },
 };

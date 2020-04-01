@@ -1,7 +1,7 @@
 import moment from 'moment-timezone';
 import { IContext } from '../../../app';
 import {
-  IListResponse, TOutputFilter, convertOrderByToKnex, convertWhereToKnex,
+  IListResponse, TOutputFilter, convertOrderByToKnex, convertWhereToKnex, TWhereAction,
 } from '../../../utils';
 
 export enum IDriverLegalStatus {
@@ -59,7 +59,7 @@ class DriversService {
 
   public async getDriver(id: string): Promise<IDriver | false> {
     const { nodes, totalCount } = await this.getDrivers({
-      where: [['id', '=', id]],
+      where: [['id', TWhereAction.EQ, id]],
       offset: 0,
       limit: 1,
       orderBy: [],
