@@ -25,7 +25,9 @@ const resolvers: IResolvers<any, IContext> = {
     list: async (parent, args: TInputFilter, context) => {
       const filter = buildQueryFilter(args);
       const driverService = new DriverService({ context });
-      const loader = dataloaderManager.createOrGetDataloader<string, Node<IDriver>>(context, 'drivers', createDataloader);
+      const loader = dataloaderManager.createOrGetDataloader<
+        string, Node<IDriver>
+      >(context, createDataloader);
 
       try {
         const driversConnection = await driverService.getDrivers(filter);
@@ -58,7 +60,9 @@ const resolvers: IResolvers<any, IContext> = {
     updateDriver: async (parent, args: { id: string; data: IDriverUpdateInfo }, context) => {
       const { id, ...otherData } = args;
 
-      const loader = dataloaderManager.createOrGetDataloader<string, Node<IDriver>>(context, 'drivers', createDataloader);
+      const loader = dataloaderManager.createOrGetDataloader<
+        string, Node<IDriver>
+      >(context, createDataloader);
       const driverService = new DriverService({ context });
 
       try {

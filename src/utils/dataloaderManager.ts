@@ -8,7 +8,7 @@ const dataloaders = new Map();
 
 export const dataloaderManager = {
   set: <K, V>(
-    key: string,
+    key: string = 'common',
     dataloader: DataLoader<K, V>,
     forseSet: boolean = false) => {
     if (!forseSet && (!dataloaderManager.has(key))) {
@@ -16,10 +16,10 @@ export const dataloaderManager = {
     }
   },
   // eslint-disable-next-line arrow-body-style
-  get: <K, V>(key: string): DataLoader<K, V> | undefined => {
+  get: <K, V>(key: string = 'common'): DataLoader<K, V> | undefined => {
     return dataloaders.get(key);
   },
-  has: (key: string) => dataloaders.has(key),
+  has: (key: string = 'common') => dataloaders.has(key),
   resolveKey: async <K, V>(
     id: K,
     key: keyof V,
@@ -33,7 +33,7 @@ export const dataloaderManager = {
     return typeof data[key] !== 'undefined' ? data[key] : null;
   },
   // eslint-disable-next-line max-len
-  createOrGetDataloader: <K, V>(context: IContext, key: string, createDataloaderFn: (context: IContext) => DataLoader<K, V>) => {
+  createOrGetDataloader: <K, V>(context: IContext, createDataloaderFn: (context: IContext) => DataLoader<K, V>, key: string = 'common') => {
     if (!dataloaderManager.get<K, V>(key)) {
       dataloaderManager.set(key, createDataloaderFn(context));
     }
@@ -42,11 +42,12 @@ export const dataloaderManager = {
   },
   resolveObject: <K extends string, V>(
     fields: Array<keyof Node<V>>,
-    loaderFactory: (context: IContext) => DataLoader<K, Node<V>>) => {
+    loaderFactory: (context: IContext) => DataLoader<K, Node<V>>,
+    key: string = 'common') => {
     const r: any = {};
     fields.forEach((field) => {
       r[field] = async ({ id }: Pick<Node<V>, 'id'>, args: any, context: IContext) => {
-        const loader = dataloaderManager.createOrGetDataloader<K, Node<V>>(context, 'drivers', loaderFactory);
+        const loader = dataloaderManager.createOrGetDataloader<K, Node<V>>(context, loaderFactory, key);
         const value = await dataloaderManager.resolveKey<string, Node<V>>(id, field, loader);
         return value;
       };
