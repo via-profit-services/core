@@ -20,7 +20,7 @@ export const dataloaderManager = {
     return dataloaders.get(key);
   },
   has: (key: string) => dataloaders.has(key),
-  resolveByDataLoader: async <K, V>(
+  resolveKey: async <K, V>(
     id: K,
     key: keyof V,
     dataloader: DataLoader<K, V>) => {
@@ -47,7 +47,7 @@ export const dataloaderManager = {
     fields.forEach((field) => {
       r[field] = async ({ id }: Pick<Node<V>, 'id'>, args: any, context: IContext) => {
         const loader = dataloaderManager.createOrGetDataloader<K, Node<V>>(context, 'drivers', loaderFactory);
-        const value = await dataloaderManager.resolveByDataLoader<string, Node<V>>(id, field, loader);
+        const value = await dataloaderManager.resolveKey<string, Node<V>>(id, field, loader);
         return value;
       };
     });
