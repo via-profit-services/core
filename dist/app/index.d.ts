@@ -29,7 +29,7 @@ export { App };
 export interface IInitProps {
     port?: number;
     endpoint?: string;
-    subscriptionsEndpoint?: string;
+    subscriptionEndpoint?: string;
     timezone?: string;
     typeDefs?: ITypedef[];
     resolvers?: Array<IResolvers<any, IContext>>;
@@ -53,7 +53,7 @@ interface IServerOptions extends ServerOptions {
 interface IInitDefaultProps extends IInitProps {
     port: number;
     endpoint: string;
-    subscriptionsEndpoint: string;
+    subscriptionEndpoint: string;
     timezone: string;
     routes: {
         auth: string;

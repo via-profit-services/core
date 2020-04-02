@@ -409,6 +409,18 @@ export class Authentificator {
         };
       });
   }
+
+
+  public async updateAccount(id: string, accountData: Partial<IAccountUpdateInfo>) {
+    const { knex, timezone } = this.props.context;
+
+    await knex<IAccountUpdateInfo>('accounts')
+      .update({
+        ...accountData,
+        updatedAt: moment.tz(timezone).format(),
+      })
+      .where('id', id);
+  }
 }
 
 interface IProps {
@@ -497,4 +509,8 @@ export interface IAccount {
   roles: string[];
   createdAt: Date;
   updatedAt: Date;
+}
+
+export type IAccountUpdateInfo = Omit<IAccount, 'id' | 'createdAt' | 'updatedAt' | 'roles'> & {
+  updatedAt: string;
 }

@@ -35,7 +35,7 @@ export default new GraphQLScalarType({
 
       return result;
     } catch (err) {
-      throw new GraphQLError(`Value is not a valid Date: ${ast.value}`);
+      throw new GraphQLError(`Value is not a valid Money: ${ast.value}`);
     }
   },
 });

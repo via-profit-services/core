@@ -6,11 +6,9 @@ type Mutation {
   info: InfoMutation!
 }
 
-
-type InfoMutation {
-  info: Boolean!
+type Subscription {
+  developerWasChanged: Developer!
 }
-
 
 
 """
@@ -21,13 +19,23 @@ type InfoQuery {
   """
   Returns developer info
   """
-  developer: DeveloperInfo!
+  developer: Developer!
+ 
+}
+
+type InfoMutation {
+  echo(str: String!): String!
+  updateDeveloper(name: String url: String): Developer!
+}
+
+type InfoSubscription {
+  developerWasChanged: Developer!
 }
 
 """
 Developer info
 """
-type DeveloperInfo {
+type Developer {
 
   """
   Returns developer company name
@@ -39,3 +47,5 @@ type DeveloperInfo {
   """
   url: String!
 }
+
+

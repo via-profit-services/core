@@ -1,16 +1,19 @@
+import chalk from 'chalk';
+
 import { App } from '../app';
 import { configureApp } from '../utils/configureApp';
-import * as catalog from './schemas/catalog';
-import * as drivers from './schemas/drivers';
 
-const config = configureApp({
-  typeDefs: [catalog.typeDefs, drivers.typeDefs],
-  resolvers: [catalog.resolvers, drivers.resolvers],
-});
+const config = configureApp();
 
 const app = new App(config);
 app.bootstrap(({ resolveUrl }) => {
-  const { graphql, auth } = resolveUrl;
-  console.log(`GraphQL server started at ${graphql}`);
-  console.log(`GraphQL server started at ${auth}`);
+  const {
+    graphql, auth, subscriptions, playground,
+  } = resolveUrl;
+
+  console.log('');
+  console.log(`Playground started at ${chalk.blue(playground)}`);
+  console.log(`GraphQL server started at ${chalk.yellow(graphql)}`);
+  console.log(`Auth server started at ${chalk.magenta(auth)}`);
+  console.log(`Subscription server started at ${chalk.green(subscriptions)}`);
 });

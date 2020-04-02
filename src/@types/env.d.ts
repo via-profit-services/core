@@ -7,7 +7,7 @@ declare namespace NodeJS {
     LOG: string;
 
     GQL_ENDPOINT: string;
-    GQL_SUBSCRIPTIONSENDPOINT: string;
+    GQL_SUBSCRIPTIONENDPOINT: string;
 
     DB_HOST: string;
     DB_USER: string;

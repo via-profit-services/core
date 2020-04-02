@@ -21,13 +21,6 @@ interface Error {
   msg: String
 }
 
-"""
-Ordering options for accounts returned from the connection
-"""
-input OrderBy {
-  field: DriversOrderField!
-  direction: OrderDirection!
-}
 
 """
 Information about pagination in a connection.

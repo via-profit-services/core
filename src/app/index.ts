@@ -1,6 +1,7 @@
 /* eslint-disable import/max-dependencies */
 import { EventEmitter } from 'events';
 import { createServer, Server, ServerOptions } from 'https';
+import path from 'path';
 import chalk from 'chalk';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -23,7 +24,7 @@ import {
 import {
   DEFAULT_SERVER_PORT,
   DEFAULT_GRAPHQL_ENDPOINT,
-  DEFAULT_GRAPHQL_SUBSCRIPTIONS_ENDPOINT,
+  DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT,
   DEFAULT_SERVER_TIMEZONE,
   DEFAULT_ROUTE_AUTH,
   DEFAULT_ROUTE_PLAYGROUND,
@@ -32,6 +33,7 @@ import {
 } from '../utils';
 import { configureTokens } from '../utils/configureTokens';
 import { CronJobManager } from '../utils/cronJobManager';
+import { loadGraphQLConfig } from '../utils/graphqlconfig';
 import { headersMiddleware } from '../utils/headersMiddleware';
 
 class App {
@@ -43,7 +45,7 @@ class App {
       port: DEFAULT_SERVER_PORT,
       endpoint: DEFAULT_GRAPHQL_ENDPOINT,
       timezone: DEFAULT_SERVER_TIMEZONE,
-      subscriptionsEndpoint: DEFAULT_GRAPHQL_SUBSCRIPTIONS_ENDPOINT,
+      subscriptionEndpoint: DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT,
       usePlayground: process.env.NODE_ENV === 'development',
       useVoyager: process.env.NODE_ENV === 'development',
       ...props,
@@ -60,8 +62,9 @@ class App {
 
   public bootstrap(callback?: (args: IBootstrapCallbackArgs) => void) {
     const {
-      port, usePlayground, useVoyager, endpoint, routes, serverOptions,
+      port, usePlayground, useVoyager, endpoint, routes, serverOptions, subscriptionEndpoint,
     } = this.props;
+
     const { app, schema, context } = this.createApp();
     const { logger } = context;
     const server = createServer(serverOptions, app);
@@ -72,6 +75,7 @@ class App {
       const resolveUrl: IBootstrapCallbackArgs['resolveUrl'] = {
         graphql: `https://localhost:${port}${endpoint}`,
         auth: `https://localhost:${port}${routes.auth}`,
+        subscriptions: `wss://localhost:${port}${subscriptionEndpoint}`,
       };
 
       if (usePlayground) {
@@ -99,7 +103,7 @@ class App {
   }
 
   public createSubscriptionServer(config: ISubServerConfig) {
-    const { subscriptionsEndpoint } = this.props;
+    const { subscriptionEndpoint } = this.props;
     const { server, schema } = config;
 
     // @see https://github.com/apollographql/subscriptions-transport-ws/blob/master/docs/source/express.md
@@ -111,7 +115,7 @@ class App {
       },
       {
         server,
-        path: subscriptionsEndpoint,
+        path: subscriptionEndpoint,
       },
     );
   }
@@ -127,8 +131,9 @@ class App {
       database,
       logger,
       routes,
-      subscriptionsEndpoint,
+      subscriptionEndpoint,
       usePlayground,
+      playgroundConfig,
       useVoyager,
       serverOptions,
     } = this.props as IInitDefaultProps;
@@ -153,7 +158,7 @@ class App {
         common.typeDefs,
 
         // user type definitions
-        ...typeDefs,
+        ...typeDefs || [],
 
         // developer schema defs
         info.typeDefs,
@@ -170,7 +175,7 @@ class App {
         scalar.resolvers,
 
         // user resolvers
-        ...resolvers,
+        ...resolvers || [],
 
         // developer info
         info.resolvers,
@@ -232,7 +237,11 @@ class App {
 
     // GraphiQL playground middleware
     if (usePlayground) {
-      app.get(routes.playground, expressPlayground({ endpoint }));
+      app.get(routes.playground, expressPlayground({
+        endpoint,
+        subscriptionEndpoint,
+        config: playgroundConfig || loadGraphQLConfig(path.resolve(__dirname, '../../.graphqlconfig')),
+      }));
     }
 
     // GraohQL Voyager middleware
@@ -271,11 +280,11 @@ class App {
     app.use(
       endpoint,
       graphqlHTTP(
-        async (): Promise<OptionsData & { subscriptionsEndpoint?: string }> => ({
+        async (): Promise<OptionsData & { subscriptionEndpoint?: string }> => ({
           context,
           graphiql: false,
           schema,
-          subscriptionsEndpoint: `ws://localhost:${port}${subscriptionsEndpoint}`,
+          subscriptionEndpoint: `ws://localhost:${port}${subscriptionEndpoint}`,
         }),
       ),
     );
@@ -301,7 +310,7 @@ export { App };
 export interface IInitProps {
   port?: number;
   endpoint?: string;
-  subscriptionsEndpoint?: string;
+  subscriptionEndpoint?: string;
   timezone?: string;
   typeDefs?: ITypedef[];
   resolvers?: Array<IResolvers<any, IContext>>;
@@ -314,6 +323,7 @@ export interface IInitProps {
     voyager?: string;
   };
   usePlayground?: boolean;
+  playgroundConfig?: any;
   useVoyager?: boolean;
   serverOptions: IServerOptions;
 }
@@ -327,7 +337,7 @@ interface IServerOptions extends ServerOptions {
 interface IInitDefaultProps extends IInitProps {
   port: number;
   endpoint: string;
-  subscriptionsEndpoint: string;
+  subscriptionEndpoint: string;
   timezone: string;
   routes: {
     auth: string;
@@ -361,5 +371,6 @@ export interface IBootstrapCallbackArgs {
     auth: string;
     playground?: string;
     voyager?: string;
+    subscriptions?: string;
   };
 }
