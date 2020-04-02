@@ -2,9 +2,10 @@
 import { EventEmitter } from 'events';
 import { Server, ServerOptions } from 'https';
 import { GraphQLSchema } from 'graphql';
+import { IMiddlewareGenerator } from 'graphql-middleware';
 import { ITypedef, IResolvers } from 'graphql-tools';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
-import { IJwtConfig } from '../authentificator/authentificator';
+import { IJwtConfig, IAccessToken } from '../authentificator/authentificator';
 import { IDBConfig, KnexInstance } from '../databaseManager';
 import { ILoggerCollection } from '../logger';
 declare class App {
@@ -32,6 +33,7 @@ export interface IInitProps {
     subscriptionEndpoint?: string;
     timezone?: string;
     typeDefs?: ITypedef[];
+    permissions?: IMiddlewareGenerator<any, IContext, any>[];
     resolvers?: Array<IResolvers<any, IContext>>;
     jwt: IJwtConfig;
     database: Omit<IDBConfig, 'logger' | 'localTimezone'>;
@@ -42,6 +44,7 @@ export interface IInitProps {
         voyager?: string;
     };
     usePlayground?: boolean;
+    playgroundConfig?: any;
     useVoyager?: boolean;
     serverOptions: IServerOptions;
 }
@@ -71,6 +74,7 @@ export interface IContext {
     logger: ILoggerCollection;
     emitter: EventEmitter;
     timezone: string;
+    token: IAccessToken['payload'];
 }
 export interface ISubServerConfig {
     schema: GraphQLSchema;
@@ -84,5 +88,6 @@ export interface IBootstrapCallbackArgs {
         auth: string;
         playground?: string;
         voyager?: string;
+        subscriptions?: string;
     };
 }

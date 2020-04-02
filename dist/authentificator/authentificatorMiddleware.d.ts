@@ -5,5 +5,5 @@ export { authentificatorMiddleware };
 interface IMiddlewareConfig {
     context: IContext;
     authUrl: string;
-    allowedUrl: string[];
+    allowedUrl?: string[];
 }

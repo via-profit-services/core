@@ -61,6 +61,7 @@ export declare class Authentificator {
     getAccountByLogin(login: IAccount['login'], password?: string): AccountByLoginResponse;
     static sendResponseError(responsetype: ResponseErrorType, resp: Response): Response;
     getAccounts(filter: TOutputFilter): Promise<IListResponse<IAccount>>;
+    updateAccount(id: string, accountData: Partial<IAccountUpdateInfo>): Promise<void>;
 }
 interface IProps {
     context: IContext;
@@ -107,7 +108,7 @@ export interface IAccessToken {
         /**
          * Account roles array
          */
-        roles: string[];
+        roles: IAccountRole[];
         exp: number;
         iss: string;
     };
@@ -129,13 +130,18 @@ export interface IResponseError {
     name: string;
     message: string;
 }
+export declare type IAccountRole = string;
 export interface IAccount {
     id: string;
+    name: string;
     login: string;
     password: string;
     status: AccountStatus;
-    roles: string[];
+    roles: IAccountRole[];
     createdAt: Date;
     updatedAt: Date;
 }
+export declare type IAccountUpdateInfo = Omit<IAccount, 'id' | 'createdAt' | 'updatedAt' | 'roles'> & {
+    updatedAt: string;
+};
 export {};
