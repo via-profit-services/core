@@ -1,6 +1,6 @@
 import DeviceDetector from 'device-detector-js';
 import {
-  NextFunction, Request, Response, Router,
+  Request, Response, Router,
 } from 'express';
 import asyncHandler from 'express-async-handler';
 import { IContext } from '../app';
@@ -9,8 +9,7 @@ import { TOKEN_BEARER, TOKEN_ACCESS_TOKEN_COOKIE_KEY, TOKEN_REFRESH_TOKEN_COOKIE
 import { Authentificator, ResponseErrorType, TokenType } from './authentificator';
 
 const authentificatorMiddleware = (config: IMiddlewareConfig) => {
-  const { context, authUrl, allowedUrl } = config;
-  const { endpoint } = config.context;
+  const { context, authUrl } = config;
   const { publicKey } = config.context.jwt;
   const { logger } = context;
 
@@ -197,23 +196,24 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
   /**
    * This point serve all request into GraphQL `endpoint`
    */
-  router.use(
-    endpoint,
-    asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-      if (allowedUrl.includes(req.originalUrl)) {
-        return next();
-      }
+  // router.use(
+  //   endpoint,
+  //   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  //     if (allowedUrl.includes(req.originalUrl)) {
+  //       return next();
+  //     }
 
-      const token = Authentificator.extractToken(TokenType.access, req);
-      const payload = Authentificator.verifyToken(String(token), publicKey);
+  //     const token = Authentificator.extractToken(TokenType.access, req);
+  //     const payload = Authentificator.verifyToken(String(token), publicKey);
 
-      if (payload.type !== TokenType.access) {
-        return Authentificator.sendResponseError(ResponseErrorType.isNotAnAccessToken, res);
-      }
 
-      return next();
-    }),
-  );
+  //     if (payload.type !== TokenType.access) {
+  //       return Authentificator.sendResponseError(ResponseErrorType.isNotAnAccessToken, res);
+  //     }
+
+  //     return next();
+  //   }),
+  // );
 
   return router;
 };
@@ -235,5 +235,5 @@ interface AuthorizationResponse {
 interface IMiddlewareConfig {
   context: IContext;
   authUrl: string;
-  allowedUrl: string[];
+  allowedUrl?: string[];
 }

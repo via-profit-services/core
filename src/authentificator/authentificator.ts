@@ -343,7 +343,7 @@ export class Authentificator {
       case 'isNotAnAccessToken':
         errors.push({
           message: 'Token error',
-          name: 'Is not a access token',
+          name: 'Is not an access token',
         });
         break;
       case 'tokenExpired':
@@ -475,7 +475,7 @@ export interface IAccessToken {
     /**
      * Account roles array
      */
-    roles: string[];
+    roles: IAccountRole[];
     exp: number;
     iss: string;
   };
@@ -501,12 +501,15 @@ export interface IResponseError {
   message: string;
 }
 
+export type IAccountRole = string;
+
 export interface IAccount {
   id: string;
+  name: string;
   login: string;
   password: string;
   status: AccountStatus;
-  roles: string[];
+  roles: IAccountRole[];
   createdAt: Date;
   updatedAt: Date;
 }

@@ -9,7 +9,8 @@ import createDataloader from '../dataloader';
 
 let dataloader: DataLoader<string, IAccount>;
 
-const driverResolver: IResolverObject<Pick<IAccount, 'id'>, IContext> = {
+const accountResolver: IResolverObject<Pick<IAccount, 'id'>, IContext> = {
+  id: async ({ id }) => id,
   createdAt: async ({ id }, args, context) => {
     dataloader = dataloader || createDataloader(context);
     const data = await dataloader.load(id);
@@ -25,6 +26,21 @@ const driverResolver: IResolverObject<Pick<IAccount, 'id'>, IContext> = {
     const data = await dataloader.load(id);
     return data.status;
   },
+  name: async ({ id }, args, context) => {
+    dataloader = dataloader || createDataloader(context);
+    const data = await dataloader.load(id);
+    return data.name;
+  },
+  login: async ({ id }, args, context) => {
+    dataloader = dataloader || createDataloader(context);
+    const data = await dataloader.load(id);
+    return data.login;
+  },
+  password: async ({ id }, args, context) => {
+    dataloader = dataloader || createDataloader(context);
+    const data = await dataloader.load(id);
+    return data.password;
+  },
 };
 
-export default driverResolver;
+export default accountResolver;

@@ -9,9 +9,10 @@ const resolvers = {
   Mutation: {
     accounts: () => ({}),
   },
-  Account: AccountResolver,
+
   AccountsQuery: AccountsQueryResolver,
   AccountsMutation: AccountsMutationResolver,
+  Account: AccountResolver,
 };
 
 export default resolvers;

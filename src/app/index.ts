@@ -5,19 +5,23 @@ import path from 'path';
 import chalk from 'chalk';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import express from 'express';
+import express, { Request } from 'express';
 import graphqlHTTP, { OptionsData } from 'express-graphql';
 import { GraphQLSchema, execute, subscribe } from 'graphql';
+import { applyMiddleware, IMiddlewareGenerator } from 'graphql-middleware';
 import expressPlayground from 'graphql-playground-middleware-express';
 import { typeDefs as scalarTypeDefs, resolvers as scalarResolvers } from 'graphql-scalars';
 import { makeExecutableSchema, ITypedef, IResolvers } from 'graphql-tools';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 
-import { IJwtConfig } from '../authentificator/authentificator';
+import {
+  IJwtConfig, TokenType, Authentificator, IAccessToken,
+} from '../authentificator/authentificator';
 import { authentificatorMiddleware } from '../authentificator/authentificatorMiddleware';
 import { knexProvider, IDBConfig, KnexInstance } from '../databaseManager';
-import { errorHandlerMiddleware, requestHandlerMiddleware, ILoggerCollection } from '../logger';
+import { UnauthorizedError } from '../errorHandlers';
+import { requestHandlerMiddleware, ILoggerCollection } from '../logger';
 import {
   info, accounts, common, scalar,
 } from '../schemas';
@@ -128,6 +132,7 @@ class App {
       timezone,
       port,
       jwt,
+      permissions,
       database,
       logger,
       routes,
@@ -209,7 +214,16 @@ class App {
       logger,
       knex,
       emitter,
+      token: {
+        type: TokenType.access,
+        id: '',
+        uuid: '',
+        roles: [],
+        exp: 0,
+        iss: '',
+      },
     };
+
 
     app.use(
       cors({
@@ -221,6 +235,7 @@ class App {
     app.use(express.urlencoded({ extended: true, limit: MAXIMUM_REQUEST_BODY_SIZE }));
     app.use(cookieParser(cookieSign));
     app.use(headersMiddleware());
+
 
     // Request handler (request logger) middleware
     // This middleware must be defined first
@@ -267,31 +282,38 @@ class App {
       );
     }
 
-    // only in dev mode you should have tokens with over then 8400 sec.
-    if (process.env.NODE_ENV === 'development') {
-      const { accessToken } = configureTokens([''], context);
-
-      logger.server.debug('New AccessToken was created special for development', { accessToken });
-      console.log('');
-      console.log(chalk.yellow(`Your development Access token is: ${chalk.magenta(accessToken.token)}`));
-    }
-
     // GraphQL server
     app.use(
       endpoint,
       graphqlHTTP(
-        async (): Promise<OptionsData & { subscriptionEndpoint?: string }> => ({
-          context,
-          graphiql: false,
-          schema,
-          subscriptionEndpoint: `ws://localhost:${port}${subscriptionEndpoint}`,
-        }),
+        async (req): Promise<OptionsData & { subscriptionEndpoint?: string }> => {
+          const token = Authentificator.extractToken(TokenType.access, req as Request);
+          const payload = Authentificator.verifyToken(token, context.jwt.publicKey);
+
+          if (payload.type !== TokenType.access) {
+            throw new UnauthorizedError('Is not an access token');
+          }
+
+          context.token = payload;
+          const graphQLMiddlewares = [accounts.permissions, ...permissions || []];
+
+          return {
+            context,
+            graphiql: false,
+            schema: applyMiddleware(schema, ...graphQLMiddlewares),
+            subscriptionEndpoint: `ws://localhost:${port}${subscriptionEndpoint}`,
+          };
+        },
       ),
     );
 
     // Error handler middleware
-    // This middleware most be defined first
-    app.use(errorHandlerMiddleware({ context }));
+    // This middleware most be defined end
+    // app.use(errorHandlerMiddleware({ context }));
+    // app.use((err: any, req: any, res: any, next: any) => {
+    //   console.log('ERROR');
+    //   return next();
+    // });
 
     logger.server.debug('Application was created');
 
@@ -313,6 +335,7 @@ export interface IInitProps {
   subscriptionEndpoint?: string;
   timezone?: string;
   typeDefs?: ITypedef[];
+  permissions?: IMiddlewareGenerator<any, IContext, any>[];
   resolvers?: Array<IResolvers<any, IContext>>;
   jwt: IJwtConfig;
   database: Omit<IDBConfig, 'logger' | 'localTimezone'>;
@@ -356,6 +379,7 @@ export interface IContext {
   logger: ILoggerCollection;
   emitter: EventEmitter;
   timezone: string;
+  token: IAccessToken['payload'];
 }
 
 export interface ISubServerConfig {

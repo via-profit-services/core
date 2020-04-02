@@ -30,6 +30,11 @@ export const accountsQueryResolver: IResolverObject<any, IContext, TInputFilter>
     }
   },
   statusesList: () => Object.values(AccountStatus),
+  me: (parent, args, context) => ({ id: context.token.uuid }),
+  token: (parent, args, context) => {
+    const { token } = context;
+    return token;
+  },
 };
 
 export default accountsQueryResolver;

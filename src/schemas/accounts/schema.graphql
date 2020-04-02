@@ -23,6 +23,11 @@ enum AccountOrderField {
   updatedAt
 }
 
+enum TokenType {
+  access
+  refresh
+}
+
 
 """
 Account edge bundle
@@ -53,6 +58,26 @@ type AccountsQuery {
   Returns Account statuses list
   """
   statusesList: [AccountStatus!]!
+
+  """
+  Return Your account data
+  """
+  me: Account!
+
+  """
+  Return Your Access Token payload
+  """
+  token: AccessTokenPayload!
+}
+
+
+type AccessTokenPayload {
+  type: TokenType!
+  id: Int!
+  uuid: String!
+  roles: [AccountRole]!
+  exp: Int!
+  iss: String!
 }
 
 
@@ -79,12 +104,12 @@ Account data
 type Account implements Node {
   id: ID!
   name: String!
-  login: String
-  password: String
-  status: AccountStatus
+  login: String!
+  password: String!
+  status: AccountStatus!
   createdAt: DateTime!
   updatedAt: DateTime!
-  roles: [AccountRole]
+  roles: [AccountRole]!
 }
 
 
