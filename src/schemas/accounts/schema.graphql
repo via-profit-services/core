@@ -73,7 +73,7 @@ type AccountsQuery {
 
 type AccessTokenPayload {
   type: TokenType!
-  id: Int!
+  id: ID!
   uuid: String!
   roles: [AccountRole]!
   exp: Int!
