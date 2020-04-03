@@ -295,7 +295,7 @@ class App {
           }
 
           context.token = payload;
-          const graphQLMiddlewares = [accounts.permissions, ...permissions || []];
+          const graphQLMiddlewares = [...permissions || [], accounts.permissions];
 
           return {
             context,
@@ -307,13 +307,6 @@ class App {
       ),
     );
 
-    // Error handler middleware
-    // This middleware most be defined end
-    // app.use(errorHandlerMiddleware({ context }));
-    // app.use((err: any, req: any, res: any, next: any) => {
-    //   console.log('ERROR');
-    //   return next();
-    // });
 
     logger.server.debug('Application was created');
 
