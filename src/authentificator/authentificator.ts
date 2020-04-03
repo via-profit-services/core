@@ -13,7 +13,9 @@ import {
   TOKEN_ACCESS_TOKEN_COOKIE_KEY,
   TOKEN_REFRESH_TOKEN_COOKIE_KEY,
 } from '../utils';
-import { IListResponse, TOutputFilter, convertOrderByToKnex } from '../utils/generateCursorBundle';
+import {
+  IListResponse, TOutputFilter, convertOrderByToKnex, convertWhereToKnex,
+} from '../utils/generateCursorBundle';
 
 export enum TokenType {
   access = 'access',
@@ -341,7 +343,7 @@ export class Authentificator {
       case 'isNotAnAccessToken':
         errors.push({
           message: 'Token error',
-          name: 'Is not a access token',
+          name: 'Is not an access token',
         });
         break;
       case 'tokenExpired':
@@ -385,7 +387,7 @@ export class Authentificator {
           .orderBy(convertOrderByToKnex(orderBy))
           .limit(limit)
           .offset(offset)
-          .where(where)
+          .where((builder) => convertWhereToKnex(builder, where))
           .as('j'),
         'j.id',
         'accounts.id',
@@ -406,6 +408,18 @@ export class Authentificator {
           nodes,
         };
       });
+  }
+
+
+  public async updateAccount(id: string, accountData: Partial<IAccountUpdateInfo>) {
+    const { knex, timezone } = this.props.context;
+
+    await knex<IAccountUpdateInfo>('accounts')
+      .update({
+        ...accountData,
+        updatedAt: moment.tz(timezone).format(),
+      })
+      .where('id', id);
   }
 }
 
@@ -461,7 +475,7 @@ export interface IAccessToken {
     /**
      * Account roles array
      */
-    roles: string[];
+    roles: IAccountRole[];
     exp: number;
     iss: string;
   };
@@ -487,12 +501,19 @@ export interface IResponseError {
   message: string;
 }
 
+export type IAccountRole = string;
+
 export interface IAccount {
   id: string;
+  name: string;
   login: string;
   password: string;
   status: AccountStatus;
-  roles: string[];
+  roles: IAccountRole[];
   createdAt: Date;
   updatedAt: Date;
+}
+
+export type IAccountUpdateInfo = Omit<IAccount, 'id' | 'createdAt' | 'updatedAt' | 'roles'> & {
+  updatedAt: string;
 }

@@ -1,15 +1,22 @@
-import { InfoMutation } from './mutations';
-import { InfoQuery } from './queries';
+import { IResolvers } from 'graphql-tools';
 
-const resolvers = {
+import { IContext } from '../../../app';
+import DeveloperResolver from './Developer';
+import InfoMutationResolver from './InfoMutation';
+import InfoQueryResolver from './InfoQuery';
+import InfoSubscriptionResolver from './InfoSubscription';
+
+const resolvers: IResolvers<any, IContext> = {
   Query: {
     info: () => ({}),
   },
   Mutation: {
     info: () => ({}),
   },
-  InfoQuery,
-  InfoMutation,
+  Subscription: InfoSubscriptionResolver,
+  InfoQuery: InfoQueryResolver,
+  InfoMutation: InfoMutationResolver,
+  Developer: DeveloperResolver,
 };
 
 export default resolvers;

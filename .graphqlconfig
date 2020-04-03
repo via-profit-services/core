@@ -3,14 +3,14 @@
   "extensions": {
     "endpoints": {
       "development": {
-        "url": "https://localhost:${env:PORT}${env:GQL_ENDPOINT}",
+        "url": "https://localhost:${PORT}${GQL_ENDPOINT}",
         "headers": {
-          "Authorization": "Bearer ${env:AUTH_TOKEN}"
+          "Authorization": "Bearer ${AUTH_TOKEN}"
         },
         "subscription": {
-          "url": "ws://localhost:${env:PORT}${env:GQL_SUBSCRIPTIONSENDPOINT}",
+          "url": "wss://localhost:${PORT}${GQL_SUBSCRIPTIONENDPOINT}",
           "connectionParams": {
-            "Token": "${env:AUTH_TOKEN}"
+            "Token": "${AUTH_TOKEN}"
           }
         }
       }

@@ -1,29 +1,34 @@
 /* eslint-disable import/max-dependencies */
 import { EventEmitter } from 'events';
 import { createServer, Server, ServerOptions } from 'https';
+import path from 'path';
 import chalk from 'chalk';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import express from 'express';
+import express, { Request } from 'express';
 import graphqlHTTP, { OptionsData } from 'express-graphql';
 import { GraphQLSchema, execute, subscribe } from 'graphql';
+import { applyMiddleware, IMiddlewareGenerator } from 'graphql-middleware';
 import expressPlayground from 'graphql-playground-middleware-express';
 import { typeDefs as scalarTypeDefs, resolvers as scalarResolvers } from 'graphql-scalars';
 import { makeExecutableSchema, ITypedef, IResolvers } from 'graphql-tools';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 
-import { IJwtConfig } from '../authentificator/authentificator';
+import {
+  IJwtConfig, TokenType, Authentificator, IAccessToken,
+} from '../authentificator/authentificator';
 import { authentificatorMiddleware } from '../authentificator/authentificatorMiddleware';
 import { knexProvider, IDBConfig, KnexInstance } from '../databaseManager';
-import { errorHandlerMiddleware, requestHandlerMiddleware, ILoggerCollection } from '../logger';
+import { UnauthorizedError } from '../errorHandlers';
+import { requestHandlerMiddleware, ILoggerCollection } from '../logger';
 import {
   info, accounts, common, scalar,
 } from '../schemas';
 import {
   DEFAULT_SERVER_PORT,
   DEFAULT_GRAPHQL_ENDPOINT,
-  DEFAULT_GRAPHQL_SUBSCRIPTIONS_ENDPOINT,
+  DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT,
   DEFAULT_SERVER_TIMEZONE,
   DEFAULT_ROUTE_AUTH,
   DEFAULT_ROUTE_PLAYGROUND,
@@ -32,6 +37,7 @@ import {
 } from '../utils';
 import { configureTokens } from '../utils/configureTokens';
 import { CronJobManager } from '../utils/cronJobManager';
+import { loadGraphQLConfig } from '../utils/graphqlconfig';
 import { headersMiddleware } from '../utils/headersMiddleware';
 
 class App {
@@ -43,7 +49,7 @@ class App {
       port: DEFAULT_SERVER_PORT,
       endpoint: DEFAULT_GRAPHQL_ENDPOINT,
       timezone: DEFAULT_SERVER_TIMEZONE,
-      subscriptionsEndpoint: DEFAULT_GRAPHQL_SUBSCRIPTIONS_ENDPOINT,
+      subscriptionEndpoint: DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT,
       usePlayground: process.env.NODE_ENV === 'development',
       useVoyager: process.env.NODE_ENV === 'development',
       ...props,
@@ -60,8 +66,9 @@ class App {
 
   public bootstrap(callback?: (args: IBootstrapCallbackArgs) => void) {
     const {
-      port, usePlayground, useVoyager, endpoint, routes, serverOptions,
+      port, usePlayground, useVoyager, endpoint, routes, serverOptions, subscriptionEndpoint,
     } = this.props;
+
     const { app, schema, context } = this.createApp();
     const { logger } = context;
     const server = createServer(serverOptions, app);
@@ -72,6 +79,7 @@ class App {
       const resolveUrl: IBootstrapCallbackArgs['resolveUrl'] = {
         graphql: `https://localhost:${port}${endpoint}`,
         auth: `https://localhost:${port}${routes.auth}`,
+        subscriptions: `wss://localhost:${port}${subscriptionEndpoint}`,
       };
 
       if (usePlayground) {
@@ -99,7 +107,7 @@ class App {
   }
 
   public createSubscriptionServer(config: ISubServerConfig) {
-    const { subscriptionsEndpoint } = this.props;
+    const { subscriptionEndpoint } = this.props;
     const { server, schema } = config;
 
     // @see https://github.com/apollographql/subscriptions-transport-ws/blob/master/docs/source/express.md
@@ -111,7 +119,7 @@ class App {
       },
       {
         server,
-        path: subscriptionsEndpoint,
+        path: subscriptionEndpoint,
       },
     );
   }
@@ -124,11 +132,13 @@ class App {
       timezone,
       port,
       jwt,
+      permissions,
       database,
       logger,
       routes,
-      subscriptionsEndpoint,
+      subscriptionEndpoint,
       usePlayground,
+      playgroundConfig,
       useVoyager,
       serverOptions,
     } = this.props as IInitDefaultProps;
@@ -153,7 +163,7 @@ class App {
         common.typeDefs,
 
         // user type definitions
-        ...typeDefs,
+        ...typeDefs || [],
 
         // developer schema defs
         info.typeDefs,
@@ -170,7 +180,7 @@ class App {
         scalar.resolvers,
 
         // user resolvers
-        ...resolvers,
+        ...resolvers || [],
 
         // developer info
         info.resolvers,
@@ -204,7 +214,16 @@ class App {
       logger,
       knex,
       emitter,
+      token: {
+        type: TokenType.access,
+        id: '',
+        uuid: '',
+        roles: [],
+        exp: 0,
+        iss: '',
+      },
     };
+
 
     app.use(
       cors({
@@ -216,6 +235,7 @@ class App {
     app.use(express.urlencoded({ extended: true, limit: MAXIMUM_REQUEST_BODY_SIZE }));
     app.use(cookieParser(cookieSign));
     app.use(headersMiddleware());
+
 
     // Request handler (request logger) middleware
     // This middleware must be defined first
@@ -232,7 +252,11 @@ class App {
 
     // GraphiQL playground middleware
     if (usePlayground) {
-      app.get(routes.playground, expressPlayground({ endpoint }));
+      app.get(routes.playground, expressPlayground({
+        endpoint,
+        subscriptionEndpoint,
+        config: playgroundConfig || loadGraphQLConfig(path.resolve(__dirname, '../../.graphqlconfig')),
+      }));
     }
 
     // GraohQL Voyager middleware
@@ -258,31 +282,38 @@ class App {
       );
     }
 
-    // only in dev mode you should have tokens with over then 8400 sec.
-    if (process.env.NODE_ENV === 'development') {
-      const { accessToken } = configureTokens([''], context);
-
-      logger.server.debug('New AccessToken was created special for development', { accessToken });
-      console.log('');
-      console.log(chalk.yellow(`Your development Access token is: ${chalk.magenta(accessToken.token)}`));
-    }
-
     // GraphQL server
     app.use(
       endpoint,
       graphqlHTTP(
-        async (): Promise<OptionsData & { subscriptionsEndpoint?: string }> => ({
-          context,
-          graphiql: false,
-          schema,
-          subscriptionsEndpoint: `ws://localhost:${port}${subscriptionsEndpoint}`,
-        }),
+        async (req): Promise<OptionsData & { subscriptionEndpoint?: string }> => {
+          const token = Authentificator.extractToken(TokenType.access, req as Request);
+          const payload = Authentificator.verifyToken(token, context.jwt.publicKey);
+
+          if (payload.type !== TokenType.access) {
+            throw new UnauthorizedError('Is not an access token');
+          }
+
+          context.token = payload;
+          const graphQLMiddlewares = [accounts.permissions, ...permissions || []];
+
+          return {
+            context,
+            graphiql: false,
+            schema: applyMiddleware(schema, ...graphQLMiddlewares),
+            subscriptionEndpoint: `ws://localhost:${port}${subscriptionEndpoint}`,
+          };
+        },
       ),
     );
 
     // Error handler middleware
-    // This middleware most be defined first
-    app.use(errorHandlerMiddleware({ context }));
+    // This middleware most be defined end
+    // app.use(errorHandlerMiddleware({ context }));
+    // app.use((err: any, req: any, res: any, next: any) => {
+    //   console.log('ERROR');
+    //   return next();
+    // });
 
     logger.server.debug('Application was created');
 
@@ -301,9 +332,10 @@ export { App };
 export interface IInitProps {
   port?: number;
   endpoint?: string;
-  subscriptionsEndpoint?: string;
+  subscriptionEndpoint?: string;
   timezone?: string;
   typeDefs?: ITypedef[];
+  permissions?: IMiddlewareGenerator<any, IContext, any>[];
   resolvers?: Array<IResolvers<any, IContext>>;
   jwt: IJwtConfig;
   database: Omit<IDBConfig, 'logger' | 'localTimezone'>;
@@ -314,6 +346,7 @@ export interface IInitProps {
     voyager?: string;
   };
   usePlayground?: boolean;
+  playgroundConfig?: any;
   useVoyager?: boolean;
   serverOptions: IServerOptions;
 }
@@ -327,7 +360,7 @@ interface IServerOptions extends ServerOptions {
 interface IInitDefaultProps extends IInitProps {
   port: number;
   endpoint: string;
-  subscriptionsEndpoint: string;
+  subscriptionEndpoint: string;
   timezone: string;
   routes: {
     auth: string;
@@ -346,6 +379,7 @@ export interface IContext {
   logger: ILoggerCollection;
   emitter: EventEmitter;
   timezone: string;
+  token: IAccessToken['payload'];
 }
 
 export interface ISubServerConfig {
@@ -361,5 +395,6 @@ export interface IBootstrapCallbackArgs {
     auth: string;
     playground?: string;
     voyager?: string;
+    subscriptions?: string;
   };
 }

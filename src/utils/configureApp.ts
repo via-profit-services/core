@@ -47,7 +47,7 @@ const jwtConfig: IInitProps['jwt'] = {
 const serverConfig: IInitProps = {
   port: Number(process.env.PORT),
   endpoint: process.env.GQL_ENDPOINT,
-  subscriptionsEndpoint: process.env.GQL_SUBSCRIPTIONSENDPOINT,
+  subscriptionEndpoint: process.env.GQL_SUBSCRIPTIONENDPOINT,
   timezone: process.env.TIMEZONE,
   database: databaseConfig,
   jwt: jwtConfig,
@@ -69,8 +69,8 @@ const configureApp = (props?: IProps): IInitProps => {
 };
 
 interface IProps {
-  typeDefs: IInitProps['typeDefs'];
-  resolvers: IInitProps['resolvers'];
+  typeDefs?: IInitProps['typeDefs'];
+  resolvers?: IInitProps['resolvers'];
 }
 
 export default configureApp;

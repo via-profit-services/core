@@ -50,7 +50,7 @@ PORT=4000
 LOG=./log
 
 GQL_ENDPOINT=/graphql
-GQL_SUBSCRIPTIONSENDPOINT=/subscriptions
+GQL_SUBSCRIPTIONENDPOINT=/subscriptions
 
 DB_HOST= <-- Хост базы данных
 DB_USER= <-- Имя пользователя базы данных

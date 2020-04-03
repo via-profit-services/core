@@ -2,6 +2,11 @@ extend type Query {
   accounts: AccountsQuery!
 }
 
+extend type Mutation {
+  accounts: AccountsMutation!
+}
+
+scalar AccountRole
 
 """
 Account status
@@ -18,9 +23,14 @@ enum AccountOrderField {
   updatedAt
 }
 
+enum TokenType {
+  access
+  refresh
+}
+
 
 """
-Account adge bundle
+Account edge bundle
 """
 type AccountsEdge implements Edge {
   node: Account!
@@ -43,7 +53,41 @@ type AccountsQuery {
     status: AccountStatus
     orderBy: AccountOrderBy
   ): AccountListConnection!
+
+  """
+  Returns Account statuses list
+  """
+  statusesList: [AccountStatus!]!
+
+  """
+  Return Your account data
+  """
+  me: Account!
+
+  """
+  Return Your Access Token payload
+  """
+  token: AccessTokenPayload!
 }
+
+
+type AccessTokenPayload {
+  type: TokenType!
+  id: Int!
+  uuid: String!
+  roles: [AccountRole]!
+  exp: Int!
+  iss: String!
+}
+
+
+type AccountsMutation {
+  updateAccount(
+    id: ID!
+    data: InputAccountData!
+  ): Account!
+}
+
 
 """
 Ordering options for accounts returned from the connection
@@ -55,7 +99,7 @@ input AccountOrderBy {
 
 
 """
-Account object
+Account data
 """
 type Account implements Node {
   id: ID!
@@ -65,8 +109,21 @@ type Account implements Node {
   status: AccountStatus!
   createdAt: DateTime!
   updatedAt: DateTime!
-  roles: [String]!
+  roles: [AccountRole]!
 }
+
+
+"""
+Possible data to driver update
+"""
+input InputAccountData {
+  name: String
+  login: String
+  password: String
+  status: AccountStatus
+  roles: [AccountRole]
+}
+
 
 """
 Accounts list bundle
