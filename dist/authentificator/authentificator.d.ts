@@ -50,6 +50,7 @@ export declare class Authentificator {
         refresh: number;
     }): ITokenPackage;
     revokeToken(tokenId: string): Promise<void>;
+    static extractTokenFromSubscription(connectionParams: any): string;
     /**
      * Extract Token from HTTP request headers
      * @param  {TokenType} tokenType

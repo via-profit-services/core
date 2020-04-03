@@ -47,6 +47,7 @@ export interface IInitProps {
     playgroundConfig?: any;
     useVoyager?: boolean;
     serverOptions: IServerOptions;
+    debug?: boolean;
 }
 interface IServerOptions extends ServerOptions {
     key: ServerOptions['key'];
@@ -66,6 +67,7 @@ interface IInitDefaultProps extends IInitProps {
     };
     usePlayground: boolean;
     useVoyager: boolean;
+    debug: boolean;
 }
 export interface IContext {
     endpoint: string;
@@ -79,6 +81,7 @@ export interface IContext {
 export interface ISubServerConfig {
     schema: GraphQLSchema;
     server: Server;
+    context: IContext;
 }
 export interface IBootstrapCallbackArgs {
     port: number;

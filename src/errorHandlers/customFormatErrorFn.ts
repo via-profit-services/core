@@ -44,7 +44,7 @@ export const customFormatErrorFn = (props: IProps) => {
       break;
 
     default:
-      logger.server.error('Error', originalError.message, { ...error, token, stack });
+      logger.server.error('Error', { ...error, token, stack });
       break;
   }
 
