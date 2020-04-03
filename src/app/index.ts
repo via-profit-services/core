@@ -20,7 +20,9 @@ import {
 } from '../authentificator/authentificator';
 import { authentificatorMiddleware } from '../authentificator/authentificatorMiddleware';
 import { knexProvider, IDBConfig, KnexInstance } from '../databaseManager';
-import { UnauthorizedError } from '../errorHandlers';
+import {
+  UnauthorizedError, customFormatErrorFn,
+} from '../errorHandlers';
 import { requestHandlerMiddleware, ILoggerCollection } from '../logger';
 import {
   info, accounts, common, scalar,
@@ -52,6 +54,7 @@ class App {
       subscriptionEndpoint: DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT,
       usePlayground: process.env.NODE_ENV === 'development',
       useVoyager: process.env.NODE_ENV === 'development',
+      debug: process.env.NODE_ENV === 'development',
       ...props,
     } as IInitDefaultProps;
 
@@ -141,6 +144,7 @@ class App {
       playgroundConfig,
       useVoyager,
       serverOptions,
+      debug,
     } = this.props as IInitDefaultProps;
 
     const { cookieSign } = serverOptions;
@@ -255,7 +259,7 @@ class App {
       app.get(routes.playground, expressPlayground({
         endpoint,
         subscriptionEndpoint,
-        config: playgroundConfig || loadGraphQLConfig(path.resolve(__dirname, '../../.graphqlconfig')),
+        config: process.env.NODE_ENV === 'development' ? loadGraphQLConfig(path.resolve(__dirname, '../../.graphqlconfig')) : playgroundConfig,
       }));
     }
 
@@ -301,7 +305,8 @@ class App {
             context,
             graphiql: false,
             schema: applyMiddleware(schema, ...graphQLMiddlewares),
-            subscriptionEndpoint: `ws://localhost:${port}${subscriptionEndpoint}`,
+            subscriptionEndpoint: `wss://localhost:${port}${subscriptionEndpoint}`,
+            customFormatErrorFn: (error) => customFormatErrorFn({ error, context, debug }),
           };
         },
       ),
@@ -342,6 +347,7 @@ export interface IInitProps {
   playgroundConfig?: any;
   useVoyager?: boolean;
   serverOptions: IServerOptions;
+  debug?: boolean;
 }
 
 interface IServerOptions extends ServerOptions {
@@ -363,6 +369,7 @@ interface IInitDefaultProps extends IInitProps {
   };
   usePlayground: boolean;
   useVoyager: boolean;
+  debug: boolean;
 }
 
 export interface IContext {

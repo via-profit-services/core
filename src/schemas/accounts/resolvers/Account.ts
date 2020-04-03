@@ -2,6 +2,7 @@ import { IResolverObject } from 'graphql-tools';
 
 import { IContext } from '../../../app';
 import { IAccount } from '../../../authentificator';
+import { ServerError } from '../../../errorHandlers';
 import { DataLoader } from '../../../utils';
 
 import createDataloader from '../dataloader';
