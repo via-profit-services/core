@@ -44,9 +44,9 @@ export declare const nodesToEdges: <T>(nodes: Node<T>[], payload: Pick<ICursorPa
  * @param { TOrderBy } orderBy Array of objects econtains { field: "", direction: "" }
  */
 export declare const convertOrderByToKnex: (orderBy: TOrderBy) => TOrderByKnex;
-export declare const convertWhereToKnex: (builder: Knex.QueryBuilder<any, any>, whereClause: {
+export declare const convertWhereToKnex: (builder: Knex.QueryBuilder<any, any>, whereClause: TWhere | {
     [key: string]: string | number | boolean;
-} | TWhere) => Knex.QueryBuilder<any, any>;
+}) => Knex.QueryBuilder<any, any>;
 /**
  * GraphQL Cursor connection
  * @see https://facebook.github.io/relay/graphql/connections.htm
@@ -61,7 +61,7 @@ export declare const buildQueryFilter: <TArgs extends TInputFilter>(args: TArgs)
 /**
  * Return array of fields of node
  */
-export declare const extractNodeField: <T, K extends "id" | keyof T | "createdAt">(nodes: Node<T>[], field: K) => Node<T>[K][];
+export declare const extractNodeField: <T, K extends "id" | "createdAt" | keyof T>(nodes: Node<T>[], field: K) => Node<T>[K][];
 /**
  * Returns node IDs array
  */
