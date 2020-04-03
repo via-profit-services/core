@@ -1,7 +1,7 @@
 import { rule } from 'graphql-shield';
 
 import { IContext } from '../app';
-import { IAccount } from '../authentificator';
+import { IAccessToken } from '../authentificator';
 // TODO Permision documentation
 export enum Role {
   ADMIN = 'admin',
@@ -17,7 +17,7 @@ export const isAdmin = rule()(
 );
 
 export const isOwner = rule()(
-  async (parent: Pick<IAccount, 'id'>, args, ctx: IContext) => ctx.token.uuid === parent.id,
+  async (token: IAccessToken['payload'], args, ctx: IContext) => ctx.token.uuid === token.uuid,
 );
 
 export const isDeveloper = rule()(
