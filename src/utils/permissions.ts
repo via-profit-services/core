@@ -9,15 +9,15 @@ export enum Role {
 }
 
 export const isAuthenticated = rule()(
-  async (parent, args, ctx: IContext) => ctx.token.uuid !== '',
+  async (parent, args, ctx: IContext) => String(ctx?.token?.uuid) !== '',
 );
 
 export const isAdmin = rule()(
-  async (parent, args, ctx: IContext) => ctx.token.roles.includes(Role.ADMIN),
+  async (parent, args, ctx: IContext) => ctx?.token?.roles.includes(Role.ADMIN),
 );
 
 export const isOwner = rule()(
-  async (token: IAccessToken['payload'], args, ctx: IContext) => ctx.token.uuid === token.uuid,
+  async (token: IAccessToken['payload'], args, ctx: IContext) => ctx?.token?.uuid === token?.uuid,
 );
 
 export const isDeveloper = rule()(

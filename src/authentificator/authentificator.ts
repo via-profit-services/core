@@ -209,6 +209,18 @@ export class Authentificator {
       });
   }
 
+  public static extractTokenFromSubscription(connectionParams: any): string {
+    if (typeof connectionParams === 'object' && TOKEN_BEARER_KEY in connectionParams) {
+      const [bearer, token] = String(connectionParams[TOKEN_BEARER_KEY]).split(' ');
+
+      if (bearer === TOKEN_BEARER && token !== '') {
+        return String(token);
+      }
+    }
+
+    return '';
+  }
+
   /**
    * Extract Token from HTTP request headers
    * @param  {TokenType} tokenType

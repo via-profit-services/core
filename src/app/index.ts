@@ -97,7 +97,7 @@ class App {
       logger.server.debug(`App server started at «${resolveUrl.graphql}»`);
 
       // connect websockrt subscriptions werver
-      this.createSubscriptionServer({ schema, server });
+      this.createSubscriptionServer({ schema, server, context });
 
       if (callback !== undefined) {
         callback({
@@ -111,7 +111,7 @@ class App {
 
   public createSubscriptionServer(config: ISubServerConfig) {
     const { subscriptionEndpoint } = this.props;
-    const { server, schema } = config;
+    const { server, schema, context } = config;
 
     // @see https://github.com/apollographql/subscriptions-transport-ws/blob/master/docs/source/express.md
     return new SubscriptionServer(
@@ -119,6 +119,17 @@ class App {
         execute,
         schema,
         subscribe,
+        onConnect: (connectionParams: any) => {
+          const token = Authentificator.extractTokenFromSubscription(connectionParams);
+          const payload = Authentificator.verifyToken(token, context.jwt.publicKey);
+
+          if (payload.type !== TokenType.access) {
+            throw new UnauthorizedError('Is not an access token');
+          }
+
+          context.token = payload;
+          return context;
+        },
       },
       {
         server,
@@ -385,6 +396,7 @@ export interface IContext {
 export interface ISubServerConfig {
   schema: GraphQLSchema;
   server: Server;
+  context: IContext;
 }
 
 export interface IBootstrapCallbackArgs {
