@@ -14,7 +14,11 @@ import {
   TOKEN_REFRESH_TOKEN_COOKIE_KEY,
 } from '../utils';
 import {
-  IListResponse, TOutputFilter, convertOrderByToKnex, convertWhereToKnex,
+  IListResponse,
+  TOutputFilter,
+  convertOrderByToKnex,
+  convertWhereToKnex,
+  convertJsonToKnex,
 } from '../utils/generateCursorBundle';
 
 export enum TokenType {
@@ -281,6 +285,21 @@ export class Authentificator {
     return tokenData !== null;
   }
 
+  public async checkAccountExists(login: IAccount['login']): Promise<boolean> {
+    const { context } = this.props;
+    const { knex } = context;
+
+    const account = await knex
+      .select<any, Pick<IAccount, 'id' | 'login'>>(['id', 'login'])
+      .from('accounts')
+      .where({
+        login,
+      })
+      .first();
+
+    return typeof account !== 'undefined';
+  }
+
   public async getAccountByLogin(login: IAccount['login'], password?: string): AccountByLoginResponse {
     const { context } = this.props;
     const { knex } = context;
@@ -400,6 +419,7 @@ export class Authentificator {
           .limit(limit)
           .offset(offset)
           .where((builder) => convertWhereToKnex(builder, where))
+          .andWhere('deleted', false)
           .as('j'),
         'j.id',
         'accounts.id',
@@ -423,15 +443,57 @@ export class Authentificator {
   }
 
 
-  public async updateAccount(id: string, accountData: Partial<IAccountUpdateInfo>) {
+  public async updateAccount(
+    id: string,
+    accountData: Partial<IAccountUpdateInfo>,
+  ): Promise<string> {
     const { knex, timezone } = this.props.context;
 
-    await knex<IAccountUpdateInfo>('accounts')
+    const data = accountData as IAccountUpdateInfo & { updatedAt: string; roles: any; };
+    if (data.password) {
+      data.password = Authentificator.cryptUserPassword(data.password);
+    }
+
+    if (data.roles) {
+      data.roles = convertJsonToKnex(knex, data.roles);
+    }
+
+    const result = await knex<IAccountUpdateInfo & { updatedAt: string; roles: any; }>('accounts')
       .update({
-        ...accountData,
+        ...data,
         updatedAt: moment.tz(timezone).format(),
       })
-      .where('id', id);
+      .where('id', id)
+      .returning('id');
+
+    return result[0];
+  }
+
+  public async createAccount(accountData: IAccountCreateInfo) {
+    const { knex, timezone } = this.props.context;
+
+    const createdAt = moment.tz(timezone).format();
+
+    const result = await knex<IAccountCreateInfo & { updatedAt: string; createdAt: string; roles: any }>('accounts')
+      .insert({
+        ...accountData,
+        id: accountData.id ? accountData.id : uuidv4(),
+        roles: convertJsonToKnex(knex, accountData.roles),
+        password: Authentificator.cryptUserPassword(accountData.password),
+        createdAt,
+        updatedAt: createdAt,
+      }).returning('id');
+
+    return result[0];
+  }
+
+  public async deleteAccount(id: string) {
+    return this.updateAccount(id, {
+      login: uuidv4(),
+      password: uuidv4(),
+      deleted: true,
+      status: AccountStatus.forbidden,
+    });
   }
 }
 
@@ -524,8 +586,11 @@ export interface IAccount {
   roles: IAccountRole[];
   createdAt: Date;
   updatedAt: Date;
+  deleted: Boolean;
 }
 
-export type IAccountUpdateInfo = Omit<IAccount, 'id' | 'createdAt' | 'updatedAt' | 'roles'> & {
-  updatedAt: string;
-}
+export type IAccountUpdateInfo = Omit<IAccount, 'id' | 'createdAt' | 'updatedAt'>;
+
+export type IAccountCreateInfo = Omit<IAccount, 'id' | 'createdAt' | 'updatedAt'> & {
+  id?: string;
+};

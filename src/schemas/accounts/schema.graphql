@@ -82,10 +82,28 @@ type AccessTokenPayload {
 
 
 type AccountsMutation {
+  
+  """
+  Update existings account
+  """
   updateAccount(
     id: ID!
-    data: InputAccountData!
+    data: InputAccountUpdateData!
   ): Account!
+
+  """
+  Create new Account
+  """
+  createAccount(
+    data: InputAccountCreateData!
+  ): Account!
+
+  """
+  Delete account
+  """
+  deleteAccount(
+    id: ID!
+  ): Boolean!
 }
 
 
@@ -116,13 +134,27 @@ type Account implements Node {
 """
 Possible data to driver update
 """
-input InputAccountData {
+input InputAccountUpdateData {
+  id: String
   name: String
   login: String
   password: String
   status: AccountStatus
   roles: [AccountRole]
 }
+
+"""
+Possible data to create new account
+"""
+input InputAccountCreateData {
+  id: String
+  name: String!
+  login: String!
+  password: String!
+  status: AccountStatus!
+  roles: [AccountRole]!
+}
+
 
 
 """

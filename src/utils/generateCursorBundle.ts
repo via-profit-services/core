@@ -85,6 +85,12 @@ export const convertOrderByToKnex = (orderBy: TOrderBy | undefined):
 }));
 
 
+// eslint-disable-next-line arrow-body-style
+export const convertJsonToKnex = <TRecord = any>(knexInstance: Knex, json: {} | Array<any>) => {
+  return knexInstance.raw<TRecord>(`'${JSON.stringify(json)}'::jsonb`);
+};
+
+
 export const convertWhereToKnex = (builder: Knex.QueryBuilder, whereClause: {
   [key: string]: string | number | boolean | null;
 } | TWhere) => {
