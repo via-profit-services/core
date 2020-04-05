@@ -44,6 +44,7 @@ export declare const nodesToEdges: <T>(nodes: Node<T>[], payload: Pick<ICursorPa
  * @param { TOrderBy } orderBy Array of objects econtains { field: "", direction: "" }
  */
 export declare const convertOrderByToKnex: (orderBy: TOrderBy) => TOrderByKnex;
+export declare const convertJsonToKnex: <TRecord = any>(knexInstance: Knex<any, any[]>, json: {} | any[]) => Knex.Raw<TRecord>;
 export declare const convertWhereToKnex: (builder: Knex.QueryBuilder<any, any>, whereClause: TWhere | {
     [key: string]: string | number | boolean;
 }) => Knex.QueryBuilder<any, any>;

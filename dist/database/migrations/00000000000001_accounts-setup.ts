@@ -8,8 +8,8 @@ export async function up(knex: Knex): Promise<any> {
     CREATE TYPE "accountStatus" AS ENUM (
       'allowed',
       'forbidden'
-      );
-      
+    );
+
     DROP TYPE IF EXISTS "accountType";
     CREATE TYPE "accountType" AS ENUM (
       'stuff',
@@ -27,19 +27,18 @@ export async function up(knex: Knex): Promise<any> {
       "status" "accountStatus" NOT NULL DEFAULT 'allowed'::"accountStatus",
       "type" "accountType" NOT NULL DEFAULT 'client'::"accountType",
       "roles" jsonb NOT NULL DEFAULT '[]'::jsonb,
-      "cursor" serial NOT NULL,
+      "deleted" boolean NOT NULL DEFAULT false,
       "comment" text NULL,
       CONSTRAINT accounts_pkey PRIMARY KEY (id)
     );
     
-    CREATE INDEX "accountsCursorIndex" ON accounts USING btree (cursor);
+    CREATE INDEX "accountsDeletedIndex" ON accounts USING btree (deleted);
   `);
 }
 
 export async function down(knex: Knex): Promise<any> {
   return knex.raw(`
     DROP TABLE IF EXISTS "accounts" CASCADE;
-    DROP SEQUENCE IF EXISTS "accountsCursorSeq" CASCADE;
     DROP TYPE IF EXISTS "accountStatus" CASCADE;
     DROP TYPE IF EXISTS "accountType" CASCADE;
   `);
