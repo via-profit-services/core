@@ -16,6 +16,11 @@ export const permissions = shield<any, IContext>({
     password: or(isDeveloper, isOwner, isAdmin),
   },
   AccessTokenPayload: or(isDeveloper, isOwner),
+  AccountsMutation: {
+    deleteAccount: isDeveloper,
+    createAccount: or(isDeveloper, isAdmin),
+    updateAccount: or(isDeveloper, isAdmin),
+  },
 }, {
   fallbackRule: isAuthenticated,
   allowExternalErrors: true,
