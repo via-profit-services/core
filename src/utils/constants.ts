@@ -2,8 +2,10 @@ export const TOKEN_BEARER_KEY = 'Authorization';
 export const TOKEN_ACCESS_TOKEN_COOKIE_KEY = 'AccessToken';
 export const TOKEN_REFRESH_TOKEN_COOKIE_KEY = 'RefreshToken';
 export const TOKEN_BEARER = 'Bearer';
+
 export const DATABASE_CHARSET = 'UTF8';
 export const DATABASE_CLIENT = 'pg';
+
 export const DEFAULT_SERVER_PORT = 4000;
 export const DEFAULT_GRAPHQL_ENDPOINT = '/graphql';
 export const DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT = '/subscriptions';
@@ -11,9 +13,12 @@ export const DEFAULT_SERVER_TIMEZONE = 'UTC';
 export const DEFAULT_ROUTE_AUTH = '/auth';
 export const DEFAULT_ROUTE_PLAYGROUND = '/playground';
 export const DEFAULT_ROUTE_VOYAGER = '/voyager';
+
 export const MAXIMUM_REQUEST_BODY_SIZE = '50mb';
+
 export const DEV_INFO_DEVELOPER_NAME = 'Via Profit';
 export const DEV_INFO_DEVELOPER_URL = 'https://via-profit.ru';
+
 export const LOG_FILENAME_AUTH = 'auth-%DATE%.log';
 export const LOG_FILENAME_HTTP = 'http-%DATE%.log';
 export const LOG_FILENAME_DEBUG = 'debug-%DATE%.log';
