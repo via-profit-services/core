@@ -50,6 +50,7 @@ export declare class Authentificator {
         refresh: number;
     }): ITokenPackage;
     revokeToken(tokenId: string): Promise<void>;
+    static extractTokenFromSubscription(connectionParams: any): string;
     /**
      * Extract Token from HTTP request headers
      * @param  {TokenType} tokenType
@@ -58,10 +59,13 @@ export declare class Authentificator {
      */
     static extractToken(tokenType: TokenType, request: Request): string;
     checkTokenExist(tokenId: string): Promise<boolean>;
+    checkAccountExists(login: IAccount['login']): Promise<boolean>;
     getAccountByLogin(login: IAccount['login'], password?: string): AccountByLoginResponse;
     static sendResponseError(responsetype: ResponseErrorType, resp: Response): Response;
     getAccounts(filter: TOutputFilter): Promise<IListResponse<IAccount>>;
-    updateAccount(id: string, accountData: Partial<IAccountUpdateInfo>): Promise<void>;
+    updateAccount(id: string, accountData: Partial<IAccountUpdateInfo>): Promise<string>;
+    createAccount(accountData: IAccountCreateInfo): Promise<string>;
+    deleteAccount(id: string): Promise<string>;
 }
 interface IProps {
     context: IContext;
@@ -140,8 +144,10 @@ export interface IAccount {
     roles: IAccountRole[];
     createdAt: Date;
     updatedAt: Date;
+    deleted: Boolean;
 }
-export declare type IAccountUpdateInfo = Omit<IAccount, 'id' | 'createdAt' | 'updatedAt' | 'roles'> & {
-    updatedAt: string;
+export declare type IAccountUpdateInfo = Omit<IAccount, 'id' | 'createdAt' | 'updatedAt'>;
+export declare type IAccountCreateInfo = Omit<IAccount, 'id' | 'createdAt' | 'updatedAt'> & {
+    id?: string;
 };
 export {};

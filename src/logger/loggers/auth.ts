@@ -1,8 +1,10 @@
 import { transports, createLogger } from 'winston';
 import 'winston-daily-rotate-file';
 
+import {
+  LOG_FILENAME_AUTH, LOG_FILENAME_DEBUG, LOG_DATE_PATTERNT, LOG_MAZ_SIZE, LOG_MAZ_FILES,
+} from '../../utils/constants';
 import loggerFormatter from '../utils/logFormatter';
-import { AUTH_LOG_FILENAME, DEBUG_LOG_FILENAME } from '../utils/logNames';
 
 export default (config: Config) => {
   const { logDir } = config;
@@ -12,20 +14,20 @@ export default (config: Config) => {
     format: loggerFormatter,
     transports: [
       new transports.DailyRotateFile({
-        filename: `${logDir}/${AUTH_LOG_FILENAME}`,
+        filename: `${logDir}/${LOG_FILENAME_AUTH}`,
         level: 'info',
-        datePattern: 'YYYY-MM-DD',
+        datePattern: LOG_DATE_PATTERNT,
         zippedArchive: true,
-        maxSize: '20m',
-        maxFiles: '14d',
+        maxSize: LOG_MAZ_SIZE,
+        maxFiles: LOG_MAZ_FILES,
       }),
       new transports.DailyRotateFile({
-        filename: `${logDir}/${DEBUG_LOG_FILENAME}`,
+        filename: `${logDir}/${LOG_FILENAME_DEBUG}`,
         level: 'debug',
-        datePattern: 'YYYY-MM-DD',
+        datePattern: LOG_DATE_PATTERNT,
         zippedArchive: true,
-        maxSize: '20m',
-        maxFiles: '14d',
+        maxSize: LOG_MAZ_SIZE,
+        maxFiles: LOG_MAZ_FILES,
       }),
     ],
   });

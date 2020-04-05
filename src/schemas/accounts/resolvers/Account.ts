@@ -41,6 +41,11 @@ const accountResolver: IResolverObject<Pick<IAccount, 'id'>, IContext> = {
     const data = await dataloader.load(id);
     return data.password;
   },
+  roles: async ({ id }, args, context) => {
+    dataloader = dataloader || createDataloader(context);
+    const data = await dataloader.load(id);
+    return data.roles;
+  },
 };
 
 export default accountResolver;

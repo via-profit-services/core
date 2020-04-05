@@ -20,7 +20,9 @@ import {
 } from '../authentificator/authentificator';
 import { authentificatorMiddleware } from '../authentificator/authentificatorMiddleware';
 import { knexProvider, IDBConfig, KnexInstance } from '../databaseManager';
-import { UnauthorizedError } from '../errorHandlers';
+import {
+  UnauthorizedError, customFormatErrorFn,
+} from '../errorHandlers';
 import { requestHandlerMiddleware, ILoggerCollection } from '../logger';
 import {
   info, accounts, common, scalar,
@@ -52,6 +54,7 @@ class App {
       subscriptionEndpoint: DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT,
       usePlayground: process.env.NODE_ENV === 'development',
       useVoyager: process.env.NODE_ENV === 'development',
+      debug: process.env.NODE_ENV === 'development',
       ...props,
     } as IInitDefaultProps;
 
@@ -94,7 +97,7 @@ class App {
       logger.server.debug(`App server started at «${resolveUrl.graphql}»`);
 
       // connect websockrt subscriptions werver
-      this.createSubscriptionServer({ schema, server });
+      this.createSubscriptionServer({ schema, server, context });
 
       if (callback !== undefined) {
         callback({
@@ -108,7 +111,7 @@ class App {
 
   public createSubscriptionServer(config: ISubServerConfig) {
     const { subscriptionEndpoint } = this.props;
-    const { server, schema } = config;
+    const { server, schema, context } = config;
 
     // @see https://github.com/apollographql/subscriptions-transport-ws/blob/master/docs/source/express.md
     return new SubscriptionServer(
@@ -116,6 +119,17 @@ class App {
         execute,
         schema,
         subscribe,
+        onConnect: (connectionParams: any) => {
+          const token = Authentificator.extractTokenFromSubscription(connectionParams);
+          const payload = Authentificator.verifyToken(token, context.jwt.publicKey);
+
+          if (payload.type !== TokenType.access) {
+            throw new UnauthorizedError('Is not an access token');
+          }
+
+          context.token = payload;
+          return context;
+        },
       },
       {
         server,
@@ -141,6 +155,7 @@ class App {
       playgroundConfig,
       useVoyager,
       serverOptions,
+      debug,
     } = this.props as IInitDefaultProps;
 
     const { cookieSign } = serverOptions;
@@ -255,7 +270,7 @@ class App {
       app.get(routes.playground, expressPlayground({
         endpoint,
         subscriptionEndpoint,
-        config: playgroundConfig || loadGraphQLConfig(path.resolve(__dirname, '../../.graphqlconfig')),
+        config: process.env.NODE_ENV === 'development' ? loadGraphQLConfig(path.resolve(__dirname, '../../.graphqlconfig')) : playgroundConfig,
       }));
     }
 
@@ -295,25 +310,19 @@ class App {
           }
 
           context.token = payload;
-          const graphQLMiddlewares = [accounts.permissions, ...permissions || []];
+          const graphQLMiddlewares = [...permissions || [], accounts.permissions];
 
           return {
             context,
             graphiql: false,
             schema: applyMiddleware(schema, ...graphQLMiddlewares),
-            subscriptionEndpoint: `ws://localhost:${port}${subscriptionEndpoint}`,
+            subscriptionEndpoint: `wss://localhost:${port}${subscriptionEndpoint}`,
+            customFormatErrorFn: (error) => customFormatErrorFn({ error, context, debug }),
           };
         },
       ),
     );
 
-    // Error handler middleware
-    // This middleware most be defined end
-    // app.use(errorHandlerMiddleware({ context }));
-    // app.use((err: any, req: any, res: any, next: any) => {
-    //   console.log('ERROR');
-    //   return next();
-    // });
 
     logger.server.debug('Application was created');
 
@@ -349,6 +358,7 @@ export interface IInitProps {
   playgroundConfig?: any;
   useVoyager?: boolean;
   serverOptions: IServerOptions;
+  debug?: boolean;
 }
 
 interface IServerOptions extends ServerOptions {
@@ -370,6 +380,7 @@ interface IInitDefaultProps extends IInitProps {
   };
   usePlayground: boolean;
   useVoyager: boolean;
+  debug: boolean;
 }
 
 export interface IContext {
@@ -385,6 +396,7 @@ export interface IContext {
 export interface ISubServerConfig {
   schema: GraphQLSchema;
   server: Server;
+  context: IContext;
 }
 
 export interface IBootstrapCallbackArgs {
