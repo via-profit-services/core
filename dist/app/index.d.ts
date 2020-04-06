@@ -34,6 +34,7 @@ export interface IInitProps {
     timezone?: string;
     typeDefs?: ITypedef[];
     permissions?: IMiddlewareGenerator<any, IContext, any>[];
+    middlewares?: IMiddlewareGenerator<any, IContext, any>[];
     resolvers?: Array<IResolvers<any, IContext>>;
     jwt: IJwtConfig;
     database: Omit<IDBConfig, 'logger' | 'localTimezone'>;
