@@ -7,7 +7,7 @@ import { TWhereAction, Node, DataLoader } from '../../utils';
 export default function createDataloader(context: IContext) {
   const authentificator = new Authentificator({ context });
 
-  const batchDrivers = async (ids: readonly string[]) => {
+  const batchAccounts = async (ids: readonly string[]) => {
     try {
       const { nodes } = await authentificator.getAccounts({
         limit: ids.length,
@@ -21,5 +21,5 @@ export default function createDataloader(context: IContext) {
     }
   };
 
-  return new DataLoader<string, Node<IAccount>>((ids) => batchDrivers(ids));
+  return new DataLoader<string, Node<IAccount>>((ids) => batchAccounts(ids));
 }
