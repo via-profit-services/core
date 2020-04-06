@@ -147,6 +147,7 @@ class App {
       port,
       jwt,
       permissions,
+      middlewares,
       database,
       logger,
       routes,
@@ -310,7 +311,14 @@ class App {
           }
 
           context.token = payload;
-          const graphQLMiddlewares = [...permissions || [], accounts.permissions];
+          const graphQLMiddlewares = [
+            // permissions
+            ...permissions || [],
+            accounts.permissions,
+
+            // other middlewares
+            ...middlewares || [],
+          ];
 
           return {
             context,
@@ -345,6 +353,7 @@ export interface IInitProps {
   timezone?: string;
   typeDefs?: ITypedef[];
   permissions?: IMiddlewareGenerator<any, IContext, any>[];
+  middlewares?: IMiddlewareGenerator<any, IContext, any>[];
   resolvers?: Array<IResolvers<any, IContext>>;
   jwt: IJwtConfig;
   database: Omit<IDBConfig, 'logger' | 'localTimezone'>;

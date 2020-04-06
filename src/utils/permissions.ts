@@ -2,7 +2,7 @@ import { rule } from 'graphql-shield';
 
 import { IContext } from '../app';
 import { IAccessToken } from '../authentificator';
-// TODO Permision documentation
+
 export enum Role {
   ADMIN = 'admin',
   DEVELOPER = 'developer',
