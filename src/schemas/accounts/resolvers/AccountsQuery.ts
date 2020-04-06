@@ -9,8 +9,8 @@ import createDataloader from '../dataloader';
 
 let dataloader: DataLoader<string, IAccount>;
 
-export const accountsQueryResolver: IResolverObject<any, IContext, TInputFilter> = {
-  list: async (source, args, context) => {
+export const accountsQueryResolver: IResolverObject<any, IContext> = {
+  list: async (source, args: TInputFilter, context) => {
     dataloader = dataloader || createDataloader(context);
     const filter = buildQueryFilter(args);
     const autherntificator = new Authentificator({ context });
@@ -35,6 +35,7 @@ export const accountsQueryResolver: IResolverObject<any, IContext, TInputFilter>
     const { token } = context;
     return token;
   },
+  account: (parent, args: {id: string}) => ({ id: args.id }),
 };
 
 export default accountsQueryResolver;

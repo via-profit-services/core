@@ -17,7 +17,7 @@ export const permissions = shield<any, IContext>({
   },
   AccessTokenPayload: or(isDeveloper, isOwner),
   AccountsMutation: {
-    deleteAccount: isDeveloper,
+    deleteAccount: or(isDeveloper, isAdmin),
     createAccount: or(isDeveloper, isAdmin),
     updateAccount: or(isDeveloper, isAdmin),
   },

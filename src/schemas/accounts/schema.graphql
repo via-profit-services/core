@@ -60,14 +60,19 @@ type AccountsQuery {
   statusesList: [AccountStatus!]!
 
   """
-  Return Your account data
+  Returns Your account data
   """
   me: Account!
 
   """
-  Return Your Access Token payload
+  Returns Your Access Token payload
   """
   token: AccessTokenPayload!
+
+  """
+  Returns account by ID
+  """
+  account(id: ID!): Account!
 }
 
 
