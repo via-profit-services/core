@@ -657,7 +657,7 @@ export default function createLoaders(context: IContext) {
   const service = new PersonService({ context });
 
   // Создаем сам даталоадер
-  loaders.persons = new DataLoader<string, Node<Person>>(service.getPersonsByIds);
+  loaders.persons = new DataLoader<string, Node<Person>>((ids: string[]) => service.getPersonsByIds(ids));
 
   return loaders;
 }
