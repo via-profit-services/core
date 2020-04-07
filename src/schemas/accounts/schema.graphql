@@ -80,7 +80,7 @@ type AccessTokenPayload {
   type: TokenType!
   id: ID!
   uuid: String!
-  roles: [AccountRole]!
+  roles: [AccountRole!]!
   exp: Int!
   iss: String!
 }
@@ -132,7 +132,7 @@ type Account implements Node {
   status: AccountStatus!
   createdAt: DateTime!
   updatedAt: DateTime!
-  roles: [AccountRole]!
+  roles: [AccountRole!]!
 }
 
 
@@ -145,7 +145,7 @@ input InputAccountUpdateData {
   login: String
   password: String
   status: AccountStatus
-  roles: [AccountRole]
+  roles: [AccountRole!]
 }
 
 """
@@ -157,7 +157,7 @@ input InputAccountCreateData {
   login: String!
   password: String!
   status: AccountStatus!
-  roles: [AccountRole]!
+  roles: [AccountRole!]!
 }
 
 
