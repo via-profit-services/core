@@ -15,6 +15,7 @@ import {
 } from '../utils';
 import {
   IListResponse,
+  TWhereAction,
   TOutputFilter,
   convertOrderByToKnex,
   convertWhereToKnex,
@@ -440,6 +441,16 @@ export class Authentificator {
           nodes,
         };
       });
+  }
+
+  public async getAccountsByIds(ids: string[]): Promise<IAccount[]> {
+    const { nodes } = await this.getAccounts({
+      limit: ids.length,
+      offset: 0,
+      where: [['id', TWhereAction.IN, ids]],
+    });
+
+    return nodes;
   }
 
 

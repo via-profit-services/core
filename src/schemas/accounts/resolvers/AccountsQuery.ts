@@ -1,17 +1,15 @@
 import { IResolverObject } from 'graphql-tools';
 
 import { IContext } from '../../../app';
-import { IAccount, Authentificator, AccountStatus } from '../../../authentificator';
+import { Authentificator, AccountStatus } from '../../../authentificator';
 import { ServerError } from '../../../errorHandlers';
-import { DataLoader } from '../../../utils';
 import { buildCursorConnection, buildQueryFilter, TInputFilter } from '../../../utils/generateCursorBundle';
-import createDataloader from '../dataloader';
+import createLoaders from '../dataloader';
 
-let dataloader: DataLoader<string, IAccount>;
 
 export const accountsQueryResolver: IResolverObject<any, IContext> = {
   list: async (source, args: TInputFilter, context) => {
-    dataloader = dataloader || createDataloader(context);
+    const loaders = createLoaders(context);
     const filter = buildQueryFilter(args);
     const autherntificator = new Authentificator({ context });
 
@@ -21,7 +19,7 @@ export const accountsQueryResolver: IResolverObject<any, IContext> = {
 
       // fill the cache
       accountsConnection.nodes.forEach((node) => {
-        dataloader.clear(node.id).prime(node.id, node);
+        loaders.accounts.clear(node.id).prime(node.id, node);
       });
 
       return connection;

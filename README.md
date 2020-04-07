@@ -630,41 +630,38 @@ const logger = configureLogger({
 _file dataloader.ts_
 
 ```ts
-import { IContext, DataLoader, TWhereAction, Node, ServerError } from '@via-profit-services/core';
-import PersonService from 'my-service';
+import { IContext, DataLoader, Node } from '@via-profit-services/core';
+import PersonService, { Person } from 'my-service';
 
-// Функция принимает контекст, в качестве аргумента, для возможности
-// испольовать его независимо от основной программы
-// и возвращает даталоадер
-export default function createDataloader(context: IContext) {
+// Интерфейс пула даталоадеров модуля
+interface Loaders {
+  persons: DataLoader<string, Node<Person>>;
+}
 
-  // Инициализация какого-либо сервиса, который
-  // будет заниматься загрузкой данных из БД
+// Пул даталоадеров модуля
+const loaders: Loaders = {
+  persons: null,
+};
+
+// Функция создания даталоадеров модуля
+// Если лоадеры уже были созданы, то функция просто их вернет,
+// либо создаст новый пул
+export default function createLoaders(context: IContext) {
+
+  // Проверяем, создавался ли уже этот пул
+  if (loaders.persons !== null) {
+    return loaders;
+  }
+
+  // Инициализируем какой-либо сервис
   const service = new PersonService({ context });
 
-  // batch функция, подробнее
-  @see https://github.com/graphql/dataloader#batching
-  const batchPersons = async (ids: readonly string[]) => {
-    try {
-      const { nodes } = await service.getPersons({
-        limit: ids.length,
-        offset: 0,
-        where: [['id', TWhereAction.IN, ids]],
-      });
+  // Создаем сам даталоадер
+  loaders.persons = new DataLoader<string, Node<Person>>(service.getPersonsByIds);
 
-      // Данная строчка гарантирует, что в даталоадер бедет
-      // помещен элемент или undefined с искомым ID, даже, если его не существует, т.е.
-      // количество элементов, которое загружает даталоадер должно соответствовать
-      // количеству элементов, которые были ему возвращены
-      return ids.map((id) => nodes.find((n) => n.id === id));
-    } catch (err) {
-      throw new ServerError('Person Dataloader error. Failed to load persons', { ids });
-    }
-  };
-
-  // В качестве результата возвращаем именно сам даталоадер
-  return new DataLoader<string, Node<Person>>((ids) => batchPersons(ids));
+  return loaders;
 }
+
 
 ```
 
@@ -674,21 +671,20 @@ _file resolver.ts_
 import { IResolverObject } from 'graphql-tools';
 import { TInputFilter, IContext } from '@via-profit-services/core';
 
-import createDataloader from './dataloader';
-
-// объявляем даталоадер
-let dataloader: DataLoader<string, Person>;
+// Импортируем функцию создания пула даталоадеров
+import createLoaders from './dataloader';
 
 export const personsQueryResolver: IResolverObject<any, IContext, TInputFilter> = {
+
   // Резолвер, который должен вернуть информацию из БД
   getPersonById: (parent, args, context) => {
     const { id } = args;
 
-    // Инициализируем даталоадер, НО только если он не был объявлен ранее
-    dataloader = dataloader || createDataloader(context);
+    // Получаем лоадеры
+    const { persons } = createLoaders(context);
 
     // Загружаем данные
-    dataloader.load(id);
+    persons.load(id);
   },
 };
 ```
