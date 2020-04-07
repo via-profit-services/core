@@ -18,6 +18,8 @@ export default function createLoaders(context: IContext) {
 
   const authentificator = new Authentificator({ context });
 
-  loaders.accounts = new DataLoader<string, Node<IAccount>>(authentificator.getAccountsByIds);
+  loaders.accounts = new DataLoader<
+    string, Node<IAccount>
+  >((ids: string[]) => authentificator.getAccountsByIds(ids));
   return loaders;
 }
