@@ -5,7 +5,9 @@ import {
   Authentificator, IAccountUpdateInfo, IAccountCreateInfo,
 } from '../../../authentificator';
 import { ServerError } from '../../../errorHandlers';
+import { pubsub } from '../../../utils';
 import createLoaders from '../dataloader';
+import { SubscriptioTriggers } from './AccountsSubscription';
 
 const driversMutationResolver: IResolverObject<any, IContext> = {
   updateAccount: async (parent, args: { id: string; data: IAccountUpdateInfo }, context) => {
@@ -18,8 +20,14 @@ const driversMutationResolver: IResolverObject<any, IContext> = {
     } catch (err) {
       throw new ServerError('Failed to update account', { data: otherData, id });
     }
-
     loaders.accounts.clear(id);
+
+    const account = await loaders.accounts.load(id);
+    pubsub.publish(SubscriptioTriggers.ACCOUNT_UPDATED, {
+      accountWasUpdated: account,
+    });
+
+
     return { id };
   },
   createAccount: async (parent, args: { data: IAccountCreateInfo }, context) => {
@@ -49,6 +57,11 @@ const driversMutationResolver: IResolverObject<any, IContext> = {
     try {
       const result = await authentificator.deleteAccount(id);
       loaders.accounts.clear(id);
+
+      pubsub.publish(SubscriptioTriggers.ACCOUNT_DELETED, {
+        accountWasDeleted: [id],
+      });
+
       return Boolean(result);
     } catch (err) {
       throw new ServerError(`Failed to delete account with id ${id}`, { id });
