@@ -109,6 +109,20 @@ type AccountsMutation {
   deleteAccount(
     id: ID!
   ): Boolean!
+
+  """
+  Revoke some token
+  """
+  revokeToken(
+    id: ID!
+  ): Boolean!
+
+  """
+  Revoke All account tokens
+  """
+  revokeAllAccountTokens(
+    id: ID!
+  ): Boolean!
 }
 
 

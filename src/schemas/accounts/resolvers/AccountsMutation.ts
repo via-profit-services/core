@@ -54,6 +54,28 @@ const driversMutationResolver: IResolverObject<any, IContext> = {
       throw new ServerError(`Failed to delete account with id ${id}`, { id });
     }
   },
+  revokeToken: async (parent, args: { id: string }, context) => {
+    const { id } = args;
+
+    try {
+      const authentificator = new Authentificator({ context });
+      const result = await authentificator.revokeToken(id);
+      return Boolean(result);
+    } catch (err) {
+      throw new ServerError(`Failed to revoke token ${id}`, { id });
+    }
+  },
+  revokeAllAccountTokens: async (paretn, args: { id: string }, context) => {
+    const { id } = args;
+
+    try {
+      const authentificator = new Authentificator({ context });
+      const result = await authentificator.revokeAccountTokens(id);
+      return Boolean(result);
+    } catch (err) {
+      throw new ServerError('Failed to revoke account tokens', { id });
+    }
+  },
 };
 
 export default driversMutationResolver;
