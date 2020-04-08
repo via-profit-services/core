@@ -49,7 +49,8 @@ export declare class Authentificator {
         access: number;
         refresh: number;
     }): ITokenPackage;
-    revokeToken(tokenId: string): Promise<void>;
+    revokeToken(tokenId: string): Promise<number>;
+    revokeAccountTokens(accountId: string): Promise<number>;
     static extractTokenFromSubscription(connectionParams: any): string;
     /**
      * Extract Token from HTTP request headers
@@ -63,6 +64,7 @@ export declare class Authentificator {
     getAccountByLogin(login: IAccount['login'], password?: string): AccountByLoginResponse;
     static sendResponseError(responsetype: ResponseErrorType, resp: Response): Response;
     getAccounts(filter: TOutputFilter): Promise<IListResponse<IAccount>>;
+    getAccountsByIds(ids: string[]): Promise<IAccount[]>;
     updateAccount(id: string, accountData: Partial<IAccountUpdateInfo>): Promise<string>;
     createAccount(accountData: IAccountCreateInfo): Promise<string>;
     deleteAccount(id: string): Promise<string>;

@@ -6,7 +6,10 @@ extend type Mutation {
   accounts: AccountsMutation!
 }
 
-scalar AccountRole
+extend type Subscription {
+  accountWasUpdated (id: ID!): Account!
+  accountWasDeleted: [ID!]!
+}
 
 """
 Account status
@@ -60,25 +63,21 @@ type AccountsQuery {
   statusesList: [AccountStatus!]!
 
   """
-  Return Your account data
+  Returns Your account data
   """
   me: Account!
 
   """
-  Return Your Access Token payload
+  Returns Your Access Token payload
   """
   token: AccessTokenPayload!
+
+  """
+  Returns account by ID
+  """
+  account(id: ID!): Account!
 }
 
-
-type AccessTokenPayload {
-  type: TokenType!
-  id: ID!
-  uuid: String!
-  roles: [AccountRole]!
-  exp: Int!
-  iss: String!
-}
 
 
 type AccountsMutation {
@@ -104,8 +103,34 @@ type AccountsMutation {
   deleteAccount(
     id: ID!
   ): Boolean!
+
+  """
+  Revoke some token
+  """
+  revokeToken(
+    id: ID!
+  ): Boolean!
+
+  """
+  Revoke All account tokens
+  """
+  revokeAllAccountTokens(
+    id: ID!
+  ): Boolean!
 }
 
+
+
+
+
+type AccessTokenPayload {
+  type: TokenType!
+  id: ID!
+  uuid: String!
+  roles: [String!]!
+  exp: Int!
+  iss: String!
+}
 
 """
 Ordering options for accounts returned from the connection
@@ -127,7 +152,7 @@ type Account implements Node {
   status: AccountStatus!
   createdAt: DateTime!
   updatedAt: DateTime!
-  roles: [AccountRole]!
+  roles: [String!]!
 }
 
 
@@ -140,7 +165,7 @@ input InputAccountUpdateData {
   login: String
   password: String
   status: AccountStatus
-  roles: [AccountRole]
+  roles: [String!]
 }
 
 """
@@ -152,7 +177,7 @@ input InputAccountCreateData {
   login: String!
   password: String!
   status: AccountStatus!
-  roles: [AccountRole]!
+  roles: [String!]!
 }
 
 

@@ -52,9 +52,15 @@ export const customFormatErrorFn = (props: IProps) => {
     console.log('');
     console.log(chalk.red('============== Caught the Error =============='));
     console.log('');
-    console.log(chalk.red(originalError.message));
-    if (originalError.metaData) {
-      console.log(chalk.yellow('Error metadata'), originalError.metaData);
+
+    if (originalError) {
+      if (originalError.message) {
+        console.log(chalk.red(originalError.message));
+      }
+
+      if (originalError.metaData) {
+        console.log(chalk.yellow('Error metadata'), originalError.metaData);
+      }
     }
     console.log(chalk.magenta('Access token payload'), token);
     console.log('');
@@ -62,7 +68,6 @@ export const customFormatErrorFn = (props: IProps) => {
     console.log('');
     console.log(chalk.red('============== End of Error report =============='));
     console.log('');
-
     return {
       message: error.message,
       locations: error.locations,

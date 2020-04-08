@@ -15,6 +15,7 @@ import {
 } from '../utils';
 import {
   IListResponse,
+  TWhereAction,
   TOutputFilter,
   convertOrderByToKnex,
   convertWhereToKnex,
@@ -201,16 +202,34 @@ export class Authentificator {
     };
   }
 
-  public async revokeToken(tokenId: string) {
+  public async revokeToken(tokenId: string): Promise<number> {
     const { context } = this.props;
     const { knex } = context;
 
-    await knex
+    const result = await knex
       .del()
       .from('tokens')
       .where({
         id: tokenId,
-      });
+      })
+      .returning('*');
+
+    return Number(result[0]);
+  }
+
+  public async revokeAccountTokens(accountId: string): Promise<number> {
+    const { context } = this.props;
+    const { knex } = context;
+
+    const result = await knex
+      .del()
+      .from('tokens')
+      .where({
+        account: accountId,
+      })
+      .returning('*');
+
+    return Number(result[0]);
   }
 
   public static extractTokenFromSubscription(connectionParams: any): string {
@@ -440,6 +459,16 @@ export class Authentificator {
           nodes,
         };
       });
+  }
+
+  public async getAccountsByIds(ids: string[]): Promise<IAccount[]> {
+    const { nodes } = await this.getAccounts({
+      limit: ids.length,
+      offset: 0,
+      where: [['id', TWhereAction.IN, ids]],
+    });
+
+    return nodes;
   }
 
 
