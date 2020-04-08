@@ -49,7 +49,8 @@ export declare class Authentificator {
         access: number;
         refresh: number;
     }): ITokenPackage;
-    revokeToken(tokenId: string): Promise<void>;
+    revokeToken(tokenId: string): Promise<number>;
+    revokeAccountTokens(accountId: string): Promise<number>;
     static extractTokenFromSubscription(connectionParams: any): string;
     /**
      * Extract Token from HTTP request headers
