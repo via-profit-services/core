@@ -23,7 +23,7 @@ import {
   convertWhereToKnex,
   convertJsonToKnex,
 } from '../utils/generateCursorBundle';
-
+// TODO Revoke token subscriptions
 export enum TokenType {
   access = 'access',
   refresh = 'refresh',
