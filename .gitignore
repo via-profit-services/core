@@ -2,6 +2,7 @@
 /.env
 /log
 /sandbox.js
+/misc
 
 # jest
 /coverage

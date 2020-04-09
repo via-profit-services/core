@@ -31,7 +31,7 @@ yarn add ssh://git@gitlab.com:via-profit-services/core.git#1.0.0
 
 **Замечание:** При запросе `passphrase` просто нажмите _Enter_ для того, чтобы этот параметр остался пустым. То же самое необходимо сделать при подтверждении `passphrase`.
 
-В корне проекта (на том же уровне, что и `package.json`) создайте директорию `keys` и создайте в ней ключи выполнив команды:
+В корне проекта (на том же уровне, что и `package.json`) создайте директорию `misc/keys` и создайте в ней ключи выполнив команды:
 
 ```bash
 ssh-keygen -t rsa -b 4096 -m PEM -f jwtRS256.key
@@ -44,10 +44,11 @@ openssl rsa -in jwtRS256.key -pubout -outform PEM -out jwtRS256.key.pub
 
 В корне проекта (на том же уровне, что и `package.json`) создайте файл `.env` со следующим содержимым:
 
+
 ```dosini
 PORT=4000
 
-LOG=./log
+LOG=./misc/log
 
 GQL_ENDPOINT=/graphql
 GQL_SUBSCRIPTIONENDPOINT=/subscriptions
@@ -67,8 +68,9 @@ JWT_ALGORITHM=RS256
 JWT_ACCESSTOKENEXPIRESIN=1800
 JWT_REFRESHTOKENEXPIRESIN=2.592e6
 JWT_ISSUER=viaprofit-services
-JWT_PRIVATEKEY=./keys/jwtRS256.key
-JWT_PUBLICKEY=./keys/jwtRS256.key.pub
+JWT_PRIVATEKEY=./misc/keys/jwtRS256.key
+JWT_PUBLICKEY=./misc/keys/jwtRS256.key.pub
+JWT_BLACKLIST=./misc/blacklist.json
 
 SSL_KEY=/home/me/.local/share/mkcert/localhost-key.pem
 SSL_CERT=/home/me/.local/share/mkcert/localhost.pem

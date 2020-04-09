@@ -121,7 +121,11 @@ class App {
         subscribe,
         onConnect: (connectionParams: any) => {
           const token = Authentificator.extractTokenFromSubscription(connectionParams);
-          const payload = Authentificator.verifyToken(token, context.jwt.publicKey);
+          const payload = Authentificator.verifyToken(
+            token,
+            context.jwt.publicKey,
+            context.jwt.blackList,
+          );
 
           if (payload.type !== TokenType.access) {
             throw new UnauthorizedError('Is not an access token');
@@ -304,7 +308,11 @@ class App {
       graphqlHTTP(
         async (req): Promise<OptionsData & { subscriptionEndpoint?: string }> => {
           const token = Authentificator.extractToken(TokenType.access, req as Request);
-          const payload = Authentificator.verifyToken(token, context.jwt.publicKey);
+          const payload = Authentificator.verifyToken(
+            token,
+            context.jwt.publicKey,
+            context.jwt.blackList,
+          );
 
           if (payload.type !== TokenType.access) {
             throw new UnauthorizedError('Is not an access token');
@@ -333,6 +341,16 @@ class App {
 
 
     logger.server.debug('Application was created');
+
+    CronJobManager.addJob('__clearExpiredTokens', {
+      cronTime: '*/30 * * * * *',
+      // cronTime: '* 0 5 * * *',
+      onTick: async () => {
+        const authentificator = new Authentificator({ context });
+        await authentificator.clearExpiredTokens();
+      },
+      start: true,
+    });
 
     return {
       app,

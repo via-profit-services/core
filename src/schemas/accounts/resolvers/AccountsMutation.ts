@@ -72,19 +72,18 @@ const driversMutationResolver: IResolverObject<any, IContext> = {
 
     try {
       const authentificator = new Authentificator({ context });
-      const result = await authentificator.revokeToken(id);
-      return Boolean(result);
+      await authentificator.revokeToken(id);
+      return true;
     } catch (err) {
       throw new ServerError(`Failed to revoke token ${id}`, { id });
     }
   },
   revokeAllAccountTokens: async (paretn, args: { id: string }, context) => {
     const { id } = args;
-
+    const authentificator = new Authentificator({ context });
     try {
-      const authentificator = new Authentificator({ context });
-      const result = await authentificator.revokeAccountTokens(id);
-      return Boolean(result);
+      await authentificator.revokeAccountTokens(id);
+      return true;
     } catch (err) {
       throw new ServerError('Failed to revoke account tokens', { id });
     }

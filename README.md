@@ -64,7 +64,7 @@ openssl rsa -in jwtRS256.key -pubout -outform PEM -out jwtRS256.key.pub
 ```dosini
 PORT=4000
 
-LOG=./log
+LOG=./misc/log
 
 GQL_ENDPOINT=/graphql
 GQL_SUBSCRIPTIONENDPOINT=/subscriptions
@@ -81,11 +81,12 @@ DB_SEEDS_DIRECTORY= <-- Путь до директории сид файлов K
 DB_SEEDS_EXTENSION=ts
 
 JWT_ALGORITHM=RS256
-JWT_ACCESSTOKENEXPIRESIN=1800
+JWT_ACCESSTOKENEXPIRESIN=900
 JWT_REFRESHTOKENEXPIRESIN=2.592e6
 JWT_ISSUER=viaprofit-services
-JWT_PRIVATEKEY=./keys/jwtRS256.key
-JWT_PUBLICKEY=./keys/jwtRS256.key.pub
+JWT_PRIVATEKEY=./misc/keys/jwtRS256.key
+JWT_PUBLICKEY=./misc/keys/jwtRS256.key.pub
+JWT_BLACKLIST=./misc/blacklist.json
 
 SSL_KEY=/home/me/.local/share/mkcert/localhost-key.pem
 SSL_CERT=/home/me/.local/share/mkcert/localhost.pem
@@ -741,6 +742,28 @@ _Параметры:_
 
 - _jobName_ `string` - Уникальное имя задания
 - _jobConfig_ `CronJobParameters` - Объект параметров [Node-cron](https://github.com/kelektiv/node-cron#api)
+
+_Пример:_
+```ts
+
+ CronJobManager.addJob('MyJobName', {
+  cronTime: '*/30 * * * * *', // Выполнение каждые 30 секунд
+  onTick: () => console.log('Fiered'), // Функция, которая выполнится
+  start: true, // Активировать задание
+});
+
+```
+В отличии от Crontab в данной реализации есть пара различий:
+1. Диапозоны начинаются с секунд, а не с минут
+2. Дни недели начинаются с 0 и заканчиваются 6, а не 7
+
+ - Секунды: 0-59
+ - Минуты: 0-59
+ - Часы: 0-23
+ - Число месяца: 1-31
+ - Месяц: 0-11 (Январь-Декабрь)
+ - День недели: 0-6 (Воскресенье-Суббота)
+
 
 **CronJobManager.`getJob`** - Возвращает инстанс `CronJob` или `undefined`, если искомое задание не зарегистрировано
 _Параметры:_

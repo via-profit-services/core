@@ -114,7 +114,8 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
       }
 
       // try to verify refresh token
-      const tokenPayload = Authentificator.verifyToken(token, context.jwt.publicKey);
+      const tokenPayload = Authentificator
+        .verifyToken(token, context.jwt.publicKey, context.jwt.blackList);
 
       if (tokenPayload.type !== TokenType.refresh) {
         logger.auth.info('Tried to refresh token by access token. Rejected', { payload: tokenPayload });
@@ -133,8 +134,8 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
       // revoke old access token of this refresh
       await authentificator.revokeToken(tokenPayload.associated);
 
-      // revoke old refresh token
-      await authentificator.revokeToken(tokenPayload.id);
+      // // revoke old refresh token
+      // await Authentificator.revokeToken(tokenPayload.id);
 
       // create new tokens
       const tokens = await authentificator.registerTokens({
@@ -187,7 +188,7 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
         throw new BadRequestError('token must be provied');
       }
 
-      const payload = Authentificator.verifyToken(String(token), publicKey);
+      const payload = Authentificator.verifyToken(String(token), publicKey, context.jwt.blackList);
 
       res.json(payload);
     }),
