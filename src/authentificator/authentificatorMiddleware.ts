@@ -5,7 +5,9 @@ import {
 import asyncHandler from 'express-async-handler';
 import { IContext } from '../app';
 import { TOKEN_BEARER, TOKEN_ACCESS_TOKEN_COOKIE_KEY, TOKEN_REFRESH_TOKEN_COOKIE_KEY } from '../utils';
-import { Authentificator, ResponseErrorType, TokenType } from './authentificator';
+import {
+  Authentificator, ResponseErrorType, TokenType, IRefreshToken,
+} from './authentificator';
 
 const authentificatorMiddleware = (config: IMiddlewareConfig) => {
   const { context, authUrl, useCookie } = config;
@@ -116,9 +118,16 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
         return Authentificator.sendResponseError(ResponseErrorType.tokenVerificationFailed, res);
       }
 
+      let tokenPayload: IRefreshToken['payload'];
+
       // try to verify refresh token
-      const tokenPayload = Authentificator
-        .verifyToken(token, context.jwt.publicKey, context.jwt.blackList);
+      try {
+        tokenPayload = Authentificator
+          .verifyToken(token, context.jwt.publicKey, context.jwt.blackList) as IRefreshToken['payload'];
+      } catch (err) {
+        logger.auth.info('Invalid token. Rejected', { token });
+        return Authentificator.sendResponseError(ResponseErrorType.tokenVerificationFailed, res);
+      }
 
       if (tokenPayload.type !== TokenType.refresh) {
         logger.auth.info('Tried to refresh token by access token. Rejected', { payload: tokenPayload });

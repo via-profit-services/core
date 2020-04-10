@@ -674,7 +674,7 @@ export interface IAccessToken {
   };
 }
 
-interface IRefreshToken {
+export interface IRefreshToken {
   token: string;
   payload: Omit<IAccessToken['payload'], 'type'> & {
     /**

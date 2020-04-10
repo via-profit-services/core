@@ -122,6 +122,7 @@ class App {
         subscribe,
         onConnect: (connectionParams: any) => {
           const token = Authentificator.extractTokenFromSubscription(connectionParams);
+
           const payload = Authentificator.verifyToken(
             token,
             context.jwt.publicKey,

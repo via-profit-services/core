@@ -129,7 +129,7 @@ export interface IAccessToken {
         iss: string;
     };
 }
-interface IRefreshToken {
+export interface IRefreshToken {
     token: string;
     payload: Omit<IAccessToken['payload'], 'type'> & {
         /**
