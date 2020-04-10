@@ -9,7 +9,7 @@ import { TOKEN_BEARER, TOKEN_ACCESS_TOKEN_COOKIE_KEY, TOKEN_REFRESH_TOKEN_COOKIE
 import { Authentificator, ResponseErrorType, TokenType } from './authentificator';
 
 const authentificatorMiddleware = (config: IMiddlewareConfig) => {
-  const { context, authUrl } = config;
+  const { context, authUrl, useCookie } = config;
   const { publicKey } = config.context.jwt;
   const { logger } = context;
 
@@ -61,21 +61,23 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
         deviceInfo,
       });
 
-      // set Access token cookie
-      res.cookie(TOKEN_ACCESS_TOKEN_COOKIE_KEY, tokens.accessToken.token, {
-        expires: new Date(new Date().getTime() + config.context.jwt.accessTokenExpiresIn * 1000),
-        signed: true,
-        httpOnly: true,
-        secure: true,
-      });
+      if (useCookie) {
+        // set Access token cookie
+        res.cookie(TOKEN_ACCESS_TOKEN_COOKIE_KEY, tokens.accessToken.token, {
+          expires: new Date(new Date().getTime() + config.context.jwt.accessTokenExpiresIn * 1000),
+          signed: true,
+          httpOnly: true,
+          secure: true,
+        });
 
-      // set Access token cookie
-      res.cookie(TOKEN_REFRESH_TOKEN_COOKIE_KEY, tokens.refreshToken.token, {
-        expires: new Date(new Date().getTime() + config.context.jwt.refreshTokenExpiresIn * 1000),
-        signed: true,
-        httpOnly: true,
-        secure: true,
-      });
+        // set Access token cookie
+        res.cookie(TOKEN_REFRESH_TOKEN_COOKIE_KEY, tokens.refreshToken.token, {
+          expires: new Date(new Date().getTime() + config.context.jwt.refreshTokenExpiresIn * 1000),
+          signed: true,
+          httpOnly: true,
+          secure: true,
+        });
+      }
 
       const authResponse: AuthorizationResponse = {
         accessToken: tokens.accessToken.token,
@@ -110,7 +112,7 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
       const token = Authentificator.extractToken(TokenType.refresh, req);
 
       if (token === '') {
-        throw new BadRequestError('token must be provied');
+        return Authentificator.sendResponseError(ResponseErrorType.tokenVerificationFailed, res);
       }
 
       // try to verify refresh token
@@ -143,22 +145,23 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
         deviceInfo,
       });
 
-      // set Access token cookie
-      res.cookie(TOKEN_ACCESS_TOKEN_COOKIE_KEY, tokens.accessToken.token, {
-        expires: new Date(new Date().getTime() + config.context.jwt.accessTokenExpiresIn * 1000),
-        signed: true,
-        httpOnly: true,
-        secure: true,
-      });
+      if (useCookie) {
+        // set Access token cookie
+        res.cookie(TOKEN_ACCESS_TOKEN_COOKIE_KEY, tokens.accessToken.token, {
+          expires: new Date(new Date().getTime() + config.context.jwt.accessTokenExpiresIn * 1000),
+          signed: true,
+          httpOnly: true,
+          secure: true,
+        });
 
-      // set Refresh token cookie
-      res.cookie(TOKEN_REFRESH_TOKEN_COOKIE_KEY, tokens.refreshToken.token, {
-        expires: new Date(new Date().getTime() + config.context.jwt.refreshTokenExpiresIn * 1000),
-        signed: true,
-        httpOnly: true,
-        secure: true,
-      });
-
+        // set Refresh token cookie
+        res.cookie(TOKEN_REFRESH_TOKEN_COOKIE_KEY, tokens.refreshToken.token, {
+          expires: new Date(new Date().getTime() + config.context.jwt.refreshTokenExpiresIn * 1000),
+          signed: true,
+          httpOnly: true,
+          secure: true,
+        });
+      }
       const authResponse: AuthorizationResponse = {
         accessToken: tokens.accessToken.token,
         tokenType: TOKEN_BEARER,
@@ -185,36 +188,23 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
       const { token } = body;
 
       if (typeof token !== 'string') {
-        throw new BadRequestError('token must be provied');
+        return Authentificator.sendResponseError(ResponseErrorType.tokenVerificationFailed, res);
       }
 
-      const payload = Authentificator.verifyToken(String(token), publicKey, context.jwt.blackList);
+      try {
+        const payload = Authentificator.verifyToken(
+          String(token),
+          publicKey,
+          context.jwt.blackList,
+        );
 
-      res.json(payload);
+        return res.json(payload);
+      } catch (err) {
+        return Authentificator.sendResponseError(ResponseErrorType.tokenVerificationFailed, res);
+      }
     }),
   );
 
-  /**
-   * This point serve all request into GraphQL `endpoint`
-   */
-  // router.use(
-  //   endpoint,
-  //   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-  //     if (allowedUrl.includes(req.originalUrl)) {
-  //       return next();
-  //     }
-
-  //     const token = Authentificator.extractToken(TokenType.access, req);
-  //     const payload = Authentificator.verifyToken(String(token), publicKey);
-
-
-  //     if (payload.type !== TokenType.access) {
-  //       return Authentificator.sendResponseError(ResponseErrorType.isNotAnAccessToken, res);
-  //     }
-
-  //     return next();
-  //   }),
-  // );
 
   return router;
 };
@@ -236,5 +226,6 @@ interface AuthorizationResponse {
 interface IMiddlewareConfig {
   context: IContext;
   authUrl: string;
+  useCookie?: boolean;
   allowedUrl?: string[];
 }

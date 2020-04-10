@@ -55,6 +55,7 @@ class App {
       usePlayground: process.env.NODE_ENV === 'development',
       useVoyager: process.env.NODE_ENV === 'development',
       debug: process.env.NODE_ENV === 'development',
+      useCookie: false,
       ...props,
     } as IInitDefaultProps;
 
@@ -161,6 +162,7 @@ class App {
       useVoyager,
       serverOptions,
       debug,
+      useCookie,
     } = this.props as IInitDefaultProps;
 
     const { cookieSign } = serverOptions;
@@ -267,6 +269,7 @@ class App {
         context,
         authUrl: routes.auth,
         allowedUrl: [routes.playground],
+        useCookie,
       }),
     );
 
@@ -386,6 +389,7 @@ export interface IInitProps {
   useVoyager?: boolean;
   serverOptions: IServerOptions;
   debug?: boolean;
+  useCookie?: boolean;
 }
 
 interface IServerOptions extends ServerOptions {
@@ -408,6 +412,7 @@ interface IInitDefaultProps extends IInitProps {
   usePlayground: boolean;
   useVoyager: boolean;
   debug: boolean;
+  useCookie: boolean;
 }
 
 export interface IContext {

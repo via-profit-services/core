@@ -43,6 +43,7 @@ export enum ResponseErrorType {
   isNotAnAccessToken = 'isNotAnAccessToken',
   isNotARefreshToken = 'isNotARefreshToken',
   tokenWasRevoked = 'tokenWasRevoked',
+  tokenVerificationFailed = 'tokenVerificationFailed',
 }
 
 export class Authentificator {
@@ -485,6 +486,12 @@ export class Authentificator {
         errors.push({
           message: 'Token error',
           name: 'Token was revoked',
+        });
+        break;
+      case 'tokenVerificationFailed':
+        errors.push({
+          message: 'Token verification failed',
+          name: 'Token verification failed',
         });
         break;
 
