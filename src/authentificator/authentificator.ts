@@ -23,7 +23,7 @@ import {
   convertWhereToKnex,
   convertJsonToKnex,
 } from '../utils/generateCursorBundle';
-// TODO Revoke token subscriptions
+
 export enum TokenType {
   access = 'access',
   refresh = 'refresh',
@@ -262,7 +262,7 @@ export class Authentificator {
     return blackList.includes(accessTokenId);
   }
 
-  public async revokeAccountTokens(accountId: string) {
+  public async revokeAccountTokens(accountId: string): Promise<string[]> {
     const { knex } = this.props.context;
 
     const allTokens = await knex('tokens')
@@ -274,6 +274,20 @@ export class Authentificator {
     const ids = allTokens.map((token: { id: string }) => token.id);
 
     this.revokeToken(ids);
+
+    return ids;
+  }
+
+
+  public async getTokensByIds(ids: string[]) {
+    const { context } = this.props;
+    const { knex } = context;
+
+    const result = await knex('tokens')
+      .select('*')
+      .whereIn('id', ids);
+
+    return result;
   }
 
   public async clearExpiredTokens() {
