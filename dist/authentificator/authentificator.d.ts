@@ -18,7 +18,8 @@ export declare enum ResponseErrorType {
     tokenExpired = "tokenExpired",
     isNotAnAccessToken = "isNotAnAccessToken",
     isNotARefreshToken = "isNotARefreshToken",
-    tokenWasRevoked = "tokenWasRevoked"
+    tokenWasRevoked = "tokenWasRevoked",
+    tokenVerificationFailed = "tokenVerificationFailed"
 }
 export declare class Authentificator {
     private props;
