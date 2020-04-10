@@ -72,19 +72,27 @@ const driversMutationResolver: IResolverObject<any, IContext> = {
 
     try {
       const authentificator = new Authentificator({ context });
-      const result = await authentificator.revokeToken(id);
-      return Boolean(result);
+      await authentificator.revokeToken(id);
+
+      pubsub.publish(SubscriptioTriggers.TOKEN_REVOKED, {
+        tokenWasRevoked: [id],
+      });
+
+      return true;
     } catch (err) {
       throw new ServerError(`Failed to revoke token ${id}`, { id });
     }
   },
   revokeAllAccountTokens: async (paretn, args: { id: string }, context) => {
     const { id } = args;
-
+    const authentificator = new Authentificator({ context });
     try {
-      const authentificator = new Authentificator({ context });
-      const result = await authentificator.revokeAccountTokens(id);
-      return Boolean(result);
+      const tokenIds = await authentificator.revokeAccountTokens(id);
+
+      pubsub.publish(SubscriptioTriggers.TOKEN_REVOKED, {
+        tokenWasRevoked: tokenIds,
+      });
+      return true;
     } catch (err) {
       throw new ServerError('Failed to revoke account tokens', { id });
     }

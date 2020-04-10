@@ -1,4 +1,6 @@
+/* eslint-disable import/max-dependencies */
 import fs from 'fs';
+import path from 'path';
 import bcryptjs from 'bcryptjs';
 import { Request, Response } from 'express';
 import jwt, { SignOptions } from 'jsonwebtoken';
@@ -41,6 +43,7 @@ export enum ResponseErrorType {
   isNotAnAccessToken = 'isNotAnAccessToken',
   isNotARefreshToken = 'isNotARefreshToken',
   tokenWasRevoked = 'tokenWasRevoked',
+  tokenVerificationFailed = 'tokenVerificationFailed',
 }
 
 export class Authentificator {
@@ -66,7 +69,7 @@ export class Authentificator {
    * @param  {string} publicKeyPath
    * @returns ITokenInfo['payload']
    */
-  public static verifyToken(token: string, publicKeyPath: string): ITokenInfo['payload'] {
+  public static verifyToken(token: string, publicKeyPath: string, tokensBlackList: string): ITokenInfo['payload'] {
     if (token === null || token === '') {
       throw new UnauthorizedError('The token must be provided');
     }
@@ -74,9 +77,16 @@ export class Authentificator {
     try {
       const publicKey = fs.readFileSync(publicKeyPath);
       const payload = jwt.verify(String(token), publicKey) as ITokenInfo['payload'];
+
+      const revokeStatus = Authentificator.isTokenRevoked(payload.id, tokensBlackList);
+
+      if (revokeStatus) {
+        throw new UnauthorizedError('Token was revoked');
+      }
+
       return payload;
     } catch (err) {
-      throw new UnauthorizedError('Token verification failed', err);
+      throw new UnauthorizedError('Invalid token', err);
     }
   }
 
@@ -113,7 +123,7 @@ export class Authentificator {
         account: tokens.accessToken.payload.uuid,
         type: TokenType.access,
         deviceInfo: data.deviceInfo,
-        expiredAt: moment(tokens.accessToken.payload.exp).format(),
+        expiredAt: moment(tokens.accessToken.payload.exp * 1000).format(),
       });
     } catch (err) {
       throw new ServerError('Failed to register access token', err);
@@ -127,7 +137,7 @@ export class Authentificator {
         type: TokenType.refresh,
         associated: tokens.accessToken.payload.id,
         deviceInfo: data.deviceInfo,
-        expiredAt: moment(tokens.refreshToken.payload.exp).format(),
+        expiredAt: moment(tokens.refreshToken.payload.exp * 1000).format(),
       });
     } catch (err) {
       throw new ServerError('Failed to register refresh token', err);
@@ -202,35 +212,105 @@ export class Authentificator {
     };
   }
 
-  public async revokeToken(tokenId: string): Promise<number> {
-    const { context } = this.props;
-    const { knex } = context;
 
-    const result = await knex
-      .del()
-      .from('tokens')
-      .where({
-        id: tokenId,
-      })
-      .returning('*');
+  public static getTokensFile(tokensBlackList: string): ITokensBackList {
+    const defaultData: ITokensBackList = [];
 
-    return Number(result[0]);
+    if (!fs.existsSync(tokensBlackList)) {
+      const dir = path.dirname(tokensBlackList);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+
+      fs.writeFileSync(tokensBlackList, JSON.stringify(defaultData));
+      return defaultData;
+    }
+
+    return JSON.parse(fs.readFileSync(tokensBlackList, 'utf8')) as ITokensBackList;
   }
 
-  public async revokeAccountTokens(accountId: string): Promise<number> {
-    const { context } = this.props;
-    const { knex } = context;
+  public static setTokensFile(tokensBlackList: string, data: ITokensBackList) {
+    fs.writeFileSync(tokensBlackList, JSON.stringify(data));
+  }
 
-    const result = await knex
-      .del()
-      .from('tokens')
+  public async revokeToken(accessTokenIdOrIds: string | string[]) {
+    const { context } = this.props;
+    const { logger, knex } = context;
+    const blackList = Authentificator.getTokensFile(context.jwt.blackList);
+
+    const ids = typeof accessTokenIdOrIds === 'string' ? [accessTokenIdOrIds] : accessTokenIdOrIds;
+
+    Authentificator.setTokensFile(context.jwt.blackList, [...blackList, ...ids]);
+
+    const tokensList = await knex('tokens')
+      .select(['tokens.account', 'tokens.id as access', 'refreshTokens.id as refresh'])
+      .leftJoin('accounts', 'accounts.id', 'tokens.account')
+      .leftJoin('tokens as refreshTokens', 'refreshTokens.associated', 'tokens.id')
+      .whereIn('tokens.id', ids);
+
+    tokensList.forEach((data: {
+      account: string;
+      access: string;
+      refresh: string;
+    }) => {
+      logger.auth.info(`Revoke Access Token ${data.access} for account ${data.account}`, { data });
+      logger.auth.info(`Revoke Refresh Token ${data.refresh} for account ${data.account}`, { data });
+    });
+  }
+
+  public static isTokenRevoked(accessTokenId: string, tokensBlackList: string): boolean {
+    const blackList = Authentificator.getTokensFile(tokensBlackList);
+    return blackList.includes(accessTokenId);
+  }
+
+  public async revokeAccountTokens(accountId: string): Promise<string[]> {
+    const { knex } = this.props.context;
+
+    const allTokens = await knex('tokens')
+      .select(['id'])
       .where({
         account: accountId,
-      })
-      .returning('*');
+      });
 
-    return Number(result[0]);
+    const ids = allTokens.map((token: { id: string }) => token.id);
+
+    this.revokeToken(ids);
+
+    return ids;
   }
+
+
+  public async getTokensByIds(ids: string[]) {
+    const { context } = this.props;
+    const { knex } = context;
+
+    const result = await knex('tokens')
+      .select('*')
+      .whereIn('id', ids);
+
+    return result;
+  }
+
+  public async clearExpiredTokens() {
+    const { context } = this.props;
+    const { knex } = context;
+
+    const tokensList = await knex('tokens')
+      .select('id')
+      .where('expiredAt', '<', knex.raw('now()'));
+
+    let blackList = Authentificator.getTokensFile(context.jwt.blackList);
+
+    const expiredIds = tokensList.map((data: {id: string}) => data.id);
+    blackList = blackList.filter((token) => !expiredIds.includes(token));
+
+    Authentificator.setTokensFile(context.jwt.blackList, blackList);
+
+    await knex('tokens')
+      .del()
+      .where('expiredAt', '<', knex.raw('now()'));
+  }
+
 
   public static extractTokenFromSubscription(connectionParams: any): string {
     if (typeof connectionParams === 'object' && TOKEN_BEARER_KEY in connectionParams) {
@@ -408,6 +488,12 @@ export class Authentificator {
           name: 'Token was revoked',
         });
         break;
+      case 'tokenVerificationFailed':
+        errors.push({
+          message: 'Token verification failed',
+          name: 'Token verification failed',
+        });
+        break;
 
       case 'accountNotFound':
       case 'invalidLoginOrPassword':
@@ -549,6 +635,10 @@ export interface IJwtConfig extends Pick<SignOptions, 'algorithm' | 'issuer'> {
    * Cert public key file path
    */
   publicKey: string;
+  /**
+   * Tokens blacklist file
+   */
+  blackList: string;
 }
 
 export type ITokenInfo = IAccessToken | IRefreshToken;
@@ -584,7 +674,7 @@ export interface IAccessToken {
   };
 }
 
-interface IRefreshToken {
+export interface IRefreshToken {
   token: string;
   payload: Omit<IAccessToken['payload'], 'type'> & {
     /**
@@ -622,4 +712,6 @@ export type IAccountUpdateInfo = Omit<IAccount, 'id' | 'createdAt' | 'updatedAt'
 
 export type IAccountCreateInfo = Omit<IAccount, 'id' | 'createdAt' | 'updatedAt'> & {
   id?: string;
-};
+}
+
+export type ITokensBackList = string[];

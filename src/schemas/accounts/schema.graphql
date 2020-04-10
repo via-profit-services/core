@@ -7,9 +7,23 @@ extend type Mutation {
 }
 
 extend type Subscription {
+
+  """
+  Called when the account with following id was updated
+  """
   accountWasUpdated (id: ID!): Account!
+
+  """
+  Called when the any account was deleted
+  """
   accountWasDeleted: [ID!]!
+  
+  """
+  Called when the token with following id was revoked
+  """
+  tokenWasRevoked (id: ID!): [ID!]!
 }
+
 
 """
 Account status

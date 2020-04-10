@@ -42,6 +42,7 @@ const jwtConfig: IInitProps['jwt'] = {
   privateKey: path.resolve(rootPath, process.env.JWT_PRIVATEKEY),
   publicKey: path.resolve(rootPath, process.env.JWT_PUBLICKEY),
   refreshTokenExpiresIn: Number(process.env.JWT_REFRESHTOKENEXPIRESIN),
+  blackList: path.resolve(rootPath, process.env.JWT_BLACKLIST),
 };
 
 const serverConfig: IInitProps = {

@@ -55,6 +55,7 @@ class App {
       usePlayground: process.env.NODE_ENV === 'development',
       useVoyager: process.env.NODE_ENV === 'development',
       debug: process.env.NODE_ENV === 'development',
+      useCookie: false,
       ...props,
     } as IInitDefaultProps;
 
@@ -121,7 +122,12 @@ class App {
         subscribe,
         onConnect: (connectionParams: any) => {
           const token = Authentificator.extractTokenFromSubscription(connectionParams);
-          const payload = Authentificator.verifyToken(token, context.jwt.publicKey);
+
+          const payload = Authentificator.verifyToken(
+            token,
+            context.jwt.publicKey,
+            context.jwt.blackList,
+          );
 
           if (payload.type !== TokenType.access) {
             throw new UnauthorizedError('Is not an access token');
@@ -157,6 +163,7 @@ class App {
       useVoyager,
       serverOptions,
       debug,
+      useCookie,
     } = this.props as IInitDefaultProps;
 
     const { cookieSign } = serverOptions;
@@ -263,6 +270,7 @@ class App {
         context,
         authUrl: routes.auth,
         allowedUrl: [routes.playground],
+        useCookie,
       }),
     );
 
@@ -304,7 +312,11 @@ class App {
       graphqlHTTP(
         async (req): Promise<OptionsData & { subscriptionEndpoint?: string }> => {
           const token = Authentificator.extractToken(TokenType.access, req as Request);
-          const payload = Authentificator.verifyToken(token, context.jwt.publicKey);
+          const payload = Authentificator.verifyToken(
+            token,
+            context.jwt.publicKey,
+            context.jwt.blackList,
+          );
 
           if (payload.type !== TokenType.access) {
             throw new UnauthorizedError('Is not an access token');
@@ -333,6 +345,16 @@ class App {
 
 
     logger.server.debug('Application was created');
+
+    CronJobManager.addJob('__clearExpiredTokens', {
+      cronTime: '*/30 * * * * *',
+      // cronTime: '* 0 5 * * *',
+      onTick: async () => {
+        const authentificator = new Authentificator({ context });
+        await authentificator.clearExpiredTokens();
+      },
+      start: true,
+    });
 
     return {
       app,
@@ -368,6 +390,7 @@ export interface IInitProps {
   useVoyager?: boolean;
   serverOptions: IServerOptions;
   debug?: boolean;
+  useCookie?: boolean;
 }
 
 interface IServerOptions extends ServerOptions {
@@ -390,6 +413,7 @@ interface IInitDefaultProps extends IInitProps {
   usePlayground: boolean;
   useVoyager: boolean;
   debug: boolean;
+  useCookie: boolean;
 }
 
 export interface IContext {

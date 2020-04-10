@@ -49,6 +49,7 @@ export interface IInitProps {
     useVoyager?: boolean;
     serverOptions: IServerOptions;
     debug?: boolean;
+    useCookie?: boolean;
 }
 interface IServerOptions extends ServerOptions {
     key: ServerOptions['key'];
@@ -69,6 +70,7 @@ interface IInitDefaultProps extends IInitProps {
     usePlayground: boolean;
     useVoyager: boolean;
     debug: boolean;
+    useCookie: boolean;
 }
 export interface IContext {
     endpoint: string;

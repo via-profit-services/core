@@ -4,12 +4,13 @@ import {
 } from 'express';
 import asyncHandler from 'express-async-handler';
 import { IContext } from '../app';
-import { BadRequestError } from '../errorHandlers';
 import { TOKEN_BEARER, TOKEN_ACCESS_TOKEN_COOKIE_KEY, TOKEN_REFRESH_TOKEN_COOKIE_KEY } from '../utils';
-import { Authentificator, ResponseErrorType, TokenType } from './authentificator';
+import {
+  Authentificator, ResponseErrorType, TokenType, IRefreshToken,
+} from './authentificator';
 
 const authentificatorMiddleware = (config: IMiddlewareConfig) => {
-  const { context, authUrl } = config;
+  const { context, authUrl, useCookie } = config;
   const { publicKey } = config.context.jwt;
   const { logger } = context;
 
@@ -43,7 +44,8 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
       const { login, password } = body;
 
       if (typeof login !== 'string' || typeof password !== 'string') {
-        throw new BadRequestError('login and password must be provied');
+        logger.auth.info('Tried to get access token without login or password. Rejected', { body });
+        return Authentificator.sendResponseError(ResponseErrorType.authentificationRequired, res);
       }
 
       logger.auth.info('Access token request', { login });
@@ -61,21 +63,23 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
         deviceInfo,
       });
 
-      // set Access token cookie
-      res.cookie(TOKEN_ACCESS_TOKEN_COOKIE_KEY, tokens.accessToken.token, {
-        expires: new Date(new Date().getTime() + config.context.jwt.accessTokenExpiresIn * 1000),
-        signed: true,
-        httpOnly: true,
-        secure: true,
-      });
+      if (useCookie) {
+        // set Access token cookie
+        res.cookie(TOKEN_ACCESS_TOKEN_COOKIE_KEY, tokens.accessToken.token, {
+          expires: new Date(new Date().getTime() + config.context.jwt.accessTokenExpiresIn * 1000),
+          signed: true,
+          httpOnly: true,
+          secure: true,
+        });
 
-      // set Access token cookie
-      res.cookie(TOKEN_REFRESH_TOKEN_COOKIE_KEY, tokens.refreshToken.token, {
-        expires: new Date(new Date().getTime() + config.context.jwt.refreshTokenExpiresIn * 1000),
-        signed: true,
-        httpOnly: true,
-        secure: true,
-      });
+        // set Access token cookie
+        res.cookie(TOKEN_REFRESH_TOKEN_COOKIE_KEY, tokens.refreshToken.token, {
+          expires: new Date(new Date().getTime() + config.context.jwt.refreshTokenExpiresIn * 1000),
+          signed: true,
+          httpOnly: true,
+          secure: true,
+        });
+      }
 
       const authResponse: AuthorizationResponse = {
         accessToken: tokens.accessToken.token,
@@ -110,11 +114,20 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
       const token = Authentificator.extractToken(TokenType.refresh, req);
 
       if (token === '') {
-        throw new BadRequestError('token must be provied');
+        logger.auth.info('Tried to refresh token without token. Rejected');
+        return Authentificator.sendResponseError(ResponseErrorType.tokenVerificationFailed, res);
       }
 
+      let tokenPayload: IRefreshToken['payload'];
+
       // try to verify refresh token
-      const tokenPayload = Authentificator.verifyToken(token, context.jwt.publicKey);
+      try {
+        tokenPayload = Authentificator
+          .verifyToken(token, context.jwt.publicKey, context.jwt.blackList) as IRefreshToken['payload'];
+      } catch (err) {
+        logger.auth.info('Invalid token. Rejected', { token });
+        return Authentificator.sendResponseError(ResponseErrorType.tokenVerificationFailed, res);
+      }
 
       if (tokenPayload.type !== TokenType.refresh) {
         logger.auth.info('Tried to refresh token by access token. Rejected', { payload: tokenPayload });
@@ -133,31 +146,29 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
       // revoke old access token of this refresh
       await authentificator.revokeToken(tokenPayload.associated);
 
-      // revoke old refresh token
-      await authentificator.revokeToken(tokenPayload.id);
-
       // create new tokens
       const tokens = await authentificator.registerTokens({
         uuid: tokenPayload.uuid,
         deviceInfo,
       });
 
-      // set Access token cookie
-      res.cookie(TOKEN_ACCESS_TOKEN_COOKIE_KEY, tokens.accessToken.token, {
-        expires: new Date(new Date().getTime() + config.context.jwt.accessTokenExpiresIn * 1000),
-        signed: true,
-        httpOnly: true,
-        secure: true,
-      });
+      if (useCookie) {
+        // set Access token cookie
+        res.cookie(TOKEN_ACCESS_TOKEN_COOKIE_KEY, tokens.accessToken.token, {
+          expires: new Date(new Date().getTime() + config.context.jwt.accessTokenExpiresIn * 1000),
+          signed: true,
+          httpOnly: true,
+          secure: true,
+        });
 
-      // set Refresh token cookie
-      res.cookie(TOKEN_REFRESH_TOKEN_COOKIE_KEY, tokens.refreshToken.token, {
-        expires: new Date(new Date().getTime() + config.context.jwt.refreshTokenExpiresIn * 1000),
-        signed: true,
-        httpOnly: true,
-        secure: true,
-      });
-
+        // set Refresh token cookie
+        res.cookie(TOKEN_REFRESH_TOKEN_COOKIE_KEY, tokens.refreshToken.token, {
+          expires: new Date(new Date().getTime() + config.context.jwt.refreshTokenExpiresIn * 1000),
+          signed: true,
+          httpOnly: true,
+          secure: true,
+        });
+      }
       const authResponse: AuthorizationResponse = {
         accessToken: tokens.accessToken.token,
         tokenType: TOKEN_BEARER,
@@ -184,36 +195,23 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
       const { token } = body;
 
       if (typeof token !== 'string') {
-        throw new BadRequestError('token must be provied');
+        return Authentificator.sendResponseError(ResponseErrorType.tokenVerificationFailed, res);
       }
 
-      const payload = Authentificator.verifyToken(String(token), publicKey);
+      try {
+        const payload = Authentificator.verifyToken(
+          String(token),
+          publicKey,
+          context.jwt.blackList,
+        );
 
-      res.json(payload);
+        return res.json(payload);
+      } catch (err) {
+        return Authentificator.sendResponseError(ResponseErrorType.tokenVerificationFailed, res);
+      }
     }),
   );
 
-  /**
-   * This point serve all request into GraphQL `endpoint`
-   */
-  // router.use(
-  //   endpoint,
-  //   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-  //     if (allowedUrl.includes(req.originalUrl)) {
-  //       return next();
-  //     }
-
-  //     const token = Authentificator.extractToken(TokenType.access, req);
-  //     const payload = Authentificator.verifyToken(String(token), publicKey);
-
-
-  //     if (payload.type !== TokenType.access) {
-  //       return Authentificator.sendResponseError(ResponseErrorType.isNotAnAccessToken, res);
-  //     }
-
-  //     return next();
-  //   }),
-  // );
 
   return router;
 };
@@ -235,5 +233,6 @@ interface AuthorizationResponse {
 interface IMiddlewareConfig {
   context: IContext;
   authUrl: string;
+  useCookie?: boolean;
   allowedUrl?: string[];
 }
