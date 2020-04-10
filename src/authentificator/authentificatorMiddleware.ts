@@ -4,7 +4,6 @@ import {
 } from 'express';
 import asyncHandler from 'express-async-handler';
 import { IContext } from '../app';
-import { BadRequestError } from '../errorHandlers';
 import { TOKEN_BEARER, TOKEN_ACCESS_TOKEN_COOKIE_KEY, TOKEN_REFRESH_TOKEN_COOKIE_KEY } from '../utils';
 import { Authentificator, ResponseErrorType, TokenType } from './authentificator';
 
@@ -43,7 +42,8 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
       const { login, password } = body;
 
       if (typeof login !== 'string' || typeof password !== 'string') {
-        throw new BadRequestError('login and password must be provied');
+        logger.auth.info('Tried to get access token without login or password. Rejected', { body });
+        return Authentificator.sendResponseError(ResponseErrorType.authentificationRequired, res);
       }
 
       logger.auth.info('Access token request', { login });
@@ -112,6 +112,7 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
       const token = Authentificator.extractToken(TokenType.refresh, req);
 
       if (token === '') {
+        logger.auth.info('Tried to refresh token without token. Rejected');
         return Authentificator.sendResponseError(ResponseErrorType.tokenVerificationFailed, res);
       }
 
@@ -135,9 +136,6 @@ const authentificatorMiddleware = (config: IMiddlewareConfig) => {
 
       // revoke old access token of this refresh
       await authentificator.revokeToken(tokenPayload.associated);
-
-      // // revoke old refresh token
-      // await Authentificator.revokeToken(tokenPayload.id);
 
       // create new tokens
       const tokens = await authentificator.registerTokens({

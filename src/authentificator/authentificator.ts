@@ -86,7 +86,7 @@ export class Authentificator {
 
       return payload;
     } catch (err) {
-      throw new UnauthorizedError('Token verification failed', err);
+      throw new UnauthorizedError('Invalid token', err);
     }
   }
 
