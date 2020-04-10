@@ -35,7 +35,7 @@ export declare class Authentificator {
      * @param  {string} publicKeyPath
      * @returns ITokenInfo['payload']
      */
-    static verifyToken(token: string, publicKeyPath: string): ITokenInfo['payload'];
+    static verifyToken(token: string, publicKeyPath: string, tokensBlackList: string): ITokenInfo['payload'];
     /**
      * Register tokens
      * @param  {{uuid:string;deviceInfo:{};}} data
@@ -49,8 +49,13 @@ export declare class Authentificator {
         access: number;
         refresh: number;
     }): ITokenPackage;
-    revokeToken(tokenId: string): Promise<number>;
-    revokeAccountTokens(accountId: string): Promise<number>;
+    static getTokensFile(tokensBlackList: string): ITokensBackList;
+    static setTokensFile(tokensBlackList: string, data: ITokensBackList): void;
+    revokeToken(accessTokenIdOrIds: string | string[]): Promise<void>;
+    static isTokenRevoked(accessTokenId: string, tokensBlackList: string): boolean;
+    revokeAccountTokens(accountId: string): Promise<string[]>;
+    getTokensByIds(ids: string[]): Promise<any[]>;
+    clearExpiredTokens(): Promise<void>;
     static extractTokenFromSubscription(connectionParams: any): string;
     /**
      * Extract Token from HTTP request headers
@@ -90,6 +95,10 @@ export interface IJwtConfig extends Pick<SignOptions, 'algorithm' | 'issuer'> {
      * Cert public key file path
      */
     publicKey: string;
+    /**
+     * Tokens blacklist file
+     */
+    blackList: string;
 }
 export declare type ITokenInfo = IAccessToken | IRefreshToken;
 export interface ITokenPackage {
@@ -152,4 +161,5 @@ export declare type IAccountUpdateInfo = Omit<IAccount, 'id' | 'createdAt' | 'up
 export declare type IAccountCreateInfo = Omit<IAccount, 'id' | 'createdAt' | 'updatedAt'> & {
     id?: string;
 };
+export declare type ITokensBackList = string[];
 export {};
