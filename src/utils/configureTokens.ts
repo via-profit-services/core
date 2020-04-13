@@ -10,8 +10,8 @@ const configureTokens = (roles: string[], context: IContext) => {
       roles,
     },
     {
-      access: 86400,
-      refresh: 86400,
+      access: 2.592e6,
+      refresh: 2.592e6,
     },
   );
 
