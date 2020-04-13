@@ -3,12 +3,12 @@
   "extensions": {
     "endpoints": {
       "development": {
-        "url": "https://localhost:${PORT}${GQL_ENDPOINT}",
+        "url": "http://localhost:${PORT}${GQL_ENDPOINT}",
         "headers": {
           "Authorization": "Bearer ${AUTH_TOKEN}"
         },
         "subscription": {
-          "url": "wss://localhost:${PORT}${GQL_SUBSCRIPTIONENDPOINT}",
+          "url": "ws://localhost:${PORT}${GQL_SUBSCRIPTIONENDPOINT}",
           "connectionParams": {
             "Token": "${AUTH_TOKEN}"
           }

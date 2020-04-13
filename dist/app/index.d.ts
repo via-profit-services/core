@@ -1,6 +1,7 @@
 /// <reference types="node" />
 import { EventEmitter } from 'events';
-import { Server, ServerOptions } from 'https';
+import http from 'http';
+import https from 'https';
 import { GraphQLSchema } from 'graphql';
 import { IMiddlewareGenerator } from 'graphql-middleware';
 import { ITypedef, IResolvers } from 'graphql-tools';
@@ -51,9 +52,9 @@ export interface IInitProps {
     debug?: boolean;
     useCookie?: boolean;
 }
-interface IServerOptions extends ServerOptions {
-    key: ServerOptions['key'];
-    cert: ServerOptions['cert'];
+interface IServerOptions extends https.ServerOptions {
+    key?: https.ServerOptions['key'];
+    cert?: https.ServerOptions['cert'];
     cookieSign: string;
 }
 interface IInitDefaultProps extends IInitProps {
@@ -83,7 +84,7 @@ export interface IContext {
 }
 export interface ISubServerConfig {
     schema: GraphQLSchema;
-    server: Server;
+    server: https.Server | http.Server;
     context: IContext;
 }
 export interface IBootstrapCallbackArgs {

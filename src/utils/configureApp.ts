@@ -1,4 +1,3 @@
-import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 import { IInitProps } from '../app';
@@ -54,8 +53,8 @@ const serverConfig: IInitProps = {
   jwt: jwtConfig,
   logger,
   serverOptions: {
-    key: fs.readFileSync(path.resolve(rootPath, process.env.SSL_KEY)),
-    cert: fs.readFileSync(path.resolve(rootPath, process.env.SSL_CERT)),
+    // key: fs.readFileSync(path.resolve(rootPath, process.env.SSL_KEY)),
+    // cert: fs.readFileSync(path.resolve(rootPath, process.env.SSL_CERT)),
     cookieSign: process.env.COOKIES_SIGN_SECRET,
   },
 };

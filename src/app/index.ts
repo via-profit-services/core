@@ -1,6 +1,7 @@
 /* eslint-disable import/max-dependencies */
 import { EventEmitter } from 'events';
-import { createServer, Server, ServerOptions } from 'https';
+import http from 'http';
+import https from 'https';
 import path from 'path';
 import chalk from 'chalk';
 import cookieParser from 'cookie-parser';
@@ -75,23 +76,30 @@ class App {
 
     const { app, schema, context } = this.createApp();
     const { logger } = context;
-    const server = createServer(serverOptions, app);
+    const useSSL = serverOptions.cert && serverOptions.key;
+
+    const server = useSSL
+      ? https.createServer(serverOptions, app)
+      : http.createServer(serverOptions, app);
+
+    const host = `http${useSSL ? 's' : ''}://localhost`;
 
     // Run HTTP server
     server.listen(port, () => {
       // set resolver URL's list
+      // set resolver URL's list
       const resolveUrl: IBootstrapCallbackArgs['resolveUrl'] = {
-        graphql: `https://localhost:${port}${endpoint}`,
-        auth: `https://localhost:${port}${routes.auth}`,
-        subscriptions: `wss://localhost:${port}${subscriptionEndpoint}`,
+        graphql: `${host}:${port}${endpoint}`,
+        auth: `${host}:${port}${routes.auth}`,
+        subscriptions: `ws${useSSL ? 's' : ''}://localhost:${port}${subscriptionEndpoint}`,
       };
 
       if (usePlayground) {
-        resolveUrl.playground = `https://localhost:${port}${routes.playground}`;
+        resolveUrl.playground = `${host}:${port}${routes.playground}`;
       }
 
       if (useVoyager) {
-        resolveUrl.voyager = `https://localhost:${port}${routes.voyager}`;
+        resolveUrl.voyager = `${host}:${port}${routes.voyager}`;
       }
 
       // log
@@ -393,9 +401,9 @@ export interface IInitProps {
   useCookie?: boolean;
 }
 
-interface IServerOptions extends ServerOptions {
-  key: ServerOptions['key'];
-  cert: ServerOptions['cert'];
+interface IServerOptions extends https.ServerOptions {
+  key?: https.ServerOptions['key'];
+  cert?: https.ServerOptions['cert'];
   cookieSign: string;
 }
 
@@ -428,7 +436,7 @@ export interface IContext {
 
 export interface ISubServerConfig {
   schema: GraphQLSchema;
-  server: Server;
+  server: https.Server | http.Server;
   context: IContext;
 }
 
