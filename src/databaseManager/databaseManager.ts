@@ -7,6 +7,7 @@ import { ILoggerCollection } from '../logger';
 import { DATABASE_CHARSET, DATABASE_CLIENT } from '../utils';
 
 const ENABLE_PG_TYPES = true;
+const DEFAULT_TIMEZONE = 'UTC';
 
 export const knexProvider = (config: IDBConfig) => {
   const {
@@ -37,14 +38,14 @@ export const knexProvider = (config: IDBConfig) => {
       afterCreate: (conn: any, done: Function) => {
         conn.query(
           `
-            SET TIMEZONE = '${timezone}';
+            SET TIMEZONE = '${timezone || DEFAULT_TIMEZONE}';
             SET CLIENT_ENCODING = ${DATABASE_CHARSET};
           `,
           (err: any) => {
             if (err) {
               logger.sql.debug('Connection error', { err });
             } else {
-              logger.sql.debug(`The TIMEZONE was set to "${timezone}"`);
+              logger.sql.debug(`The TIMEZONE was set to "${timezone || DEFAULT_TIMEZONE}"`);
               logger.sql.debug(`The charset was set to "${DATABASE_CHARSET}"`);
             }
 
@@ -103,7 +104,7 @@ export type KnexInstance = knex;
 export interface IDBConfig {
   logger: ILoggerCollection;
   connection: PgConnectionConfig;
-  timezone: string;
+  timezone?: string;
   localTimezone: string;
   migrations?: MigratorConfig;
   seeds?: SeedsConfig;

@@ -1,9 +1,9 @@
 import { IResolverObject } from 'graphql-tools';
 
 import { IContext } from '../../../app';
-import { IAccount } from '../../../authentificator';
+import createLoaders from '../loaders';
+import { IAccount } from '../service';
 
-import createLoaders from '../dataloader';
 
 const accountResolver: IResolverObject<Pick<IAccount, 'id'>, IContext> = {
   id: async ({ id }) => id,

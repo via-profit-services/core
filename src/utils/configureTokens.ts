@@ -1,10 +1,10 @@
 import uuidv4 from 'uuid/v4';
 import { IContext } from '../app';
-import { Authentificator } from '../authentificator/authentificator';
+import AuthService from '../schemas/auth/service';
 
 const configureTokens = (roles: string[], context: IContext) => {
-  const authentificator = new Authentificator({ context });
-  const tokens = authentificator.generateTokens(
+  const authService = new AuthService({ context });
+  const tokens = authService.generateTokens(
     {
       uuid: uuidv4(),
       roles,

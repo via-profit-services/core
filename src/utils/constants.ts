@@ -1,6 +1,4 @@
 export const TOKEN_BEARER_KEY = 'Authorization';
-export const TOKEN_ACCESS_TOKEN_COOKIE_KEY = 'AccessToken';
-export const TOKEN_REFRESH_TOKEN_COOKIE_KEY = 'RefreshToken';
 export const TOKEN_BEARER = 'Bearer';
 
 export const DATABASE_CHARSET = 'UTF8';
@@ -12,6 +10,7 @@ export const DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT = '/subscriptions';
 export const DEFAULT_SERVER_TIMEZONE = 'UTC';
 export const DEFAULT_ROUTE_AUTH = '/auth';
 export const DEFAULT_ROUTE_PLAYGROUND = '/playground';
+export const DEFAULT_ROUTE_GRAPHIQL = '/graphiql';
 export const DEFAULT_ROUTE_VOYAGER = '/voyager';
 
 export const MAXIMUM_REQUEST_BODY_SIZE = '50mb';

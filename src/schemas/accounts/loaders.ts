@@ -1,7 +1,6 @@
 import { IContext } from '../../app';
-import { Authentificator, IAccount } from '../../authentificator';
 import { Node, DataLoader } from '../../utils';
-
+import AccountsService, { IAccount } from './service';
 
 interface Loaders {
   accounts: DataLoader<string, Node<IAccount>>;
@@ -16,10 +15,11 @@ export default function createLoaders(context: IContext) {
     return loaders;
   }
 
-  const authentificator = new Authentificator({ context });
+  const service = new AccountsService({ context });
 
   loaders.accounts = new DataLoader<
     string, Node<IAccount>
-  >((ids: string[]) => authentificator.getAccountsByIds(ids));
+    >((ids: string[]) => service.getAccountsByIds(ids));
+
   return loaders;
 }

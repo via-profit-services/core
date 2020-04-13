@@ -16,17 +16,18 @@ import { makeExecutableSchema, ITypedef, IResolvers } from 'graphql-tools';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 
-import {
-  IJwtConfig, TokenType, Authentificator, IAccessToken,
-} from '../authentificator/authentificator';
-import { authentificatorMiddleware } from '../authentificator/authentificatorMiddleware';
 import { knexProvider, IDBConfig, KnexInstance } from '../databaseManager';
 import {
-  UnauthorizedError, customFormatErrorFn,
+  UnauthorizedError,
+  customFormatErrorFn,
 } from '../errorHandlers';
 import { requestHandlerMiddleware, ILoggerCollection } from '../logger';
 import {
-  info, accounts, common, scalar,
+  info,
+  accounts,
+  auth,
+  common,
+  scalar,
 } from '../schemas';
 import {
   DEFAULT_SERVER_PORT,
@@ -37,11 +38,18 @@ import {
   DEFAULT_ROUTE_PLAYGROUND,
   DEFAULT_ROUTE_VOYAGER,
   MAXIMUM_REQUEST_BODY_SIZE,
+  DEFAULT_ROUTE_GRAPHIQL,
 } from '../utils';
 import { configureTokens } from '../utils/configureTokens';
 import { CronJobManager } from '../utils/cronJobManager';
+import { DisableIntrospectionQueries } from '../utils/disableIntrospection';
 import { loadGraphQLConfig } from '../utils/graphqlconfig';
 import { headersMiddleware } from '../utils/headersMiddleware';
+import AuthService, {
+  TokenType,
+  IJwtConfig,
+  IAccessToken,
+} from '~/schemas/auth/service';
 
 class App {
   public props: IInitDefaultProps;
@@ -54,6 +62,7 @@ class App {
       timezone: DEFAULT_SERVER_TIMEZONE,
       subscriptionEndpoint: DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT,
       usePlayground: process.env.NODE_ENV === 'development',
+      enableIntrospection: process.env.NODE_ENV === 'development',
       useVoyager: process.env.NODE_ENV === 'development',
       debug: process.env.NODE_ENV === 'development',
       useCookie: false,
@@ -76,11 +85,11 @@ class App {
 
     const { app, schema, context } = this.createApp();
     const { logger } = context;
-    const useSSL = serverOptions.cert && serverOptions.key;
+    const useSSL = serverOptions?.cert;
 
     const server = useSSL
-      ? https.createServer(serverOptions, app)
-      : http.createServer(serverOptions, app);
+      ? https.createServer(serverOptions || {}, app)
+      : http.createServer(serverOptions || {}, app);
 
     const host = `http${useSSL ? 's' : ''}://localhost`;
 
@@ -96,6 +105,7 @@ class App {
 
       if (usePlayground) {
         resolveUrl.playground = `${host}:${port}${routes.playground}`;
+        resolveUrl.graphiql = `${host}:${port}${endpoint}${DEFAULT_ROUTE_GRAPHIQL}`;
       }
 
       if (useVoyager) {
@@ -129,9 +139,9 @@ class App {
         schema,
         subscribe,
         onConnect: (connectionParams: any) => {
-          const token = Authentificator.extractTokenFromSubscription(connectionParams);
+          const token = AuthService.extractTokenFromSubscription(connectionParams);
 
-          const payload = Authentificator.verifyToken(
+          const payload = AuthService.verifyToken(
             token,
             context.jwt.publicKey,
             context.jwt.blackList,
@@ -167,14 +177,14 @@ class App {
       routes,
       subscriptionEndpoint,
       usePlayground,
+      enableIntrospection,
       playgroundConfig,
       useVoyager,
       serverOptions,
       debug,
-      useCookie,
     } = this.props as IInitDefaultProps;
 
-    const { cookieSign } = serverOptions;
+    const { cookieSign } = serverOptions || {};
 
     logger.server.debug('Create application proc was started');
 
@@ -183,41 +193,21 @@ class App {
 
     const schema = makeExecutableSchema({
       typeDefs: [
-
-        // graphql-scalars
         ...scalarTypeDefs,
-
-        // Common scalars
         scalar.typeDefs,
-
-        // Common type definitions
         common.typeDefs,
-
-        // user type definitions
         ...typeDefs || [],
-
-        // developer schema defs
         info.typeDefs,
-
-        // authentificator schema defs
         accounts.typeDefs,
+        auth.typeDefs,
       ],
       resolvers: [
-
-        // graphql-scalars
         scalarResolvers,
-
-        // Common scalars
         scalar.resolvers,
-
-        // user resolvers
         ...resolvers || [],
-
-        // developer info
         info.resolvers,
-
-        // authentificator
         accounts.resolvers,
+        auth.resolvers,
       ],
       resolverValidationOptions: {
         requireResolversForResolveType: false,
@@ -272,16 +262,6 @@ class App {
     // This middleware must be defined first
     app.use(requestHandlerMiddleware({ context }));
 
-    // authentification middleware
-    app.use(
-      authentificatorMiddleware({
-        context,
-        authUrl: routes.auth,
-        allowedUrl: [routes.playground],
-        useCookie,
-      }),
-    );
-
     // GraphiQL playground middleware
     if (usePlayground) {
       app.get(routes.playground, expressPlayground({
@@ -319,22 +299,26 @@ class App {
       endpoint,
       graphqlHTTP(
         async (req): Promise<OptionsData & { subscriptionEndpoint?: string }> => {
-          const token = Authentificator.extractToken(TokenType.access, req as Request);
-          const payload = Authentificator.verifyToken(
-            token,
-            context.jwt.publicKey,
-            context.jwt.blackList,
-          );
+          const useSSL = serverOptions?.cert;
+          const token = AuthService.extractToken(TokenType.access, req as Request);
+          if (token !== '') {
+            const payload = AuthService.verifyToken(
+              token,
+              context.jwt.publicKey,
+              context.jwt.blackList,
+            );
 
-          if (payload.type !== TokenType.access) {
-            throw new UnauthorizedError('Is not an access token');
+            if (payload.type !== TokenType.access) {
+              throw new UnauthorizedError('Is not an access token');
+            }
+
+            context.token = payload;
           }
-
-          context.token = payload;
           const graphQLMiddlewares = [
             // permissions
             ...permissions || [],
             accounts.permissions,
+            auth.permissions,
 
             // other middlewares
             ...middlewares || [],
@@ -342,10 +326,11 @@ class App {
 
           return {
             context,
-            graphiql: false,
+            graphiql: usePlayground,
             schema: applyMiddleware(schema, ...graphQLMiddlewares),
-            subscriptionEndpoint: `wss://localhost:${port}${subscriptionEndpoint}`,
+            subscriptionEndpoint: `ws${useSSL ? 's' : ''}://localhost:${port}${subscriptionEndpoint}`,
             customFormatErrorFn: (error) => customFormatErrorFn({ error, context, debug }),
+            validationRules: !enableIntrospection ? [DisableIntrospectionQueries] : [],
           };
         },
       ),
@@ -355,11 +340,12 @@ class App {
     logger.server.debug('Application was created');
 
     CronJobManager.addJob('__clearExpiredTokens', {
-      cronTime: '*/30 * * * * *',
-      // cronTime: '* 0 5 * * *',
+      cronTime: process.env.NODE_ENV === 'development'
+        ? '*/30 * * * * *'
+        : '* 0 5 * * *',
       onTick: async () => {
-        const authentificator = new Authentificator({ context });
-        await authentificator.clearExpiredTokens();
+        const authService = new AuthService({ context });
+        await authService.clearExpiredTokens();
       },
       start: true,
     });
@@ -393,10 +379,11 @@ export interface IInitProps {
     playground?: string;
     voyager?: string;
   };
+  enableIntrospection?: boolean;
   usePlayground?: boolean;
   playgroundConfig?: any;
   useVoyager?: boolean;
-  serverOptions: IServerOptions;
+  serverOptions?: IServerOptions;
   debug?: boolean;
   useCookie?: boolean;
 }
@@ -404,7 +391,7 @@ export interface IInitProps {
 interface IServerOptions extends https.ServerOptions {
   key?: https.ServerOptions['key'];
   cert?: https.ServerOptions['cert'];
-  cookieSign: string;
+  cookieSign?: string;
 }
 
 interface IInitDefaultProps extends IInitProps {
@@ -419,6 +406,7 @@ interface IInitDefaultProps extends IInitProps {
     [key: string]: string;
   };
   usePlayground: boolean;
+  enableIntrospection: boolean;
   useVoyager: boolean;
   debug: boolean;
   useCookie: boolean;
@@ -446,6 +434,7 @@ export interface IBootstrapCallbackArgs {
   resolveUrl: {
     graphql: string;
     auth: string;
+    graphiql?: string;
     playground?: string;
     voyager?: string;
     subscriptions?: string;
