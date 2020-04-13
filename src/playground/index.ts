@@ -12,7 +12,7 @@ app.bootstrap(({ resolveUrl, context }) => {
     graphql, auth, subscriptions, playground,
   } = resolveUrl;
 
-  const { accessToken } = configureTokens(['development','admin'], context);
+  const { accessToken } = configureTokens(['development', 'admin'], context);
 
   console.log('');
   console.log(`Playground started at ${chalk.blue(playground)}`);

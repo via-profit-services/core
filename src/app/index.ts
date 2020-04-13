@@ -1,7 +1,7 @@
 /* eslint-disable import/max-dependencies */
 import { EventEmitter } from 'events';
-import https from 'https';
 import http from 'http';
+import https from 'https';
 import path from 'path';
 import chalk from 'chalk';
 import cookieParser from 'cookie-parser';
@@ -78,7 +78,7 @@ class App {
     const { logger } = context;
     const useSSL = serverOptions.cert && serverOptions.key;
 
-    const server = useSSL 
+    const server = useSSL
       ? https.createServer(serverOptions, app)
       : http.createServer(serverOptions, app);
 
