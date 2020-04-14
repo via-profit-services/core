@@ -70,6 +70,10 @@ export declare const extractNodeField: <T, K extends "id" | "createdAt" | keyof 
  */
 export declare const extractNodeIds: <T>(nodes: Node<T>[]) => Node<T>["id"][];
 /**
+ * Collate rows for dataloader response
+ */
+export declare const collateForDataloader: <T>(ids: string[], nodes: Node<T>[]) => Node<T>[];
+/**
  * GraphQL PageInfo
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-undefined.PageInfo
  */

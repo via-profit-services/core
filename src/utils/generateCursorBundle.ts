@@ -250,6 +250,13 @@ export const extractNodeIds = <T>(nodes: Node<T>[]) => extractNodeField<Node<T>,
 
 
 /**
+ * Collate rows for dataloader response
+ */
+export const collateForDataloader = <T>(ids: string[], nodes: Array<Node<T>>,
+) => ids.map((id) => nodes.find((node) => node.id === id));
+
+
+/**
  * GraphQL PageInfo
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-undefined.PageInfo
  */
