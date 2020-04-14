@@ -6,7 +6,7 @@ export declare type KnexInstance = knex;
 export interface IDBConfig {
     logger: ILoggerCollection;
     connection: PgConnectionConfig;
-    timezone: string;
+    timezone?: string;
     localTimezone: string;
     migrations?: MigratorConfig;
     seeds?: SeedsConfig;

@@ -7,7 +7,7 @@ import chalk from 'chalk';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import DeviceDetector from 'device-detector-js';
-import express, { Request } from 'express';
+import express, { Express, Request } from 'express';
 import graphqlHTTP, { OptionsData } from 'express-graphql';
 import { GraphQLSchema, execute, subscribe } from 'graphql';
 import { applyMiddleware, IMiddlewareGenerator } from 'graphql-middleware';
@@ -164,7 +164,12 @@ class App {
     );
   }
 
-  public createApp() {
+  public createApp(): {
+    app: Express;
+      context: IContext;
+      schema: GraphQLSchema;
+      routes: IInitProps['routes'];
+      } {
     const {
       typeDefs,
       resolvers,

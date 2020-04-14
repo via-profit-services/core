@@ -4,8 +4,8 @@ import supertest from 'supertest';
 import configureTest from '../utils/configureTests';
 import { DEV_INFO_DEVELOPER_NAME, DEV_INFO_DEVELOPER_URL } from '../utils/constants';
 
-const { app, config, accessToken } = configureTest({ port: 4001 });
-const { endpoint } = config;
+const { app, accessToken, context } = configureTest({ port: 4001 });
+const { endpoint } = context;
 
 describe('GraphQL', () => {
   const server = createServer(app);
