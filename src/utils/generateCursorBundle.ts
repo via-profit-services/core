@@ -292,11 +292,16 @@ export interface TInputFilter {
   after?: string;
   before?: string;
   orderBy?: TOrderBy;
+  search?: IInputSearch<any>;
   filter?: {
     [key: string]: string | number | boolean | null;
   } | TWhere;
 }
 
+export interface IInputSearch<T> {
+  field: keyof T;
+  query: string;
+}
 
 export interface TOutputFilter {
   offset: number;
