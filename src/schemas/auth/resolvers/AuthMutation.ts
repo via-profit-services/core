@@ -9,20 +9,21 @@ import { SubscriptioTriggers } from './AuthSubscription';
 const driversMutationResolver: IResolverObject<any, IContext> = {
   getAccessToken: async (parent, args: { login: string; password: string }, context) => {
     const { login, password } = args;
+    const { deviceInfo } = context;
     const authService = new AuthService({ context });
 
     const account = await authService.getAccountByCredentials(login, password);
 
     const tokenBag = await authService.registerTokens({
       uuid: account.id,
-      // deviceInfo: {},
+      deviceInfo,
     });
 
     return tokenBag;
   },
   refreshToken: async (parent, args: { token: string }, context) => {
     const { token } = args;
-    const { logger } = context;
+    const { logger, deviceInfo } = context;
     const { publicKey, blackList } = context.jwt;
 
     const authService = new AuthService({ context });
@@ -46,7 +47,7 @@ const driversMutationResolver: IResolverObject<any, IContext> = {
     // create new tokens
     const tokenBag = await authService.registerTokens({
       uuid: payload.uuid,
-      // deviceInfo,
+      deviceInfo,
     });
 
     return tokenBag;

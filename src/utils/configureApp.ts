@@ -33,6 +33,7 @@ const serverConfig: IInitProps = {
       directory: path.resolve(rootPath, process.env.DB_SEEDS_DIRECTORY),
       extension: process.env.DB_SEEDS_EXTENSION,
     },
+    timezone: process.env.DB_TIMEZONE,
   },
   jwt: {
     accessTokenExpiresIn: Number(process.env.JWT_ACCESSTOKENEXPIRESIN),

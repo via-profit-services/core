@@ -6,6 +6,7 @@ import path from 'path';
 import chalk from 'chalk';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import DeviceDetector from 'device-detector-js';
 import express, { Request } from 'express';
 import graphqlHTTP, { OptionsData } from 'express-graphql';
 import { GraphQLSchema, execute, subscribe } from 'graphql';
@@ -15,6 +16,7 @@ import { typeDefs as scalarTypeDefs, resolvers as scalarResolvers } from 'graphq
 import { makeExecutableSchema, ITypedef, IResolvers } from 'graphql-tools';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
+import { ServerOptions as IWebsocketServerOption } from 'ws';
 
 import { knexProvider, IDBConfig, KnexInstance } from '../databaseManager';
 import {
@@ -96,7 +98,6 @@ class App {
     // Run HTTP server
     server.listen(port, () => {
       // set resolver URL's list
-      // set resolver URL's list
       const resolveUrl: IBootstrapCallbackArgs['resolveUrl'] = {
         graphql: `${host}:${port}${endpoint}`,
         auth: `${host}:${port}${routes.auth}`,
@@ -129,7 +130,7 @@ class App {
   }
 
   public createSubscriptionServer(config: ISubServerConfig) {
-    const { subscriptionEndpoint } = this.props;
+    const { subscriptionEndpoint, websocketOptions } = this.props;
     const { server, schema, context } = config;
 
     // @see https://github.com/apollographql/subscriptions-transport-ws/blob/master/docs/source/express.md
@@ -158,6 +159,7 @@ class App {
       {
         server,
         path: subscriptionEndpoint,
+        ...websocketOptions,
       },
     );
   }
@@ -235,6 +237,26 @@ class App {
       logger,
       knex,
       emitter,
+      deviceInfo: {
+        client: {
+          type: '',
+          name: '',
+          version: '',
+          engine: '',
+          engineVersion: '',
+        },
+        os: {
+          name: '',
+          version: '',
+          platform: '',
+        },
+        device: {
+          type: '',
+          brand: '',
+          model: '',
+        },
+        bot: null,
+      },
       token: {
         type: TokenType.access,
         id: '',
@@ -314,6 +336,8 @@ class App {
 
             context.token = payload;
           }
+          const deviceDetector = new DeviceDetector();
+          context.deviceInfo = deviceDetector.parse(req.headers['user-agent']);
           const graphQLMiddlewares = [
             // permissions
             ...permissions || [],
@@ -384,6 +408,7 @@ export interface IInitProps {
   playgroundConfig?: any;
   useVoyager?: boolean;
   serverOptions?: IServerOptions;
+  websocketOptions?: IWebsocketServerOption;
   debug?: boolean;
   useCookie?: boolean;
 }
@@ -419,6 +444,7 @@ export interface IContext {
   logger: ILoggerCollection;
   emitter: EventEmitter;
   timezone: string;
+  deviceInfo: DeviceDetector.DeviceDetectorResult;
   token: IAccessToken['payload'];
 }
 

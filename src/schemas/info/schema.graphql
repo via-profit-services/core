@@ -7,7 +7,7 @@ type Mutation {
 }
 
 type Subscription {
-  developerWasChanged: Developer!
+  info: String!
 }
 
 
@@ -25,11 +25,6 @@ type InfoQuery {
 
 type InfoMutation {
   echo(str: String!): String!
-  updateDeveloper(name: String url: String): Developer!
-}
-
-type InfoSubscription {
-  developerWasChanged: Developer!
 }
 
 """

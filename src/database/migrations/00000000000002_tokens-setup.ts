@@ -17,10 +17,10 @@ export async function up(knex: Knex): Promise<any> {
       "createdAt" timestamptz NOT NULL DEFAULT now(),
       "updatedAt" timestamptz NOT NULL DEFAULT now(),
       "expiredAt" timestamptz NOT NULL,
-      account uuid NULL,
-      id uuid NOT NULL,
-      associated uuid NULL,
-      "deviceInfo" json NULL,
+      "account" uuid NULL,
+      "id" uuid NOT NULL,
+      "associated" uuid NULL,
+      "deviceInfo" jsonb NULL,
       CONSTRAINT tokens_pk PRIMARY KEY (id)
     );
 
