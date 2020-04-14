@@ -538,7 +538,7 @@ const logger = configureLogger({
 _file dataloader.ts_
 
 ```ts
-import { IContext, DataLoader, Node } from '@via-profit-services/core';
+import { IContext, DataLoader, Node, collateForDataloader } from '@via-profit-services/core';
 import PersonService, { Person } from 'my-service';
 
 // Интерфейс пула даталоадеров модуля
@@ -565,7 +565,14 @@ export default function createLoaders(context: IContext) {
   const service = new PersonService({ context });
 
   // Создаем сам даталоадер
-  loaders.persons = new DataLoader<string, Node<Person>>((ids: string[]) => service.getPersonsByIds(ids));
+  loaders.persons = new DataLoader<string, Node<Person>>(async (ids: string[]) => {
+
+    // Загружаем данные из БД
+    return service.getPersonsByIds(ids)
+      // Сортируем для даталоадера
+      .then(nodes => collateForDataloader(ids, nodes));
+
+  });
 
   return loaders;
 }
