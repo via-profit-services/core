@@ -15,6 +15,8 @@ export enum TWhereAction {
   LTE = '<=',
   IN = 'in',
   NOTIN = 'notIn',
+  LIKE = 'like',
+  ILIKE = 'ilike',
 }
 
 /**

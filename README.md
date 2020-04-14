@@ -720,19 +720,21 @@ interface TInputFilter {
   after?: string;
   before?: string;
   orderBy?: TOrderBy;
+  search?: IInputSearch;
   filter?: {
     [key: string]: string | number | boolean | null;
-  };
+  } | TWhere;
 }
 
 // Интерфейс, возвращаемый методом buildQueryFilter
 interface TOutputFilter {
-  where: Array<[string, '=' | '<' | '>', string | number | boolean | null]>;
-  cursor: ICursor;
-  offset: number;
   limit: number;
+  offset: number;
+  orderBy: TOrderBy;
+  where: TWhere;
   revert: boolean;
-  orderBy?: TOrderBy;
+  search: IInputSearch | false;
+  cursor?: ICursorPayload;
 }
 
 // Интерфейс ожидаемый от метода модели/сервиса при выборке списка данных содержащих постраничную пагинацию

@@ -11,7 +11,9 @@ export declare enum TWhereAction {
     GTE = ">=",
     LTE = "<=",
     IN = "in",
-    NOTIN = "notIn"
+    NOTIN = "notIn",
+    LIKE = "like",
+    ILIKE = "ilike"
 }
 /**
  * Convert string to cursor base64 string
