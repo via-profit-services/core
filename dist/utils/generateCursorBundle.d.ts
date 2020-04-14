@@ -62,7 +62,7 @@ export declare const buildQueryFilter: <TArgs extends TInputFilter>(args: TArgs)
 /**
  * Return array of fields of node
  */
-export declare const extractNodeField: <T, K extends "id" | keyof T | "createdAt">(nodes: Node<T>[], field: K) => Node<T>[K][];
+export declare const extractNodeField: <T, K extends "id" | "createdAt" | keyof T>(nodes: Node<T>[], field: K) => Node<T>[K][];
 /**
  * Returns node IDs array
  */
