@@ -174,7 +174,14 @@ export const buildCursorConnection = <T>(
 
 export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutputFilter => {
   const {
-    first, last, after, before, offset, orderBy, filter,
+    first,
+    last,
+    after,
+    before,
+    offset,
+    orderBy,
+    filter,
+    search,
   } = args;
 
   const DEFAULT_LIMIT = 30;
@@ -185,6 +192,7 @@ export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutp
     orderBy: orderBy || [],
     revert: !!last,
     where: [],
+    search: search || false,
     offset: Math.max(Number(offset) || 0, 0),
   } as TOutputFilter;
 
@@ -292,23 +300,24 @@ export interface TInputFilter {
   after?: string;
   before?: string;
   orderBy?: TOrderBy;
-  search?: IInputSearch<any>;
+  search?: IInputSearch;
   filter?: {
     [key: string]: string | number | boolean | null;
   } | TWhere;
 }
 
-export interface IInputSearch<T> {
-  field: keyof T;
+export interface IInputSearch {
+  field: string;
   query: string;
 }
 
 export interface TOutputFilter {
-  offset: number;
   limit: number;
-  revert?: boolean;
-  orderBy?: TOrderBy;
-  where?: TWhere;
+  offset: number;
+  orderBy: TOrderBy;
+  where: TWhere;
+  revert: boolean;
+  search: IInputSearch | false;
   cursor?: ICursorPayload;
 }
 

@@ -114,21 +114,22 @@ export interface TInputFilter {
     after?: string;
     before?: string;
     orderBy?: TOrderBy;
-    search?: IInputSearch<any>;
+    search?: IInputSearch;
     filter?: {
         [key: string]: string | number | boolean | null;
     } | TWhere;
 }
-export interface IInputSearch<T> {
-    field: keyof T;
+export interface IInputSearch {
+    field: string;
     query: string;
 }
 export interface TOutputFilter {
-    offset: number;
     limit: number;
-    revert?: boolean;
-    orderBy?: TOrderBy;
-    where?: TWhere;
+    offset: number;
+    orderBy: TOrderBy;
+    where: TWhere;
+    revert: boolean;
+    search: IInputSearch | false;
     cursor?: ICursorPayload;
 }
 export declare type TOrderBy = Array<{
