@@ -1,42 +1,21 @@
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { SignOptions } from 'jsonwebtoken';
-import { IContext } from '../app';
-import { IListResponse, TOutputFilter } from '../utils/generateCursorBundle';
+import { IContext } from '../../app';
+import { IAccount, IAccountRole } from '../accounts/service';
 export declare enum TokenType {
     access = "access",
     refresh = "refresh"
 }
-export declare enum AccountStatus {
-    allowed = "allowed",
-    forbidden = "forbidden"
-}
-export declare enum ResponseErrorType {
-    authentificationRequired = "authentificationRequired",
-    accountNotFound = "accountNotFound",
-    accountForbidden = "accountForbidden",
-    invalidLoginOrPassword = "invalidLoginOrPassword",
-    tokenExpired = "tokenExpired",
-    isNotAnAccessToken = "isNotAnAccessToken",
-    isNotARefreshToken = "isNotARefreshToken",
-    tokenWasRevoked = "tokenWasRevoked",
-    tokenVerificationFailed = "tokenVerificationFailed"
-}
-export declare class Authentificator {
+export default class AuthService {
     private props;
-    constructor(props: IProps);
+    constructor(props: Props);
     /**
      * Crypt password string by bcryptjs
      * @param  {string} password
      * @returns password hash
      */
     static cryptUserPassword(password: string): string;
-    /**
-     * Verify JWT token
-     * @param  {string} token
-     * @param  {string} publicKeyPath
-     * @returns ITokenInfo['payload']
-     */
-    static verifyToken(token: string, publicKeyPath: string, tokensBlackList: string): ITokenInfo['payload'];
+    getAccountByCredentials(login: string, password: string): Promise<Pick<IAccount, 'id' | 'roles'>>;
     /**
      * Register tokens
      * @param  {{uuid:string;deviceInfo:{};}} data
@@ -44,7 +23,7 @@ export declare class Authentificator {
      */
     registerTokens(data: {
         uuid: string;
-        deviceInfo: {};
+        deviceInfo?: {};
     }): Promise<ITokenPackage>;
     generateTokens(payload: Pick<ITokenInfo['payload'], 'uuid' | 'roles'>, exp?: {
         access: number;
@@ -57,6 +36,14 @@ export declare class Authentificator {
     revokeAccountTokens(accountId: string): Promise<string[]>;
     getTokensByIds(ids: string[]): Promise<any[]>;
     clearExpiredTokens(): Promise<void>;
+    /**
+     * Verify JWT token
+     * @param  {string} token
+     * @param  {string} publicKeyPath
+     * @returns ITokenInfo['payload']
+     */
+    static verifyToken(token: string, publicKeyPath: string, tokensBlackList: string): ITokenInfo['payload'];
+    checkTokenExist(tokenId: string): Promise<boolean>;
     static extractTokenFromSubscription(connectionParams: any): string;
     /**
      * Extract Token from HTTP request headers
@@ -65,23 +52,10 @@ export declare class Authentificator {
      * @returns string
      */
     static extractToken(tokenType: TokenType, request: Request): string;
-    checkTokenExist(tokenId: string): Promise<boolean>;
-    checkAccountExists(login: IAccount['login']): Promise<boolean>;
-    getAccountByLogin(login: IAccount['login'], password?: string): AccountByLoginResponse;
-    static sendResponseError(responsetype: ResponseErrorType, resp: Response): Response;
-    getAccounts(filter: TOutputFilter): Promise<IListResponse<IAccount>>;
-    getAccountsByIds(ids: string[]): Promise<IAccount[]>;
-    updateAccount(id: string, accountData: Partial<IAccountUpdateInfo>): Promise<string>;
-    createAccount(accountData: IAccountCreateInfo): Promise<string>;
-    deleteAccount(id: string): Promise<string>;
 }
-interface IProps {
+interface Props {
     context: IContext;
 }
-export declare type AccountByLoginResponse = Promise<{
-    error?: ResponseErrorType;
-    account: Pick<IAccount, 'id' | 'password' | 'status' | 'roles'> | false;
-}>;
 /**
  * @see: JWT configuration. See [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)
  */
@@ -146,21 +120,5 @@ export interface IResponseError {
     name: string;
     message: string;
 }
-export declare type IAccountRole = string;
-export interface IAccount {
-    id: string;
-    name: string;
-    login: string;
-    password: string;
-    status: AccountStatus;
-    roles: IAccountRole[];
-    createdAt: Date;
-    updatedAt: Date;
-    deleted: Boolean;
-}
-export declare type IAccountUpdateInfo = Omit<IAccount, 'id' | 'createdAt' | 'updatedAt'>;
-export declare type IAccountCreateInfo = Omit<IAccount, 'id' | 'createdAt' | 'updatedAt'> & {
-    id?: string;
-};
 export declare type ITokensBackList = string[];
 export {};

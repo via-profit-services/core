@@ -2,7 +2,7 @@
     "name": "@via-profit-services/core",
     "private": true,
     "support": "https://via-profit.ru",
-    "version": "0.9.15",
+    "version": "0.10.0",
     "description": "Via Profit Core service",
     "main": "dist/index.js",
     "scripts": {
@@ -41,6 +41,7 @@
     "dependencies": {
         "@graphql-toolkit/core": "^0.9.1",
         "@graphql-toolkit/schema-merging": "^0.9.1",
+        "@types/ws": "^7.2.4",
         "accesscontrol": "^2.2.1",
         "bcryptjs": "^2.4.3",
         "chalk": "^3.0.0",
@@ -74,7 +75,8 @@
         "subscriptions-transport-ws": "^0.9.16",
         "uuid": "^3.4.0",
         "winston": "^3.2.1",
-        "winston-daily-rotate-file": "^4.4.2"
+        "winston-daily-rotate-file": "^4.4.2",
+        "ws": "^7.2.3"
     },
     "devDependencies": {
         "@jagi/jest-transform-graphql": "^1.0.2",

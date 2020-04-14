@@ -1,20 +1,20 @@
 import { IResolverObject } from 'graphql-tools';
 
 import { IContext } from '../../../app';
-import { Authentificator, AccountStatus } from '../../../authentificator';
 import { ServerError } from '../../../errorHandlers';
 import { buildCursorConnection, buildQueryFilter, TInputFilter } from '../../../utils/generateCursorBundle';
-import createLoaders from '../dataloader';
+import createLoaders from '../loaders';
+import AccountsService, { AccountStatus } from '../service';
 
 
 export const accountsQueryResolver: IResolverObject<any, IContext> = {
   list: async (source, args: TInputFilter, context) => {
     const loaders = createLoaders(context);
     const filter = buildQueryFilter(args);
-    const autherntificator = new Authentificator({ context });
+    const accountsService = new AccountsService({ context });
 
     try {
-      const accountsConnection = await autherntificator.getAccounts(filter);
+      const accountsConnection = await accountsService.getAccounts(filter);
       const connection = buildCursorConnection(accountsConnection);
 
       // fill the cache

@@ -1,6 +1,6 @@
 import { IContext } from '../../app';
-import { IAccount } from '../../authentificator';
 import { Node, DataLoader } from '../../utils';
+import { IAccount } from './service';
 interface Loaders {
     accounts: DataLoader<string, Node<IAccount>>;
 }

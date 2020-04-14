@@ -1,6 +1,6 @@
 import { IResolverObject } from 'graphql-tools';
-import { IAccount } from '../../../authentificator';
 import { pubsub, withFilter } from '../../../utils';
+import { IAccount } from '../service';
 
 export enum SubscriptioTriggers {
   ACCOUNT_UPDATED = 'account-updated',

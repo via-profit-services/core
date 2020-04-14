@@ -2,28 +2,26 @@
 import { EventEmitter } from 'events';
 import http from 'http';
 import https from 'https';
+import DeviceDetector from 'device-detector-js';
+import { Express } from 'express';
 import { GraphQLSchema } from 'graphql';
 import { IMiddlewareGenerator } from 'graphql-middleware';
 import { ITypedef, IResolvers } from 'graphql-tools';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
-import { IJwtConfig, IAccessToken } from '../authentificator/authentificator';
+import { ServerOptions as IWebsocketServerOption } from 'ws';
 import { IDBConfig, KnexInstance } from '../databaseManager';
 import { ILoggerCollection } from '../logger';
+import { IJwtConfig, IAccessToken } from "../schemas/auth/service";
 declare class App {
     props: IInitDefaultProps;
     constructor(props: IInitProps);
     bootstrap(callback?: (args: IBootstrapCallbackArgs) => void): void;
     createSubscriptionServer(config: ISubServerConfig): SubscriptionServer;
     createApp(): {
-        app: import("express-serve-static-core").Express;
+        app: Express;
         context: IContext;
         schema: GraphQLSchema;
-        routes: {
-            [key: string]: string;
-            auth: string;
-            playground: string;
-            voyager: string;
-        };
+        routes: IInitProps['routes'];
     };
 }
 export default App;
@@ -45,17 +43,19 @@ export interface IInitProps {
         playground?: string;
         voyager?: string;
     };
+    enableIntrospection?: boolean;
     usePlayground?: boolean;
     playgroundConfig?: any;
     useVoyager?: boolean;
-    serverOptions: IServerOptions;
+    serverOptions?: IServerOptions;
+    websocketOptions?: IWebsocketServerOption;
     debug?: boolean;
     useCookie?: boolean;
 }
 interface IServerOptions extends https.ServerOptions {
     key?: https.ServerOptions['key'];
     cert?: https.ServerOptions['cert'];
-    cookieSign: string;
+    cookieSign?: string;
 }
 interface IInitDefaultProps extends IInitProps {
     port: number;
@@ -69,6 +69,7 @@ interface IInitDefaultProps extends IInitProps {
         [key: string]: string;
     };
     usePlayground: boolean;
+    enableIntrospection: boolean;
     useVoyager: boolean;
     debug: boolean;
     useCookie: boolean;
@@ -80,6 +81,7 @@ export interface IContext {
     logger: ILoggerCollection;
     emitter: EventEmitter;
     timezone: string;
+    deviceInfo: DeviceDetector.DeviceDetectorResult;
     token: IAccessToken['payload'];
 }
 export interface ISubServerConfig {
@@ -93,6 +95,7 @@ export interface IBootstrapCallbackArgs {
     resolveUrl: {
         graphql: string;
         auth: string;
+        graphiql?: string;
         playground?: string;
         voyager?: string;
         subscriptions?: string;

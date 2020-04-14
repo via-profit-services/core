@@ -4,8 +4,8 @@ import { pubsub } from '../../../utils';
 
 
 const infoSubscriptionResolver: IResolverObject<any, IContext, {str: string}> = {
-  developerWasChanged: {
-    subscribe: () => pubsub.asyncIterator('developerWasChanged'),
+  info: {
+    subscribe: () => pubsub.asyncIterator('info'),
   },
 };
 

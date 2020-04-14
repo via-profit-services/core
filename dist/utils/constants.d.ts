@@ -1,6 +1,4 @@
 export declare const TOKEN_BEARER_KEY = "Authorization";
-export declare const TOKEN_ACCESS_TOKEN_COOKIE_KEY = "AccessToken";
-export declare const TOKEN_REFRESH_TOKEN_COOKIE_KEY = "RefreshToken";
 export declare const TOKEN_BEARER = "Bearer";
 export declare const DATABASE_CHARSET = "UTF8";
 export declare const DATABASE_CLIENT = "pg";
@@ -10,6 +8,7 @@ export declare const DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT = "/subscriptions";
 export declare const DEFAULT_SERVER_TIMEZONE = "UTC";
 export declare const DEFAULT_ROUTE_AUTH = "/auth";
 export declare const DEFAULT_ROUTE_PLAYGROUND = "/playground";
+export declare const DEFAULT_ROUTE_GRAPHIQL = "/graphiql";
 export declare const DEFAULT_ROUTE_VOYAGER = "/voyager";
 export declare const MAXIMUM_REQUEST_BODY_SIZE = "50mb";
 export declare const DEV_INFO_DEVELOPER_NAME = "Via Profit";
