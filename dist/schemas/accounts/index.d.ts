@@ -1,4 +1,5 @@
 import permissions from './permissions';
 import resolvers from './resolvers';
 import * as typeDefs from './schema.graphql';
-export { typeDefs, resolvers, permissions };
+import service from './service';
+export { typeDefs, resolvers, permissions, service, };
