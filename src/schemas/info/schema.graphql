@@ -40,7 +40,12 @@ type Developer {
   """
   Returns developer url
   """
-  url: String!
+  url: URL!
+
+  """
+  Returns developer email address
+  """
+  email: EmailAddress!
 }
 
 

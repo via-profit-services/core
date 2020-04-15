@@ -5,3 +5,24 @@ Real type - Int
 e.g. For 250 USD this record returns value as 250000 (250$ * 100¢) 
 """
 scalar Money
+
+"""
+DateTime type.
+Use JavaScript Date object for date/time fields
+Real type - String
+"""
+scalar DateTime
+
+"""
+URL type.
+A field whose value conforms to the standard URL format as specified in RFC3986: https://www.ietf.org/rfc/rfc3986.txt.
+Real type - String
+"""
+scalar URL
+
+"""
+Email address type.
+A field whose value conforms to the standard internet email address format as specified in RFC822: https://www.w3.org/Protocols/rfc822/.
+Real type - String
+"""
+scalar EmailAddress
