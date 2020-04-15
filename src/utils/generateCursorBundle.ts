@@ -15,6 +15,8 @@ export enum TWhereAction {
   LTE = '<=',
   IN = 'in',
   NOTIN = 'notIn',
+  LIKE = 'like',
+  ILIKE = 'ilike',
 }
 
 /**
@@ -174,7 +176,14 @@ export const buildCursorConnection = <T>(
 
 export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutputFilter => {
   const {
-    first, last, after, before, offset, orderBy, filter,
+    first,
+    last,
+    after,
+    before,
+    offset,
+    orderBy,
+    filter,
+    search,
   } = args;
 
   const DEFAULT_LIMIT = 30;
@@ -185,6 +194,7 @@ export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutp
     orderBy: orderBy || [],
     revert: !!last,
     where: [],
+    search: search || false,
     offset: Math.max(Number(offset) || 0, 0),
   } as TOutputFilter;
 
@@ -240,6 +250,13 @@ export const extractNodeIds = <T>(nodes: Node<T>[]) => extractNodeField<Node<T>,
 
 
 /**
+ * Collate rows for dataloader response
+ */
+export const collateForDataloader = <T>(ids: string[], nodes: Array<Node<T>>,
+) => ids.map((id) => nodes.find((node) => node.id === id));
+
+
+/**
  * GraphQL PageInfo
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-undefined.PageInfo
  */
@@ -292,18 +309,24 @@ export interface TInputFilter {
   after?: string;
   before?: string;
   orderBy?: TOrderBy;
+  search?: IInputSearch;
   filter?: {
     [key: string]: string | number | boolean | null;
   } | TWhere;
 }
 
+export interface IInputSearch {
+  field: string;
+  query: string;
+}
 
 export interface TOutputFilter {
-  offset: number;
   limit: number;
-  revert?: boolean;
-  orderBy?: TOrderBy;
-  where?: TWhere;
+  offset: number;
+  orderBy: TOrderBy;
+  where: TWhere;
+  revert: boolean;
+  search: IInputSearch | false;
   cursor?: ICursorPayload;
 }
 

@@ -4,14 +4,9 @@ import { IContext } from '../../../app';
 import { Developer, IDeveloper } from '../service';
 
 const developerResolver: IResolverObject<Partial<IDeveloper>, IContext> = {
-  name: (developer) => {
-    const dev = { ...Developer, ...developer };
-    return dev.name;
-  },
-  url: (developer) => {
-    const dev = { ...Developer, ...developer };
-    return dev.url;
-  },
+  name: () => Developer.name,
+  url: () => Developer.url,
+  email: () => Developer.email,
 };
 
 export default developerResolver;

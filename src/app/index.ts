@@ -12,7 +12,6 @@ import graphqlHTTP, { OptionsData } from 'express-graphql';
 import { GraphQLSchema, execute, subscribe } from 'graphql';
 import { applyMiddleware, IMiddlewareGenerator } from 'graphql-middleware';
 import expressPlayground from 'graphql-playground-middleware-express';
-import { typeDefs as scalarTypeDefs, resolvers as scalarResolvers } from 'graphql-scalars';
 import { makeExecutableSchema, ITypedef, IResolvers } from 'graphql-tools';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
@@ -200,21 +199,19 @@ class App {
 
     const schema = makeExecutableSchema({
       typeDefs: [
-        ...scalarTypeDefs,
         scalar.typeDefs,
         common.typeDefs,
-        ...typeDefs || [],
         info.typeDefs,
         accounts.typeDefs,
         auth.typeDefs,
+        ...typeDefs || [],
       ],
       resolvers: [
-        scalarResolvers,
         scalar.resolvers,
-        ...resolvers || [],
         info.resolvers,
         accounts.resolvers,
         auth.resolvers,
+        ...resolvers || [],
       ],
       resolverValidationOptions: {
         requireResolversForResolveType: false,

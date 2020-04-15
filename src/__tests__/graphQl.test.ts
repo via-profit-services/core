@@ -2,7 +2,11 @@ import assert from 'assert';
 import { createServer } from 'http';
 import supertest from 'supertest';
 import configureTest from '../utils/configureTests';
-import { DEV_INFO_DEVELOPER_NAME, DEV_INFO_DEVELOPER_URL } from '../utils/constants';
+import {
+  DEV_INFO_DEVELOPER_NAME,
+  DEV_INFO_DEVELOPER_URL,
+  DEV_INFO_DEVELOPER_EMAIL,
+} from '../utils/constants';
 
 const { app, accessToken, context } = configureTest({ port: 4001 });
 const { endpoint } = context;
@@ -24,6 +28,7 @@ describe('GraphQL', () => {
               developer {
                 name
                 url
+                email
               }
             }
           }`,
@@ -38,6 +43,7 @@ describe('GraphQL', () => {
               developer: {
                 name: DEV_INFO_DEVELOPER_NAME,
                 url: DEV_INFO_DEVELOPER_URL,
+                email: DEV_INFO_DEVELOPER_EMAIL,
               },
             },
           },

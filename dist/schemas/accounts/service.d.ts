@@ -7,7 +7,7 @@ export declare enum AccountStatus {
 declare class Accounts {
     props: IProps;
     constructor(props: IProps);
-    getAccounts(filter: TOutputFilter): Promise<IListResponse<IAccount>>;
+    getAccounts(filter: Partial<TOutputFilter>): Promise<IListResponse<IAccount>>;
     getAccountsByIds(ids: string[]): Promise<IAccount[]>;
     getAccount(id: string): Promise<IAccount | false>;
     getAccountByLogin(login: string): Promise<IAccount | false>;

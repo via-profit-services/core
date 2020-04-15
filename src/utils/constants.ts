@@ -16,7 +16,8 @@ export const DEFAULT_ROUTE_VOYAGER = '/voyager';
 export const MAXIMUM_REQUEST_BODY_SIZE = '50mb';
 
 export const DEV_INFO_DEVELOPER_NAME = 'Via Profit';
-export const DEV_INFO_DEVELOPER_URL = 'https://via-profit.ru';
+export const DEV_INFO_DEVELOPER_URL = 'https://via-profit.ru/';
+export const DEV_INFO_DEVELOPER_EMAIL = 'promo@via-profit.ru';
 
 export const LOG_FILENAME_AUTH = 'auth-%DATE%.log';
 export const LOG_FILENAME_HTTP = 'http-%DATE%.log';

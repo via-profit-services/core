@@ -11,7 +11,9 @@ export declare enum TWhereAction {
     GTE = ">=",
     LTE = "<=",
     IN = "in",
-    NOTIN = "notIn"
+    NOTIN = "notIn",
+    LIKE = "like",
+    ILIKE = "ilike"
 }
 /**
  * Convert string to cursor base64 string
@@ -62,11 +64,15 @@ export declare const buildQueryFilter: <TArgs extends TInputFilter>(args: TArgs)
 /**
  * Return array of fields of node
  */
-export declare const extractNodeField: <T, K extends "id" | keyof T | "createdAt">(nodes: Node<T>[], field: K) => Node<T>[K][];
+export declare const extractNodeField: <T, K extends "id" | "createdAt" | keyof T>(nodes: Node<T>[], field: K) => Node<T>[K][];
 /**
  * Returns node IDs array
  */
 export declare const extractNodeIds: <T>(nodes: Node<T>[]) => Node<T>["id"][];
+/**
+ * Collate rows for dataloader response
+ */
+export declare const collateForDataloader: <T>(ids: string[], nodes: Node<T>[]) => Node<T>[];
 /**
  * GraphQL PageInfo
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-undefined.PageInfo
@@ -114,16 +120,22 @@ export interface TInputFilter {
     after?: string;
     before?: string;
     orderBy?: TOrderBy;
+    search?: IInputSearch;
     filter?: {
         [key: string]: string | number | boolean | null;
     } | TWhere;
 }
+export interface IInputSearch {
+    field: string;
+    query: string;
+}
 export interface TOutputFilter {
-    offset: number;
     limit: number;
-    revert?: boolean;
-    orderBy?: TOrderBy;
-    where?: TWhere;
+    offset: number;
+    orderBy: TOrderBy;
+    where: TWhere;
+    revert: boolean;
+    search: IInputSearch | false;
     cursor?: ICursorPayload;
 }
 export declare type TOrderBy = Array<{

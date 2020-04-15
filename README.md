@@ -283,6 +283,14 @@ knex('table').insert({
 });
 ```
 
+
+### `collateForDataloader`
+
+_Преобразует выборку для даталоадера для случаев, когда извлекаемое значение отсутствует, но было запрошено даталоадером_
+
+Принимает в качестве первого аргумента массив ID, а в качестве второго - результат выборки для лоадера и возвращает данные в соответствии с набором данных лоадера
+
+
 ### `extractNodeIds`
 
 _Извлекает из массива типа `<Node>` ID и возвращает в виде массива_
@@ -300,44 +308,19 @@ _Извлекает из массива типа `<Node>` ключи и возв
 Via Profit сервер включает в себя схему, содержащую некоторые GraphQL типы и интерфейсы.
 Данные располагаются в схеме [common.graphql](./src/schemas/common.graphql)
 
-Скалярные типы наследуются из пакета [graphql-scalars](https://github.com/Urigo/graphql-scalars#usage) и содержат:
+### Скалярные типы
 
-- scalar DateTime
-- scalar NegativeInt
-- scalar EmailAddress
-- scalar NegativeFloat
-- scalar NonNegativeFloat
-- scalar NonNegativeInt
-- scalar NonPositiveFloat
-- scalar NonPositiveInt
-- scalar PhoneNumber
-- scalar PositiveFloat
-- scalar PositiveInt
-- scalar PostalCode
-- scalar UnsignedFloat
-- scalar UnsignedInt
-- scalar URL
-- scalar ObjectID
-- scalar BigInt
-- scalar Long
-- scalar GUID
-- scalar HexColorCode
-- scalar HSL
-- scalar HSLA
-- scalar IPv4
-- scalar IPv6
-- scalar ISBN
-- scalar MAC
-- scalar Port
-- scalar RGB
-- scalar RGBA
-- scalar USCurrency
-- scalar JSON
-- scalar JSONObject
+scalar **Money**
+_Тип представления денежных значений. Значение(сумма) хранится в наименьшей денежной единице (в копейках, в центах и т.п.). Т.о. Сумма в 250 USD будет храниться как 250000 (250$ * 100¢)_
 
-Дополнительные типы, добавленные в ядро:
+scalar **DateTime**
+_Тип представления стандартного объекта Date_
 
-- scalar Money
+scalar **URL**
+_Тип представления URL-адреса согласно стандарту [RFC3986](https://www.ietf.org/rfc/rfc3986.txt)_
+
+scalar **EmailAddress**
+_Тип представления Email-адреса согласно стандарту [RFC822](https://www.w3.org/Protocols/rfc822/)_
 
 ## <a name="authentication"></a> Аутентификация
 
@@ -538,7 +521,7 @@ const logger = configureLogger({
 _file dataloader.ts_
 
 ```ts
-import { IContext, DataLoader, Node } from '@via-profit-services/core';
+import { IContext, DataLoader, Node, collateForDataloader } from '@via-profit-services/core';
 import PersonService, { Person } from 'my-service';
 
 // Интерфейс пула даталоадеров модуля
@@ -565,7 +548,14 @@ export default function createLoaders(context: IContext) {
   const service = new PersonService({ context });
 
   // Создаем сам даталоадер
-  loaders.persons = new DataLoader<string, Node<Person>>((ids: string[]) => service.getPersonsByIds(ids));
+  loaders.persons = new DataLoader<string, Node<Person>>(async (ids: string[]) => {
+
+    // Загружаем данные из БД
+    return service.getPersonsByIds(ids)
+      // Сортируем для даталоадера
+      .then(nodes => collateForDataloader(ids, nodes));
+
+  });
 
   return loaders;
 }
@@ -720,19 +710,21 @@ interface TInputFilter {
   after?: string;
   before?: string;
   orderBy?: TOrderBy;
+  search?: IInputSearch;
   filter?: {
     [key: string]: string | number | boolean | null;
-  };
+  } | TWhere;
 }
 
 // Интерфейс, возвращаемый методом buildQueryFilter
 interface TOutputFilter {
-  where: Array<[string, '=' | '<' | '>', string | number | boolean | null]>;
-  cursor: ICursor;
-  offset: number;
   limit: number;
+  offset: number;
+  orderBy: TOrderBy;
+  where: TWhere;
   revert: boolean;
-  orderBy?: TOrderBy;
+  search: IInputSearch | false;
+  cursor?: ICursorPayload;
 }
 
 // Интерфейс ожидаемый от метода модели/сервиса при выборке списка данных содержащих постраничную пагинацию

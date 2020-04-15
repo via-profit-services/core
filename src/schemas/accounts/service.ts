@@ -24,11 +24,14 @@ class Accounts {
     this.props = props;
   }
 
-  public getAccounts(filter: TOutputFilter): Promise<IListResponse<IAccount>> {
+  public getAccounts(filter: Partial<TOutputFilter>): Promise<IListResponse<IAccount>> {
     const { context } = this.props;
     const { knex } = context;
     const {
-      limit, offset, orderBy, where,
+      limit,
+      offset,
+      orderBy,
+      where,
     } = filter;
 
     return knex
@@ -36,8 +39,8 @@ class Accounts {
       .join(
         knex('accounts')
           .select(['id', knex.raw('count(*) over() as "totalCount"')])
-          .limit(limit)
-          .offset(offset)
+          .limit(limit || 0)
+          .offset(offset || 0)
           .where((builder) => convertWhereToKnex(builder, where))
           .orderBy(convertOrderByToKnex(orderBy))
           .as('joined'),
