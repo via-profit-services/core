@@ -17,10 +17,10 @@ export const knexProvider = (config: IDBConfig) => {
 
   if (ENABLE_PG_TYPES) {
     // Timestamp
-    types.setTypeParser(types.builtins.TIMESTAMP, 'text', (value) => moment.tz(value, localTimezone).toDate());
+    types.setTypeParser(types.builtins.TIMESTAMP, 'text', (value) => moment.tz(value, localTimezone).format());
 
     // timestamptz
-    types.setTypeParser(types.builtins.TIMESTAMPTZ, 'text', (value) => moment.tz(value, localTimezone).toDate());
+    types.setTypeParser(types.builtins.TIMESTAMPTZ, 'text', (value) => moment.tz(value, localTimezone).format());
 
     // Numeric to float
     types.setTypeParser(types.builtins.NUMERIC, parseFloat);
