@@ -81,6 +81,7 @@ export interface IContext {
     logger: ILoggerCollection;
     emitter: EventEmitter;
     timezone: string;
+    startTime: any;
     deviceInfo: DeviceDetector.DeviceDetectorResult;
     token: IAccessToken['payload'];
 }
