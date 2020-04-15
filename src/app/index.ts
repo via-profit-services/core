@@ -3,12 +3,13 @@ import { EventEmitter } from 'events';
 import http from 'http';
 import https from 'https';
 import path from 'path';
+import { performance } from 'perf_hooks';
 import chalk from 'chalk';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import DeviceDetector from 'device-detector-js';
 import express, { Express, Request } from 'express';
-import graphqlHTTP, { OptionsData } from 'express-graphql';
+import graphqlHTTP, { OptionsData, RequestInfo } from 'express-graphql';
 import { GraphQLSchema, execute, subscribe } from 'graphql';
 import { applyMiddleware, IMiddlewareGenerator } from 'graphql-middleware';
 import expressPlayground from 'graphql-playground-middleware-express';
@@ -259,6 +260,7 @@ class App {
         },
         bot: null,
       },
+      startTime: 0,
       token: {
         type: TokenType.access,
         id: '',
@@ -318,6 +320,13 @@ class App {
       );
     }
 
+
+    const extensions = (requestInfo: RequestInfo & { context: IContext}) => {
+      return {
+        queryTimeMs: performance.now() - requestInfo.context.startTime,
+      };
+    };
+
     // GraphQL server
     app.use(
       endpoint,
@@ -338,8 +347,11 @@ class App {
 
             context.token = payload;
           }
+
           const deviceDetector = new DeviceDetector();
           context.deviceInfo = deviceDetector.parse(req.headers['user-agent']);
+
+          context.startTime = performance.now();
           const graphQLMiddlewares = [
             // permissions
             ...permissions || [],
@@ -353,6 +365,7 @@ class App {
           return {
             context,
             graphiql: usePlayground,
+            extensions: debug ? extensions : undefined,
             schema: applyMiddleware(schema, ...graphQLMiddlewares),
             subscriptionEndpoint: `ws${useSSL ? 's' : ''}://localhost:${port}${subscriptionEndpoint}`,
             customFormatErrorFn: (error) => customFormatErrorFn({ error, context, debug }),
@@ -446,6 +459,7 @@ export interface IContext {
   logger: ILoggerCollection;
   emitter: EventEmitter;
   timezone: string;
+  startTime: any;
   deviceInfo: DeviceDetector.DeviceDetectorResult;
   token: IAccessToken['payload'];
 }
