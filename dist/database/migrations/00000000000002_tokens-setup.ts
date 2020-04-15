@@ -1,3 +1,10 @@
+/**
+ * @via-profit-services/core
+ *
+ * This migration file was created by the @via-profit-services/core package
+ * This migration will create `tokens` table
+ */
+
 import * as Knex from 'knex';
 
 export async function up(knex: Knex): Promise<any> {

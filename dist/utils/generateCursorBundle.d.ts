@@ -72,7 +72,13 @@ export declare const extractNodeIds: <T>(nodes: Node<T>[]) => Node<T>["id"][];
 /**
  * Collate rows for dataloader response
  */
-export declare const collateForDataloader: <T>(ids: string[], nodes: Node<T>[]) => Node<T>[];
+export declare const collateForDataloader: <T>(ids: string[], nodes: Node<T>[], returnUndefined?: boolean) => Node<T>[];
+/**
+ * Format array of IDs to object with id key
+ */
+export declare const arrayOfIdsToArrayOfObjectIds: (array: string[]) => {
+    id: string;
+}[];
 /**
  * GraphQL PageInfo
  * @see https://facebook.github.io/relay/graphql/connections.htm#sec-undefined.PageInfo
