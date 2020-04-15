@@ -252,9 +252,21 @@ export const extractNodeIds = <T>(nodes: Node<T>[]) => extractNodeField<Node<T>,
 /**
  * Collate rows for dataloader response
  */
-export const collateForDataloader = <T>(ids: string[], nodes: Array<Node<T>>,
-) => ids.map((id) => nodes.find((node) => node.id === id));
+export const collateForDataloader = <T>(
+  ids: string[],
+  nodes: Array<Node<T>>,
+  returnUndefined?: boolean,
+) => ids.map((id) => nodes.find((node) => node.id === id) || (returnUndefined ? undefined : null));
 
+
+/**
+ * Format array of IDs to object with id key
+ */
+export const arrayOfIdsToArrayOfObjectIds = (array: string[]) => {
+  return array.length
+    ? array.map((id) => ({ id }))
+    : null;
+};
 
 /**
  * GraphQL PageInfo
