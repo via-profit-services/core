@@ -17,10 +17,10 @@ export const knexProvider = (config: IDBConfig) => {
 
   if (ENABLE_PG_TYPES) {
     // Timestamp
-    types.setTypeParser(types.builtins.TIMESTAMP, 'text', (value) => moment.tz(value, localTimezone).format());
+    types.setTypeParser(types.builtins.TIMESTAMP, 'text', (value) => moment.tz(value, localTimezone).toDate());
 
     // timestamptz
-    types.setTypeParser(types.builtins.TIMESTAMPTZ, 'text', (value) => moment.tz(value, localTimezone).format());
+    types.setTypeParser(types.builtins.TIMESTAMPTZ, 'text', (value) => moment.tz(value, localTimezone).toDate());
 
     // Numeric to float
     types.setTypeParser(types.builtins.NUMERIC, parseFloat);
@@ -73,6 +73,7 @@ export const knexProvider = (config: IDBConfig) => {
       // eslint-disable-next-line no-underscore-dangle
       const uid = query.__knexQueryUid;
       times[uid].endTime = performance.now();
+      times[uid].queryTime = times[uid].endTime - times[uid].startTime;
       times[uid].finished = true;
       logger.sql.debug(query.sql, { bindings: query.bindings, ...times[uid] });
     })
