@@ -73,6 +73,7 @@ export const knexProvider = (config: IDBConfig) => {
       // eslint-disable-next-line no-underscore-dangle
       const uid = query.__knexQueryUid;
       times[uid].endTime = performance.now();
+      times[uid].queryTime = times[uid].endTime - times[uid].startTime;
       times[uid].finished = true;
       logger.sql.debug(query.sql, { bindings: query.bindings, ...times[uid] });
     })
