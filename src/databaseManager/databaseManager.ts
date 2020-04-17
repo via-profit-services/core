@@ -28,7 +28,6 @@ export const knexProvider = (config: IDBConfig) => {
     logger.server.debug('pg-types configured');
   }
 
-  let count = 0;
   const instance = knex({
     client: DATABASE_CLIENT,
     connection,
@@ -62,24 +61,18 @@ export const knexProvider = (config: IDBConfig) => {
       const uid = query.__knexQueryUid;
 
       times[uid] = {
-        position: count,
-        // query,
         startTime: performance.now(),
-        finished: false,
       };
-      count += 1;
     })
-    .on('query-response', (response, query) => {
+    .on('query-response', (response, query, builder) => {
       // eslint-disable-next-line no-underscore-dangle
       const uid = query.__knexQueryUid;
-      times[uid].endTime = performance.now();
-      times[uid].queryTime = times[uid].endTime - times[uid].startTime;
-      times[uid].finished = true;
-      logger.sql.debug(query.sql, { bindings: query.bindings, ...times[uid] });
+      const queryTime = performance.now() - times[uid].startTime;
+
+      logger.sql.debug(builder.toString(), { queryTime });
     })
-    .on('query-error', (err, query) => {
-      console.log(query);
-      logger.sql.error(query.sql, { bindings: query.bindings, err });
+    .on('query-error', (err, query, builder) => {
+      logger.sql.error(builder.toString(), { err, bindings: query.bindings });
     });
 
   logger.server.debug('Knex provider configured');
