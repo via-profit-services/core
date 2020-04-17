@@ -22,7 +22,7 @@
 Необходимо указать необходимую версию вместо `#1.0.0`.
 
 ```bash
-yarn add ssh://git@gitlab.com:via-profit-services/core.git#1.0.0
+yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:^1.0.0
 ```
 
 **Замечание:** Чтобы запустить localhost на SSL используйте [mkcert](https://github.com/FiloSottile/mkcert) 
