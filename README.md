@@ -38,7 +38,7 @@ yarn add ssh://git@gitlab.com:via-profit-services/core.git
 Для установки последней определенной версии, например, `0.1.6`:
 
 ```bash
-yarn add ssh://git@gitlab.com:via-profit-services/core.git#0.1.6
+yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.1.6
 ```
 
 ### Настройка сертификатов
