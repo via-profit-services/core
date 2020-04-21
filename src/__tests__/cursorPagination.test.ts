@@ -7,6 +7,7 @@ const generateNodes = (quantity: number):
   id: uuidv4(),
   name: faker.name.findName(),
   createdAt: faker.date.past(),
+  updatedAt: faker.date.past(),
 }));
 
 describe('Cursor Pagination', () => {
@@ -16,7 +17,9 @@ describe('Cursor Pagination', () => {
       totalCount: 11,
       limit: 2,
       offset: 0,
-    });
+      orderBy: [],
+      where: [],
+    }, 'test');
     expect(connection.pageInfo.hasPreviousPage).toBeFalsy();
     expect(connection.pageInfo.hasNextPage).toBeTruthy();
     done();

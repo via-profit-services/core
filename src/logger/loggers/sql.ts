@@ -1,4 +1,4 @@
-import { transports, createLogger } from 'winston';
+import { transports, createLogger, format } from 'winston';
 import 'winston-daily-rotate-file';
 
 import {
@@ -23,6 +23,12 @@ export default (config: Config) => {
       }),
       new transports.Console({
         level: 'error',
+        format: format.combine(
+          format.colorize({
+            all: true,
+          }),
+          format.simple(),
+        ),
       }),
     ],
   });

@@ -1,5 +1,5 @@
 import Knex from 'knex';
-import { ServerError } from '~/errorHandlers';
+import { ServerError } from '../errorHandlers';
 
 export enum IDirectionRange {
   ASC = 'ASC',
@@ -31,50 +31,37 @@ export const stringToCursor = (str: string) => Buffer.from(String(str), 'utf8').
  */
 export const cursorToString = (cursor: string) => Buffer.from(cursor, 'base64').toString('utf8');
 
-export const makeNodeCursor = (payload: ICursorPayload): string => {
-  const {
-    limit, offset, revert, id,
-  } = payload;
-  return stringToCursor(JSON.stringify([limit, offset, revert, id]));
+
+export const makeNodeCursor = (cursorName: string, cursorPayload: ICursorPayload): string => {
+  return stringToCursor([
+    JSON.stringify(cursorPayload),
+    cursorName,
+  ].join('---'));
 };
 
-export const getNodeCursor = (cursor: string): ICursorPayload => {
-  const payload = cursorToString(cursor);
-
+export const getCursorPayload = (cursor: string): ICursorPayload => {
   try {
-    const [limit, offset, revert, id] = JSON.parse(payload) as [number, number, boolean, string];
-    return {
-      limit,
-      offset,
-      revert,
-      id,
-    };
+    const cursorPayload = cursorToString(cursor).split('---')[0] || '';
+    return JSON.parse(cursorPayload);
   } catch (err) {
-    throw new ServerError(`The cursor «${cursor}» is invalid because it contains the wrong JSON data`);
+    throw new ServerError('Failed to decode cursor payload', { err });
   }
 };
+
 
 /**
  * Wrap node to cursor object
  * @param  {Node} node
  * @param  {TOrderBy} order
  */
-export const nodeToEdge = <T>(
-  node: Node<T>,
-  payload: Omit<ICursorPayload, 'id'>,
-): { node: Node<T>; cursor: string } => ({
+export const nodeToEdge = <T>(node: Node<T>, cursorName: string, cursorPayload: ICursorPayload): {
+  node: Node<T>;
+  cursor: string
+} => ({
     node,
-    cursor: makeNodeCursor({ ...payload, id: node.id }),
+    cursor: makeNodeCursor(cursorName, cursorPayload),
   });
 
-/**
- * Convert nodes array to array of cursors
- * @param {Array} nodes
- */
-export const nodesToEdges = <T>(
-  nodes: Node<T>[],
-  payload: Omit<ICursorPayload, 'id'>):
-  Edge<T>[] => [...(nodes || [])].map((node) => nodeToEdge<T>(node, payload));
 
 /**
  * Convert GraphQL OrderBy array to Knex OrderBy array format
@@ -146,20 +133,30 @@ export interface ICursorConnection<T> {
 }
 
 export const buildCursorConnection = <T>(
-  props: ICursorConnectionProps<T>): ICursorConnection<T> => {
+  props: ICursorConnectionProps<T>,
+  cursorName?: string): ICursorConnection<T> => {
   const {
-    nodes, totalCount, offset, limit, revert,
+    nodes,
+    totalCount,
+    offset,
+    limit,
+    where,
+    orderBy,
   } = props;
 
-  const edges = nodesToEdges(nodes, {
-    limit,
-    offset,
-    revert: Boolean(revert),
+  // const edges = nodesToEdges(nodes, cursorName);
+  const edges = nodes.map((node, index) => {
+    return nodeToEdge(node, cursorName, {
+      offset: (offset || 0) + index + 1,
+      limit,
+      where: where || [],
+      orderBy: orderBy || [],
+    });
   });
   const startCursor = edges.length ? edges[0].cursor : undefined;
   const endCursor = edges.length ? edges[edges.length - 1].cursor : undefined;
-  const hasPreviousPage = offset > 0;
-  const hasNextPage = offset + limit < totalCount;
+  const hasPreviousPage = (offset || 0) > 0;
+  const hasNextPage = (offset || 0) + limit < totalCount;
 
   return {
     totalCount,
@@ -198,25 +195,14 @@ export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutp
     offset: Math.max(Number(offset) || 0, 0),
   } as TOutputFilter;
 
+
   if (after || before) {
-    const cursor = getNodeCursor(after || before);
-    outputFilter.limit = cursor.limit;
-    outputFilter.offset = cursor.offset;
-    outputFilter.revert = cursor.revert;
-    outputFilter.cursor = cursor;
+    const cursorPayload = getCursorPayload(after || before);
+    return {
+      ...outputFilter,
+      ...cursorPayload,
+    };
   }
-
-  if (!outputFilter.orderBy.length) {
-    outputFilter.orderBy.push({
-      field: 'createdAt',
-      direction: IDirectionRange.DESC,
-    });
-  }
-
-  outputFilter.orderBy.push({
-    field: 'id',
-    direction: IDirectionRange.DESC,
-  });
 
   if (typeof filter !== 'undefined') {
     // if filter is an array
@@ -230,6 +216,7 @@ export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutp
       });
     }
   }
+
 
   return outputFilter;
 };
@@ -286,6 +273,7 @@ export interface IPageInfo {
 export type Node<T> = T & {
   id: string;
   createdAt: Date;
+  updatedAt: Date;
 };
 
 /**
@@ -297,22 +285,25 @@ export interface Edge<T> {
   cursor: string;
 }
 
-export interface ICursorPayload {
-  limit: number;
-  offset: number;
-  revert: boolean;
-  id: string;
-}
-
 export interface IListResponse<T> {
   totalCount: number;
   offset: number;
   limit: number;
   nodes: Array<Node<T>>;
+  orderBy: TOrderBy;
+  where: TWhere;
   revert?: boolean;
 }
 
-export type ICursorConnectionProps<T> = IListResponse<T>;
+export interface ICursorConnectionProps<T> {
+  totalCount: number;
+  limit: number;
+  nodes: Array<Node<T>>;
+  offset?: number;
+  orderBy?: TOrderBy;
+  where?: TWhere;
+  revert?: boolean;
+}
 
 export interface TInputFilter {
   first?: number;
@@ -339,7 +330,14 @@ export interface TOutputFilter {
   where: TWhere;
   revert: boolean;
   search: IInputSearch | false;
-  cursor?: ICursorPayload;
+  cursor: string;
+}
+
+export interface ICursorPayload {
+  offset: number;
+  limit: number;
+  where: TWhere,
+  orderBy: TOrderBy;
 }
 
 export type TOrderBy = Array<{

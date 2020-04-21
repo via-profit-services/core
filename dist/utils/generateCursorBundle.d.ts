@@ -25,22 +25,17 @@ export declare const stringToCursor: (str: string) => string;
  * @param  {string} str
  */
 export declare const cursorToString: (cursor: string) => string;
-export declare const makeNodeCursor: (payload: ICursorPayload) => string;
-export declare const getNodeCursor: (cursor: string) => ICursorPayload;
+export declare const makeNodeCursor: (cursorName: string, cursorPayload: ICursorPayload) => string;
+export declare const getCursorPayload: (cursor: string) => ICursorPayload;
 /**
  * Wrap node to cursor object
  * @param  {Node} node
  * @param  {TOrderBy} order
  */
-export declare const nodeToEdge: <T>(node: Node<T>, payload: Pick<ICursorPayload, "limit" | "offset" | "revert">) => {
+export declare const nodeToEdge: <T>(node: Node<T>, cursorName: string, cursorPayload: ICursorPayload) => {
     node: Node<T>;
     cursor: string;
 };
-/**
- * Convert nodes array to array of cursors
- * @param {Array} nodes
- */
-export declare const nodesToEdges: <T>(nodes: Node<T>[], payload: Pick<ICursorPayload, "limit" | "offset" | "revert">) => Edge<T>[];
 /**
  * Convert GraphQL OrderBy array to Knex OrderBy array format
  * @param { TOrderBy } orderBy Array of objects econtains { field: "", direction: "" }
@@ -59,12 +54,12 @@ export interface ICursorConnection<T> {
     pageInfo: IPageInfo;
     totalCount: number;
 }
-export declare const buildCursorConnection: <T>(props: ICursorConnectionProps<T>) => ICursorConnection<T>;
+export declare const buildCursorConnection: <T>(props: ICursorConnectionProps<T>, cursorName?: string) => ICursorConnection<T>;
 export declare const buildQueryFilter: <TArgs extends TInputFilter>(args: TArgs) => TOutputFilter;
 /**
  * Return array of fields of node
  */
-export declare const extractNodeField: <T, K extends "id" | "createdAt" | keyof T>(nodes: Node<T>[], field: K) => Node<T>[K][];
+export declare const extractNodeField: <T, K extends "id" | "createdAt" | "updatedAt" | keyof T>(nodes: Node<T>[], field: K) => Node<T>[K][];
 /**
  * Returns node IDs array
  */
@@ -96,6 +91,7 @@ export interface IPageInfo {
 export declare type Node<T> = T & {
     id: string;
     createdAt: Date;
+    updatedAt: Date;
 };
 /**
  * GraphQL Edge type
@@ -105,20 +101,24 @@ export interface Edge<T> {
     node: Node<T>;
     cursor: string;
 }
-export interface ICursorPayload {
-    limit: number;
-    offset: number;
-    revert: boolean;
-    id: string;
-}
 export interface IListResponse<T> {
     totalCount: number;
     offset: number;
     limit: number;
     nodes: Array<Node<T>>;
+    orderBy: TOrderBy;
+    where: TWhere;
     revert?: boolean;
 }
-export declare type ICursorConnectionProps<T> = IListResponse<T>;
+export interface ICursorConnectionProps<T> {
+    totalCount: number;
+    limit: number;
+    nodes: Array<Node<T>>;
+    offset?: number;
+    orderBy?: TOrderBy;
+    where?: TWhere;
+    revert?: boolean;
+}
 export interface TInputFilter {
     first?: number;
     offset?: number;
@@ -142,7 +142,13 @@ export interface TOutputFilter {
     where: TWhere;
     revert: boolean;
     search: IInputSearch | false;
-    cursor?: ICursorPayload;
+    cursor: string;
+}
+export interface ICursorPayload {
+    offset: number;
+    limit: number;
+    where: TWhere;
+    orderBy: TOrderBy;
 }
 export declare type TOrderBy = Array<{
     field: string;

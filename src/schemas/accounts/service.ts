@@ -35,25 +35,22 @@ class Accounts {
     } = filter;
 
     return knex
-      .select<any, Array<IAccount & { totalCount: number }>>(['joined.totalCount', 'accounts.*'])
-      .join(
-        knex('accounts')
-          .select(['id', knex.raw('count(*) over() as "totalCount"')])
-          .limit(limit || 0)
-          .offset(offset || 0)
-          .where((builder) => convertWhereToKnex(builder, where))
-          .orderBy(convertOrderByToKnex(orderBy))
-          .as('joined'),
-        'joined.id',
-        'accounts.id',
-      )
-      .orderBy(convertOrderByToKnex(orderBy))
+      .select([
+        'accounts.*',
+        knex.raw('count(*) over() as "totalCount"'),
+      ])
       .from('accounts')
+      .orderBy(convertOrderByToKnex(orderBy))
+      .where((builder) => convertWhereToKnex(builder, where))
+      .limit(limit)
+      .offset(offset)
       .then((nodes) => ({
         totalCount: nodes.length ? Number(nodes[0].totalCount) : 0,
         limit,
         offset,
         nodes,
+        where,
+        orderBy,
       }));
   }
 
@@ -140,10 +137,19 @@ export interface IAccount {
   createdAt: Date;
   updatedAt: Date;
   deleted: Boolean;
+  cursor: string;
 }
 
-export type IAccountUpdateInfo = Omit<IAccount, 'id' | 'createdAt' | 'updatedAt'>;
+type IAccountTableModelOutput = Omit<IAccount, 'createdAt' | 'updatedAt' | 'roles'> & {
+  roles: string[];
+  createdAt: Date;
+  updatedAt: Date;
+  cursor: number;
+  totalCount: number;
+}
 
-export type IAccountCreateInfo = Omit<IAccount, 'id' | 'createdAt' | 'updatedAt'> & {
+export type IAccountUpdateInfo = Omit<IAccount, 'id' | 'createdAt' | 'updatedAt' | 'cursor'>;
+
+export type IAccountCreateInfo = Omit<IAccount, 'id' | 'createdAt' | 'updatedAt' | 'cursor'> & {
   id?: string;
 }

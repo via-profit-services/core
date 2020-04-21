@@ -71,8 +71,8 @@ export const knexProvider = (config: IDBConfig) => {
 
       logger.sql.debug(builder.toString(), { queryTime });
     })
-    .on('query-error', (err, query, builder) => {
-      logger.sql.error(builder.toString(), { err, bindings: query.bindings });
+    .on('query-error', (err, query) => {
+      logger.sql.error(query.sql, { err, bindings: query.bindings });
     });
 
   logger.server.debug('Knex provider configured');

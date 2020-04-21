@@ -15,7 +15,7 @@ export const accountsQueryResolver: IResolverObject<any, IContext> = {
 
     try {
       const accountsConnection = await accountsService.getAccounts(filter);
-      const connection = buildCursorConnection(accountsConnection);
+      const connection = buildCursorConnection(accountsConnection, 'accounts');
 
       // fill the cache
       accountsConnection.nodes.forEach((node) => {
