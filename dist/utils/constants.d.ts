@@ -17,6 +17,7 @@ export declare const LOG_FILENAME_AUTH = "auth-%DATE%.log";
 export declare const LOG_FILENAME_HTTP = "http-%DATE%.log";
 export declare const LOG_FILENAME_DEBUG = "debug-%DATE%.log";
 export declare const LOG_FILENAME_ERRORS = "errors-%DATE%.log";
+export declare const LOG_FILENAME_WARNINGS = "warnings-%DATE%.log";
 export declare const LOG_FILENAME_SQL = "sql-%DATE%.log";
 export declare const LOG_DATE_PATTERNT = "YYYY-MM-DD";
 export declare const LOG_MAZ_SIZE = "20m";

@@ -86,6 +86,8 @@ class App {
     const { logger } = context;
     const useSSL = serverOptions?.cert;
 
+    process.on('warning', (e) => logger.server.warn(e.name, e));
+
     const server = useSSL
       ? https.createServer(serverOptions || {}, app)
       : http.createServer(serverOptions || {}, app);
@@ -150,6 +152,10 @@ class App {
 
           context.token = payload;
           return context;
+        },
+        onDisconnect: (webSocket: any) => {
+          webSocket.close();
+          webSocket.terminate();
         },
       },
       {

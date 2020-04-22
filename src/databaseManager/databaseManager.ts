@@ -32,8 +32,6 @@ export const knexProvider = (config: IDBConfig) => {
     client: DATABASE_CLIENT,
     connection,
     pool: {
-      min: 5,
-      max: 100,
       afterCreate: (conn: any, done: Function) => {
         conn.query(
           `

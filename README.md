@@ -479,6 +479,7 @@ logger.server.debug('My debug message');
 
 - `server` - серверный логгер уровня `debug` для регистрации ошибок и отладочных данных. Имеет два транспорта:
   - DailyRotateFile уровня `error`. Записывает в файл `errors-%DATE%.log`
+  - DailyRotateFile уровня `warn`. Записывает в файл `warnings-%DATE%.log`
   - DailyRotateFile уровня `debug`. Записывает в файл `debug-%DATE%.log`
 - `sql` - логгер запросов в базу данных. Уровень логгера - `debug`. Имеет два транспорта:
   - DailyRotateFile уровня `debug`. Записывает в файл `sql-%DATE%.log`

@@ -22,6 +22,7 @@ export const LOG_FILENAME_AUTH = 'auth-%DATE%.log';
 export const LOG_FILENAME_HTTP = 'http-%DATE%.log';
 export const LOG_FILENAME_DEBUG = 'debug-%DATE%.log';
 export const LOG_FILENAME_ERRORS = 'errors-%DATE%.log';
+export const LOG_FILENAME_WARNINGS = 'warnings-%DATE%.log';
 export const LOG_FILENAME_SQL = 'sql-%DATE%.log';
 export const LOG_DATE_PATTERNT = 'YYYY-MM-DD';
 export const LOG_MAZ_SIZE = '20m';
