@@ -8,7 +8,6 @@ export const DEFAULT_SERVER_PORT = 4000;
 export const DEFAULT_GRAPHQL_ENDPOINT = '/graphql';
 export const DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT = '/subscriptions';
 export const DEFAULT_SERVER_TIMEZONE = 'UTC';
-export const DEFAULT_ROUTE_AUTH = '/auth';
 export const DEFAULT_ROUTE_PLAYGROUND = '/playground';
 export const DEFAULT_ROUTE_GRAPHIQL = '/graphiql';
 export const DEFAULT_ROUTE_VOYAGER = '/voyager';

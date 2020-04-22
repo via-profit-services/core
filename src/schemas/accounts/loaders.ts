@@ -1,5 +1,5 @@
 import { IContext } from '../../app';
-import { Node, DataLoader } from '../../utils';
+import { Node, DataLoader, collateForDataloader } from '../../utils';
 import AccountsService, { IAccount } from './service';
 
 interface Loaders {
@@ -19,7 +19,10 @@ export default function createLoaders(context: IContext) {
 
   loaders.accounts = new DataLoader<
     string, Node<IAccount>
-    >((ids: string[]) => service.getAccountsByIds(ids));
+    >((ids: string[]) => {
+      return service.getAccountsByIds(ids)
+        .then((nodes) => collateForDataloader(ids, nodes));
+    });
 
   return loaders;
 }

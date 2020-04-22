@@ -38,8 +38,9 @@ export async function up(knex: Knex): Promise<any> {
       "comment" text NULL,
       CONSTRAINT accounts_pkey PRIMARY KEY (id)
     );
-    
+ 
     CREATE INDEX "accountsDeletedIndex" ON accounts USING btree (deleted);
+
   `);
 }
 

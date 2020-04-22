@@ -1,5 +1,4 @@
 /// <reference types="node" />
-import { EventEmitter } from 'events';
 import http from 'http';
 import https from 'https';
 import DeviceDetector from 'device-detector-js';
@@ -39,7 +38,6 @@ export interface IInitProps {
     database: Omit<IDBConfig, 'logger' | 'localTimezone'>;
     logger: ILoggerCollection;
     routes?: {
-        auth?: string;
         playground?: string;
         voyager?: string;
     };
@@ -63,7 +61,6 @@ interface IInitDefaultProps extends IInitProps {
     subscriptionEndpoint: string;
     timezone: string;
     routes: {
-        auth: string;
         playground: string;
         voyager: string;
         [key: string]: string;
@@ -79,7 +76,6 @@ export interface IContext {
     jwt: IJwtConfig;
     knex: KnexInstance;
     logger: ILoggerCollection;
-    emitter: EventEmitter;
     timezone: string;
     startTime: any;
     deviceInfo: DeviceDetector.DeviceDetectorResult;
@@ -95,7 +91,6 @@ export interface IBootstrapCallbackArgs {
     context: IContext;
     resolveUrl: {
         graphql: string;
-        auth: string;
         graphiql?: string;
         playground?: string;
         voyager?: string;

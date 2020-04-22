@@ -1,5 +1,4 @@
 /* eslint-disable import/max-dependencies */
-import { EventEmitter } from 'events';
 import http from 'http';
 import https from 'https';
 import path from 'path';
@@ -36,7 +35,6 @@ import {
   DEFAULT_GRAPHQL_ENDPOINT,
   DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT,
   DEFAULT_SERVER_TIMEZONE,
-  DEFAULT_ROUTE_AUTH,
   DEFAULT_ROUTE_PLAYGROUND,
   DEFAULT_ROUTE_VOYAGER,
   MAXIMUM_REQUEST_BODY_SIZE,
@@ -73,7 +71,6 @@ class App {
 
     // combine default routes with passed
     this.props.routes = {
-      auth: DEFAULT_ROUTE_AUTH,
       playground: DEFAULT_ROUTE_PLAYGROUND,
       voyager: DEFAULT_ROUTE_VOYAGER,
       ...this.props.routes,
@@ -100,7 +97,6 @@ class App {
       // set resolver URL's list
       const resolveUrl: IBootstrapCallbackArgs['resolveUrl'] = {
         graphql: `${host}:${port}${endpoint}`,
-        auth: `${host}:${port}${routes.auth}`,
         subscriptions: `ws${useSSL ? 's' : ''}://localhost:${port}${subscriptionEndpoint}`,
       };
 
@@ -226,9 +222,6 @@ class App {
       ...database,
     });
 
-    // define EventEmittre instance
-    const emitter = new EventEmitter();
-
     // configure cron job manager
     CronJobManager.configure({ logger });
 
@@ -239,7 +232,6 @@ class App {
       jwt,
       logger,
       knex,
-      emitter,
       deviceInfo: {
         client: {
           type: '',
@@ -414,7 +406,6 @@ export interface IInitProps {
   database: Omit<IDBConfig, 'logger' | 'localTimezone'>;
   logger: ILoggerCollection;
   routes?: {
-    auth?: string;
     playground?: string;
     voyager?: string;
   };
@@ -440,7 +431,6 @@ interface IInitDefaultProps extends IInitProps {
   subscriptionEndpoint: string;
   timezone: string;
   routes: {
-    auth: string;
     playground: string;
     voyager: string;
     [key: string]: string;
@@ -457,7 +447,6 @@ export interface IContext {
   jwt: IJwtConfig;
   knex: KnexInstance;
   logger: ILoggerCollection;
-  emitter: EventEmitter;
   timezone: string;
   startTime: any;
   deviceInfo: DeviceDetector.DeviceDetectorResult;
@@ -475,7 +464,6 @@ export interface IBootstrapCallbackArgs {
   context: IContext;
   resolveUrl: {
     graphql: string;
-    auth: string;
     graphiql?: string;
     playground?: string;
     voyager?: string;

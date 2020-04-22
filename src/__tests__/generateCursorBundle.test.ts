@@ -3,12 +3,15 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   nodeToEdge,
   makeNodeCursor,
-  getNodeCursor,
+  getCursorPayload,
   buildCursorConnection,
   ICursorConnection,
   IPageInfo,
   Edge,
   Node,
+  TWhereAction,
+  ICursorPayload,
+  IDirectionRange,
 } from '../utils';
 
 const generateNodes = (quantity: number):
@@ -16,16 +19,19 @@ const generateNodes = (quantity: number):
   id: uuidv4(),
   name: faker.name.findName(),
   createdAt: faker.date.past(),
+  updatedAt: faker.date.past(),
 }));
 
 describe('Cursor utils', () => {
   it('nodeToEdge. Should return GraphQL Edge', (done) => {
     const node = generateNodes(1)[0];
-    const edge = nodeToEdge(node, {
+    const cursorPayload: ICursorPayload = {
       limit: 2,
       offset: 0,
-      revert: false,
-    });
+      where: [['status', TWhereAction.GT, 16]],
+      orderBy: [{ field: 'name', direction: IDirectionRange.DESC }],
+    };
+    const edge = nodeToEdge(node, 'test', cursorPayload);
 
     expect(edge).toMatchObject({
       cursor: expect.any(String),
@@ -38,20 +44,15 @@ describe('Cursor utils', () => {
   });
 
   it('getNodeCursor. Should return an array of ICursor implementation', (done) => {
-    const node = generateNodes(1)[0];
-    const cursor = makeNodeCursor({
+    const cursorPayload: ICursorPayload = {
       limit: 2,
       offset: 0,
-      revert: false,
-      id: node.id,
-    });
+      where: [['status', TWhereAction.GT, 16]],
+      orderBy: [{ field: 'name', direction: IDirectionRange.DESC }],
+    };
+    const cursor = makeNodeCursor('test', cursorPayload);
     expect(typeof cursor).toBe('string');
-    expect(getNodeCursor(cursor)).toEqual({
-      limit: 2,
-      offset: 0,
-      revert: false,
-      id: node.id,
-    });
+    expect(getCursorPayload(cursor)).toEqual(cursorPayload);
     done();
   });
 
@@ -59,9 +60,11 @@ describe('Cursor utils', () => {
     const connection = buildCursorConnection({
       totalCount: 15,
       limit: 2,
-      nodes: generateNodes(2),
       offset: 1,
-    });
+      where: [['status', TWhereAction.GT, 16]],
+      orderBy: [{ field: 'name', direction: IDirectionRange.DESC }],
+      nodes: generateNodes(2),
+    }, 'test');
 
     interface NodeData {
       id: string;

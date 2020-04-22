@@ -64,7 +64,7 @@ type AccountsQuery {
     after: String
     before: String
     status: AccountStatus
-    orderBy: AccountOrderBy
+    orderBy: [AccountOrderBy]
   ): AccountListConnection!
 
   """
@@ -142,6 +142,7 @@ type Account implements Node {
   updatedAt: DateTime!
   roles: [String!]!
 }
+
 
 
 """
