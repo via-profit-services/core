@@ -1,5 +1,4 @@
 /* eslint-disable import/max-dependencies */
-import { EventEmitter } from 'events';
 import http from 'http';
 import https from 'https';
 import path from 'path';
@@ -226,9 +225,6 @@ class App {
       ...database,
     });
 
-    // define EventEmittre instance
-    const emitter = new EventEmitter();
-
     // configure cron job manager
     CronJobManager.configure({ logger });
 
@@ -239,7 +235,6 @@ class App {
       jwt,
       logger,
       knex,
-      emitter,
       deviceInfo: {
         client: {
           type: '',
@@ -457,7 +452,6 @@ export interface IContext {
   jwt: IJwtConfig;
   knex: KnexInstance;
   logger: ILoggerCollection;
-  emitter: EventEmitter;
   timezone: string;
   startTime: any;
   deviceInfo: DeviceDetector.DeviceDetectorResult;
