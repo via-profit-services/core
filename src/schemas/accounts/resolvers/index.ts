@@ -1,7 +1,7 @@
 import AccountResolver from './Account';
 import AccountsMutationResolver from './AccountsMutation';
 import AccountsQueryResolver from './AccountsQuery';
-// import AccountsSubscriptionResolver from './AccountsSubscription';
+import AccountsSubscriptionResolver from './AccountsSubscription';
 
 const resolvers = {
   Query: {
@@ -10,7 +10,7 @@ const resolvers = {
   Mutation: {
     accounts: () => ({}),
   },
-  // Subscription: AccountsSubscriptionResolver,
+  Subscription: AccountsSubscriptionResolver,
   AccountsQuery: AccountsQueryResolver,
   AccountsMutation: AccountsMutationResolver,
   Account: AccountResolver,

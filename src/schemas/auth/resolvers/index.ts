@@ -1,11 +1,11 @@
 import AuthMutationResolver from './AuthMutation';
-// import AuthSubscriptionResolver from './AuthSubscription';
+import AuthSubscriptionResolver from './AuthSubscription';
 
 const resolvers = {
   Mutation: {
     auth: () => ({}),
   },
-  // Subscription: AuthSubscriptionResolver,
+  Subscription: AuthSubscriptionResolver,
   AuthMutation: AuthMutationResolver,
 };
 

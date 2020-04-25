@@ -28,6 +28,7 @@ export const knexProvider = (config: IDBConfig) => {
     logger.server.debug('pg-types configured');
   }
 
+  logger.server.debug('Try to Database server connect');
   const instance = knex({
     client: DATABASE_CLIENT,
     connection,

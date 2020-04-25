@@ -6,6 +6,7 @@
 
 ## Содержание
 
+- [Зависимости](#dependency)
 - [Установка и настройка](#setup)
 - [Как использовать](#how-to-use)
 - [GraphQL типы](#graphql-typedefs)
@@ -24,6 +25,15 @@
 - [Error handlers (исключения)](#error-handlers)
 - [CLI](#cli)
 - [Contributing](./CONTRIBUTING.md)
+
+
+## <a name="dependency"></a> Зависимости
+
+1. [Redis](https://redis.io/)
+
+Пакет использует [graphql-redis-subscriptions](https://github.com/davidyaha/graphql-redis-subscriptions). Соответственно, необходим Redis сервер, который может быть установлен локально, либо находиться на удаленном хосте.
+
+
 
 ## <a name="setup"></a> Установка и настройка
 
@@ -87,6 +97,10 @@ DB_MIGRATIONS_EXTENSION=ts
 DB_SEEDS_DIRECTORY= <-- Путь до директории сид файлов Knex (должна быть внутри src)
 DB_SEEDS_EXTENSION=ts
 
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
 JWT_ALGORITHM=RS256
 JWT_ACCESSTOKENEXPIRESIN=900
 JWT_REFRESHTOKENEXPIRESIN=2.592e6
@@ -127,24 +141,62 @@ yarn knex:migrate:latest
 
 ```graphql
 extend type Query {
-  myModule: MyModuleQueries!
+  myModule: MyModuleQuery!
 }
 
-type MyModuleQueries {
+extend type Mutation {
+  myModule: MyModuleMutation!
+}
+
+extend type Subscription {
+  somethingChanes: String!
+}
+
+type MyModuleQuery {
   version: String!
+}
+
+type MyModuleMutation {
+  updateAnything(input: String!): Boolean!
 }
 ```
 
 2. Создайте резолвер
 
 ```ts
-const resolvers = {
+import { IContext } from '@via-profit-services/core';
+import { IResolverObject } from 'graphql-tools';
+
+const resolvers: IResolverObject<any, IContext> = {
   Query: {
     myModule: () => ({}),
   },
-  MyModuleQueries: {
-    version: () => 'v.0.1.1',
+   Mutation: {
+    myModule: () => ({}),
   },
+  MyModuleQuery: {
+    version: (parent, args, context) => {
+      return 'v.0.1.1';
+    },
+  },
+  Subscription: {
+    somethingChanes: {
+      subscribe: (parent, args, context) => {
+        return context.pubsub.asyncIterator('triggerName');
+      },
+    },
+  },
+  MyModuleMutation: {
+    updateAnything: (parent, args, context) => {
+      const { input } = args;
+      const { pubsub } = context;
+
+      pubsub.publish('trigger', {
+        updateAnything: 'payload data string',
+      });
+    },
+  },
+ 
 };
 
 export default resolvers;
@@ -410,7 +462,7 @@ _Тип представления Email-адреса согласно стан�
 | `enableIntrospection`                 | `boolean`                   |              | Разрешить доступ к Introspection (Всегда разрешено в `development` режиме)                                                                                                             |
 | `usePlayground`                 | `boolean`                   |              | Включить Graphiql Playground (Всегда включен в `development` режиме)                                                                                                             |
 | `useVoyager`                    | `boolean`                   |              | Включить GraphQL Voyager (Всегда включен в `development` режиме)                                                                                                                 |
-| `useCookie`                    | `boolean`                   |              | Включить функцию автоматической установки cookies (см. <a href="#authentication">Аутентификация</a>)                                                                                                                 |
+| `redis`                    | `object`                   |              | Параметры пакета [ioredis](https://github.com/luin/ioredis/))                                                                                                                 |
 
 ## <a name="convention"></a> Конвенция
 
@@ -450,7 +502,8 @@ interface IContext {
   jwt: IJwtConfig; // Параметры JSON web token
   knex: KnexInstance; // Инстанс Knex
   logger: ILoggerCollection; // Объект логгеров
-  emitter: EventEmitter; // Стандартный nodejs EventEmitter
+  pubsub: RedisPubSub (https://github.com/davidyaha/graphql-redis-subscriptions)
+  redis: Redis (https://github.com/luin/ioredis/)
   timezone: string; // Текущая временная зона
   token: IAccessToken['payload']; // Access Token payload
   deviceInfo: DeviceDetector.DeviceDetectorResult; // Объект с распарсенными данными User-Agent

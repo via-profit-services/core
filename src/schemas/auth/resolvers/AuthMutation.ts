@@ -2,9 +2,8 @@ import { IResolverObject } from 'graphql-tools';
 
 import { IContext } from '../../../app';
 import { ServerError } from '../../../errorHandlers';
-// import { pubsub } from '../../../utils';
 import AuthService, { IRefreshToken, TokenType } from '../service';
-// import { SubscriptioTriggers } from './AuthSubscription';
+import { SubscriptioTriggers } from './AuthSubscription';
 
 const driversMutationResolver: IResolverObject<any, IContext> = {
   getAccessToken: async (parent, args: { login: string; password: string }, context) => {
@@ -53,15 +52,16 @@ const driversMutationResolver: IResolverObject<any, IContext> = {
     return tokenBag;
   },
   revokeToken: async (parent, args: { id: string }, context) => {
+    const { pubsub } = context;
     const { id } = args;
 
     try {
       const authService = new AuthService({ context });
       await authService.revokeToken(id);
 
-      // pubsub.publish(SubscriptioTriggers.TOKEN_REVOKED, {
-      //   tokenWasRevoked: [id],
-      // });
+      pubsub.publish(SubscriptioTriggers.TOKEN_REVOKED, {
+        tokenWasRevoked: [id],
+      });
 
       return true;
     } catch (err) {

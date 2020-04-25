@@ -1,5 +1,5 @@
 import { IResolverObject } from 'graphql-tools';
-import { pubsub, withFilter } from '../../../utils';
+import { withFilter } from '../../../app';
 import { IAccount } from '../service';
 
 export enum SubscriptioTriggers {
@@ -13,7 +13,9 @@ const accountsSubscription: IResolverObject = {
   // fire when account with variables.id was updated
   accountWasUpdated: {
     subscribe: withFilter(
-      () => pubsub.asyncIterator(SubscriptioTriggers.ACCOUNT_UPDATED),
+      (parent, args, context) => {
+        return context.pubsub.asyncIterator(SubscriptioTriggers.ACCOUNT_UPDATED);
+      },
       (payload: {
         accountWasUpdated: IAccount;
       }, variables: {
@@ -22,12 +24,14 @@ const accountsSubscription: IResolverObject = {
     ),
   },
   accountWasDeleted: {
-    subscribe: () => pubsub.asyncIterator(SubscriptioTriggers.ACCOUNT_DELETED),
+    subscribe: (parent, args, context) => {
+      return context.pubsub.asyncIterator(SubscriptioTriggers.ACCOUNT_DELETED);
+    },
   },
   // fire when token with variables.id was revoked
   tokenWasRevoked: {
     subscribe: withFilter(
-      () => pubsub.asyncIterator(SubscriptioTriggers.TOKEN_REVOKED),
+      (parent, args, context) => context.pubsub.asyncIterator(SubscriptioTriggers.TOKEN_REVOKED),
       (payload: {
         tokenWasRevoked: string[];
       }, variables: {

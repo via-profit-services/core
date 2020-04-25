@@ -20,6 +20,10 @@ declare namespace NodeJS {
     DB_SEEDS_DIRECTORY: string;
     DB_SEEDS_EXTENSION: 'js' | 'ts';
 
+    REDIS_HOST: string;
+    REDIS_PORT: string;
+    REDIS_PASSWORD: string;
+
     JWT_ALGORITHM:
     'HS256' | 'HS384' | 'HS512' |
     'RS256' | 'RS384' | 'RS512' |

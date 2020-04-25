@@ -12,8 +12,11 @@ import graphqlHTTP, { OptionsData, RequestInfo } from 'express-graphql';
 import { GraphQLSchema, execute, subscribe } from 'graphql';
 import { applyMiddleware, IMiddlewareGenerator } from 'graphql-middleware';
 import expressPlayground from 'graphql-playground-middleware-express';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
+import { withFilter } from 'graphql-subscriptions';
 import { makeExecutableSchema, ITypedef, IResolvers } from 'graphql-tools';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
+import Redis, { RedisOptions, Redis as RedisInterface } from 'ioredis';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { ServerOptions as IWebsocketServerOption } from 'ws';
 
@@ -30,6 +33,11 @@ import {
   common,
   scalar,
 } from '../schemas';
+import AuthService, {
+  TokenType,
+  IJwtConfig,
+  IAccessToken,
+} from '../schemas/auth/service';
 import {
   DEFAULT_SERVER_PORT,
   DEFAULT_GRAPHQL_ENDPOINT,
@@ -45,11 +53,6 @@ import { CronJobManager } from '../utils/cronJobManager';
 import { DisableIntrospectionQueries } from '../utils/disableIntrospection';
 import { loadGraphQLConfig } from '../utils/graphqlconfig';
 import { headersMiddleware } from '../utils/headersMiddleware';
-import AuthService, {
-  TokenType,
-  IJwtConfig,
-  IAccessToken,
-} from '~/schemas/auth/service';
 
 class App {
   public props: IInitDefaultProps;
@@ -79,7 +82,13 @@ class App {
 
   public bootstrap(callback?: (args: IBootstrapCallbackArgs) => void) {
     const {
-      port, usePlayground, useVoyager, endpoint, routes, serverOptions, subscriptionEndpoint,
+      port,
+      usePlayground,
+      useVoyager,
+      endpoint,
+      routes,
+      serverOptions,
+      subscriptionEndpoint,
     } = this.props;
 
     const { app, schema, context } = this.createApp();
@@ -182,6 +191,7 @@ class App {
       permissions,
       middlewares,
       database,
+      redis,
       logger,
       routes,
       subscriptionEndpoint,
@@ -231,12 +241,19 @@ class App {
     // configure cron job manager
     CronJobManager.configure({ logger });
 
+
     // combine finally context object
     const context: IContext = {
       endpoint,
       timezone,
       jwt,
       logger,
+      redis: new Redis(redis),
+      pubsub: new RedisPubSub({
+        publisher: new Redis(redis),
+        subscriber: new Redis(redis),
+        connection: redis,
+      }),
       knex,
       deviceInfo: {
         client: {
@@ -397,7 +414,7 @@ class App {
 }
 
 export default App;
-export { App };
+export { App, withFilter };
 
 export interface IInitProps {
   port?: number;
@@ -410,6 +427,7 @@ export interface IInitProps {
   resolvers?: Array<IResolvers<any, IContext>>;
   jwt: IJwtConfig;
   database: Omit<IDBConfig, 'logger' | 'localTimezone'>;
+  redis: RedisOptions;
   logger: ILoggerCollection;
   routes?: {
     playground?: string;
@@ -455,6 +473,8 @@ export interface IContext {
   logger: ILoggerCollection;
   timezone: string;
   startTime: any;
+  pubsub: RedisPubSub;
+  redis: RedisInterface;
   deviceInfo: DeviceDetector.DeviceDetectorResult;
   token: IAccessToken['payload'];
 }

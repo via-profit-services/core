@@ -2,7 +2,6 @@ import { IResolverObject } from 'graphql-tools';
 
 import { IContext } from '../../../app';
 import { ServerError } from '../../../errorHandlers';
-// import { pubsub } from '../../../utils';
 import createLoaders from '../loaders';
 import AccountsService, { IAccountUpdateInfo, IAccountCreateInfo } from '../service';
 // import { SubscriptioTriggers } from './AccountsSubscription';
