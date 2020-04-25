@@ -2,10 +2,9 @@ import { IResolverObject } from 'graphql-tools';
 
 import { IContext } from '../../../app';
 import { ServerError } from '../../../errorHandlers';
-import { pubsub } from '../../../utils';
 import createLoaders from '../loaders';
 import AccountsService, { IAccountUpdateInfo, IAccountCreateInfo } from '../service';
-import { SubscriptioTriggers } from './AccountsSubscription';
+// import { SubscriptioTriggers } from './AccountsSubscription';
 
 const driversMutationResolver: IResolverObject<any, IContext> = {
   updateAccount: async (parent, args: { id: string; data: IAccountUpdateInfo }, context) => {
@@ -20,10 +19,10 @@ const driversMutationResolver: IResolverObject<any, IContext> = {
     }
     loaders.accounts.clear(id);
 
-    const account = await loaders.accounts.load(id);
-    pubsub.publish(SubscriptioTriggers.ACCOUNT_UPDATED, {
-      accountWasUpdated: account,
-    });
+    // const account = await loaders.accounts.load(id);
+    // pubsub.publish(SubscriptioTriggers.ACCOUNT_UPDATED, {
+    //   accountWasUpdated: account,
+    // });
 
 
     return { id };
@@ -56,9 +55,9 @@ const driversMutationResolver: IResolverObject<any, IContext> = {
       const result = await accountsService.deleteAccount(id);
       loaders.accounts.clear(id);
 
-      pubsub.publish(SubscriptioTriggers.ACCOUNT_DELETED, {
-        accountWasDeleted: [id],
-      });
+      // pubsub.publish(SubscriptioTriggers.ACCOUNT_DELETED, {
+      //   accountWasDeleted: [id],
+      // });
 
       return Boolean(result);
     } catch (err) {

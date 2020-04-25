@@ -1,11 +1,12 @@
 import { IResolverObject } from 'graphql-tools';
+
 import { IContext } from '../../../app';
-import { pubsub } from '../../../utils';
 
-
-const infoSubscriptionResolver: IResolverObject<any, IContext, {str: string}> = {
+const infoSubscriptionResolver: IResolverObject<any, IContext> = {
   info: {
-    subscribe: () => pubsub.asyncIterator('info'),
+    subscribe: (parent, args, context) => {
+      return context.pubsub.asyncIterator('info');
+    },
   },
 };
 

@@ -1,16 +1,19 @@
 import { IResolverObject } from 'graphql-tools';
-import { pubsub, withFilter } from '../../../utils';
+import { withFilter, IContext } from '../../../app';
 
 export enum SubscriptioTriggers {
   TOKEN_REVOKED = 'token-revoked',
 }
 
-const authSubscription: IResolverObject = {
+const authSubscription: IResolverObject<any, IContext> = {
 
   // fire when token with variables.id was revoked
   tokenWasRevoked: {
+
     subscribe: withFilter(
-      () => pubsub.asyncIterator(SubscriptioTriggers.TOKEN_REVOKED),
+      (parens, args, context: IContext) => {
+        return context.pubsub.asyncIterator(SubscriptioTriggers.TOKEN_REVOKED);
+      },
       (payload: {
         tokenWasRevoked: string[];
       }, variables: {

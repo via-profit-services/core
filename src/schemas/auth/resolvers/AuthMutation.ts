@@ -2,7 +2,6 @@ import { IResolverObject } from 'graphql-tools';
 
 import { IContext } from '../../../app';
 import { ServerError } from '../../../errorHandlers';
-import { pubsub } from '../../../utils';
 import AuthService, { IRefreshToken, TokenType } from '../service';
 import { SubscriptioTriggers } from './AuthSubscription';
 
@@ -53,6 +52,7 @@ const driversMutationResolver: IResolverObject<any, IContext> = {
     return tokenBag;
   },
   revokeToken: async (parent, args: { id: string }, context) => {
+    const { pubsub } = context;
     const { id } = args;
 
     try {

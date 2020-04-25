@@ -5,12 +5,15 @@ import DeviceDetector from 'device-detector-js';
 import { Express } from 'express';
 import { GraphQLSchema } from 'graphql';
 import { IMiddlewareGenerator } from 'graphql-middleware';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
+import { withFilter } from 'graphql-subscriptions';
 import { ITypedef, IResolvers } from 'graphql-tools';
+import { RedisOptions, Redis as RedisInterface } from 'ioredis';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { ServerOptions as IWebsocketServerOption } from 'ws';
 import { IDBConfig, KnexInstance } from '../databaseManager';
 import { ILoggerCollection } from '../logger';
-import { IJwtConfig, IAccessToken } from "../schemas/auth/service";
+import { IJwtConfig, IAccessToken } from '../schemas/auth/service';
 declare class App {
     props: IInitDefaultProps;
     constructor(props: IInitProps);
@@ -24,7 +27,7 @@ declare class App {
     };
 }
 export default App;
-export { App };
+export { App, withFilter };
 export interface IInitProps {
     port?: number;
     endpoint?: string;
@@ -36,6 +39,7 @@ export interface IInitProps {
     resolvers?: Array<IResolvers<any, IContext>>;
     jwt: IJwtConfig;
     database: Omit<IDBConfig, 'logger' | 'localTimezone'>;
+    redis: RedisOptions;
     logger: ILoggerCollection;
     routes?: {
         playground?: string;
@@ -78,6 +82,8 @@ export interface IContext {
     logger: ILoggerCollection;
     timezone: string;
     startTime: any;
+    pubsub: RedisPubSub;
+    redis: RedisInterface;
     deviceInfo: DeviceDetector.DeviceDetectorResult;
     token: IAccessToken['payload'];
 }
