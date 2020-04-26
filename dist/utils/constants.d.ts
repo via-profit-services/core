@@ -1,5 +1,6 @@
 export declare const TOKEN_BEARER_KEY = "Authorization";
 export declare const TOKEN_BEARER = "Bearer";
+export declare const REDIS_TOKENS_BLACKLIST = "tokensBlackList";
 export declare const DATABASE_CHARSET = "UTF8";
 export declare const DATABASE_CLIENT = "pg";
 export declare const DEFAULT_SERVER_PORT = 4000;

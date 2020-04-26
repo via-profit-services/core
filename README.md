@@ -33,6 +33,8 @@
 
 Пакет использует [graphql-redis-subscriptions](https://github.com/davidyaha/graphql-redis-subscriptions). Соответственно, необходим Redis сервер, который может быть установлен локально, либо находиться на удаленном хосте.
 
+Помимо `graphql-redis-subscriptions`, Redis используется в качестве системы хранения так называемого `blackList` токенов, который были отозваны
+
 
 
 ## <a name="setup"></a> Установка и настройка
@@ -107,7 +109,6 @@ JWT_REFRESHTOKENEXPIRESIN=2.592e6
 JWT_ISSUER=viaprofit-services
 JWT_PRIVATEKEY=./misc/keys/jwtRS256.key
 JWT_PUBLICKEY=./misc/keys/jwtRS256.key.pub
-JWT_BLACKLIST=./misc/blacklist.json
 
 SSL_KEY=/home/me/.local/share/mkcert/localhost-key.pem
 SSL_CERT=/home/me/.local/share/mkcert/localhost.pem
