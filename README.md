@@ -33,6 +33,8 @@
 
 Пакет использует [graphql-redis-subscriptions](https://github.com/davidyaha/graphql-redis-subscriptions). Соответственно, необходим Redis сервер, который может быть установлен локально, либо находиться на удаленном хосте.
 
+Помимо `graphql-redis-subscriptions`, Redis используется в качестве системы хранения так называемого `blackList` токенов, который были отозваны
+
 
 
 ## <a name="setup"></a> Установка и настройка

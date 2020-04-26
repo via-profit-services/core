@@ -29,20 +29,15 @@ export default class AuthService {
         access: number;
         refresh: number;
     }): ITokenPackage;
-    static getTokensFile(tokensBlackList: string): ITokensBackList;
-    static setTokensFile(tokensBlackList: string, data: ITokensBackList): void;
     revokeToken(accessTokenIdOrIds: string | string[]): Promise<void>;
-    static isTokenRevoked(accessTokenId: string, tokensBlackList: string): boolean;
+    isTokenRevoked(accessTokenId: string): Promise<boolean>;
     revokeAccountTokens(accountId: string): Promise<string[]>;
     getTokensByIds(ids: string[]): Promise<any[]>;
     clearExpiredTokens(): Promise<void>;
     /**
      * Verify JWT token
-     * @param  {string} token
-     * @param  {string} publicKeyPath
-     * @returns ITokenInfo['payload']
      */
-    static verifyToken(token: string, publicKeyPath: string, tokensBlackList: string): ITokenInfo['payload'];
+    verifyToken(token: string): Promise<ITokenInfo['payload']>;
     checkTokenExist(tokenId: string): Promise<boolean>;
     static extractTokenFromSubscription(connectionParams: any): string;
     /**
@@ -70,10 +65,6 @@ export interface IJwtConfig extends Pick<SignOptions, 'algorithm' | 'issuer'> {
      * Cert public key file path
      */
     publicKey: string;
-    /**
-     * Tokens blacklist file
-     */
-    blackList: string;
 }
 export declare type ITokenInfo = IAccessToken | IRefreshToken;
 export interface ITokenPackage {
