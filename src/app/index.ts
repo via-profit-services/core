@@ -140,20 +140,18 @@ class App {
     const { subscriptionEndpoint, websocketOptions } = this.props;
     const { server, schema, context } = config;
 
+    const authService = new AuthService({ context });
+
     // @see https://github.com/apollographql/subscriptions-transport-ws/blob/master/docs/source/express.md
     return new SubscriptionServer(
       {
         execute,
         schema,
         subscribe,
-        onConnect: (connectionParams: any) => {
+        onConnect: async (connectionParams: any) => {
           const token = AuthService.extractTokenFromSubscription(connectionParams);
 
-          const payload = AuthService.verifyToken(
-            token,
-            context.jwt.publicKey,
-            context.jwt.blackList,
-          );
+          const payload = await authService.verifyToken(token);
 
           if (payload.type !== TokenType.access) {
             throw new UnauthorizedError('Is not an access token');
@@ -342,6 +340,8 @@ class App {
       };
     };
 
+    const authService = new AuthService({ context });
+
     // GraphQL server
     app.use(
       endpoint,
@@ -350,11 +350,7 @@ class App {
           const useSSL = serverOptions?.cert;
           const token = AuthService.extractToken(TokenType.access, req as Request);
           if (token !== '') {
-            const payload = AuthService.verifyToken(
-              token,
-              context.jwt.publicKey,
-              context.jwt.blackList,
-            );
+            const payload = await authService.verifyToken(token);
 
             if (payload.type !== TokenType.access) {
               throw new UnauthorizedError('Is not an access token');
@@ -398,7 +394,6 @@ class App {
         ? '*/30 * * * * *'
         : '* 0 5 * * *',
       onTick: async () => {
-        const authService = new AuthService({ context });
         await authService.clearExpiredTokens();
       },
       start: true,

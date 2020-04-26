@@ -1,5 +1,6 @@
 export const TOKEN_BEARER_KEY = 'Authorization';
 export const TOKEN_BEARER = 'Bearer';
+export const REDIS_TOKENS_BLACKLIST = 'tokensBlackList';
 
 export const DATABASE_CHARSET = 'UTF8';
 export const DATABASE_CLIENT = 'pg';

@@ -1,6 +1,5 @@
 /* eslint-disable import/max-dependencies */
 import fs from 'fs';
-import path from 'path';
 import bcryptjs from 'bcryptjs';
 import { Request } from 'express';
 import jwt, { SignOptions } from 'jsonwebtoken';
@@ -12,6 +11,7 @@ import { ServerError } from '../../errorHandlers';
 import {
   TOKEN_BEARER_KEY,
   TOKEN_BEARER,
+  REDIS_TOKENS_BLACKLIST,
 } from '../../utils';
 import { IAccount, AccountStatus, IAccountRole } from '../accounts/service';
 
@@ -161,6 +161,7 @@ export default class AuthService {
       algorithm: context.jwt.algorithm,
     });
 
+
     const refreshToken = jwt.sign(refreshTokenPayload, privatKey, {
       algorithm: context.jwt.algorithm,
     });
@@ -184,34 +185,12 @@ export default class AuthService {
   }
 
 
-  public static getTokensFile(tokensBlackList: string): ITokensBackList {
-    const defaultData: ITokensBackList = [];
-
-    if (!fs.existsSync(tokensBlackList)) {
-      const dir = path.dirname(tokensBlackList);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-
-      fs.writeFileSync(tokensBlackList, JSON.stringify(defaultData));
-      return defaultData;
-    }
-
-    return JSON.parse(fs.readFileSync(tokensBlackList, 'utf8')) as ITokensBackList;
-  }
-
-  public static setTokensFile(tokensBlackList: string, data: ITokensBackList) {
-    fs.writeFileSync(tokensBlackList, JSON.stringify(data));
-  }
-
   public async revokeToken(accessTokenIdOrIds: string | string[]) {
     const { context } = this.props;
-    const { logger, knex } = context;
-    const blackList = AuthService.getTokensFile(context.jwt.blackList);
+    const { logger, knex, redis } = context;
 
-    const ids = typeof accessTokenIdOrIds === 'string' ? [accessTokenIdOrIds] : accessTokenIdOrIds;
-
-    AuthService.setTokensFile(context.jwt.blackList, [...blackList, ...ids]);
+    const ids = Array.isArray(accessTokenIdOrIds) ? accessTokenIdOrIds : [accessTokenIdOrIds];
+    redis.sadd(REDIS_TOKENS_BLACKLIST, ids);
 
     const tokensList = await knex('tokens')
       .select(['tokens.account', 'tokens.id as access', 'refreshTokens.id as refresh'])
@@ -229,8 +208,10 @@ export default class AuthService {
     });
   }
 
-  public static isTokenRevoked(accessTokenId: string, tokensBlackList: string): boolean {
-    const blackList = AuthService.getTokensFile(tokensBlackList);
+  public async isTokenRevoked(accessTokenId: string): Promise<boolean> {
+    const { redis } = this.props.context;
+
+    const blackList = await redis.smembers(REDIS_TOKENS_BLACKLIST);
     return blackList.includes(accessTokenId);
   }
 
@@ -245,7 +226,7 @@ export default class AuthService {
 
     const ids = allTokens.map((token: { id: string }) => token.id);
 
-    this.revokeToken(ids);
+    await this.revokeToken(ids);
 
     return ids;
   }
@@ -264,18 +245,17 @@ export default class AuthService {
 
   public async clearExpiredTokens() {
     const { context } = this.props;
-    const { knex } = context;
+    const { knex, redis } = context;
 
     const tokensList = await knex('tokens')
       .select('id')
       .where('expiredAt', '<', knex.raw('now()'));
 
-    let blackList = AuthService.getTokensFile(context.jwt.blackList);
-
     const expiredIds = tokensList.map((data: {id: string}) => data.id);
-    blackList = blackList.filter((token) => !expiredIds.includes(token));
 
-    AuthService.setTokensFile(context.jwt.blackList, blackList);
+    if (expiredIds.length) {
+      await redis.srem(REDIS_TOKENS_BLACKLIST, expiredIds);
+    }
 
     await knex('tokens')
       .del()
@@ -284,23 +264,24 @@ export default class AuthService {
 
   /**
    * Verify JWT token
-   * @param  {string} token
-   * @param  {string} publicKeyPath
-   * @returns ITokenInfo['payload']
    */
-  public static verifyToken(token: string, publicKeyPath: string, tokensBlackList: string): ITokenInfo['payload'] {
+  public async verifyToken(token: string): Promise<ITokenInfo['payload']> {
+    const { context } = this.props;
+    const { redis, logger } = context;
     try {
-      const publicKey = fs.readFileSync(publicKeyPath);
-      const payload = jwt.verify(String(token), publicKey) as ITokenInfo['payload'];
+      const privateKey = fs.readFileSync(context.jwt.publicKey);
+      const payload = jwt.verify(String(token), privateKey) as ITokenInfo['payload'];
 
-      const revokeStatus = AuthService.isTokenRevoked(payload.id, tokensBlackList);
+      const revokeStatus = await redis.sismember(REDIS_TOKENS_BLACKLIST, payload.id);
 
       if (revokeStatus) {
+        logger.auth.info('Tried to get data with revoked token', { payload });
         throw new ServerError('Token was revoked', { payload });
       }
 
       return payload;
     } catch (err) {
+      logger.server.error('Failed to validate the token', { err });
       throw new ServerError('Invalid token', err);
     }
   }
@@ -375,10 +356,7 @@ export interface IJwtConfig extends Pick<SignOptions, 'algorithm' | 'issuer'> {
    * Cert public key file path
    */
   publicKey: string;
-  /**
-   * Tokens blacklist file
-   */
-  blackList: string;
+
 }
 
 export type ITokenInfo = IAccessToken | IRefreshToken;

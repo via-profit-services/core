@@ -107,7 +107,6 @@ JWT_REFRESHTOKENEXPIRESIN=2.592e6
 JWT_ISSUER=viaprofit-services
 JWT_PRIVATEKEY=./misc/keys/jwtRS256.key
 JWT_PUBLICKEY=./misc/keys/jwtRS256.key.pub
-JWT_BLACKLIST=./misc/blacklist.json
 
 SSL_KEY=/home/me/.local/share/mkcert/localhost-key.pem
 SSL_CERT=/home/me/.local/share/mkcert/localhost.pem

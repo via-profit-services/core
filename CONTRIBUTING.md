@@ -142,7 +142,6 @@ JWT_REFRESHTOKENEXPIRESIN=2.592e6
 JWT_ISSUER=viaprofit-services
 JWT_PRIVATEKEY=./keys/jwtRS256.key
 JWT_PUBLICKEY=./keys/jwtRS256.key.pub
-JWT_BLACKLIST=./misc/blacklist.json
 
 TIMEZONE=UTC
 ```
