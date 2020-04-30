@@ -3,7 +3,8 @@ import { IResolverObject } from 'graphql-tools';
 import { IContext } from '../../../app';
 
 const infoMutationResolver: IResolverObject<any, IContext> = {
-  echo: (parent, { str }: { str: string }, context) => {
+  echo: (parent, args: EchoArgs, context) => {
+    const { str } = args;
     const { pubsub } = context;
 
     pubsub.publish('info', {
@@ -15,5 +16,8 @@ const infoMutationResolver: IResolverObject<any, IContext> = {
   },
 };
 
+interface EchoArgs {
+  str: string;
+}
 
 export default infoMutationResolver;
