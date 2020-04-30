@@ -14,6 +14,13 @@ Real type - String
 scalar DateTime
 
 """
+DateTime type.
+Use JavaScript Date object for date fields
+Real type - String
+"""
+scalar Date
+
+"""
 Time type.
 Real type - String
 """
