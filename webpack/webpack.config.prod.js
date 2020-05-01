@@ -37,7 +37,7 @@ module.exports = merge(baseConfig, {
     }),
     new BannerPlugin({
       banner: `
-Via Profit services / core
+Via Profit Services / Core
 
 Repository https://gitlab.com/via-profit-services/core
 Contact    promo@via-profit.ru
