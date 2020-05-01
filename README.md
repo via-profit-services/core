@@ -41,21 +41,13 @@
 
 ### Установка
 
-Для установки последней версии:
-
 ```bash
-yarn add ssh://git@gitlab.com:via-profit-services/core.git
+yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.15.2
 ```
-
-Для установки последней определенной версии, например, `0.1.6`:
-
-```bash
-yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.1.6
-```
-
-### Настройка сертификатов
 
 Список версий см. [здесь](https://gitlab.com/via-profit-services/core/-/tags/)
+
+### Настройка сертификатов
 
 **Замечание:** Чтобы запустить localhost на SSL используйте [mkcert](https://github.com/FiloSottile/mkcert)
 

@@ -35,6 +35,16 @@ module.exports = merge(baseConfig, {
       raw: true,
       test: /cli\.js/,
     }),
+    new BannerPlugin({
+      banner: `
+Via Profit Services / Core
+
+Repository https://gitlab.com/via-profit-services/core
+Contact    promo@via-profit.ru
+Website    https://via-profit.ru
+      `,
+      test: /index\.js/,
+    }),
     new FileManagerPlugin({
       onStart: {
         delete: ['./dist'],
