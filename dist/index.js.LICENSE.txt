@@ -1,0 +1,9 @@
+/*!
+ * 
+ * Via Profit services / core
+ * 
+ * Repository https://gitlab.com/via-profit-services/core
+ * Contact    promo@via-profit.ru
+ * Website    https://via-profit.ru
+ *       
+ */
