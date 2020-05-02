@@ -42,7 +42,7 @@
 ### Установка
 
 ```bash
-yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.15.2
+yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.16.0
 ```
 
 Список версий см. [здесь](https://gitlab.com/via-profit-services/core/-/tags/)
@@ -371,6 +371,12 @@ _Тип представления URL-адреса согласно станд�
 
 scalar **EmailAddress**
 _Тип представления Email-адреса согласно стандарту [RFC822](https://www.w3.org/Protocols/rfc822/)_
+
+scalar **JSON**
+_Тип представления JSON в виде строки, содержащей JSON-объект или объекта согласно стандарту [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf)_
+
+scalar **JSONObject**
+_Тип представления JSON в виде объекта согласно стандарту [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf)_
 
 ## <a name="authentication"></a> Аутентификация
 

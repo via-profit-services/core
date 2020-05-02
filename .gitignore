@@ -13,3 +13,4 @@
 # jwt keys
 /keys
 
+dump.rdb
