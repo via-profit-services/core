@@ -13,7 +13,9 @@ export declare enum TWhereAction {
     IN = "in",
     NOTIN = "notIn",
     LIKE = "like",
-    ILIKE = "ilike"
+    ILIKE = "ilike",
+    NULL = "IS NULL",
+    NOTNULL = "IS NOT NULL"
 }
 /**
  * Convert string to cursor base64 string
@@ -158,4 +160,4 @@ export declare type TOrderByKnex = Array<{
     column: string;
     order: IDirectionRange;
 }>;
-export declare type TWhere = Array<[string, TWhereAction, string | number | boolean | null | readonly string[] | readonly number[]]>;
+export declare type TWhere = Array<[string, TWhereAction, string | number | boolean | null | readonly string[] | readonly number[] | undefined]>;

@@ -17,6 +17,8 @@ export enum TWhereAction {
   NOTIN = 'notIn',
   LIKE = 'like',
   ILIKE = 'ilike',
+  NULL = 'IS NULL',
+  NOTNULL = 'IS NOT NULL',
 }
 
 /**
@@ -110,6 +112,14 @@ export const convertWhereToKnex = (builder: Knex.QueryBuilder, whereClause: {
 
       case action === TWhereAction.NOTIN:
         builder.whereNotIn(field, Array.isArray(value) ? value : [value] as Array<string | number>);
+        break;
+
+      case action === TWhereAction.NULL:
+        builder.whereNull(field);
+        break;
+
+      case action === TWhereAction.NOTNULL:
+        builder.whereNotNull(field);
         break;
 
       default:
@@ -354,5 +364,5 @@ export type TOrderByKnex = Array<{
 export type TWhere = Array<[
   string,
   TWhereAction,
-  string | number | boolean | null | readonly string[] | readonly number[]
+  string | number | boolean | null | readonly string[] | readonly number[] | undefined
 ]>;
