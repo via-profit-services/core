@@ -13,7 +13,7 @@
       "port": 9229,
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/build/playground.js"
+        "${workspaceRoot}/build/**/*.js"
       ],
       "localRoot": "${workspaceRoot}/src/playground/index.ts",
       "remoteRoot": "${workspaceRoot}/build/playground.js",
