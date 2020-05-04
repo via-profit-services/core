@@ -1,6 +1,6 @@
 import uuidv4 from 'uuid/v4';
-import { IContext } from '../app';
 import AuthService from '../schemas/auth/service';
+import { IContext } from '../types';
 
 const configureTokens = (roles: string[], context: IContext) => {
   const authService = new AuthService({ context });

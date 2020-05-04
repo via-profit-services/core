@@ -1,7 +1,7 @@
 import { IResolverObject } from 'graphql-tools';
 
-import { IContext } from '../../../app';
 import { ServerError } from '../../../errorHandlers';
+import { IContext } from '../../../types';
 import AuthService, { IRefreshToken, TokenType } from '../service';
 import { SubscriptioTriggers } from './AuthSubscription';
 

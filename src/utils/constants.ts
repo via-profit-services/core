@@ -1,6 +1,7 @@
 export const TOKEN_BEARER_KEY = 'Authorization';
 export const TOKEN_BEARER = 'Bearer';
 export const REDIS_TOKENS_BLACKLIST = 'tokensBlackList';
+export const REDIS_IP_BLACKLIST = 'ipBlackList';
 
 export const DATABASE_CHARSET = 'UTF8';
 export const DATABASE_CLIENT = 'pg';
@@ -25,6 +26,13 @@ export const LOG_FILENAME_DEBUG = 'debug-%DATE%.log';
 export const LOG_FILENAME_ERRORS = 'errors-%DATE%.log';
 export const LOG_FILENAME_WARNINGS = 'warnings-%DATE%.log';
 export const LOG_FILENAME_SQL = 'sql-%DATE%.log';
+export const LOG_FILENAME_ACCESS = 'access-%DATE%.log';
 export const LOG_DATE_PATTERNT = 'YYYY-MM-DD';
-export const LOG_MAZ_SIZE = '20m';
+export const LOG_MAX_SIZE = '20m';
+export const LOG_MAX_FILES = '14d';
+
+/** Depricated */
 export const LOG_MAZ_FILES = '14d';
+
+/** Depricated */
+export const LOG_MAZ_SIZE = '20m';

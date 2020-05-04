@@ -1,6 +1,6 @@
 import { IResolverObject } from 'graphql-tools';
 
-import { IContext } from '../../../app';
+import { IContext } from '../../../types';
 import { ServerError } from '../../../errorHandlers';
 import { buildCursorConnection, buildQueryFilter, TInputFilter } from '../../../utils/generateCursorBundle';
 import createLoaders from '../loaders';

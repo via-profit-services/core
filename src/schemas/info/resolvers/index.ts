@@ -1,6 +1,6 @@
 import { IResolvers } from 'graphql-tools';
 
-import { IContext } from '../../../app';
+import { IContext } from '../../../types';
 import DeveloperResolver from './Developer';
 import InfoMutationResolver from './InfoMutation';
 import InfoQueryResolver from './InfoQuery';

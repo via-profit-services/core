@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { GraphQLError } from 'graphql';
 
-import { IContext } from '../app';
+import { IContext } from '../types';
 import BadRequestError from './BadRequestError';
 import ForbiddenError from './ForbiddenError';
 import NotFoundError from './NotFoundError';

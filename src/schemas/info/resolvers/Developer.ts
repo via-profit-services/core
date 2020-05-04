@@ -1,6 +1,6 @@
 import { IResolverObject } from 'graphql-tools';
 
-import { IContext } from '../../../app';
+import { IContext } from '../../../types';
 import { Developer, IDeveloper } from '../service';
 
 const developerResolver: IResolverObject<Partial<IDeveloper>, IContext> = {

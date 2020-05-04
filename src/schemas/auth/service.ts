@@ -6,8 +6,8 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 import moment from 'moment-timezone';
 import { v4 as uuidv4 } from 'uuid';
 
-import { IContext } from '../../app';
 import { ServerError } from '../../errorHandlers';
+import { IContext } from '../../types';
 import {
   TOKEN_BEARER_KEY,
   TOKEN_BEARER,
@@ -211,8 +211,8 @@ export default class AuthService {
   public async isTokenRevoked(accessTokenId: string): Promise<boolean> {
     const { redis } = this.props.context;
 
-    const blackList = await redis.smembers(REDIS_TOKENS_BLACKLIST);
-    return blackList.includes(accessTokenId);
+    const result = await redis.sismember(REDIS_TOKENS_BLACKLIST, accessTokenId);
+    return Boolean(result);
   }
 
   public async revokeAccountTokens(accountId: string): Promise<string[]> {

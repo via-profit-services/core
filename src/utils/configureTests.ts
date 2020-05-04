@@ -1,4 +1,5 @@
-import { IInitProps, App } from '../app';
+import { App } from '../app';
+import { IInitProps } from '../types';
 import { configureApp } from './configureApp';
 import { configureTokens } from './configureTokens';
 

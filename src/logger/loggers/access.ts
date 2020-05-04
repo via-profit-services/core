@@ -2,9 +2,7 @@ import { transports, createLogger } from 'winston';
 import 'winston-daily-rotate-file';
 
 import {
-  LOG_FILENAME_ERRORS,
-  LOG_FILENAME_DEBUG,
-  LOG_FILENAME_WARNINGS,
+  LOG_FILENAME_ACCESS,
   LOG_DATE_PATTERNT,
   LOG_MAX_SIZE,
   LOG_MAX_FILES,
@@ -15,11 +13,11 @@ export default (config: Config) => {
   const { logDir } = config;
 
   return createLogger({
-    level: 'debug',
+    level: 'info',
     format: loggerFormatter,
     transports: [
       new transports.DailyRotateFile({
-        filename: `${logDir}/${LOG_FILENAME_WARNINGS}`,
+        filename: `${logDir}/${LOG_FILENAME_ACCESS}`,
         level: 'warn',
         datePattern: LOG_DATE_PATTERNT,
         zippedArchive: true,
@@ -27,16 +25,8 @@ export default (config: Config) => {
         maxFiles: LOG_MAX_FILES,
       }),
       new transports.DailyRotateFile({
-        filename: `${logDir}/${LOG_FILENAME_ERRORS}`,
-        level: 'error',
-        datePattern: LOG_DATE_PATTERNT,
-        zippedArchive: true,
-        maxSize: LOG_MAX_SIZE,
-        maxFiles: LOG_MAX_FILES,
-      }),
-      new transports.DailyRotateFile({
-        filename: `${logDir}/${LOG_FILENAME_DEBUG}`,
-        level: 'debug',
+        filename: `${logDir}/${LOG_FILENAME_ACCESS}`,
+        level: 'info',
         datePattern: LOG_DATE_PATTERNT,
         zippedArchive: true,
         maxSize: LOG_MAX_SIZE,

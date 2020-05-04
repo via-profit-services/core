@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import { SignOptions } from 'jsonwebtoken';
-import { IContext } from '../../app';
+import { IContext } from '../../types';
 import { IAccount, IAccountRole } from '../accounts/service';
 export declare enum TokenType {
     access = "access",

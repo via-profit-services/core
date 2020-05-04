@@ -1,4 +1,4 @@
-import { IContext } from '../../app';
+import { IContext } from '../../types';
 import { Node, DataLoader, collateForDataloader } from '../../utils';
 import AccountsService, { IAccount } from './service';
 
