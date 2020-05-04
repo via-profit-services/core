@@ -10,6 +10,7 @@
         "start": "yarn start:dev",
         "build:dev": "cross-env NODE_ENV=development webpack --config ./webpack/webpack.config.dev.js",
         "build:dist": "webpack --config ./webpack/webpack.config.prod.js",
+        "debug": "yarn build:dev && node --inspect-brk=9229 ./build/playground.js",
         "start:dev": "yarn build:dev --watch",
         "start:dist": "yarn dist && node ./dist/playground.js",
         "test": "jest",

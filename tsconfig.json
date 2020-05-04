@@ -5,6 +5,7 @@
     "declaration": false,
     "esModuleInterop": true,
     "module": "commonjs",
+    // "module": "amd",
     "moduleResolution": "node",
     "noImplicitAny": true,
     "outDir": "./build",
