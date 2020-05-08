@@ -22,7 +22,7 @@ describe('GraphQL', () => {
       .set('Content-Type', 'application/json')
       .set('Authorization', `Bearer ${accessToken.token}`)
       .send({
-        query: `
+        query: /* GraphQL */`
           query{
             info {
               developer {

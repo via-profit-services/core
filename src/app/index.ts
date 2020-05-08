@@ -24,6 +24,7 @@ import {
   UnauthorizedError,
   customFormatErrorFn,
 } from '../errorHandlers';
+import errorMiddleware from '../errorHandlers/errorMiddleware';
 import { requestHandlerMiddleware } from '../logger';
 import {
   info,
@@ -35,6 +36,7 @@ import {
 import AuthService, {
   TokenType,
 } from '../schemas/auth/service';
+import graphqlUploadExpress from '../schemas/scalar/resolvers/FileUpload/expressMiddleware';
 import {
   IInitDefaultProps,
   IInitProps,
@@ -305,8 +307,10 @@ class App {
 
 
     // Request handler (request logger) middleware
-    // This middleware must be defined first
     app.use(requestHandlerMiddleware({ context }));
+
+    // This middleware must be defined last
+    app.use(errorMiddleware({ context }));
 
     // GraphiQL playground middleware
     if (usePlayground) {
@@ -352,6 +356,11 @@ class App {
     // GraphQL server
     app.use(
       endpoint,
+      graphqlUploadExpress({
+        maxFileSize: 10000000 * 8, // 8MB
+        maxFiles: 30,
+      }),
+      // graphqlUploadExpress(),
       graphqlHTTP(
         async (req): Promise<OptionsData & { subscriptionEndpoint?: string }> => {
           const useSSL = serverOptions?.cert;

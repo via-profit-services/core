@@ -1,7 +1,7 @@
 import { IResolverObject } from 'graphql-tools';
 
-import { IContext } from '../../../types';
 import { ServerError } from '../../../errorHandlers';
+import { IContext } from '../../../types';
 import { buildCursorConnection, buildQueryFilter, TInputFilter } from '../../../utils/generateCursorBundle';
 import createLoaders from '../loaders';
 import AccountsService, { AccountStatus } from '../service';

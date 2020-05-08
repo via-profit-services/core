@@ -66,6 +66,9 @@ export interface IInitDefaultProps extends IInitProps {
   useCookie: boolean;
 }
 
+/**
+ * Cntext is an object shared by all the resolvers of a specific execution
+ */
 export interface IContext {
   endpoint: string;
   jwt: IJwtConfig;

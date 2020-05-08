@@ -3,8 +3,13 @@ import chalk from 'chalk';
 import { App } from '../app';
 import { configureApp } from '../utils/configureApp';
 import { configureTokens } from '../utils/configureTokens';
+import * as uploadSchema from './schemas/upload';
 
-const config = configureApp();
+
+const config = configureApp({
+  typeDefs: [uploadSchema.typeDefs],
+  resolvers: [uploadSchema.resolvers],
+});
 
 const app = new App(config);
 app.bootstrap(({ resolveUrl, context }) => {

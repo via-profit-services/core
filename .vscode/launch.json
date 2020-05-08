@@ -12,6 +12,7 @@
       "protocol": "inspector",
       "port": 9229,
       "sourceMaps": true,
+      "restart": true,
       "outFiles": [
         "${workspaceRoot}/build/**/*.js"
       ],
