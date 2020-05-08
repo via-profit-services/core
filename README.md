@@ -105,6 +105,9 @@ JWT_PUBLICKEY=./misc/keys/jwtRS256.key.pub
 SSL_KEY=/home/me/.local/share/mkcert/localhost-key.pem
 SSL_CERT=/home/me/.local/share/mkcert/localhost.pem
 
+UPLOAD_MAX_FILE_SIZE=80000000 # 8MB
+UPLOAD_MAX_FILES=30
+
 TIMEZONE=UTC
 
 COOKIES_SIGN_SECRET= <-- Секрет для подписи Cookies

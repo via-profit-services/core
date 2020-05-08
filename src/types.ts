@@ -41,6 +41,8 @@ export interface IInitProps {
   websocketOptions?: IWebsocketServerOption;
   debug?: boolean;
   useCookie?: boolean;
+  uploadMaxFileSize?: number;
+  uploadMaxFiles?: number;
 }
 
 export interface IServerOptions extends https.ServerOptions {
@@ -64,6 +66,8 @@ export interface IInitDefaultProps extends IInitProps {
   useVoyager: boolean;
   debug: boolean;
   useCookie: boolean;
+  uploadMaxFileSize: number;
+  uploadMaxFiles: number;
 }
 
 /**
