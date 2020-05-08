@@ -6,8 +6,8 @@ import {
   LOG_FILENAME_DEBUG,
   LOG_FILENAME_WARNINGS,
   LOG_DATE_PATTERNT,
-  LOG_MAZ_SIZE,
-  LOG_MAZ_FILES,
+  LOG_MAX_SIZE,
+  LOG_MAX_FILES,
 } from '../../utils/constants';
 import loggerFormatter from '../utils/logFormatter';
 
@@ -23,24 +23,24 @@ export default (config: Config) => {
         level: 'warn',
         datePattern: LOG_DATE_PATTERNT,
         zippedArchive: true,
-        maxSize: LOG_MAZ_SIZE,
-        maxFiles: LOG_MAZ_FILES,
+        maxSize: LOG_MAX_SIZE,
+        maxFiles: LOG_MAX_FILES,
       }),
       new transports.DailyRotateFile({
         filename: `${logDir}/${LOG_FILENAME_ERRORS}`,
         level: 'error',
         datePattern: LOG_DATE_PATTERNT,
         zippedArchive: true,
-        maxSize: LOG_MAZ_SIZE,
-        maxFiles: LOG_MAZ_FILES,
+        maxSize: LOG_MAX_SIZE,
+        maxFiles: LOG_MAX_FILES,
       }),
       new transports.DailyRotateFile({
         filename: `${logDir}/${LOG_FILENAME_DEBUG}`,
         level: 'debug',
         datePattern: LOG_DATE_PATTERNT,
         zippedArchive: true,
-        maxSize: LOG_MAZ_SIZE,
-        maxFiles: LOG_MAZ_FILES,
+        maxSize: LOG_MAX_SIZE,
+        maxFiles: LOG_MAX_FILES,
       }),
     ],
   });

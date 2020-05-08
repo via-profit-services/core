@@ -1,6 +1,6 @@
 import { shield, or } from 'graphql-shield';
 
-import { IContext } from '../../app';
+import { IContext } from '../../types';
 
 import {
   isAdmin,

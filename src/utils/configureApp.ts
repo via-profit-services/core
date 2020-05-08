@@ -1,7 +1,7 @@
 import path from 'path';
 import dotenv from 'dotenv';
-import { IInitProps } from '../app';
 import { configureLogger } from '../logger';
+import { IInitProps } from '../types';
 
 // project root path
 const rootPath = path.join(__dirname, '..', '..');

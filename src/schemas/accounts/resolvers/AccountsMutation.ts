@@ -1,7 +1,7 @@
 import { IResolverObject } from 'graphql-tools';
 
-import { IContext } from '../../../app';
 import { ServerError } from '../../../errorHandlers';
+import { IContext } from '../../../types';
 import createLoaders from '../loaders';
 import AccountsService, { IAccountUpdateInfo, IAccountCreateInfo } from '../service';
 // import { SubscriptioTriggers } from './AccountsSubscription';

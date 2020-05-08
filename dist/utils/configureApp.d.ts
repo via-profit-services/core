@@ -1,4 +1,4 @@
-import { IInitProps } from '../app';
+import { IInitProps } from '../types';
 declare const configureApp: (props?: IProps) => IInitProps;
 interface IProps {
     typeDefs?: IInitProps['typeDefs'];

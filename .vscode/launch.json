@@ -6,6 +6,21 @@
   "configurations": [
 
     {
+      "name": "Attach to debugger",
+      "type": "node",
+      "request": "attach",
+      "protocol": "inspector",
+      "port": 9229,
+      "sourceMaps": true,
+      "restart": true,
+      "outFiles": [
+        "${workspaceRoot}/build/**/*.js"
+      ],
+      "localRoot": "${workspaceRoot}/src/playground/index.ts",
+      "remoteRoot": "${workspaceRoot}/build/playground.js",
+      "trace": true
+    },
+    {
       "type": "node",
       "name": "vscode-jest-tests",
       "request": "launch",

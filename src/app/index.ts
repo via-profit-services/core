@@ -10,22 +10,22 @@ import DeviceDetector from 'device-detector-js';
 import express, { Express, Request } from 'express';
 import graphqlHTTP, { OptionsData, RequestInfo } from 'express-graphql';
 import { GraphQLSchema, execute, subscribe } from 'graphql';
-import { applyMiddleware, IMiddlewareGenerator } from 'graphql-middleware';
+import { applyMiddleware } from 'graphql-middleware';
 import expressPlayground from 'graphql-playground-middleware-express';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { withFilter } from 'graphql-subscriptions';
-import { makeExecutableSchema, ITypedef, IResolvers } from 'graphql-tools';
+import { makeExecutableSchema } from 'graphql-tools';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
-import Redis, { RedisOptions, Redis as RedisInterface } from 'ioredis';
+import Redis from 'ioredis';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
-import { ServerOptions as IWebsocketServerOption } from 'ws';
 
-import { knexProvider, IDBConfig, KnexInstance } from '../databaseManager';
+import { knexProvider } from '../databaseManager';
 import {
   UnauthorizedError,
   customFormatErrorFn,
 } from '../errorHandlers';
-import { requestHandlerMiddleware, ILoggerCollection } from '../logger';
+import errorMiddleware from '../errorHandlers/errorMiddleware';
+import { requestHandlerMiddleware } from '../logger';
 import {
   info,
   accounts,
@@ -35,9 +35,15 @@ import {
 } from '../schemas';
 import AuthService, {
   TokenType,
-  IJwtConfig,
-  IAccessToken,
 } from '../schemas/auth/service';
+import graphqlUploadExpress from '../schemas/scalar/resolvers/FileUpload/expressMiddleware';
+import {
+  IInitDefaultProps,
+  IInitProps,
+  IBootstrapCallbackArgs,
+  ISubServerConfig,
+  IContext,
+} from '../types';
 import {
   DEFAULT_SERVER_PORT,
   DEFAULT_GRAPHQL_ENDPOINT,
@@ -48,11 +54,13 @@ import {
   MAXIMUM_REQUEST_BODY_SIZE,
   DEFAULT_ROUTE_GRAPHIQL,
 } from '../utils';
+import { accessMiddleware } from '../utils/accessMiddleware';
 import { configureTokens } from '../utils/configureTokens';
 import { CronJobManager } from '../utils/cronJobManager';
 import { DisableIntrospectionQueries } from '../utils/disableIntrospection';
 import { loadGraphQLConfig } from '../utils/graphqlconfig';
 import { headersMiddleware } from '../utils/headersMiddleware';
+
 
 class App {
   public props: IInitDefaultProps;
@@ -295,11 +303,14 @@ class App {
     app.use(express.urlencoded({ extended: true, limit: MAXIMUM_REQUEST_BODY_SIZE }));
     app.use(cookieParser(cookieSign));
     app.use(headersMiddleware());
+    app.use(accessMiddleware({ context }));
 
 
     // Request handler (request logger) middleware
-    // This middleware must be defined first
     app.use(requestHandlerMiddleware({ context }));
+
+    // This middleware must be defined last
+    app.use(errorMiddleware({ context }));
 
     // GraphiQL playground middleware
     if (usePlayground) {
@@ -345,6 +356,11 @@ class App {
     // GraphQL server
     app.use(
       endpoint,
+      graphqlUploadExpress({
+        maxFileSize: 10000000 * 8, // 8MB
+        maxFiles: 30,
+      }),
+      // graphqlUploadExpress(),
       graphqlHTTP(
         async (req): Promise<OptionsData & { subscriptionEndpoint?: string }> => {
           const useSSL = serverOptions?.cert;
@@ -410,84 +426,3 @@ class App {
 
 export default App;
 export { App, withFilter };
-
-export interface IInitProps {
-  port?: number;
-  endpoint?: string;
-  subscriptionEndpoint?: string;
-  timezone?: string;
-  typeDefs?: ITypedef[];
-  permissions?: IMiddlewareGenerator<any, IContext, any>[];
-  middlewares?: IMiddlewareGenerator<any, IContext, any>[];
-  resolvers?: Array<IResolvers<any, IContext>>;
-  jwt: IJwtConfig;
-  database: Omit<IDBConfig, 'logger' | 'localTimezone'>;
-  redis: RedisOptions;
-  logger: ILoggerCollection;
-  routes?: {
-    playground?: string;
-    voyager?: string;
-  };
-  enableIntrospection?: boolean;
-  usePlayground?: boolean;
-  playgroundConfig?: any;
-  useVoyager?: boolean;
-  serverOptions?: IServerOptions;
-  websocketOptions?: IWebsocketServerOption;
-  debug?: boolean;
-  useCookie?: boolean;
-}
-
-interface IServerOptions extends https.ServerOptions {
-  key?: https.ServerOptions['key'];
-  cert?: https.ServerOptions['cert'];
-  cookieSign?: string;
-}
-
-interface IInitDefaultProps extends IInitProps {
-  port: number;
-  endpoint: string;
-  subscriptionEndpoint: string;
-  timezone: string;
-  routes: {
-    playground: string;
-    voyager: string;
-    [key: string]: string;
-  };
-  usePlayground: boolean;
-  enableIntrospection: boolean;
-  useVoyager: boolean;
-  debug: boolean;
-  useCookie: boolean;
-}
-
-export interface IContext {
-  endpoint: string;
-  jwt: IJwtConfig;
-  knex: KnexInstance;
-  logger: ILoggerCollection;
-  timezone: string;
-  startTime: any;
-  pubsub: RedisPubSub;
-  redis: RedisInterface;
-  deviceInfo: DeviceDetector.DeviceDetectorResult;
-  token: IAccessToken['payload'];
-}
-
-export interface ISubServerConfig {
-  schema: GraphQLSchema;
-  server: https.Server | http.Server;
-  context: IContext;
-}
-
-export interface IBootstrapCallbackArgs {
-  port: number;
-  context: IContext;
-  resolveUrl: {
-    graphql: string;
-    graphiql?: string;
-    playground?: string;
-    voyager?: string;
-    subscriptions?: string;
-  };
-}

@@ -1,6 +1,6 @@
 import { IResolverObject } from 'graphql-tools';
 
-import { IContext } from '../../../app';
+import { IContext } from '../../../types';
 
 const infoSubscriptionResolver: IResolverObject<any, IContext> = {
   info: {

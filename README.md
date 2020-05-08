@@ -42,7 +42,7 @@
 ### Установка
 
 ```bash
-yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.17.0
+yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.17.2
 ```
 
 Список версий см. [здесь](https://gitlab.com/via-profit-services/core/-/tags/)
@@ -377,6 +377,72 @@ _Тип представления JSON в виде строки, содержа
 
 scalar **JSONObject**
 _Тип представления JSON в виде объекта согласно стандарту [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf)_
+
+scalar **FileUpload**
+_Тип представления загружаемого файла согласно спецификации [GraphQL multipart request specification](https://github.com/jaydenseric/graphql-multipart-request-spec)_
+
+Пример использования `FileUpload`:
+
+_./schema.graphql_
+```graphql
+extend type Mutation {
+  upload: UploadMutation!
+}
+
+type UploadMutation {
+  upload(file: FileUpload!): Boolean!
+}
+```
+
+_./resolvers.ts_
+
+```ts
+import { IResolvers } from 'graphql-tools';
+import { createWriteStream } from 'fs';
+import path from 'path';
+import { IContext, IFile } from '@via-profit-services/core';
+
+interface UploadArgs {
+  file: IFile;
+}
+
+const resolvers: IResolvers<any, IContext> = {
+  Mutation: {
+    upload: () => ({}),
+  },
+  UploadMutation: {
+    upload: async (parent, args: UploadArgs) => {
+      const { file } = args;
+      const { filename, mimetype, createReadStream } = await file;
+      const stream = createReadStream();
+
+      const saveToFile = path.resolve(__dirname, '../path/to/file.txt');
+
+      return stream.pipe(createWriteStream(saveToFile)).on('close', () => {
+        console.log(`filename ${filename}`);
+        console.log(`mimetype ${mimetype}`);
+
+        return true;
+      });
+    },
+  },
+};
+
+export default resolvers;
+
+```
+
+_./curl.sh_
+```sh
+#!/bin/bash
+
+curl http://localhost:3005/graphql \
+  -F operations='{ "query": "mutation ($file: FileUpload!){upload{upload(file: $file)}}", "variables": { "file": null } }' \
+  -F map='{ "0": ["variables.file"] }' \
+  -F 0=@/path/to/file.txt
+```
+
+
 
 ## <a name="authentication"></a> Аутентификация
 

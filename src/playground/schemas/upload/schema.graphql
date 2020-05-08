@@ -1,0 +1,7 @@
+extend type Mutation {
+  upload: UploadMutation!
+}
+
+type UploadMutation {
+  upload(file: FileUpload!): Boolean!
+}

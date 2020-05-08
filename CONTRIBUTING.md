@@ -9,6 +9,7 @@
    - [Установка пакета](#setup-package)
    - [Настройка ключей](#setup-keys)
    - [Настройка параметров](#setup-config)
+ - [Отладка](#debug)
  - [NPM-скрипты](#npm-scripts)
 
 ## <a name="setup"></a> Установка и настройка
@@ -146,11 +147,16 @@ JWT_PUBLICKEY=./keys/jwtRS256.key.pub
 TIMEZONE=UTC
 ```
 
+## <a name="debug"></a> Отладка
+
+Для отладки необходимо запустить npm-скрипт `yarn debug` и приаттачиться к процессу используя VSCode конфигурацию `Attach to debugger` (см. файл `/.vscode/launch.json`) или любой другой дебаггер.
+
 ## <a name="npm-scripts"></a> NPM-скрипты
 
 | Скрипт   |  Описание |
 |:---------|:------|
 | `start` | Запускает сборку в `development` режиме |
+| `debug` | Запускает сборку в `development` режиме с запуском отладчика `node --inspect-brk` |
 | `dist` | Осуществляет `production` сборку проекта |
 | `test` | Запускает тесты |
 | `knex:migrate:make MyName` | Создает пустую миграцию с именем `MyName` |

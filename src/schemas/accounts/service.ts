@@ -1,7 +1,7 @@
 import moment from 'moment-timezone';
 import { v4 as uuidv4 } from 'uuid';
 
-import { IContext } from '../../app';
+import { IContext } from '../../types';
 import {
   TWhereAction,
   TOutputFilter,

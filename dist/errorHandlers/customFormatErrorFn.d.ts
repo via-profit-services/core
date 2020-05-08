@@ -1,5 +1,5 @@
 import { GraphQLError } from 'graphql';
-import { IContext } from '../app';
+import { IContext } from '../types';
 export declare const customFormatErrorFn: (props: IProps) => {
     message: string;
     locations: readonly import("graphql").SourceLocation[];

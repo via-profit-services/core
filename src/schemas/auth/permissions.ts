@@ -1,7 +1,7 @@
 import { shield, allow, or } from 'graphql-shield';
 
-import { IContext } from '../../app';
 import { ForbiddenError } from '../../errorHandlers';
+import { IContext } from '../../types';
 import {
   isAuthenticated, isOwner, isDeveloper, isAdmin,
 } from '../../utils/permissions';

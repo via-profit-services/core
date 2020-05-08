@@ -1,4 +1,4 @@
-import { IContext } from '../../app';
+import { IContext } from '../../types';
 import { TOutputFilter, IListResponse } from '../../utils';
 export declare enum AccountStatus {
     allowed = "allowed",

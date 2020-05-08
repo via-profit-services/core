@@ -1,7 +1,7 @@
 import { rule } from 'graphql-shield';
 
-import { IContext } from '../app';
 import { IAccessToken } from '../schemas/auth/service';
+import { IContext } from '../types';
 
 export enum Role {
   ADMIN = 'admin',

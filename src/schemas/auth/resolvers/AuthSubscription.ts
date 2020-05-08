@@ -1,5 +1,6 @@
 import { IResolverObject } from 'graphql-tools';
-import { withFilter, IContext } from '../../../app';
+import { withFilter } from '../../../app';
+import { IContext } from '../../../types';
 
 export enum SubscriptioTriggers {
   TOKEN_REVOKED = 'token-revoked',
