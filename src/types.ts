@@ -22,9 +22,9 @@ export interface IInitProps {
   subscriptionEndpoint?: string;
   timezone?: string;
   typeDefs?: ITypedef[];
-  permissions?: IMiddlewareGenerator<any, IContext, any>[];
-  middlewares?: IMiddlewareGenerator<any, IContext, any>[];
-  resolvers?: Array<IResolvers<any, IContext>>;
+  permissions?: IMiddlewareGenerator<any, Partial<IContext>, any>[];
+  middlewares?: IMiddlewareGenerator<any, Partial<IContext>, any>[];
+  resolvers?: Array<IResolvers<any, Partial<IContext>>>;
   jwt: IJwtConfig;
   database: Omit<IDBConfig, 'logger' | 'localTimezone'>;
   redis: RedisOptions;
