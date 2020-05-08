@@ -9,9 +9,9 @@ declare const configureTest: (config?: Partial<IInitProps>) => {
         subscriptionEndpoint?: string;
         timezone?: string;
         typeDefs?: import("graphql-tools").ITypedef[];
-        permissions?: import("graphql-middleware").IMiddlewareGenerator<any, import("../types").IContext, any>[];
-        middlewares?: import("graphql-middleware").IMiddlewareGenerator<any, import("../types").IContext, any>[];
-        resolvers?: import("graphql-tools").IResolvers<any, import("../types").IContext>[];
+        permissions?: import("graphql-middleware").IMiddlewareGenerator<any, Partial<import("../types").IContext>, any>[];
+        middlewares?: import("graphql-middleware").IMiddlewareGenerator<any, Partial<import("../types").IContext>, any>[];
+        resolvers?: import("graphql-tools").IResolvers<any, Partial<import("../types").IContext>>[];
         jwt: import("../schemas/auth/service").IJwtConfig;
         database: Pick<import("..").IDBConfig, "migrations" | "seeds" | "connection" | "timezone">;
         redis: import("ioredis").RedisOptions;
