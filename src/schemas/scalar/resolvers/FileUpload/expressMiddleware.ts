@@ -1,9 +1,11 @@
 import { Request, NextFunction } from 'express';
+import customFormatErrorFn from '../../../../errorHandlers/customFormatErrorFn';
+import { IContext } from '../../../../types';
 import processRequest from './processRequest';
 
 import { TProcessRequest } from './types';
 
-const graphqlUploadExpress = (props: Partial<TProcessRequest>) => {
+const graphqlUploadExpress = (context: IContext, props: Partial<TProcessRequest>) => {
   return (request: Request, response: any, next: NextFunction) => {
     if (!request.is('multipart/form-data')) {
       return next();
@@ -19,18 +21,28 @@ const graphqlUploadExpress = (props: Partial<TProcessRequest>) => {
       });
     };
 
-    return processRequest(request, response, props)
-      .then((body) => {
-        request.body = body;
-        next();
-      })
-      .catch((error) => {
-        if (error.status && error.expose) {
-          response.status(error.status);
-        }
+    try {
+      const result = processRequest(request, response, props)
+        .then((body) => {
+          request.body = body;
+          next();
+        })
+        .catch((error) => {
+          if (error.status && error.expose) {
+            response.status(error.status);
+          }
 
-        next(error);
+          next(error);
+        });
+
+      return result;
+    } catch (error) {
+      return customFormatErrorFn({
+        context,
+        error,
+        debug: process.env.NODE_ENV === 'development',
       });
+    }
   };
 };
 

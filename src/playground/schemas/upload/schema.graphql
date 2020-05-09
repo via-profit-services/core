@@ -3,5 +3,10 @@ extend type Mutation {
 }
 
 type UploadMutation {
-  upload(file: FileUpload!): Boolean!
+  upload(
+    file: FileUpload!
+    info: FileInfo!): Boolean
+}
+input FileInfo {
+  name: String!
 }

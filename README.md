@@ -42,7 +42,7 @@
 ### Установка
 
 ```bash
-yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.17.4
+yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.17.6
 ```
 
 Список версий см. [здесь](https://gitlab.com/via-profit-services/core/-/tags/)
@@ -416,14 +416,14 @@ const resolvers: IResolvers<any, IContext> = {
   UploadMutation: {
     upload: async (parent, args: UploadArgs) => {
       const { file } = args;
-      const { filename, mimetype, createReadStream } = await file;
+      const { filename, mimeType, createReadStream } = await file;
       const stream = createReadStream();
 
       const saveToFile = path.resolve(__dirname, '../path/to/file.txt');
 
       return stream.pipe(createWriteStream(saveToFile)).on('close', () => {
         console.log(`filename ${filename}`);
-        console.log(`mimetype ${mimetype}`);
+        console.log(`mimeType ${mimeType}`);
 
         return true;
       });
