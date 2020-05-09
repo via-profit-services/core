@@ -7,6 +7,9 @@ import { IContext } from '../../../types';
 
 interface UploadArgs {
   file: IFile;
+  info: {
+    name: string;
+  };
 }
 
 const resolvers: IResolvers<any, IContext> = {
@@ -15,16 +18,19 @@ const resolvers: IResolvers<any, IContext> = {
   },
   UploadMutation: {
     upload: async (parent, args: UploadArgs) => {
-      console.log('args', args);
       const { file } = args;
+      console.log(args.info);
       const { filename, mimeType, createReadStream } = await file;
       const stream = createReadStream();
 
       const destinationFilename = path.resolve(__dirname, '../../../../assets/file.txt');
-      return stream.pipe(createWriteStream(destinationFilename)).on('close', () => {
-        console.log(`filename ${filename}`);
-        console.log(`mimetype ${mimeType}`);
-        return true;
+
+      return new Promise((resolve) => {
+        stream.pipe(createWriteStream(destinationFilename)).on('close', () => {
+          console.log(`filename ${filename}`);
+          console.log(`mimetype ${mimeType}`);
+          resolve(true);
+        });
       });
     },
   },

@@ -315,6 +315,11 @@ class App {
     // Request handler (request logger) middleware
     app.use(requestHandlerMiddleware({ context }));
 
+    app.use(endpoint, graphqlUploadExpress({
+      uploadMaxFiles,
+      uploadMaxFileSize,
+    }));
+
     // This middleware must be defined last
     app.use(errorMiddleware({ context }));
 
@@ -362,11 +367,6 @@ class App {
     // GraphQL server
     app.use(
       endpoint,
-      graphqlUploadExpress({
-        uploadMaxFiles,
-        uploadMaxFileSize,
-      }),
-      // graphqlUploadExpress(),
       graphqlHTTP(
         async (req): Promise<OptionsData & { subscriptionEndpoint?: string }> => {
           const useSSL = serverOptions?.cert;
