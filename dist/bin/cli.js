@@ -115,7 +115,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs_1 = __importDefault(__webpack_require__(4));
+const fs_1 = __importDefault(__webpack_require__(3));
 const path_1 = __importDefault(__webpack_require__(5));
 const chalk_1 = __importDefault(__webpack_require__(11));
 const dotenv_1 = __importDefault(__webpack_require__(114));
@@ -268,7 +268,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs_1 = __importDefault(__webpack_require__(4));
+const fs_1 = __importDefault(__webpack_require__(3));
 const path_1 = __importDefault(__webpack_require__(5));
 const utilities_1 = __webpack_require__(16);
 exports.downloadSchema = (options) => __awaiter(void 0, void 0, void 0, function* () {
@@ -296,7 +296,7 @@ module.exports = require("graphql/utilities");
 
 /***/ }),
 
-/***/ 4:
+/***/ 3:
 /***/ (function(module, exports) {
 
 module.exports = require("fs");
