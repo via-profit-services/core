@@ -46,5 +46,8 @@ declare namespace NodeJS {
 
     UPLOAD_MAX_FILE_SIZE: number;
     UPLOAD_MAX_FILES: number;
+
+    STATIC_DIR_PREFIX: string;
+    STATIC_DIR: string;
   }
 }

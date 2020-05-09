@@ -9,7 +9,7 @@
 - [Зависимости](#dependency)
 - [Установка и настройка](#setup)
 - [Как использовать](#how-to-use)
-- [GraphQL типы](#graphql-typedefs)
+- [GraphQL скалярные типы](#graphql-scalar)
 - [Аутентификация](#authentication)
 - [Параметры инициализации](#options)
 - [Конвенция](#convention)
@@ -350,12 +350,9 @@ _Извлекает из массива типа `<Node>` ключи и возв
 
 Принимает в качестве первого аргумента массив элементов, а в качестве второго - ключ, массив которых необходимо возвратить
 
-## <a name="graphql-typedefs"></a> GraphQL типы
+## <a name="graphql-scalar"></a> GraphQL скалярные типы
 
-Via Profit сервер включает в себя схему, содержащую некоторые GraphQL типы и интерфейсы.
-Данные располагаются в схеме [common.graphql](./src/schemas/common.graphql)
-
-### Скалярные типы
+Via Profit сервер включает в себя схему, содержащую некоторые скаляры GraphQL.
 
 scalar **Money**
 _Тип представления денежных значений. Значение(сумма) хранится в наименьшей денежной единице (в копейках, в центах и т.п.). Т.о. Сумма в 250 USD будет храниться как 250000 (250$ * 100¢)_
@@ -518,13 +515,13 @@ curl http://localhost:3005/graphql \
 | `logger`                        | `ILoggerConfig`             |      Да      | Объект настроек логгера                                                                                                                                                          |
 | `logger.logDir`                 | `string`                    |      Да      | Путь расположения директории логов                                                                                                                                               |
 | `logger.logDir.loggers`         | `{ [key: string]: Logger }` |      Да      | Объект произвольных логгеров, которые будут доступны в контексте                                                                                                                 |
-| `typeDefs`                      | `ITypedef[]`                |     Нет      | Массив GraphQL типов (SDL - схемы)                                                                                                                                               |
-| `resolvers`                     | `IResolvers[]`              |     Нет      | Массив GraphQL резолверов                                                                                                                                                        |
-| `permissions`                   | `IMiddlewareGenerator[]`    |     Нет      | Массив GraphQL middleware, который используется для объектов [graphql-shield](#permissions)                                                                                      |
-| `middlewares`                   | `IMiddlewareGenerator[]`    |     Нет      | Массив GraphQL middleware                                                                                      |
+| `typeDefs`                      | `ITypedef[]`                |           | Массив GraphQL типов (SDL - схемы)                                                                                                                                               |
+| `resolvers`                     | `IResolvers[]`              |           | Массив GraphQL резолверов                                                                                                                                                        |
+| `permissions`                   | `IMiddlewareGenerator[]`    |           | Массив GraphQL middleware, который используется для объектов [graphql-shield](#permissions)                                                                                      |
+| `middlewares`                   | `IMiddlewareGenerator[]`    |           | Массив GraphQL middleware                                                                                      |
 | `serverOptions`                 | `https.ServerOptions`       |      Да      | Объект настроек `https` сервера                                                                                                                                                  |
-| `serverOptions.key`             | `string`                    |      Нет      | Путь до файла приватного ключа сертификата домена (SSL)                                                                                                                          |
-| `serverOptions.cert`            | `string`                    |      Нет      | Путь до файла сертификата домена (SSL)                                                                                                                                           |
+| `serverOptions.key`             | `string`                    |            | Путь до файла приватного ключа сертификата домена (SSL)                                                                                                                          |
+| `serverOptions.cert`            | `string`                    |            | Путь до файла сертификата домена (SSL)                                                                                                                                           |
 | `serverOptions.cookieSign`      | `string`                    |      Да      | Секретный ключ для подписи Cookies                                                                                                                                               |
 | `routes`                        | `object`                    |              | Объект URL адресов                                                                                                                                                               |
 | `routes.auth`                   | `string`                    |              | URL путь (без схемы и протокола) нахождения сервера аутентификации, по умолчанию - `/auth`                                                                                       |
@@ -534,6 +531,45 @@ curl http://localhost:3005/graphql \
 | `usePlayground`                 | `boolean`                   |              | Включить Graphiql Playground (Всегда включен в `development` режиме)                                                                                                             |
 | `useVoyager`                    | `boolean`                   |              | Включить GraphQL Voyager (Всегда включен в `development` режиме)                                                                                                                 |
 | `redis`                    | `object`                   |              | Параметры пакета [ioredis](https://github.com/luin/ioredis/))                                                                                                                 |
+| `staticOptions`                    | `object`                   |              | Параметры предоставления статических файлов (подробнее см. [Express Static](https://expressjs.com/ru/starter/static-files.html)))                                                                                                                 |
+| `staticOptions.prefix`                    | `string`                   |              | Виртуальный префикс директории статических файлов)                                                                                                                 |
+| `staticOptions.staticDir`                    | `string`                   |              | Путь до директории статических файлов                                                                                                                 |
+| `expressMiddlewares`                    | `array`                   |              | Массив, содержащий функции вызова [Express middleware](https://expressjs.com/ru/guide/using-middleware.html) (подробнее [здесь](#express-middleware))                                                                                                               |
+
+## <a name="express-middleware"></a> Express Middleware
+
+для подключения `middleware` необходимо создать функцию, на вход которой будет передан объект с контекстом (`IContext`). Функция должна возвращать [Express middleware](https://expressjs.com/ru/guide/using-middleware.html).
+
+Пример подключения `middleware`:
+
+```ts
+import { Router } from 'express';
+import { IExpressMidlewareContainer, App } from '@via-profit-services/core';
+
+// Simple middleware logger
+const loggerMiddleware: IExpressMidlewareContainer = ({ context }) => {
+  return (res, req, next) => {
+    const { logger } = context;
+    logger.server.debug('Some message');
+
+    next();
+  }
+}
+
+// Router middlwware
+const routerMiddleware: IExpressMidlewareContainer = () => {
+  const router = Router();
+  router.use('/custom-url-path', (req, res, next) => {
+    res.json({ response: 'ok' });
+  });
+  return router;
+}
+
+const app = new App({
+  ...
+  expressMiddlewares: [ customMiddleware, routerMiddleware ],
+});
+```
 
 ## <a name="convention"></a> Конвенция
 

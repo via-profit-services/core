@@ -48,6 +48,10 @@ const serverConfig: IInitProps = {
     publicKey: path.resolve(rootPath, process.env.JWT_PUBLICKEY),
     refreshTokenExpiresIn: Number(process.env.JWT_REFRESHTOKENEXPIRESIN),
   },
+  staticOptions: {
+    prefix: process.env.STATIC_DIR_PREFIX,
+    staticDir: path.resolve(process.env.STATIC_DIR),
+  },
 };
 
 const configureApp = (props?: IProps): IInitProps => {
