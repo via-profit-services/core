@@ -9,7 +9,7 @@ export interface TProcessRequestOptions {
 }
 export interface IFilePayload {
     filename: string;
-    mimetype: string;
+    mimeType: string;
     encoding: string;
     createReadStream: (name?: string) => ReadStream;
 }
