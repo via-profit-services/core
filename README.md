@@ -12,6 +12,7 @@
 - [GraphQL скалярные типы](#graphql-scalar)
 - [Аутентификация](#authentication)
 - [Параметры инициализации](#options)
+- [Express Middleware](#express-middleware)
 - [Конвенция](#convention)
   - [Конвенция. Сервер](#convention-server)
   - [Конвенция. Базы данных](#convention-databases)
