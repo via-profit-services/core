@@ -1,8 +1,8 @@
 import Busboy from 'busboy';
 import { WriteStream } from 'fs-capacitor';
-import createError from 'http-errors';
 import objectPath from 'object-path';
 
+import BadRequestError from '../../../../errorHandlers/BadRequestError';
 import { TProcessRequestOptions, IFilePayload, TProcessRequest } from './types';
 import UploadInstance from './UploadInstance';
 
@@ -33,7 +33,7 @@ const processRequest: TProcessRequest = (request, response, options) => {
     let currentStream: NodeJS.ReadableStream | null;
     let operations: any;
     let operationsPath: any;
-    let map: Map<string, UploadInstance>;
+    let map: any;
 
     const parser = new Busboy({
       headers: request.headers,
@@ -45,33 +45,21 @@ const processRequest: TProcessRequest = (request, response, options) => {
       },
     });
 
-    /**
-     * Exits request processing with an error. Successive calls have no effect.
-     * @kind function
-     * @name processRequest~exit
-     * @param {object} error Error instance.
-     * @ignore
-     */
-    const exit = (error: Error) => {
-      if (exitError) {
-        return;
-      }
 
-      exitError = error;
-
-      reject(exitError);
+    const exit = (error: string) => {
+      reject(error);
 
       parser.end();
 
       if (currentStream) {
-        currentStream.unpipe(exitError);
+        currentStream.unpipe();
       }
 
       if (map) {
         // eslint-disable-next-line no-restricted-syntax
         for (const upload of map.values()) {
           if (!upload.file) {
-            upload.reject(exitError);
+            upload.reject(error);
           }
         }
       }
@@ -85,6 +73,8 @@ const processRequest: TProcessRequest = (request, response, options) => {
       setImmediate(() => {
         request.resume();
       });
+
+      throw new BadRequestError(error);
     };
 
     /**
@@ -115,12 +105,7 @@ const processRequest: TProcessRequest = (request, response, options) => {
      * @ignore
      */
     const abort = () => {
-      exit(
-        createError(
-          499,
-          'Request disconnected during file upload stream parsing.',
-        ),
-      );
+      exit('Request disconnected during file upload stream parsing.');
     };
 
     parser.on(
@@ -132,10 +117,7 @@ const processRequest: TProcessRequest = (request, response, options) => {
 
         if (valueTruncated) {
           exit(
-            createError(
-              413,
-              `The ‘${fieldName}’ multipart field value exceeds the ${maxFieldSize} byte size limit.`,
-            ),
+            `The ‘${fieldName}’ multipart field value exceeds the ${maxFieldSize} byte size limit.`,
           );
         }
 
@@ -146,19 +128,13 @@ const processRequest: TProcessRequest = (request, response, options) => {
               operations = JSON.parse(value);
             } catch (error) {
               exit(
-                createError(
-                  400,
-                  `Invalid JSON in the ‘operations’ multipart field (${SPEC_URL}).`,
-                ),
+                `Invalid JSON in the ‘operations’ multipart field (${SPEC_URL}).`,
               );
             }
 
             if (!isObject(operations) && !Array.isArray(operations)) {
               exit(
-                createError(
-                  400,
-                  `Invalid type for the ‘operations’ multipart field (${SPEC_URL}).`,
-                ),
+                `Invalid type for the ‘operations’ multipart field (${SPEC_URL}).`,
               );
             }
 
@@ -168,10 +144,7 @@ const processRequest: TProcessRequest = (request, response, options) => {
           case 'map': {
             if (!operations) {
               exit(
-                createError(
-                  400,
-                  `Misordered multipart fields; ‘map’ should follow ‘operations’ (${SPEC_URL}).`,
-                ),
+                `Misordered multipart fields; ‘map’ should follow ‘operations’ (${SPEC_URL}).`,
               );
             }
 
@@ -180,19 +153,13 @@ const processRequest: TProcessRequest = (request, response, options) => {
               parsedMap = JSON.parse(value);
             } catch (error) {
               exit(
-                createError(
-                  400,
-                  `Invalid JSON in the ‘map’ multipart field (${SPEC_URL}).`,
-                ),
+                `Invalid JSON in the ‘map’ multipart field (${SPEC_URL}).`,
               );
             }
 
             if (!isObject(parsedMap)) {
               exit(
-                createError(
-                  400,
-                  `Invalid type for the ‘map’ multipart field (${SPEC_URL}).`,
-                ),
+                `Invalid type for the ‘map’ multipart field (${SPEC_URL}).`,
               );
             }
 
@@ -202,7 +169,7 @@ const processRequest: TProcessRequest = (request, response, options) => {
             // parse might not match th(e map provided by the client.
             if (mapEntries.length > maxFiles) {
               exit(
-                createError(413, `${maxFiles} max file uploads exceeded.`),
+                `${maxFiles} max file uploads exceeded.`,
               );
             }
 
@@ -211,10 +178,7 @@ const processRequest: TProcessRequest = (request, response, options) => {
             for (const [fldName, paths] of mapEntries) {
               if (!Array.isArray(paths)) {
                 exit(
-                  createError(
-                    400,
-                    `Invalid type for the ‘map’ multipart field entry key ‘${fldName}’ array (${SPEC_URL}).`,
-                  ),
+                  `Invalid type for the ‘map’ multipart field entry key ‘${fldName}’ array (${SPEC_URL}).`,
                 );
               }
 
@@ -224,10 +188,7 @@ const processRequest: TProcessRequest = (request, response, options) => {
               for (const [index, path] of paths.entries()) {
                 if (typeof path !== 'string') {
                   exit(
-                    createError(
-                      400,
-                      `Invalid type for the ‘map’ multipart field entry key ‘${fldName}’ array index ‘${index}’ value (${SPEC_URL}).`,
-                    ),
+                    `Invalid type for the ‘map’ multipart field entry key ‘${fldName}’ array index ‘${index}’ value (${SPEC_URL}).`,
                   );
                 }
 
@@ -235,10 +196,7 @@ const processRequest: TProcessRequest = (request, response, options) => {
                   operationsPath.set(path, map.get(fldName));
                 } catch (error) {
                   exit(
-                    createError(
-                      400,
-                      `Invalid object path for the ‘map’ multipart field entry key ‘${fieldName}’ array index ‘${index}’ value ‘${path}’ (${SPEC_URL}).`,
-                    ),
+                    `Invalid object path for the ‘map’ multipart field entry key ‘${fieldName}’ array index ‘${index}’ value ‘${path}’ (${SPEC_URL}).`,
                   );
                 }
               }
@@ -259,10 +217,7 @@ const processRequest: TProcessRequest = (request, response, options) => {
       if (!map) {
         ignoreStream(stream);
         exit(
-          createError(
-            400,
-            `Misordered multipart fields; files should follow ‘map’ (${SPEC_URL}).`,
-          ),
+          `Misordered multipart fields; files should follow ‘map’ (${SPEC_URL}).`,
         );
       }
 
@@ -289,10 +244,7 @@ const processRequest: TProcessRequest = (request, response, options) => {
       });
 
       stream.on('limit', () => {
-        fileError = createError(
-          413,
-          `File truncated as it exceeds the ${maxFileSize} byte size limit.`,
-        );
+        fileError = new BadRequestError(`File truncated as it exceeds the ${maxFileSize} byte size limit.`);
         stream.unpipe();
         capacitor.destroy(fileError);
       });
@@ -320,7 +272,7 @@ const processRequest: TProcessRequest = (request, response, options) => {
       upload.resolve(file);
     });
 
-    parser.once('filesLimit', () => exit(createError(413, `${maxFiles} max file uploads exceeded.`)));
+    parser.once('filesLimit', () => exit(`${maxFiles} max file uploads exceeded.`));
 
     parser.once('finish', () => {
       request.unpipe(parser);
@@ -328,21 +280,22 @@ const processRequest: TProcessRequest = (request, response, options) => {
 
       if (!operations) {
         exit(
-          createError(
-            400,
-            `Missing multipart field ‘operations’ (${SPEC_URL}).`,
-          ),
+          `Missing multipart field ‘operations’ (${SPEC_URL}).`,
         );
       }
 
       if (!map) {
         exit(
-          createError(400, `Missing multipart field ‘map’ (${SPEC_URL}).`),
+          `Missing multipart field ‘map’ (${SPEC_URL}).`,
         );
       }
 
       // eslint-disable-next-line no-restricted-syntax
-      for (const upload of map.values()) { if (!upload.file) upload.reject(createError(400, 'File missing in the request.')); }
+      for (const upload of map.values()) {
+        if (!upload.file) {
+          upload.reject(new BadRequestError('File missing in the request.'));
+        }
+      }
     });
 
     parser.once('error', exit);

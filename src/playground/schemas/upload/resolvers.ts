@@ -19,12 +19,10 @@ const resolvers: IResolvers<any, IContext> = {
   UploadMutation: {
     upload: async (parent, args: UploadArgs) => {
       const { file } = args;
-      console.log(args.info);
       const { filename, mimeType, createReadStream } = await file;
       const stream = createReadStream();
 
       const destinationFilename = path.resolve(__dirname, '../../../../assets/file.txt');
-
       return new Promise((resolve) => {
         stream.pipe(createWriteStream(destinationFilename)).on('close', () => {
           console.log(`filename ${filename}`);

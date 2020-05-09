@@ -25,14 +25,20 @@ export const permissions = shield<any, IContext>({
 }, {
   fallbackRule: isAuthenticated,
   allowExternalErrors: true,
-  fallbackError: (err, parent, args, ctx, info) => new ForbiddenError('Permission denied. You don\'t have access to these field[s]', {
-    fieldName: info.fieldName,
-    fieldNodes: info.fieldNodes,
-    returnType: info.returnType,
-    parentType: info.parentType,
-    path: info.path,
-    fragments: info.fragments,
-  }),
+  fallbackError: (err, parent, args, ctx, info) => {
+    if (err === null) {
+      return err;
+    }
+
+    return new ForbiddenError('Permission denied. You don\'t have access to these field[s]', {
+      fieldName: info.fieldName,
+      fieldNodes: info.fieldNodes,
+      returnType: info.returnType,
+      parentType: info.parentType,
+      path: info.path,
+      fragments: info.fragments,
+    });
+  },
 });
 
 export default permissions;

@@ -641,11 +641,6 @@
     "@types/minimatch" "*"
     "@types/node" "*"
 
-"@types/http-errors@^1.6.3":
-  version "1.6.3"
-  resolved "https://registry.yarnpkg.com/@types/http-errors/-/http-errors-1.6.3.tgz#619a55768eab98299e8f76747339f3373f134e69"
-  integrity sha512-4KCE/agIcoQ9bIfa4sBxbZdnORzRjIw8JNQPLfqoNv7wQl/8f8mRbW68Q8wBsQFoJkPUHGlQYZ9sqi5WpfGSEQ==
-
 "@types/ioredis@^4.14.9":
   version "4.14.9"
   resolved "https://registry.yarnpkg.com/@types/ioredis/-/ioredis-4.14.9.tgz#774387d44d3ad60e1b849044b2b28b96e5813866"
