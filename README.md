@@ -42,7 +42,7 @@
 ### Установка
 
 ```bash
-yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.17.2
+yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.17.4
 ```
 
 Список версий см. [здесь](https://gitlab.com/via-profit-services/core/-/tags/)
@@ -104,6 +104,9 @@ JWT_PUBLICKEY=./misc/keys/jwtRS256.key.pub
 
 SSL_KEY=/home/me/.local/share/mkcert/localhost-key.pem
 SSL_CERT=/home/me/.local/share/mkcert/localhost.pem
+
+UPLOAD_MAX_FILE_SIZE=80000000 # 8MB
+UPLOAD_MAX_FILES=30
 
 TIMEZONE=UTC
 

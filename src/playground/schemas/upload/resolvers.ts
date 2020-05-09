@@ -17,13 +17,13 @@ const resolvers: IResolvers<any, IContext> = {
     upload: async (parent, args: UploadArgs) => {
       console.log('args', args);
       const { file } = args;
-      const { filename, mimetype, createReadStream } = await file;
+      const { filename, mimeType, createReadStream } = await file;
       const stream = createReadStream();
 
       const destinationFilename = path.resolve(__dirname, '../../../../assets/file.txt');
       return stream.pipe(createWriteStream(destinationFilename)).on('close', () => {
         console.log(`filename ${filename}`);
-        console.log(`mimetype ${mimetype}`);
+        console.log(`mimetype ${mimeType}`);
         return true;
       });
     },

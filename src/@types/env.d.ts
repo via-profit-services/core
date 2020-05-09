@@ -43,5 +43,8 @@ declare namespace NodeJS {
     SSL_CERT: string;
 
     COOKIES_SIGN_SECRET: string;
+
+    UPLOAD_MAX_FILE_SIZE: number;
+    UPLOAD_MAX_FILES: number;
   }
 }

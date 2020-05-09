@@ -53,6 +53,8 @@ import {
   DEFAULT_ROUTE_VOYAGER,
   MAXIMUM_REQUEST_BODY_SIZE,
   DEFAULT_ROUTE_GRAPHIQL,
+  UPLOAD_MAX_FILE_SIZE,
+  UPLOAD_MAX_FILES,
 } from '../utils';
 import { accessMiddleware } from '../utils/accessMiddleware';
 import { configureTokens } from '../utils/configureTokens';
@@ -77,6 +79,8 @@ class App {
       useVoyager: process.env.NODE_ENV === 'development',
       debug: process.env.NODE_ENV === 'development',
       useCookie: false,
+      uploadMaxFileSize: UPLOAD_MAX_FILE_SIZE,
+      uploadMaxFiles: UPLOAD_MAX_FILES,
       ...props,
     } as IInitDefaultProps;
 
@@ -207,6 +211,8 @@ class App {
       useVoyager,
       serverOptions,
       debug,
+      uploadMaxFiles,
+      uploadMaxFileSize,
     } = this.props as IInitDefaultProps;
 
     const { cookieSign } = serverOptions || {};
@@ -357,8 +363,8 @@ class App {
     app.use(
       endpoint,
       graphqlUploadExpress({
-        maxFileSize: 10000000 * 8, // 8MB
-        maxFiles: 30,
+        uploadMaxFiles,
+        uploadMaxFileSize,
       }),
       // graphqlUploadExpress(),
       graphqlHTTP(

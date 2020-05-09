@@ -36,6 +36,8 @@ export interface IInitProps {
     websocketOptions?: IWebsocketServerOption;
     debug?: boolean;
     useCookie?: boolean;
+    uploadMaxFileSize?: number;
+    uploadMaxFiles?: number;
 }
 export interface IServerOptions extends https.ServerOptions {
     key?: https.ServerOptions['key'];
@@ -57,6 +59,8 @@ export interface IInitDefaultProps extends IInitProps {
     useVoyager: boolean;
     debug: boolean;
     useCookie: boolean;
+    uploadMaxFileSize: number;
+    uploadMaxFiles: number;
 }
 /**
  * Cntext is an object shared by all the resolvers of a specific execution

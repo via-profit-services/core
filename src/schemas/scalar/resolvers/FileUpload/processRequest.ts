@@ -250,7 +250,7 @@ const processRequest: TProcessRequest = (request, response, options) => {
       },
     );
 
-    parser.on('file', (fieldName, stream, filename, encoding, mimetype) => {
+    parser.on('file', (fieldName, stream, filename, encoding, mimeType) => {
       if (exitError) {
         ignoreStream(stream);
         return;
@@ -305,7 +305,7 @@ const processRequest: TProcessRequest = (request, response, options) => {
 
       const file: IFilePayload = {
         filename,
-        mimetype,
+        mimeType,
         encoding,
         createReadStream(name?: string) {
           const error = fileError || (released ? exitError : null);

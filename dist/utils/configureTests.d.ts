@@ -28,6 +28,8 @@ declare const configureTest: (config?: Partial<IInitProps>) => {
         websocketOptions?: import("ws").ServerOptions;
         debug?: boolean;
         useCookie?: boolean;
+        uploadMaxFileSize?: number;
+        uploadMaxFiles?: number;
     };
     accessToken: import("../schemas/auth/service").ITokenInfo;
     refreshToken: import("../schemas/auth/service").ITokenInfo;
