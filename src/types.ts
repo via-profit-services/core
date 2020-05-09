@@ -2,6 +2,7 @@
 import http from 'http';
 import https from 'https';
 import DeviceDetector from 'device-detector-js';
+import { NextFunction, Request, Response } from 'express';
 import { GraphQLSchema } from 'graphql';
 import { IMiddlewareGenerator } from 'graphql-middleware';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
@@ -43,6 +44,16 @@ export interface IInitProps {
   useCookie?: boolean;
   uploadMaxFileSize?: number;
   uploadMaxFiles?: number;
+  staticOptions?: IStaticOptions;
+  expressMiddlewares?: IExpressMidlewareContainer[];
+}
+
+export interface IStaticOptions {
+  /** Prefix path (e.g. `/static`) @see https://expressjs.com/ru/starter/static-files.html */
+  prefix: string;
+
+  /** Static real path (e.g. `/public`) @see https://expressjs.com/ru/starter/static-files.html */
+  staticDir: string;
 }
 
 export interface IServerOptions extends https.ServerOptions {
@@ -103,3 +114,7 @@ export interface IBootstrapCallbackArgs {
     subscriptions?: string;
   };
 }
+export type IExpressMidlewareContainer = (props: {context: IContext}) => IExpressMiddleware;
+
+export type IExpressMiddleware = (
+  request?: Request, response?: Response, next?: NextFunction) => void;

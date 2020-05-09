@@ -1,4 +1,5 @@
 /* eslint-disable import/max-dependencies */
+import fs from 'fs';
 import http from 'http';
 import https from 'https';
 import path from 'path';
@@ -201,6 +202,7 @@ class App {
       permissions,
       middlewares,
       database,
+      expressMiddlewares,
       redis,
       logger,
       routes,
@@ -213,6 +215,7 @@ class App {
       debug,
       uploadMaxFiles,
       uploadMaxFileSize,
+      staticOptions,
     } = this.props as IInitDefaultProps;
 
     const { cookieSign } = serverOptions || {};
@@ -311,6 +314,14 @@ class App {
     app.use(headersMiddleware());
     app.use(accessMiddleware({ context }));
 
+    // define express static
+    if (staticOptions) {
+      const staticPath = path.resolve(staticOptions.staticDir);
+      if (!fs.existsSync(staticPath)) {
+        fs.mkdirSync(staticPath, { recursive: true });
+      }
+      app.use(staticOptions.prefix, express.static(staticPath));
+    }
 
     // Request handler (request logger) middleware
     app.use(requestHandlerMiddleware({ context }));
@@ -319,6 +330,12 @@ class App {
       uploadMaxFiles,
       uploadMaxFileSize,
     }));
+
+    if (expressMiddlewares && expressMiddlewares.length) {
+      expressMiddlewares.forEach((middleware) => {
+        app.use(middleware({ context }));
+      });
+    }
 
     // This middleware must be defined last
     app.use(errorMiddleware({ context }));

@@ -30,6 +30,8 @@ declare const configureTest: (config?: Partial<IInitProps>) => {
         useCookie?: boolean;
         uploadMaxFileSize?: number;
         uploadMaxFiles?: number;
+        staticOptions?: import("../types").IStaticOptions;
+        expressMiddlewares?: import("../types").IExpressMidlewareContainer[];
     };
     accessToken: import("../schemas/auth/service").ITokenInfo;
     refreshToken: import("../schemas/auth/service").ITokenInfo;
