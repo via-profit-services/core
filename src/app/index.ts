@@ -430,7 +430,7 @@ class App {
 
     CronJobManager.addJob('__clearExpiredTokens', {
       cronTime: process.env.NODE_ENV === 'development'
-        ? '*/30 * * * * *'
+        ? '* 5 * * * *'
         : '* 0 5 * * *',
       onTick: async () => {
         await authService.clearExpiredTokens();

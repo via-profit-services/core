@@ -195,17 +195,19 @@ export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutp
 
   const DEFAULT_LIMIT = 30;
 
+
   // combine filter
-  const outputFilter = {
+  const outputFilter: TOutputFilter = {
     limit: Math.max(Number(first || last) || DEFAULT_LIMIT, 0),
     orderBy: orderBy || [],
     revert: !!last,
     where: [],
-    search: search || false,
+    search: false,
     offset: Math.max(Number(offset) || 0, 0),
-  } as TOutputFilter;
+  };
 
 
+  // if cursor was provied in after or before property
   if (after || before) {
     const cursorPayload = getCursorPayload(after || before);
     return {
@@ -214,6 +216,7 @@ export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutp
     };
   }
 
+  // compile filter
   if (typeof filter !== 'undefined') {
     // if filter is an array
     if (Array.isArray(filter)) {
@@ -225,6 +228,25 @@ export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutp
         outputFilter.where.push([field, TWhereAction.EQ, value]);
       });
     }
+  }
+
+
+  // if search is an array of single field
+  if (search && Array.isArray(search)) {
+    outputFilter.search = search as TOutputSearch;
+  }
+
+  // if search is a object with simgle field
+  if (search && 'field' in search) {
+    outputFilter.search = [search];
+  }
+
+  // if search is object with multiple fields
+  if (search && 'fields' in search && Array.isArray(search.fields)) {
+    outputFilter.search = search.fields.map((field) => ({
+      field,
+      query: search.query,
+    }));
   }
 
 
@@ -322,16 +344,29 @@ export interface TInputFilter {
   after?: string;
   before?: string;
   orderBy?: TOrderBy;
-  search?: IInputSearch;
+  search?: TInputSearch;
   filter?: {
     [key: string]: string | number | boolean | null;
   } | TWhere;
 }
 
-export interface IInputSearch {
+export type TInputSearch = ISearchSingleField | ISearchSingleField[] | ISearchMultipleFields;
+
+interface ISearchSingleField {
   field: string;
   query: string;
 }
+
+interface ISearchMultipleFields {
+  fields: string[];
+  query: string;
+}
+
+
+export type TOutputSearch = Array<{
+  field: string;
+  query: string;
+}>
 
 export interface TOutputFilter {
   limit: number;
@@ -339,8 +374,7 @@ export interface TOutputFilter {
   orderBy: TOrderBy;
   where: TWhere;
   revert: boolean;
-  search: IInputSearch | false;
-  cursor: string;
+  search: TOutputSearch | false;
 }
 
 export interface ICursorPayload {

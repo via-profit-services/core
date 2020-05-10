@@ -44,8 +44,8 @@ declare namespace NodeJS {
 
     COOKIES_SIGN_SECRET: string;
 
-    UPLOAD_MAX_FILE_SIZE: number;
-    UPLOAD_MAX_FILES: number;
+    UPLOAD_MAX_FILE_SIZE: string;
+    UPLOAD_MAX_FILES: string;
 
     STATIC_DIR_PREFIX: string;
     STATIC_DIR: string;

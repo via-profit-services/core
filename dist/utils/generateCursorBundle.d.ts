@@ -128,23 +128,31 @@ export interface TInputFilter {
     after?: string;
     before?: string;
     orderBy?: TOrderBy;
-    search?: IInputSearch;
+    search?: TInputSearch;
     filter?: {
         [key: string]: string | number | boolean | null;
     } | TWhere;
 }
-export interface IInputSearch {
+export declare type TInputSearch = ISearchSingleField | ISearchSingleField[] | ISearchMultipleFields;
+interface ISearchSingleField {
     field: string;
     query: string;
 }
+interface ISearchMultipleFields {
+    fields: string[];
+    query: string;
+}
+export declare type TOutputSearch = Array<{
+    field: string;
+    query: string;
+}>;
 export interface TOutputFilter {
     limit: number;
     offset: number;
     orderBy: TOrderBy;
     where: TWhere;
     revert: boolean;
-    search: IInputSearch | false;
-    cursor: string;
+    search: TOutputSearch | false;
 }
 export interface ICursorPayload {
     offset: number;
@@ -161,3 +169,4 @@ export declare type TOrderByKnex = Array<{
     order: IDirectionRange;
 }>;
 export declare type TWhere = Array<[string, TWhereAction, string | number | boolean | null | readonly string[] | readonly number[] | undefined]>;
+export {};
