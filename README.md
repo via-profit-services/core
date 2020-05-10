@@ -884,7 +884,7 @@ interface TInputFilter {
   after?: string;
   before?: string;
   orderBy?: TOrderBy;
-  search?: IInputSearch;
+  search?: TInputSearch;
   filter?: {
     [key: string]: string | number | boolean | null;
   } | TWhere;
@@ -897,7 +897,7 @@ interface TOutputFilter {
   orderBy: TOrderBy;
   where: TWhere;
   revert: boolean;
-  search: IInputSearch | false;
+  search: TOutputSearch | false;
   cursor?: ICursorPayload;
 }
 
