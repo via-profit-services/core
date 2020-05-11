@@ -44,7 +44,6 @@
         "@graphql-toolkit/core": "^0.9.1",
         "@graphql-toolkit/schema-merging": "^0.9.1",
         "@types/ws": "^7.2.4",
-        "accesscontrol": "^2.2.1",
         "bcryptjs": "^2.4.3",
         "busboy": "^0.3.1",
         "chalk": "^3.0.0",
