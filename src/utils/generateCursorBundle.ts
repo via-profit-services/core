@@ -225,7 +225,11 @@ export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutp
 
     if (!Array.isArray(filter)) {
       Object.entries(filter).forEach(([field, value]) => {
-        outputFilter.where.push([field, TWhereAction.EQ, value]);
+        if (Array.isArray(value)) {
+          outputFilter.where.push([field, TWhereAction.IN, value]);
+        } else {
+          outputFilter.where.push([field, TWhereAction.EQ, value]);
+        }
       });
     }
   }
@@ -346,9 +350,11 @@ export interface TInputFilter {
   orderBy?: TOrderBy;
   search?: TInputSearch;
   filter?: {
-    [key: string]: string | number | boolean | null;
-  } | TWhere;
+    [key: string]: TInputFilterValue | readonly string[] | readonly number[];
+  };
 }
+
+type TInputFilterValue = string | number | boolean | null;
 
 export type TInputSearch = ISearchSingleField | ISearchSingleField[] | ISearchMultipleFields;
 
