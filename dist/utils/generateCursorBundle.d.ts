@@ -130,9 +130,10 @@ export interface TInputFilter {
     orderBy?: TOrderBy;
     search?: TInputSearch;
     filter?: {
-        [key: string]: string | number | boolean | null;
-    } | TWhere;
+        [key: string]: TInputFilterValue | readonly string[] | readonly number[];
+    };
 }
+declare type TInputFilterValue = string | number | boolean | null;
 export declare type TInputSearch = ISearchSingleField | ISearchSingleField[] | ISearchMultipleFields;
 interface ISearchSingleField {
     field: string;

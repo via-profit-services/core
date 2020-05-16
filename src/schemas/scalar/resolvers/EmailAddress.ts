@@ -1,10 +1,8 @@
 import { Kind, GraphQLError, GraphQLScalarType } from 'graphql';
 
-/* eslint-disable no-useless-escape */
 const EMAIL_ADDRESS_REGEX = new RegExp(
   /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
 );
-/* eslint-enable */
 
 export default new GraphQLScalarType({
   name: 'EmailAddress',

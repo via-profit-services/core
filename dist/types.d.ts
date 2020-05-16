@@ -36,9 +36,6 @@ export interface IInitProps {
     serverOptions?: IServerOptions;
     websocketOptions?: IWebsocketServerOption;
     debug?: boolean;
-    useCookie?: boolean;
-    uploadMaxFileSize?: number;
-    uploadMaxFiles?: number;
     staticOptions?: IStaticOptions;
     expressMiddlewares?: IExpressMidlewareContainer[];
 }
@@ -67,9 +64,6 @@ export interface IInitDefaultProps extends IInitProps {
     enableIntrospection: boolean;
     useVoyager: boolean;
     debug: boolean;
-    useCookie: boolean;
-    uploadMaxFileSize: number;
-    uploadMaxFiles: number;
 }
 /**
  * Cntext is an object shared by all the resolvers of a specific execution

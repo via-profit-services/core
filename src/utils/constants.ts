@@ -31,8 +31,6 @@ export const LOG_DATE_PATTERNT = 'YYYY-MM-DD';
 export const LOG_MAX_SIZE = '20m';
 export const LOG_MAX_FILES = '14d';
 
-export const UPLOAD_MAX_FILE_SIZE = 80000000; // 8MB
-export const UPLOAD_MAX_FILES = 30;
 
 /** Depricated */
 export const LOG_MAZ_FILES = '14d';

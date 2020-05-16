@@ -25,8 +25,6 @@ export declare const LOG_FILENAME_ACCESS = "access-%DATE%.log";
 export declare const LOG_DATE_PATTERNT = "YYYY-MM-DD";
 export declare const LOG_MAX_SIZE = "20m";
 export declare const LOG_MAX_FILES = "14d";
-export declare const UPLOAD_MAX_FILE_SIZE = 80000000;
-export declare const UPLOAD_MAX_FILES = 30;
 /** Depricated */
 export declare const LOG_MAZ_FILES = "14d";
 /** Depricated */

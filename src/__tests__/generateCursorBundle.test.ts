@@ -12,7 +12,6 @@ import {
   TWhereAction,
   ICursorPayload,
   IDirectionRange,
-  buildQueryFilter,
 } from '../utils';
 
 const generateNodes = (quantity: number):
@@ -24,79 +23,6 @@ const generateNodes = (quantity: number):
 }));
 
 describe('Cursor utils', () => {
-  it('Search by single field', (done) => {
-    const { search } = buildQueryFilter({
-      search: {
-        field: 'name',
-        query: 'Ivan',
-      },
-    });
-
-    expect(search).toEqual(expect.arrayContaining(
-      [{
-        field: 'name',
-        query: 'Ivan',
-      }],
-    ));
-
-    done();
-  });
-
-
-  it('Search by aeeay of silngle field', (done) => {
-    const { search } = buildQueryFilter({
-      search: [
-        {
-          field: 'name',
-          query: 'Ivan',
-        },
-        {
-          field: 'surname',
-          query: 'Ivanov',
-        },
-      ],
-    });
-
-    expect(search).toEqual(expect.arrayContaining(
-      [
-        {
-          field: 'name',
-          query: 'Ivan',
-        },
-        {
-          field: 'surname',
-          query: 'Ivanov',
-        },
-      ],
-    ));
-
-    done();
-  });
-  it('Search by multiple fields', (done) => {
-    const { search } = buildQueryFilter({
-      search: {
-        fields: ['name', 'surname'],
-        query: 'Ivan',
-      },
-    });
-
-    expect(search).toEqual(expect.arrayContaining(
-      [
-        {
-          field: 'name',
-          query: 'Ivan',
-        },
-        {
-          field: 'surname',
-          query: 'Ivan',
-        },
-      ],
-    ));
-
-    done();
-  });
-
-
   it('nodeToEdge. Should return GraphQL Edge', (done) => {
     const node = generateNodes(1)[0];
     const cursorPayload: ICursorPayload = {
