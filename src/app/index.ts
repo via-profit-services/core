@@ -37,7 +37,6 @@ import {
 import AuthService, {
   TokenType,
 } from '../schemas/auth/service';
-import graphqlUploadExpress from '../schemas/scalar/resolvers/FileUpload/expressMiddleware';
 import {
   IInitDefaultProps,
   IInitProps,
@@ -54,8 +53,6 @@ import {
   DEFAULT_ROUTE_VOYAGER,
   MAXIMUM_REQUEST_BODY_SIZE,
   DEFAULT_ROUTE_GRAPHIQL,
-  UPLOAD_MAX_FILE_SIZE,
-  UPLOAD_MAX_FILES,
 } from '../utils';
 import { accessMiddleware } from '../utils/accessMiddleware';
 import { configureTokens } from '../utils/configureTokens';
@@ -79,9 +76,6 @@ class App {
       enableIntrospection: process.env.NODE_ENV === 'development',
       useVoyager: process.env.NODE_ENV === 'development',
       debug: process.env.NODE_ENV === 'development',
-      useCookie: false,
-      uploadMaxFileSize: UPLOAD_MAX_FILE_SIZE,
-      uploadMaxFiles: UPLOAD_MAX_FILES,
       ...props,
     } as IInitDefaultProps;
 
@@ -213,8 +207,6 @@ class App {
       useVoyager,
       serverOptions,
       debug,
-      uploadMaxFiles,
-      uploadMaxFileSize,
       staticOptions,
     } = this.props as IInitDefaultProps;
 
@@ -325,11 +317,6 @@ class App {
 
     // Request handler (request logger) middleware
     app.use(requestHandlerMiddleware({ context }));
-
-    // app.use(endpoint, graphqlUploadExpress(context, {
-    //   uploadMaxFiles,
-    //   uploadMaxFileSize,
-    // }));
 
     if (expressMiddlewares && expressMiddlewares.length) {
       expressMiddlewares.forEach((middleware) => {

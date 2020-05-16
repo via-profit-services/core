@@ -27,9 +27,6 @@ declare const configureTest: (config?: Partial<IInitProps>) => {
         serverOptions?: import("../types").IServerOptions;
         websocketOptions?: import("ws").ServerOptions;
         debug?: boolean;
-        useCookie?: boolean;
-        uploadMaxFileSize?: number;
-        uploadMaxFiles?: number;
         staticOptions?: import("../types").IStaticOptions;
         expressMiddlewares?: import("../types").IExpressMidlewareContainer[];
     };
