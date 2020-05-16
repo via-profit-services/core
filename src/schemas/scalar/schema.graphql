@@ -50,10 +50,3 @@ The JSONObject scalar type represents JSON objects as specified by ECMA-404: htt
 """
 scalar JSONObject
 
-"""
-A GraphQL `FileUpload` scalar that can be used in a
-[`GraphQLSchema`](https://graphql.org/graphql-js/type/#graphqlschema).
-It’s value in resolvers is a promise that resolves
-FileUpload for processing and storage.
-"""
-scalar FileUpload

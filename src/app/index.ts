@@ -326,10 +326,10 @@ class App {
     // Request handler (request logger) middleware
     app.use(requestHandlerMiddleware({ context }));
 
-    app.use(endpoint, graphqlUploadExpress(context, {
-      uploadMaxFiles,
-      uploadMaxFileSize,
-    }));
+    // app.use(endpoint, graphqlUploadExpress(context, {
+    //   uploadMaxFiles,
+    //   uploadMaxFileSize,
+    // }));
 
     if (expressMiddlewares && expressMiddlewares.length) {
       expressMiddlewares.forEach((middleware) => {
