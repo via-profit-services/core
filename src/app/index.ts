@@ -10,6 +10,7 @@ import cors from 'cors';
 import DeviceDetector from 'device-detector-js';
 import express, { Express, Request } from 'express';
 import graphqlHTTP, { OptionsData, RequestInfo } from 'express-graphql';
+import session from 'express-session';
 import { GraphQLSchema, execute, subscribe } from 'graphql';
 import { applyMiddleware } from 'graphql-middleware';
 import expressPlayground from 'graphql-playground-middleware-express';
@@ -19,11 +20,13 @@ import { makeExecutableSchema } from 'graphql-tools';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 import Redis from 'ioredis';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
+import { v4 as uuidv4 } from 'uuid';
 
 import { knexProvider } from '../databaseManager';
 import {
   UnauthorizedError,
   customFormatErrorFn,
+  ServerError,
 } from '../errorHandlers';
 import errorMiddleware from '../errorHandlers/errorMiddleware';
 import { requestHandlerMiddleware } from '../logger';
@@ -104,9 +107,16 @@ class App {
 
     process.on('warning', (e) => logger.server.warn(e.name, e));
 
-    const server = useSSL
-      ? https.createServer(serverOptions || {}, app)
-      : http.createServer(serverOptions || {}, app);
+    let server: http.Server | https.Server;
+    try {
+      server = useSSL
+        ? https.createServer(serverOptions || {}, app)
+        : http.createServer(serverOptions || {}, app);
+    } catch (err) {
+      logger.server.error('Failed to start server', { err });
+      throw new ServerError('Failed to start server', err);
+    }
+
 
     const host = `http${useSSL ? 's' : ''}://localhost`;
 
@@ -293,6 +303,17 @@ class App {
       },
     };
 
+
+    app.set('trust proxy', 1);
+    app.use(session({
+      secret: 'keyboard cat',
+      genid: () => uuidv4(),
+      resave: false,
+      saveUninitialized: true,
+      cookie: {
+        secure: true,
+      },
+    }));
 
     app.use(
       cors({

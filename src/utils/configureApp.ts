@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 import { configureLogger } from '../logger';
@@ -39,6 +40,10 @@ const serverConfig: IInitProps = {
       extension: process.env.DB_SEEDS_EXTENSION,
     },
     timezone: process.env.DB_TIMEZONE,
+  },
+  serverOptions: {
+    cert: fs.readFileSync(path.resolve(process.env.SSL_CERT)),
+    key: fs.readFileSync(path.resolve(process.env.SSL_KEY)),
   },
   jwt: {
     accessTokenExpiresIn: Number(process.env.JWT_ACCESSTOKENEXPIRESIN),
