@@ -203,7 +203,6 @@ class App {
       timezone,
       port,
       jwt,
-      permissions,
       middlewares,
       database,
       expressMiddlewares,
@@ -411,10 +410,6 @@ class App {
 
           context.startTime = performance.now();
           const graphQLMiddlewares = [
-            // permissions
-            ...permissions || [],
-            accounts.permissions,
-            auth.permissions,
 
             // other middlewares
             ...middlewares || [],

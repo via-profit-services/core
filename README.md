@@ -20,7 +20,6 @@
 - [Контекст](#context)
 - [Логгер](#logger)
 - [Dataloader](#dataloader)
-- [Роли / permissions / RBAC](#permissions)
 - [Cron](#cron)
 - [Типы и интерфейсы](#types)
 - [Error handlers (исключения)](#error-handlers)
@@ -450,7 +449,6 @@ _Тип представления JSON в виде объекта соглас�
 | `logger.logDir.loggers`         | `{ [key: string]: Logger }` |      Да      | Объект произвольных логгеров, которые будут доступны в контексте                                                                                                                 |
 | `typeDefs`                      | `ITypedef[]`                |           | Массив GraphQL типов (SDL - схемы)                                                                                                                                               |
 | `resolvers`                     | `IResolvers[]`              |           | Массив GraphQL резолверов                                                                                                                                                        |
-| `permissions`                   | `IMiddlewareGenerator[]`    |           | Массив GraphQL middleware, который используется для объектов [graphql-shield](#permissions)                                                                                      |
 | `middlewares`                   | `IMiddlewareGenerator[]`    |           | Массив GraphQL middleware                                                                                      |
 | `serverOptions`                 | `https.ServerOptions`       |      Да      | Объект настроек `https` сервера                                                                                                                                                  |
 | `serverOptions.key`             | `string`                    |            | Путь до файла приватного ключа сертификата домена (SSL)                                                                                                                          |
@@ -687,43 +685,6 @@ export const personsQueryResolver: IResolverObject<any, IContext, TInputFilter> 
 };
 ```
 
-## <a name="permissions"></a> Роли / permissions / RBAC
-
-В качестве защиты методов и свойств применяется пакет [graphql-shield](https://github.com/maticzav/graphql-shield)
-
-Пакет `@via-profit-services/core` экспортирует такие заготовки, как:
-
-- `isAuthenticated` - graphql-shield правило, определяющее, что пользователь должен быть авторизован
-- `isAdmin` - graphql-shield правило, определяющее, что пользователь должен иметь роль `admin`
-- `isDeveloper` - graphql-shield правило, определяющее, что пользователь должен иметь роль `developer`
-- `isOwner` - graphql-shield правило, определяющее, что запрос должен исходить от своего же аккаунта
-
-Для реализации логики, предлагаемой graphql-shield, используйте пример ниже:
-
-_Файл permissions.ts_
-
-```ts
-import { shield, or, rule } from 'graphql-shield';
-
-import { IContext, isOwner, isDeveloper, IAccessToken } from '@via-profit-services/core';
-
-// Собственное правило, которое проверяет наличие роли director у пользователя
-export const isDirector = rule()(async (token: IAccessToken['payload'], args, ctx: IContext) =>
-  ctx?.token?.roles.includes('director'),
-);
-
-// Экспортируем объект правил для использования его при инициализации приложения
-export const permissions = shield<any, IContext>({
-  Writer: {
-    salaryAmount: or(isDeveloper, isOwner, isDirector),
-  },
-  WritersMutation: {
-    deleteWriter: isDeveloper,
-    createWriter: or(isDeveloper, isAdmin),
-    updateWriter: or(isDeveloper, isAdmin, isDirector),
-  },
-});
-```
 
 ## <a name="cron"></a> Cron
 
