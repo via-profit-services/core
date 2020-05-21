@@ -84,12 +84,12 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 106);
+/******/ 	return __webpack_require__(__webpack_require__.s = 102);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 106:
+/***/ 102:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -111,10 +111,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(__webpack_require__(3));
 const path_1 = __importDefault(__webpack_require__(5));
 const chalk_1 = __importDefault(__webpack_require__(11));
-const dotenv_1 = __importDefault(__webpack_require__(107));
-const glob_1 = __importDefault(__webpack_require__(108));
-const yargs_1 = __importDefault(__webpack_require__(109));
-const downloadSchema_1 = __webpack_require__(15);
+const dotenv_1 = __importDefault(__webpack_require__(103));
+const glob_1 = __importDefault(__webpack_require__(104));
+const yargs_1 = __importDefault(__webpack_require__(105));
+const downloadSchema_1 = __webpack_require__(13);
 const listMigrationsPerPackage = () => {
     const list = [];
     const projectsList = glob_1.default.sync(`${process.cwd()}/node_modules/@via-profit-services/*/`);
@@ -222,21 +222,21 @@ exports.default = args;
 
 /***/ }),
 
-/***/ 107:
+/***/ 103:
 /***/ (function(module, exports) {
 
 module.exports = require("dotenv");
 
 /***/ }),
 
-/***/ 108:
+/***/ 104:
 /***/ (function(module, exports) {
 
 module.exports = require("glob");
 
 /***/ }),
 
-/***/ 109:
+/***/ 105:
 /***/ (function(module, exports) {
 
 module.exports = require("yargs");
@@ -250,7 +250,7 @@ module.exports = require("chalk");
 
 /***/ }),
 
-/***/ 15:
+/***/ 13:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -270,7 +270,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(__webpack_require__(3));
 const path_1 = __importDefault(__webpack_require__(5));
-const utilities_1 = __webpack_require__(16);
+const utilities_1 = __webpack_require__(14);
 exports.downloadSchema = (options) => __awaiter(void 0, void 0, void 0, function* () {
     const { endpoint, method, token, filename, headers, } = options;
     const response = yield fetch(endpoint, {
@@ -289,7 +289,7 @@ exports.downloadSchema = (options) => __awaiter(void 0, void 0, void 0, function
 
 /***/ }),
 
-/***/ 16:
+/***/ 14:
 /***/ (function(module, exports) {
 
 module.exports = require("graphql/utilities");

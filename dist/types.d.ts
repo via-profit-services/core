@@ -18,7 +18,6 @@ export interface IInitProps {
     subscriptionEndpoint?: string;
     timezone?: string;
     typeDefs?: ITypedef[];
-    permissions?: IMiddlewareGenerator<any, Partial<IContext>, any>[];
     middlewares?: IMiddlewareGenerator<any, Partial<IContext>, any>[];
     resolvers?: Array<IResolvers<any, Partial<IContext>>>;
     jwt: IJwtConfig;
