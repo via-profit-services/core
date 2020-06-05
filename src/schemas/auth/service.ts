@@ -6,7 +6,7 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 import moment from 'moment-timezone';
 import { v4 as uuidv4 } from 'uuid';
 
-import { ServerError } from '../../errorHandlers';
+import { ServerError, UnauthorizedError } from '../../errorHandlers';
 import { IContext } from '../../types';
 import {
   TOKEN_BEARER_KEY,
@@ -276,13 +276,13 @@ export default class AuthService {
 
       if (revokeStatus) {
         logger.auth.info('Tried to get data with revoked token', { payload });
-        throw new ServerError('Token was revoked', { payload });
+        throw new UnauthorizedError('Token was revoked', { payload });
       }
 
       return payload;
     } catch (err) {
       logger.server.error('Failed to validate the token', { err });
-      throw new ServerError('Invalid token', err);
+      throw new UnauthorizedError('Invalid token', err);
     }
   }
 
