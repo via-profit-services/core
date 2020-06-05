@@ -1,5 +1,5 @@
 import { job, CronJobParameters, CronJob } from 'cron';
-import { ServerError } from '../errorHandlers';
+import { ServerError, BadRequestError } from '../errorHandlers';
 import { ILoggerCollection } from '../logger';
 
 /**
@@ -29,7 +29,7 @@ class CronJobManager {
    */
   public static addJob(jobName: string, jobConfig: CronJobParameters) {
     if (cronPool.pool.get(jobName)) {
-      throw new ServerError(`Cron job with name «${jobName}» already exists`, { jobName });
+      throw new BadRequestError(`Cron job with name «${jobName}» already exists`, { jobName });
     }
 
     // create new cron instance

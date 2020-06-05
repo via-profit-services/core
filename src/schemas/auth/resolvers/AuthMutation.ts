@@ -1,6 +1,6 @@
 import { IResolverObject } from 'graphql-tools';
 
-import { ServerError } from '../../../errorHandlers';
+import { ServerError, BadRequestError } from '../../../errorHandlers';
 import { IContext } from '../../../types';
 import AuthService, { IRefreshToken, TokenType } from '../service';
 import { SubscriptioTriggers } from './AuthSubscription';
@@ -29,14 +29,14 @@ const driversMutationResolver: IResolverObject<any, IContext> = {
 
     if (payload.type !== TokenType.refresh) {
       logger.auth.info('Tried to refresh token by access token. Rejected', { payload });
-      throw new ServerError('Is not a refresh token', { payload });
+      throw new BadRequestError('Is not a refresh token', { payload });
     }
 
 
     // check to token exist
     if (!(await authService.checkTokenExist(payload.id))) {
       logger.auth.info('Tried to refresh token by revoked refresh token. Rejected', { payload });
-      throw new ServerError('This token was revoked', { payload });
+      throw new BadRequestError('This token was revoked', { payload });
     }
 
     // revoke old access token of this refresh

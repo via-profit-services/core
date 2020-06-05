@@ -6,7 +6,7 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 import moment from 'moment-timezone';
 import { v4 as uuidv4 } from 'uuid';
 
-import { ServerError, UnauthorizedError } from '../../errorHandlers';
+import { ServerError, UnauthorizedError, BadRequestError } from '../../errorHandlers';
 import { IContext } from '../../types';
 import {
   TOKEN_BEARER_KEY,
@@ -51,11 +51,11 @@ export default class AuthService {
       .first();
 
     if (!account || !bcryptjs.compareSync(password, String(account.password))) {
-      throw new ServerError('Invalid login or password');
+      throw new BadRequestError('Invalid login or password');
     }
 
     if (account.status === AccountStatus.forbidden) {
-      throw new ServerError('Account locked');
+      throw new BadRequestError('Account locked');
     }
 
     return account;
@@ -79,7 +79,7 @@ export default class AuthService {
       .first();
 
     if (typeof account.id !== 'string') {
-      throw new ServerError(`Account with id[${account.id}] not found`);
+      throw new BadRequestError(`Account with id[${account.id}] not found`);
     }
 
     const tokens = this.generateTokens({
