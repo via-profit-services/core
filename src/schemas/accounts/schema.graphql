@@ -77,10 +77,10 @@ type AccountsQuery {
   """
   me: Account!
 
-  """
-  Returns Your Access Token payload
-  """
-  token: AccessTokenPayload!
+  # """
+  # Returns Your Access Token payload
+  # """
+  # token: AccessTokenPayload!
 
   """
   Returns account by ID
