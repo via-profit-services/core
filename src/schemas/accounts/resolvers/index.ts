@@ -1,7 +1,7 @@
-import AccountResolver from './Account';
-import AccountsMutationResolver from './AccountsMutation';
-import AccountsQueryResolver from './AccountsQuery';
-import AccountsSubscriptionResolver from './AccountsSubscription';
+import Account from './Account';
+import AccountsMutation from './AccountsMutation';
+import AccountsQuery from './AccountsQuery';
+import Subscription from './AccountsSubscription';
 
 const resolvers = {
   Query: {
@@ -10,10 +10,10 @@ const resolvers = {
   Mutation: {
     accounts: () => ({}),
   },
-  Subscription: AccountsSubscriptionResolver,
-  AccountsQuery: AccountsQueryResolver,
-  AccountsMutation: AccountsMutationResolver,
-  Account: AccountResolver,
+  Subscription,
+  AccountsQuery,
+  AccountsMutation,
+  Account,
 };
 
 export default resolvers;

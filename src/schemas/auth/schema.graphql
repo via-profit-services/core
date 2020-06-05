@@ -1,5 +1,13 @@
+extend type Query {
+  auth: AuthQuery!
+}
+
 extend type Mutation {
   auth: AuthMutation!
+}
+
+type AuthQuery {
+  token: AccessTokenPayload!
 }
 
 type AuthMutation {

@@ -29,10 +29,7 @@ export const accountsQueryResolver: IResolverObject<any, IContext> = {
   },
   statusesList: () => Object.values(AccountStatus),
   me: (parent, args, context) => ({ id: context.token.uuid }),
-  token: (parent, args, context) => {
-    const { token } = context;
-    return token;
-  },
+  // token: () => ({}),
   account: (parent, args: {id: string}) => ({ id: args.id }),
 };
 

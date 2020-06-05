@@ -1,12 +1,19 @@
-import AuthMutationResolver from './AuthMutation';
-import AuthSubscriptionResolver from './AuthSubscription';
+import AccessTokenPayload from './AccessTokenPayload';
+import AuthMutation from './AuthMutation';
+import AuthQuery from './AuthQuery';
+import Subscription from './AuthSubscription';
 
 const resolvers = {
   Mutation: {
     auth: () => ({}),
   },
-  Subscription: AuthSubscriptionResolver,
-  AuthMutation: AuthMutationResolver,
+  Query: {
+    auth: () => ({}),
+  },
+  Subscription,
+  AuthMutation,
+  AuthQuery,
+  AccessTokenPayload,
 };
 
 export default resolvers;

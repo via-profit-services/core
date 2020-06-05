@@ -5,7 +5,7 @@ import { IContext } from '../../../types';
 import AuthService, { IRefreshToken, TokenType } from '../service';
 import { SubscriptioTriggers } from './AuthSubscription';
 
-const driversMutationResolver: IResolverObject<any, IContext> = {
+const authMutationResolver: IResolverObject<any, IContext> = {
   getAccessToken: async (parent, args: { login: string; password: string }, context) => {
     const { login, password } = args;
     const { deviceInfo } = context;
@@ -70,4 +70,4 @@ const driversMutationResolver: IResolverObject<any, IContext> = {
 
 };
 
-export default driversMutationResolver;
+export default authMutationResolver;

@@ -61,7 +61,7 @@ import { accessMiddleware } from '../utils/accessMiddleware';
 import { configureTokens } from '../utils/configureTokens';
 import { CronJobManager } from '../utils/cronJobManager';
 import { DisableIntrospectionQueries } from '../utils/disableIntrospection';
-import { loadGraphQLConfig } from '../utils/graphqlconfig';
+// import { loadGraphQLConfig } from '../utils/graphqlconfig';
 import { headersMiddleware } from '../utils/headersMiddleware';
 
 
@@ -352,7 +352,7 @@ class App {
       app.get(routes.playground, expressPlayground({
         endpoint,
         subscriptionEndpoint,
-        config: process.env.NODE_ENV === 'development' ? loadGraphQLConfig(path.resolve(__dirname, '../../.graphqlconfig')) : playgroundConfig,
+        config: playgroundConfig,
       }));
     }
 
