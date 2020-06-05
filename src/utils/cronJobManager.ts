@@ -1,5 +1,5 @@
 import { job, CronJobParameters, CronJob } from 'cron';
-import { ServerError, BadRequestError } from '../errorHandlers';
+import { BadRequestError } from '../errorHandlers';
 import { ILoggerCollection } from '../logger';
 
 /**
