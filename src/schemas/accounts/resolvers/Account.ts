@@ -24,6 +24,8 @@ const accountResolver = new Proxy<TAccountResolver>({
       const { id } = parent;
       const loaders = createDataloaders(context);
       const account = await loaders.accounts.load(id);
+      console.log('account', account);
+      console.log('id', id);
       return account[prop];
     };
     return resolver;
