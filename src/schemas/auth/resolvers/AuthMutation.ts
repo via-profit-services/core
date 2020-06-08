@@ -1,8 +1,8 @@
 import { IResolverObject } from 'graphql-tools';
 
-import { ServerError, BadRequestError } from '../../../errorHandlers';
+import { ServerError, BadRequestError, UnauthorizedError } from '../../../errorHandlers';
 import { IContext } from '../../../types';
-import AuthService, { IRefreshToken, TokenType } from '../service';
+import AuthService, { TokenType } from '../service';
 import { SubscriptioTriggers } from './AuthSubscription';
 
 const authMutationResolver: IResolverObject<any, IContext> = {
@@ -25,7 +25,12 @@ const authMutationResolver: IResolverObject<any, IContext> = {
     const { logger, deviceInfo } = context;
 
     const authService = new AuthService({ context });
-    const payload = await authService.verifyToken(String(token)) as IRefreshToken['payload'];
+    const payload = await authService.verifyToken(String(token));
+
+    if (!payload) {
+      logger.auth.info('Invalid token', { payload });
+      throw new UnauthorizedError('Invalid token', { payload });
+    }
 
     if (payload.type !== TokenType.refresh) {
       logger.auth.info('Tried to refresh token by access token. Rejected', { payload });

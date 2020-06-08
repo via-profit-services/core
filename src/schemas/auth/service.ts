@@ -6,7 +6,7 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 import moment from 'moment-timezone';
 import { v4 as uuidv4 } from 'uuid';
 
-import { ServerError, UnauthorizedError, BadRequestError } from '../../errorHandlers';
+import { ServerError, BadRequestError } from '../../errorHandlers';
 import { IContext } from '../../types';
 import {
   TOKEN_BEARER_KEY,
@@ -265,24 +265,31 @@ export default class AuthService {
   /**
    * Verify JWT token
    */
-  public async verifyToken(token: string): Promise<ITokenInfo['payload']> {
+  public async verifyToken(token: string): Promise<ITokenInfo['payload'] | false> {
     const { context } = this.props;
     const { redis, logger } = context;
-    try {
-      const privateKey = fs.readFileSync(context.jwt.publicKey);
-      const payload = jwt.verify(String(token), privateKey) as ITokenInfo['payload'];
 
+    let privateKey: Buffer;
+    try {
+      privateKey = fs.readFileSync(context.jwt.publicKey);
+    } catch (err) {
+      logger.server.error('Failed to read JWT key', { err });
+      throw new ServerError('Failed to read JWT key', err);
+    }
+
+    try {
+      const payload = jwt.verify(String(token), privateKey) as ITokenInfo['payload'];
       const revokeStatus = await redis.sismember(REDIS_TOKENS_BLACKLIST, payload.id);
 
       if (revokeStatus) {
-        logger.auth.info('Tried to get data with revoked token', { payload });
-        throw new UnauthorizedError('Token was revoked', { payload });
+        logger.auth.info('Token was revoked', { payload });
+        return false;
       }
 
       return payload;
     } catch (err) {
       logger.server.error('Failed to validate the token', { err });
-      throw new UnauthorizedError('Invalid token', err);
+      return false;
     }
   }
 

@@ -170,6 +170,10 @@ class App {
 
           const payload = await authService.verifyToken(token);
 
+          if (!payload) {
+            throw new UnauthorizedError('Invalid token');
+          }
+
           if (payload.type !== TokenType.access) {
             throw new UnauthorizedError('Is not an access token');
           }
@@ -397,6 +401,10 @@ class App {
           const token = AuthService.extractToken(TokenType.access, req as Request);
           if (token !== '') {
             const payload = await authService.verifyToken(token);
+
+            if (!payload) {
+              throw new UnauthorizedError('Invalid token');
+            }
 
             if (payload.type !== TokenType.access) {
               throw new UnauthorizedError('Is not an access token');
