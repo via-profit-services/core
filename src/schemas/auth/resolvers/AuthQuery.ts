@@ -7,8 +7,13 @@ const authQueryResolver: IResolverObject<any, IContext> = {
   validateToken: async (parent, args: IValidateTokenArgs, context) => {
     const { token } = args;
     const authService = new AuthService({ context });
-    const tokenPayload = authService.verifyToken(token);
-    return tokenPayload;
+
+    try {
+      const tokenPayload = authService.verifyToken(token);
+      return tokenPayload;
+    } catch (err) {
+      return null;
+    }
   },
 };
 

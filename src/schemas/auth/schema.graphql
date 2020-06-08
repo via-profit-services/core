@@ -7,7 +7,7 @@ extend type Mutation {
 }
 
 type AuthQuery {
-  validateToken (token: String): AccessTokenPayload!
+  validateToken (token: String): AccessTokenPayload
 }
 
 type AuthMutation {
