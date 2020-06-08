@@ -19,7 +19,7 @@ const accountResolver = new Proxy<TAccountResolver>({
   password: () => ({}),
   roles: () => ({}),
 }, {
-  get: async (target, prop: keyof IAccount) => {
+  get: (target, prop: keyof IAccount) => {
     const resolver: IFieldResolver<IParent, IContext> = async (parent, args, context) => {
       const { id } = parent;
       const loaders = createDataloaders(context);
