@@ -60,7 +60,7 @@ class Accounts {
       offset: 0,
       limit: ids.length,
     });
-
+    console.log('nodes', nodes);
     return nodes;
   }
 
