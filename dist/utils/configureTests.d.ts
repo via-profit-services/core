@@ -22,7 +22,6 @@ declare const configureTest: (config?: Partial<IInitProps>) => {
         };
         enableIntrospection?: boolean;
         usePlayground?: boolean;
-        playgroundConfig?: any;
         useVoyager?: boolean;
         serverOptions?: import("../types").IServerOptions;
         websocketOptions?: import("ws").ServerOptions;
