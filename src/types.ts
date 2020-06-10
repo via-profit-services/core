@@ -36,7 +36,6 @@ export interface IInitProps {
   };
   enableIntrospection?: boolean;
   usePlayground?: boolean;
-  playgroundConfig?: any;
   useVoyager?: boolean;
   serverOptions?: IServerOptions;
   websocketOptions?: IWebsocketServerOption;

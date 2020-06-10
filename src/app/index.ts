@@ -13,7 +13,6 @@ import graphqlHTTP, { OptionsData, RequestInfo } from 'express-graphql';
 import session from 'express-session';
 import { GraphQLSchema, execute, subscribe } from 'graphql';
 import { applyMiddleware } from 'graphql-middleware';
-import expressPlayground from 'graphql-playground-middleware-express';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { withFilter } from 'graphql-subscriptions';
 import { makeExecutableSchema } from 'graphql-tools';
@@ -62,6 +61,7 @@ import {
   MAXIMUM_REQUEST_BODY_SIZE,
 } from '../utils';
 import { accessMiddleware } from '../utils/accessMiddleware';
+import altairMiddleware from '../utils/altairMiddleware';
 import { configureTokens } from '../utils/configureTokens';
 import { CronJobManager } from '../utils/cronJobManager';
 import { DisableIntrospectionQueries } from '../utils/disableIntrospection';
@@ -226,7 +226,6 @@ class App {
       subscriptionEndpoint,
       usePlayground,
       enableIntrospection,
-      playgroundConfig,
       useVoyager,
       serverOptions,
       debug,
@@ -370,10 +369,9 @@ class App {
 
     // GraphiQL playground middleware
     if (usePlayground) {
-      app.get(routes.playground, expressPlayground({
+      app.use(routes.playground, altairMiddleware({
         endpoint,
         subscriptionEndpoint,
-        config: playgroundConfig,
       }));
     }
 
