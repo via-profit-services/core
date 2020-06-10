@@ -52,7 +52,6 @@ import {
   DEFAULT_GRAPHQL_ENDPOINT,
   DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT,
   DEFAULT_SERVER_TIMEZONE,
-  DEFAULT_ROUTE_PLAYGROUND,
   DEFAULT_ROUTE_VOYAGER,
   DEFAULT_ROUTE_GRAPHIQL,
   DEFAULT_SESSION_SECRET,
@@ -61,7 +60,6 @@ import {
   MAXIMUM_REQUEST_BODY_SIZE,
 } from '../utils';
 import { accessMiddleware } from '../utils/accessMiddleware';
-import altairMiddleware from '../utils/altairMiddleware';
 import { configureTokens } from '../utils/configureTokens';
 import { CronJobManager } from '../utils/cronJobManager';
 import { DisableIntrospectionQueries } from '../utils/disableIntrospection';
@@ -95,7 +93,6 @@ class App {
 
     // combine default routes with passed
     this.props.routes = {
-      playground: DEFAULT_ROUTE_PLAYGROUND,
       voyager: DEFAULT_ROUTE_VOYAGER,
       ...this.props.routes,
     } as IInitDefaultProps['routes'];
@@ -140,7 +137,6 @@ class App {
       };
 
       if (usePlayground) {
-        resolveUrl.playground = `${host}:${port}${routes.playground}`;
         resolveUrl.graphiql = `${host}:${port}${endpoint}${DEFAULT_ROUTE_GRAPHIQL}`;
       }
 
@@ -367,13 +363,6 @@ class App {
     // This middleware must be defined last
     app.use(errorMiddleware({ context }));
 
-    // GraphiQL playground middleware
-    if (usePlayground) {
-      app.use(routes.playground, altairMiddleware({
-        endpoint,
-        subscriptionEndpoint,
-      }));
-    }
 
     // GraohQL Voyager middleware
     if (useVoyager) {

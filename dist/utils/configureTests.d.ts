@@ -17,7 +17,6 @@ declare const configureTest: (config?: Partial<IInitProps>) => {
         redis: import("ioredis").RedisOptions;
         logger: import("..").ILoggerCollection;
         routes?: {
-            playground?: string;
             voyager?: string;
         };
         enableIntrospection?: boolean;
@@ -36,7 +35,6 @@ declare const configureTest: (config?: Partial<IInitProps>) => {
     context: import("../types").IContext;
     schema: import("graphql").GraphQLSchema;
     routes: {
-        playground?: string;
         voyager?: string;
     };
 };

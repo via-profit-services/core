@@ -26,7 +26,6 @@ export interface IInitProps {
     redis: RedisOptions;
     logger: ILoggerCollection;
     routes?: {
-        playground?: string;
         voyager?: string;
     };
     enableIntrospection?: boolean;
@@ -91,7 +90,6 @@ export interface IBootstrapCallbackArgs {
     resolveUrl: {
         graphql: string;
         graphiql?: string;
-        playground?: string;
         voyager?: string;
         subscriptions?: string;
     };
