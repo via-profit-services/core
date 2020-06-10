@@ -19,6 +19,7 @@ import { withFilter } from 'graphql-subscriptions';
 import { makeExecutableSchema } from 'graphql-tools';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 import Redis from 'ioredis';
+import sessionStoreFactory from 'session-file-store';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -54,14 +55,16 @@ import {
   DEFAULT_SERVER_TIMEZONE,
   DEFAULT_ROUTE_PLAYGROUND,
   DEFAULT_ROUTE_VOYAGER,
-  MAXIMUM_REQUEST_BODY_SIZE,
   DEFAULT_ROUTE_GRAPHIQL,
+  DEFAULT_SESSION_SECRET,
+  DEFAULT_SESSION_PATH,
+  DEFAULT_SESSION_TTL,
+  MAXIMUM_REQUEST_BODY_SIZE,
 } from '../utils';
 import { accessMiddleware } from '../utils/accessMiddleware';
 import { configureTokens } from '../utils/configureTokens';
 import { CronJobManager } from '../utils/cronJobManager';
 import { DisableIntrospectionQueries } from '../utils/disableIntrospection';
-// import { loadGraphQLConfig } from '../utils/graphqlconfig';
 import { headersMiddleware } from '../utils/headersMiddleware';
 
 
@@ -81,6 +84,14 @@ class App {
       debug: process.env.NODE_ENV === 'development',
       ...props,
     } as IInitDefaultProps;
+
+    // combine default session settings with passed
+    this.props.sessions = this.props.sessions === false ? false : {
+      path: DEFAULT_SESSION_PATH,
+      ttl: DEFAULT_SESSION_TTL,
+      secret: DEFAULT_SESSION_SECRET,
+      ...this.props.sessions,
+    };
 
     // combine default routes with passed
     this.props.routes = {
@@ -137,7 +148,6 @@ class App {
         resolveUrl.voyager = `${host}:${port}${routes.voyager}`;
       }
 
-      // log
       logger.server.debug(`App server started at «${resolveUrl.graphql}»`);
 
       // connect websockrt subscriptions werver
@@ -221,6 +231,7 @@ class App {
       serverOptions,
       debug,
       staticOptions,
+      sessions,
     } = this.props as IInitDefaultProps;
 
     const { cookieSign } = serverOptions || {};
@@ -306,24 +317,30 @@ class App {
       },
     };
 
+    // use sessions
+    if (sessions !== false) {
+      const SessionStore = sessionStoreFactory(session);
+      sessions.logFn = (msg) => logger.session.info(msg);
+      app.use(session({
+        store: new SessionStore(sessions),
+        secret: sessions.secret,
+        genid: () => uuidv4(),
+        resave: false,
+        saveUninitialized: true,
+        cookie: {
+          secure: process.env.NODE_ENV !== 'development',
+        },
+      }));
 
-    app.set('trust proxy', 1);
-    app.use(session({
-      secret: 'keyboard cat',
-      genid: () => uuidv4(),
-      resave: false,
-      saveUninitialized: true,
-      cookie: {
-        secure: true,
-      },
+      if (process.env.NODE_ENV !== 'development') {
+        app.set('trust proxy', 1);
+      }
+    }
+
+    app.use(cors({
+      credentials: true,
+      origin: (origin, callback) => callback(null, true),
     }));
-
-    app.use(
-      cors({
-        credentials: true,
-        origin: (origin, callback) => callback(null, true),
-      }),
-    );
     app.use(express.json({ limit: MAXIMUM_REQUEST_BODY_SIZE }));
     app.use(express.urlencoded({ extended: true, limit: MAXIMUM_REQUEST_BODY_SIZE }));
     app.use(cookieParser(cookieSign));

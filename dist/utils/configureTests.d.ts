@@ -1,5 +1,6 @@
 /// <reference types="ioredis" />
 /// <reference types="ws" />
+/// <reference types="session-file-store" />
 /// <reference types="express" />
 import { IInitProps } from '../types';
 declare const configureTest: (config?: Partial<IInitProps>) => {
@@ -28,6 +29,7 @@ declare const configureTest: (config?: Partial<IInitProps>) => {
         debug?: boolean;
         staticOptions?: import("../types").IStaticOptions;
         expressMiddlewares?: import("../types").IExpressMidlewareContainer[];
+        sessions?: false | import("session-file-store").Options;
     };
     accessToken: import("../schemas/auth/service").ITokenInfo;
     refreshToken: import("../schemas/auth/service").ITokenInfo;

@@ -30,7 +30,6 @@ export interface IAccount {
     createdAt: Date;
     updatedAt: Date;
     deleted: Boolean;
-    cursor: string;
 }
 export declare type IAccountUpdateInfo = Omit<IAccount, 'id' | 'createdAt' | 'updatedAt' | 'cursor'>;
 export declare type IAccountCreateInfo = Omit<IAccount, 'id' | 'createdAt' | 'updatedAt' | 'cursor'> & {

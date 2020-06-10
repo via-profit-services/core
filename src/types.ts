@@ -8,6 +8,7 @@ import { IMiddlewareGenerator } from 'graphql-middleware';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { ITypedef, IResolvers } from 'graphql-tools';
 import { RedisOptions, Redis as RedisInterface } from 'ioredis';
+import { Options as SesstionStoreOptions } from 'session-file-store';
 import { ServerOptions as IWebsocketServerOption } from 'ws';
 
 import { IDBConfig, KnexInstance } from './databaseManager';
@@ -42,6 +43,7 @@ export interface IInitProps {
   debug?: boolean;
   staticOptions?: IStaticOptions;
   expressMiddlewares?: IExpressMidlewareContainer[];
+  sessions?: SesstionStoreOptions | false;
 }
 
 export interface IStaticOptions {

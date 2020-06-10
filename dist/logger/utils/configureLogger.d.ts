@@ -8,6 +8,7 @@ export interface ILoggerCollection {
     auth: Logger;
     http: Logger;
     access: Logger;
+    session: Logger;
     [key: string]: Logger;
 }
 export interface ILoggerConfig {

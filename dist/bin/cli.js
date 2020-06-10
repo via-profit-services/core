@@ -84,12 +84,12 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 105);
+/******/ 	return __webpack_require__(__webpack_require__.s = 107);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 105:
+/***/ 107:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -108,12 +108,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs_1 = __importDefault(__webpack_require__(3));
-const path_1 = __importDefault(__webpack_require__(5));
+const fs_1 = __importDefault(__webpack_require__(4));
+const path_1 = __importDefault(__webpack_require__(8));
 const chalk_1 = __importDefault(__webpack_require__(11));
-const dotenv_1 = __importDefault(__webpack_require__(106));
-const glob_1 = __importDefault(__webpack_require__(107));
-const yargs_1 = __importDefault(__webpack_require__(108));
+const dotenv_1 = __importDefault(__webpack_require__(108));
+const glob_1 = __importDefault(__webpack_require__(109));
+const yargs_1 = __importDefault(__webpack_require__(110));
 const downloadSchema_1 = __webpack_require__(13);
 const listMigrationsPerPackage = () => {
     const list = [];
@@ -222,24 +222,17 @@ exports.default = args;
 
 /***/ }),
 
-/***/ 106:
+/***/ 108:
 /***/ (function(module, exports) {
 
 module.exports = require("dotenv");
 
 /***/ }),
 
-/***/ 107:
+/***/ 109:
 /***/ (function(module, exports) {
 
 module.exports = require("glob");
-
-/***/ }),
-
-/***/ 108:
-/***/ (function(module, exports) {
-
-module.exports = require("yargs");
 
 /***/ }),
 
@@ -247,6 +240,13 @@ module.exports = require("yargs");
 /***/ (function(module, exports) {
 
 module.exports = require("chalk");
+
+/***/ }),
+
+/***/ 110:
+/***/ (function(module, exports) {
+
+module.exports = require("yargs");
 
 /***/ }),
 
@@ -268,8 +268,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs_1 = __importDefault(__webpack_require__(3));
-const path_1 = __importDefault(__webpack_require__(5));
+const fs_1 = __importDefault(__webpack_require__(4));
+const path_1 = __importDefault(__webpack_require__(8));
 const utilities_1 = __webpack_require__(14);
 exports.downloadSchema = (options) => __awaiter(void 0, void 0, void 0, function* () {
     const { endpoint, method, token, filename, headers, } = options;
@@ -296,14 +296,14 @@ module.exports = require("graphql/utilities");
 
 /***/ }),
 
-/***/ 3:
+/***/ 4:
 /***/ (function(module, exports) {
 
 module.exports = require("fs");
 
 /***/ }),
 
-/***/ 5:
+/***/ 8:
 /***/ (function(module, exports) {
 
 module.exports = require("path");

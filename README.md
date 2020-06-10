@@ -466,6 +466,7 @@ _Тип представления JSON в виде объекта соглас�
 | `staticOptions.prefix`                    | `string`                   |              | Виртуальный префикс директории статических файлов)                                                                                                                 |
 | `staticOptions.staticDir`                    | `string`                   |              | Путь до директории статических файлов                                                                                                                 |
 | `expressMiddlewares`                    | `array`                   |              | Массив, содержащий функции вызова [Express middleware](https://expressjs.com/ru/guide/using-middleware.html) (подробнее [здесь](#express-middleware))                                                                                                               |
+| `sessions`                    | `SesstionStoreOptions`                   |              | Параметры сессий [Express Session File Storage](https://github.com/valery-barysok/session-file-store#options)                                                                                                               |
 
 ## <a name="express-middleware"></a> Express Middleware
 
@@ -568,6 +569,11 @@ logger.server.debug('My debug message');
 
 Логгер всегда содержит дочерние логгеры:
 
+- `session` - серверный логгер уровня `info` для регистрации сессий. Имеет транспорт:
+  - DailyRotateFile уровня `info`. Записывает в файл `sessions-%DATE%.log`
+- `access` - серверный логгер уровня `info` для регистрации всех соединений. Имеет два транспорта:
+  - DailyRotateFile уровня `warn`. Записывает в файл `access-%DATE%.log`
+  - DailyRotateFile уровня `info`. Записывает в файл `access-%DATE%.log`
 - `server` - серверный логгер уровня `debug` для регистрации ошибок и отладочных данных. Имеет два транспорта:
   - DailyRotateFile уровня `error`. Записывает в файл `errors-%DATE%.log`
   - DailyRotateFile уровня `warn`. Записывает в файл `warnings-%DATE%.log`
