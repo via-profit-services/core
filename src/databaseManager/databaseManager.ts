@@ -28,7 +28,6 @@ export const knexProvider = (config: IDBConfig) => {
     logger.server.debug('pg-types configured');
   }
 
-  logger.server.debug('Try to Database server connect');
   const instance = knex({
     client: DATABASE_CLIENT,
     connection,
@@ -79,7 +78,7 @@ export const knexProvider = (config: IDBConfig) => {
   instance
     .raw('SELECT 1+1 AS result')
     .then(() => {
-      logger.server.debug('Test the connection by trying to authenticate is OK');
+      logger.server.debug('Test the Database connection by trying to authenticate is OK');
       return true;
     })
     .catch((err) => {

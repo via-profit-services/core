@@ -267,6 +267,51 @@ class App {
     // configure cron job manager
     CronJobManager.configure({ logger });
 
+    let redisHandle: Redis.Redis;
+    let redisPublisherHandle: Redis.Redis;
+    let redisSubscriberHandle: Redis.Redis;
+
+
+    try {
+      redisHandle = new Redis(redis);
+      redisPublisherHandle = new Redis(redis);
+      redisSubscriberHandle = new Redis(redis);
+    } catch (err) {
+      throw new ServerError('Failed to init Redis handle', { err });
+    }
+
+    redisHandle.on('error', (err) => {
+      logger.server.error('Redis error', { err });
+      if (err.errno && err.errno === 'ECONNREFUSED') {
+        logger.server.error('Redit common connection error. Check the Redis server instance');
+      }
+
+      throw new ServerError(`Redis error ${err.errno}`, { err });
+    });
+
+    redisPublisherHandle.on('error', (err) => {
+      logger.server.error(`Redis Publisher error ${err.errno}`, { err });
+      throw new ServerError(`Redis Publisher error ${err.errno}`, { err });
+    });
+
+    redisSubscriberHandle.on('error', (err) => {
+      logger.server.error(`Redis Subscriber error ${err.errno}`, { err });
+      throw new ServerError(`Redis Subscriber error ${err.errno}`, { err });
+    });
+
+
+    redisHandle.on('connect', () => {
+      logger.server.debug('Redis common connection is Done');
+    });
+
+    redisPublisherHandle.on('connect', () => {
+      logger.server.debug('Redis Publisher connection is Done');
+    });
+
+    redisSubscriberHandle.on('connect', () => {
+      logger.server.debug('Redis Subscriber connection is Done');
+    });
+
 
     // combine finally context object
     const context: IContext = {
@@ -274,10 +319,10 @@ class App {
       timezone,
       jwt,
       logger,
-      redis: new Redis(redis),
+      redis: redisHandle,
       pubsub: new RedisPubSub({
-        publisher: new Redis(redis),
-        subscriber: new Redis(redis),
+        publisher: redisPublisherHandle,
+        subscriber: redisSubscriberHandle,
         connection: redis,
       }),
       knex,
