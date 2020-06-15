@@ -271,34 +271,30 @@ class App {
     let redisPublisherHandle: Redis.Redis;
     let redisSubscriberHandle: Redis.Redis;
 
+    const redisConfig = {
+      retryStrategy: (times: number) => Math.min(times * 50, 20000),
+      ...redis,
+    };
 
     try {
-      redisHandle = new Redis(redis);
-      redisPublisherHandle = new Redis(redis);
-      redisSubscriberHandle = new Redis(redis);
+      redisHandle = new Redis(redisConfig);
+      redisPublisherHandle = new Redis(redisConfig);
+      redisSubscriberHandle = new Redis(redisConfig);
     } catch (err) {
       throw new ServerError('Failed to init Redis handle', { err });
     }
 
     redisHandle.on('error', (err) => {
-      logger.server.error('Redis error', { err });
-      if (err.errno && err.errno === 'ECONNREFUSED') {
-        logger.server.error('Redit common connection error. Check the Redis server instance');
-      }
-
-      throw new ServerError(`Redis error ${err.errno}`, { err });
+      logger.server.error(`Redis Common error ${err.errno}`, { err });
     });
 
     redisPublisherHandle.on('error', (err) => {
       logger.server.error(`Redis Publisher error ${err.errno}`, { err });
-      throw new ServerError(`Redis Publisher error ${err.errno}`, { err });
     });
 
     redisSubscriberHandle.on('error', (err) => {
       logger.server.error(`Redis Subscriber error ${err.errno}`, { err });
-      throw new ServerError(`Redis Subscriber error ${err.errno}`, { err });
     });
-
 
     redisHandle.on('connect', () => {
       logger.server.debug('Redis common connection is Done');
@@ -310,6 +306,30 @@ class App {
 
     redisSubscriberHandle.on('connect', () => {
       logger.server.debug('Redis Subscriber connection is Done');
+    });
+
+    redisHandle.on('reconnecting', () => {
+      logger.server.debug('Redis common reconnecting');
+    });
+
+    redisPublisherHandle.on('reconnecting', () => {
+      logger.server.debug('Redis Publisher reconnecting');
+    });
+
+    redisSubscriberHandle.on('reconnecting', () => {
+      logger.server.debug('Redis Subscriber reconnecting');
+    });
+
+    redisHandle.on('close', () => {
+      logger.server.debug('Redis common close');
+    });
+
+    redisPublisherHandle.on('close', () => {
+      logger.server.debug('Redis Publisher close');
+    });
+
+    redisSubscriberHandle.on('close', () => {
+      logger.server.debug('Redis Subscriber close');
     });
 
 
