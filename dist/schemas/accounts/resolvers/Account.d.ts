@@ -1,5 +1,7 @@
 import { IResolverObject } from 'graphql-tools';
 import { IContext } from '../../../types';
-import { IAccount } from '../service';
-declare const accountResolver: IResolverObject<Pick<IAccount, 'id'>, IContext>;
+interface IParent {
+    id: string;
+}
+declare const accountResolver: IResolverObject<IParent, IContext, any>;
 export default accountResolver;

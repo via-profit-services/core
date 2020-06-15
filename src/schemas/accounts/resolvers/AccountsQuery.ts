@@ -1,6 +1,6 @@
 import { IResolverObject } from 'graphql-tools';
 
-import { ServerError } from '../../../errorHandlers';
+import { ServerError, UnauthorizedError } from '../../../errorHandlers';
 import { IContext } from '../../../types';
 import { buildCursorConnection, buildQueryFilter, TInputFilter } from '../../../utils/generateCursorBundle';
 import createLoaders from '../loaders';
@@ -28,10 +28,12 @@ export const accountsQueryResolver: IResolverObject<any, IContext> = {
     }
   },
   statusesList: () => Object.values(AccountStatus),
-  me: (parent, args, context) => ({ id: context.token.uuid }),
-  token: (parent, args, context) => {
-    const { token } = context;
-    return token;
+  me: (parent, args, context) => {
+    if (context.token.uuid === '') {
+      throw new UnauthorizedError('Unknown account');
+    }
+
+    return { id: context.token.uuid };
   },
   account: (parent, args: {id: string}) => ({ id: args.id }),
 };

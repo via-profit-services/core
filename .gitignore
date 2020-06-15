@@ -10,8 +10,9 @@
 # webpack temporary dir
 /build
 
+/sessions
+
 # jwt keys
 /keys
 
-dump.rdb
 dump.rdb

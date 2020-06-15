@@ -42,7 +42,7 @@
 ### Установка
 
 ```bash
-yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.22.0
+yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.23.3
 ```
 
 Список версий см. [здесь](https://gitlab.com/via-profit-services/core/-/tags/)
@@ -456,7 +456,6 @@ _Тип представления JSON в виде объекта соглас�
 | `serverOptions.cookieSign`      | `string`                    |      Да      | Секретный ключ для подписи Cookies                                                                                                                                               |
 | `routes`                        | `object`                    |              | Объект URL адресов                                                                                                                                                               |
 | `routes.auth`                   | `string`                    |              | URL путь (без схемы и протокола) нахождения сервера аутентификации, по умолчанию - `/auth`                                                                                       |
-| `routes.playground`             | `string`                    |              | URL путь (без схемы и протокола) нахождения Graphiql playground, по умолчанию - `/playground`                                                                                    |
 | `routes.voyager`                | `string`                    |              | URL путь (без схемы и протокола) нахождения Graphiql voyager, по умолчанию - `/voyager`                                                                                          |
 | `enableIntrospection`                 | `boolean`                   |              | Разрешить доступ к Introspection (Всегда разрешено в `development` режиме)                                                                                                             |
 | `usePlayground`                 | `boolean`                   |              | Включить Graphiql Playground (Всегда включен в `development` режиме)                                                                                                             |
@@ -466,6 +465,7 @@ _Тип представления JSON в виде объекта соглас�
 | `staticOptions.prefix`                    | `string`                   |              | Виртуальный префикс директории статических файлов)                                                                                                                 |
 | `staticOptions.staticDir`                    | `string`                   |              | Путь до директории статических файлов                                                                                                                 |
 | `expressMiddlewares`                    | `array`                   |              | Массив, содержащий функции вызова [Express middleware](https://expressjs.com/ru/guide/using-middleware.html) (подробнее [здесь](#express-middleware))                                                                                                               |
+| `sessions`                    | `SesstionStoreOptions`                   |              | Параметры сессий [Express Session File Storage](https://github.com/valery-barysok/session-file-store#options)                                                                                                               |
 
 ## <a name="express-middleware"></a> Express Middleware
 
@@ -568,6 +568,11 @@ logger.server.debug('My debug message');
 
 Логгер всегда содержит дочерние логгеры:
 
+- `session` - серверный логгер уровня `info` для регистрации сессий. Имеет транспорт:
+  - DailyRotateFile уровня `info`. Записывает в файл `sessions-%DATE%.log`
+- `access` - серверный логгер уровня `info` для регистрации всех соединений. Имеет два транспорта:
+  - DailyRotateFile уровня `warn`. Записывает в файл `access-%DATE%.log`
+  - DailyRotateFile уровня `info`. Записывает в файл `access-%DATE%.log`
 - `server` - серверный логгер уровня `debug` для регистрации ошибок и отладочных данных. Имеет два транспорта:
   - DailyRotateFile уровня `error`. Записывает в файл `errors-%DATE%.log`
   - DailyRotateFile уровня `warn`. Записывает в файл `warnings-%DATE%.log`

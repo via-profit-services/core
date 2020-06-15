@@ -37,7 +37,7 @@ export default class AuthService {
     /**
      * Verify JWT token
      */
-    verifyToken(token: string): Promise<ITokenInfo['payload']>;
+    verifyToken(token: string): Promise<ITokenInfo['payload'] | false>;
     checkTokenExist(tokenId: string): Promise<boolean>;
     static extractTokenFromSubscription(connectionParams: any): string;
     /**

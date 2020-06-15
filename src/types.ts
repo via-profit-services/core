@@ -8,6 +8,7 @@ import { IMiddlewareGenerator } from 'graphql-middleware';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { ITypedef, IResolvers } from 'graphql-tools';
 import { RedisOptions, Redis as RedisInterface } from 'ioredis';
+import { Options as SesstionStoreOptions } from 'session-file-store';
 import { ServerOptions as IWebsocketServerOption } from 'ws';
 
 import { IDBConfig, KnexInstance } from './databaseManager';
@@ -30,18 +31,17 @@ export interface IInitProps {
   redis: RedisOptions;
   logger: ILoggerCollection;
   routes?: {
-    playground?: string;
     voyager?: string;
   };
   enableIntrospection?: boolean;
   usePlayground?: boolean;
-  playgroundConfig?: any;
   useVoyager?: boolean;
   serverOptions?: IServerOptions;
   websocketOptions?: IWebsocketServerOption;
   debug?: boolean;
   staticOptions?: IStaticOptions;
   expressMiddlewares?: IExpressMidlewareContainer[];
+  sessions?: SesstionStoreOptions | false;
 }
 
 export interface IStaticOptions {
@@ -102,7 +102,6 @@ export interface IBootstrapCallbackArgs {
   resolveUrl: {
     graphql: string;
     graphiql?: string;
-    playground?: string;
     voyager?: string;
     subscriptions?: string;
   };

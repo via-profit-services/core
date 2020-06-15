@@ -1,47 +1,33 @@
-import { IResolverObject } from 'graphql-tools';
+import { IResolverObject, IFieldResolver } from 'graphql-tools';
 
 import { IContext } from '../../../types';
-import createLoaders from '../loaders';
+import createDataloaders from '../loaders';
 import { IAccount } from '../service';
 
+interface IParent {
+  id: string;
+}
+type TAccountResolver = IResolverObject<IParent, IContext>;
 
-const accountResolver: IResolverObject<Pick<IAccount, 'id'>, IContext> = {
-  id: async ({ id }) => id,
-  createdAt: async ({ id }, args, context) => {
-    const loaders = createLoaders(context);
-    const data = await loaders.accounts.load(id);
-    return data.createdAt;
+const accountResolver = new Proxy<TAccountResolver>({
+  id: () => ({}),
+  createdAt: () => ({}),
+  updatedAt: () => ({}),
+  status: () => ({}),
+  name: () => ({}),
+  login: () => ({}),
+  password: () => ({}),
+  roles: () => ({}),
+}, {
+  get: (target, prop: keyof IAccount) => {
+    const resolver: IFieldResolver<IParent, IContext> = async (parent, args, context) => {
+      const { id } = parent;
+      const loaders = createDataloaders(context);
+      const account = await loaders.accounts.load(id);
+      return account[prop];
+    };
+    return resolver;
   },
-  updatedAt: async ({ id }, args, context) => {
-    const loaders = createLoaders(context);
-    const data = await loaders.accounts.load(id);
-    return data.updatedAt;
-  },
-  status: async ({ id }, args, context) => {
-    const loaders = createLoaders(context);
-    const data = await loaders.accounts.load(id);
-    return data.status;
-  },
-  name: async ({ id }, args, context) => {
-    const loaders = createLoaders(context);
-    const data = await loaders.accounts.load(id);
-    return data.name;
-  },
-  login: async ({ id }, args, context) => {
-    const loaders = createLoaders(context);
-    const data = await loaders.accounts.load(id);
-    return data.login;
-  },
-  password: async ({ id }, args, context) => {
-    const loaders = createLoaders(context);
-    const data = await loaders.accounts.load(id);
-    return data.password;
-  },
-  roles: async ({ id }, args, context) => {
-    const loaders = createLoaders(context);
-    const data = await loaders.accounts.load(id);
-    return data.roles;
-  },
-};
+});
 
 export default accountResolver;

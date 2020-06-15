@@ -10,9 +10,11 @@ export const DEFAULT_SERVER_PORT = 4000;
 export const DEFAULT_GRAPHQL_ENDPOINT = '/graphql';
 export const DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT = '/subscriptions';
 export const DEFAULT_SERVER_TIMEZONE = 'UTC';
-export const DEFAULT_ROUTE_PLAYGROUND = '/playground';
 export const DEFAULT_ROUTE_GRAPHIQL = '/graphiql';
 export const DEFAULT_ROUTE_VOYAGER = '/voyager';
+export const DEFAULT_SESSION_SECRET = 'DCBUN0HUKGY4WGHAK5446GAJDFHSKA';
+export const DEFAULT_SESSION_TTL = 3600;
+export const DEFAULT_SESSION_PATH = './sessions';
 
 export const MAXIMUM_REQUEST_BODY_SIZE = '50mb';
 
@@ -27,6 +29,7 @@ export const LOG_FILENAME_ERRORS = 'errors-%DATE%.log';
 export const LOG_FILENAME_WARNINGS = 'warnings-%DATE%.log';
 export const LOG_FILENAME_SQL = 'sql-%DATE%.log';
 export const LOG_FILENAME_ACCESS = 'access-%DATE%.log';
+export const LOG_FILENAME_SESSIONS = 'sessions-%DATE%.log';
 export const LOG_DATE_PATTERNT = 'YYYY-MM-DD';
 export const LOG_MAX_SIZE = '20m';
 export const LOG_MAX_FILES = '14d';

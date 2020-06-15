@@ -39,7 +39,7 @@ class Accounts {
         'accounts.*',
         knex.raw('count(*) over() as "totalCount"'),
       ])
-      .from('accounts')
+      .from<IAccountTableModelOutput, IAccountTableModelOutput[]>('accounts')
       .orderBy(convertOrderByToKnex(orderBy))
       .where((builder) => convertWhereToKnex(builder, where))
       .limit(limit)
@@ -60,7 +60,6 @@ class Accounts {
       offset: 0,
       limit: ids.length,
     });
-
     return nodes;
   }
 
@@ -137,14 +136,12 @@ export interface IAccount {
   createdAt: Date;
   updatedAt: Date;
   deleted: Boolean;
-  cursor: string;
 }
 
 type IAccountTableModelOutput = Omit<IAccount, 'createdAt' | 'updatedAt' | 'roles'> & {
   roles: string[];
   createdAt: Date;
   updatedAt: Date;
-  cursor: number;
   totalCount: number;
 }
 

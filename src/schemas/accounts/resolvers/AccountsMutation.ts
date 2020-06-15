@@ -1,6 +1,6 @@
 import { IResolverObject } from 'graphql-tools';
 
-import { ServerError } from '../../../errorHandlers';
+import { ServerError, BadRequestError } from '../../../errorHandlers';
 import { IContext } from '../../../types';
 import createLoaders from '../loaders';
 import AccountsService, { IAccountUpdateInfo, IAccountCreateInfo } from '../service';
@@ -34,7 +34,7 @@ const driversMutationResolver: IResolverObject<any, IContext> = {
     // check account exists by login
     const account = await accountsService.getAccountByLogin(data.login);
     if (!account) {
-      throw new ServerError(`Account with login ${data.login} already exists`, { data });
+      throw new BadRequestError(`Account with login ${data.login} already exists`, { data });
     }
 
     // create account
