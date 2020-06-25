@@ -171,15 +171,16 @@ export declare type TOrderByKnex = Array<{
     order: IDirectionRange;
 }>;
 export declare type TWhere = Array<[string, TWhereAction, string | number | boolean | null | readonly string[] | readonly number[] | undefined]>;
+/**
+   * Key - is a alias name \
+   * Value - is a field alias name or array of names \
+   * Use asterisk (\*) for default alias name. \
+   * For example: {\
+   * books: ['title', 'length'],\
+   * info: ['*'],\
+   * }
+   */
 export declare type TTableAliases = {
-    /**
-     * Default alias table name
-     */
-    default: string;
-    /**
-     * Key - is a field name \
-     * Value - is a table alias name
-     */
-    [key: string]: string;
+    [key: string]: string | string[];
 };
 export {};

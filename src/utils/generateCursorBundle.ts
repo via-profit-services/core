@@ -86,10 +86,20 @@ export const applyAliases = (
   whereClause: TWhere,
   aliases: TTableAliases,
 ): TWhere => {
+  const aliasesMap = new Map<string, string>();
+  Object.entries(aliases).forEach(([tableName, field]) => {
+    const fieldsArray = Array.isArray(field) ? field : [field];
+    fieldsArray.forEach((fieldName) => {
+      aliasesMap.set(fieldName, tableName);
+    });
+  });
+
   const newWhere = whereClause.map((data) => {
     const [field, action, value] = data;
+    const alias = aliasesMap.get(field) || aliasesMap.get('*');
+
     return [
-      `${aliases[field] || aliases.default}.${field}`,
+      alias ? `${alias}.${field}` : field,
       action,
       value,
     ];
@@ -438,16 +448,15 @@ export type TWhere = Array<[
   string | number | boolean | null | readonly string[] | readonly number[] | undefined
 ]>;
 
-
+/**
+   * Key - is a alias name \
+   * Value - is a field alias name or array of names \
+   * Use asterisk (\*) for default alias name. \
+   * For example: {\
+   * books: ['title', 'length'],\
+   * info: ['*'],\
+   * }
+   */
 export type TTableAliases = {
-  /**
-   * Default alias table name
-   */
-  default: string;
-
-  /**
-   * Key - is a field name \
-   * Value - is a table alias name
-   */
-  [key: string]: string;
+  [key: string]: string | string[];
 };
