@@ -44,9 +44,10 @@ export declare const nodeToEdge: <T>(node: Node<T>, cursorName: string, cursorPa
  */
 export declare const convertOrderByToKnex: (orderBy: TOrderBy) => TOrderByKnex;
 export declare const convertJsonToKnex: <TRecord = any>(knexInstance: Knex<any, unknown[]>, json: {} | any[]) => Knex.Raw<TRecord>;
-export declare const convertWhereToKnex: (builder: Knex.QueryBuilder<any, any>, whereClause: {
+export declare const applyAliases: (whereClause: TWhere, aliases: TTableAliases) => TWhere;
+export declare const convertWhereToKnex: (builder: Knex.QueryBuilder<any, any>, whereClause: TWhere | {
     [key: string]: string | number | boolean;
-} | TWhere) => Knex.QueryBuilder<any, any>;
+}, aliases?: TTableAliases) => Knex.QueryBuilder<any, any>;
 /**
  * GraphQL Cursor connection
  * @see https://facebook.github.io/relay/graphql/connections.htm
@@ -170,4 +171,15 @@ export declare type TOrderByKnex = Array<{
     order: IDirectionRange;
 }>;
 export declare type TWhere = Array<[string, TWhereAction, string | number | boolean | null | readonly string[] | readonly number[] | undefined]>;
+export declare type TTableAliases = {
+    /**
+     * Default alias table name
+     */
+    default: string;
+    /**
+     * Key - is a field name \
+     * Value - is a table alias name
+     */
+    [key: string]: string;
+};
 export {};
