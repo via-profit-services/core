@@ -82,9 +82,37 @@ export const convertJsonToKnex = <TRecord = any>(knexInstance: Knex, json: {} | 
 };
 
 
-export const convertWhereToKnex = (builder: Knex.QueryBuilder, whereClause: {
-  [key: string]: string | number | boolean | null;
-} | TWhere) => {
+export const applyAliases = (
+  whereClause: TWhere,
+  aliases: TTableAliases,
+): TWhere => {
+  const newWhere = whereClause.map((data) => {
+    const [field, action, value] = data;
+    return [
+      `${aliases[field] || aliases.default}.${field}`,
+      action,
+      value,
+    ];
+  });
+
+  return newWhere as TWhere;
+};
+
+export const convertWhereToKnex = (
+  /**
+   * Put your Knex builder \
+   * For example: `knex('table').where((builder) => convertWhereToKnex(builder, where))`
+   */
+  builder: Knex.QueryBuilder,
+
+  /**
+   * Just `TWhere` array
+   */
+  whereClause: {
+      [key: string]: string | number | boolean | null;
+    } | TWhere,
+  aliases?: TTableAliases,
+) => {
   if (typeof whereClause === 'undefined') {
     return builder;
   }
@@ -103,7 +131,10 @@ export const convertWhereToKnex = (builder: Knex.QueryBuilder, whereClause: {
     });
   }
 
-  whereArray.forEach(([field, action, value]) => {
+  [...(aliases
+    ? applyAliases(whereArray, aliases)
+    : whereArray),
+  ].forEach(([field, action, value]) => {
     switch (true) {
       case action === TWhereAction.IN:
 
@@ -406,3 +437,17 @@ export type TWhere = Array<[
   TWhereAction,
   string | number | boolean | null | readonly string[] | readonly number[] | undefined
 ]>;
+
+
+export type TTableAliases = {
+  /**
+   * Default alias table name
+   */
+  default: string;
+
+  /**
+   * Key - is a field name \
+   * Value - is a table alias name
+   */
+  [key: string]: string;
+};
