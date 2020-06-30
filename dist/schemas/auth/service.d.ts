@@ -1,7 +1,7 @@
 import { Request } from 'express';
 import { SignOptions } from 'jsonwebtoken';
 import { IContext } from '../../types';
-import { IAccount, IAccountRole } from '../accounts/service';
+import { IAccount, IAccountRole } from './types';
 export declare enum TokenType {
     access = "access",
     refresh = "refresh"
@@ -49,7 +49,7 @@ export default class AuthService {
     static extractToken(tokenType: TokenType, request: Request): string;
 }
 interface Props {
-    context: IContext;
+    context: Pick<IContext, 'knex' | 'logger' | 'redis' | 'jwt'>;
 }
 /**
  * @see: JWT configuration. See [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)

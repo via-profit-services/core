@@ -72,7 +72,23 @@ const authMutationResolver: IResolverObject<any, IContext> = {
       throw new ServerError(`Failed to revoke token ${id}`, { id });
     }
   },
+  revokeAllTokens: async (parent, args: { account: string }, context) => {
+    const { pubsub } = context;
+    const { account } = args;
 
+    try {
+      const authService = new AuthService({ context });
+      const tokenIds = await authService.revokeAccountTokens(account);
+
+      pubsub.publish(SubscriptioTriggers.TOKEN_REVOKED, {
+        tokenWasRevoked: tokenIds,
+      });
+
+      return true;
+    } catch (err) {
+      throw new ServerError(`Failed to revoke account tokens ${account}`, { account });
+    }
+  },
 };
 
 export default authMutationResolver;
