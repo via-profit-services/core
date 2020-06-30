@@ -48,7 +48,7 @@ type AuthMutation {
     """"
     Account ID
     """
-    id: ID!
+    account: ID!
   ): Boolean
 }
 
