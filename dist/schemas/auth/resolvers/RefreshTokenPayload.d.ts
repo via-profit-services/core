@@ -7,7 +7,7 @@ declare const refreshTokenPayloadResolver: IResolverObject<Pick<{
     roles: string[];
     exp: number;
     iss: string;
-}, "id" | "uuid" | "roles" | "exp" | "iss"> & {
+}, "id" | "roles" | "uuid" | "exp" | "iss"> & {
     type: import("../service").TokenType.refresh;
     associated: string;
 }, IContext, any>;

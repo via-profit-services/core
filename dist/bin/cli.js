@@ -129,7 +129,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(__webpack_require__(3));
-const path_1 = __importDefault(__webpack_require__(7));
+const path_1 = __importDefault(__webpack_require__(8));
 const utilities_1 = __webpack_require__(12);
 exports.downloadSchema = (options) => __awaiter(void 0, void 0, void 0, function* () {
     const { endpoint, method, token, filename, headers, } = options;
@@ -163,7 +163,7 @@ module.exports = require("fs");
 
 /***/ }),
 
-/***/ 7:
+/***/ 8:
 /***/ (function(module, exports) {
 
 module.exports = require("path");
@@ -190,7 +190,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(__webpack_require__(3));
-const path_1 = __importDefault(__webpack_require__(7));
+const path_1 = __importDefault(__webpack_require__(8));
 const chalk_1 = __importDefault(__webpack_require__(10));
 const dotenv_1 = __importDefault(__webpack_require__(99));
 const glob_1 = __importDefault(__webpack_require__(100));
