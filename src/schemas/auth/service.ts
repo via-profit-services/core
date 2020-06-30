@@ -345,7 +345,7 @@ export default class AuthService {
 
 
 interface Props {
-  context: IContext;
+  context: Pick<IContext, 'knex' | 'logger' | 'redis' | 'jwt'>;
 }
 
 
