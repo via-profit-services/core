@@ -84,12 +84,93 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 106);
+/******/ 	return __webpack_require__(__webpack_require__.s = 98);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 106:
+/***/ 10:
+/***/ (function(module, exports) {
+
+module.exports = require("chalk");
+
+/***/ }),
+
+/***/ 100:
+/***/ (function(module, exports) {
+
+module.exports = require("glob");
+
+/***/ }),
+
+/***/ 101:
+/***/ (function(module, exports) {
+
+module.exports = require("yargs");
+
+/***/ }),
+
+/***/ 11:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const fs_1 = __importDefault(__webpack_require__(3));
+const path_1 = __importDefault(__webpack_require__(7));
+const utilities_1 = __webpack_require__(12);
+exports.downloadSchema = (options) => __awaiter(void 0, void 0, void 0, function* () {
+    const { endpoint, method, token, filename, headers, } = options;
+    const response = yield fetch(endpoint, {
+        method: method || 'POST',
+        headers: Object.assign({ 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, headers),
+        body: JSON.stringify({ query: utilities_1.getIntrospectionQuery() }),
+    });
+    if (response.status !== 200) {
+        throw new Error(`Failed to send introspection request with status code ${response.status}`);
+    }
+    const schemaJSON = yield response.json();
+    const clientSchema = utilities_1.printSchema(utilities_1.buildClientSchema(schemaJSON.data));
+    return fs_1.default.writeFileSync(path_1.default.resolve(filename), clientSchema);
+});
+
+
+/***/ }),
+
+/***/ 12:
+/***/ (function(module, exports) {
+
+module.exports = require("graphql/utilities");
+
+/***/ }),
+
+/***/ 3:
+/***/ (function(module, exports) {
+
+module.exports = require("fs");
+
+/***/ }),
+
+/***/ 7:
+/***/ (function(module, exports) {
+
+module.exports = require("path");
+
+/***/ }),
+
+/***/ 98:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -108,13 +189,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs_1 = __importDefault(__webpack_require__(4));
-const path_1 = __importDefault(__webpack_require__(8));
-const chalk_1 = __importDefault(__webpack_require__(11));
-const dotenv_1 = __importDefault(__webpack_require__(107));
-const glob_1 = __importDefault(__webpack_require__(108));
-const yargs_1 = __importDefault(__webpack_require__(109));
-const downloadSchema_1 = __webpack_require__(13);
+const fs_1 = __importDefault(__webpack_require__(3));
+const path_1 = __importDefault(__webpack_require__(7));
+const chalk_1 = __importDefault(__webpack_require__(10));
+const dotenv_1 = __importDefault(__webpack_require__(99));
+const glob_1 = __importDefault(__webpack_require__(100));
+const yargs_1 = __importDefault(__webpack_require__(101));
+const downloadSchema_1 = __webpack_require__(11);
 const listMigrationsPerPackage = () => {
     const list = [];
     const projectsList = glob_1.default.sync(`${process.cwd()}/node_modules/@via-profit-services/*/`);
@@ -222,91 +303,10 @@ exports.default = args;
 
 /***/ }),
 
-/***/ 107:
+/***/ 99:
 /***/ (function(module, exports) {
 
 module.exports = require("dotenv");
-
-/***/ }),
-
-/***/ 108:
-/***/ (function(module, exports) {
-
-module.exports = require("glob");
-
-/***/ }),
-
-/***/ 109:
-/***/ (function(module, exports) {
-
-module.exports = require("yargs");
-
-/***/ }),
-
-/***/ 11:
-/***/ (function(module, exports) {
-
-module.exports = require("chalk");
-
-/***/ }),
-
-/***/ 13:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const fs_1 = __importDefault(__webpack_require__(4));
-const path_1 = __importDefault(__webpack_require__(8));
-const utilities_1 = __webpack_require__(14);
-exports.downloadSchema = (options) => __awaiter(void 0, void 0, void 0, function* () {
-    const { endpoint, method, token, filename, headers, } = options;
-    const response = yield fetch(endpoint, {
-        method: method || 'POST',
-        headers: Object.assign({ 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, headers),
-        body: JSON.stringify({ query: utilities_1.getIntrospectionQuery() }),
-    });
-    if (response.status !== 200) {
-        throw new Error(`Failed to send introspection request with status code ${response.status}`);
-    }
-    const schemaJSON = yield response.json();
-    const clientSchema = utilities_1.printSchema(utilities_1.buildClientSchema(schemaJSON.data));
-    return fs_1.default.writeFileSync(path_1.default.resolve(filename), clientSchema);
-});
-
-
-/***/ }),
-
-/***/ 14:
-/***/ (function(module, exports) {
-
-module.exports = require("graphql/utilities");
-
-/***/ }),
-
-/***/ 4:
-/***/ (function(module, exports) {
-
-module.exports = require("fs");
-
-/***/ }),
-
-/***/ 8:
-/***/ (function(module, exports) {
-
-module.exports = require("path");
 
 /***/ })
 

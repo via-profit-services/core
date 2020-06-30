@@ -13,7 +13,7 @@ import {
   TOKEN_BEARER,
   REDIS_TOKENS_BLACKLIST,
 } from '../../utils';
-import { IAccount, AccountStatus, IAccountRole } from '../accounts/service';
+import { IAccount, AccountStatus, IAccountRole } from './types';
 
 export enum TokenType {
   access = 'access',

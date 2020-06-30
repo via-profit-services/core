@@ -23,7 +23,7 @@ declare const resolvers: {
         roles: string[];
         exp: number;
         iss: string;
-    }, "id" | "roles" | "uuid" | "exp" | "iss"> & {
+    }, "id" | "uuid" | "roles" | "exp" | "iss"> & {
         type: import("../service").TokenType.refresh;
         associated: string;
     }, import("../../..").IContext, any>;
