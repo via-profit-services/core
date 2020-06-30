@@ -32,7 +32,7 @@ import errorMiddleware from '../errorHandlers/errorMiddleware';
 import { requestHandlerMiddleware } from '../logger';
 import {
   info,
-  accounts,
+  // accounts,
   auth,
   common,
   scalar,
@@ -241,14 +241,14 @@ class App {
         scalar.typeDefs,
         common.typeDefs,
         info.typeDefs,
-        accounts.typeDefs,
+        // accounts.typeDefs,
         auth.typeDefs,
         ...typeDefs || [],
       ],
       resolvers: [
         scalar.resolvers,
         info.resolvers,
-        accounts.resolvers,
+        // accounts.resolvers,
         auth.resolvers,
         ...resolvers || [],
       ],

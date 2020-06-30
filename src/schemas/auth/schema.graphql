@@ -6,6 +6,13 @@ extend type Mutation {
   auth: AuthMutation!
 }
 
+extend type Subscription {
+  """
+  Called when the token with following id was revoked
+  """
+  tokenWasRevoked (id: ID!): [ID!]!
+}
+
 type AuthQuery {
   validateToken (token: String): AccessTokenPayload
 }
