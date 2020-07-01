@@ -110,7 +110,7 @@ module.exports = require("yargs");
 
 /***/ }),
 
-/***/ 11:
+/***/ 12:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -130,7 +130,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(__webpack_require__(3));
 const path_1 = __importDefault(__webpack_require__(8));
-const utilities_1 = __webpack_require__(12);
+const utilities_1 = __webpack_require__(13);
 exports.downloadSchema = (options) => __awaiter(void 0, void 0, void 0, function* () {
     const { endpoint, method, token, filename, headers, } = options;
     const response = yield fetch(endpoint, {
@@ -149,7 +149,7 @@ exports.downloadSchema = (options) => __awaiter(void 0, void 0, void 0, function
 
 /***/ }),
 
-/***/ 12:
+/***/ 13:
 /***/ (function(module, exports) {
 
 module.exports = require("graphql/utilities");
@@ -195,7 +195,7 @@ const chalk_1 = __importDefault(__webpack_require__(10));
 const dotenv_1 = __importDefault(__webpack_require__(99));
 const glob_1 = __importDefault(__webpack_require__(100));
 const yargs_1 = __importDefault(__webpack_require__(101));
-const downloadSchema_1 = __webpack_require__(11);
+const downloadSchema_1 = __webpack_require__(12);
 const listMigrationsPerPackage = () => {
     const list = [];
     const projectsList = glob_1.default.sync(`${process.cwd()}/node_modules/@via-profit-services/*/`);

@@ -1,7 +1,7 @@
 import { IResolverObject } from 'graphql-tools';
 import { IContext } from '../../../types';
 declare const accessTokenPayloadResolver: IResolverObject<{
-    type: import("../service").TokenType.access;
+    type: import("../types").TokenType.access;
     id: string;
     uuid: string;
     roles: string[];

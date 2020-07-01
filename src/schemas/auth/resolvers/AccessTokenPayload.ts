@@ -1,7 +1,7 @@
 import { IResolverObject, IFieldResolver } from 'graphql-tools';
 
 import { IContext } from '../../../types';
-import { IAccessToken } from '../service';
+import { IAccessToken } from '../types';
 
 type IParent = IAccessToken['payload'];
 type TAccountResolver = IResolverObject<IParent, IContext>;

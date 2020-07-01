@@ -12,7 +12,7 @@ import { Options as SesstionStoreOptions } from 'session-file-store';
 import { ServerOptions as IWebsocketServerOption } from 'ws';
 import { IDBConfig, KnexInstance } from './databaseManager';
 import { ILoggerCollection } from './logger';
-import { IJwtConfig, IAccessToken } from './schemas/auth/service';
+import { IJwtConfig, IAccessToken } from './schemas/auth/types';
 export interface IInitProps {
     port?: number;
     endpoint?: string;
