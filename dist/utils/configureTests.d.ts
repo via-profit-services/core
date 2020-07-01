@@ -12,7 +12,7 @@ declare const configureTest: (config?: Partial<IInitProps>) => {
         typeDefs?: import("graphql-tools").ITypedef[];
         middlewares?: import("graphql-middleware").IMiddlewareGenerator<any, Partial<import("../types").IContext>, any>[];
         resolvers?: import("graphql-tools").IResolvers<any, Partial<import("../types").IContext>>[];
-        jwt: import("../schemas/auth/service").IJwtConfig;
+        jwt: import("../schemas/auth").IJwtConfig;
         database: Pick<import("..").IDBConfig, "migrations" | "seeds" | "connection" | "timezone">;
         redis: import("ioredis").RedisOptions;
         logger: import("..").ILoggerCollection;
@@ -29,8 +29,8 @@ declare const configureTest: (config?: Partial<IInitProps>) => {
         expressMiddlewares?: import("../types").IExpressMidlewareContainer[];
         sessions?: false | import("session-file-store").Options;
     };
-    accessToken: import("../schemas/auth/service").ITokenInfo;
-    refreshToken: import("../schemas/auth/service").ITokenInfo;
+    accessToken: import("../schemas/auth").ITokenInfo;
+    refreshToken: import("../schemas/auth").ITokenInfo;
     app: import("express").Express;
     context: import("../types").IContext;
     schema: import("graphql").GraphQLSchema;

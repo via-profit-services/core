@@ -9,7 +9,7 @@ declare const resolvers: {
     AuthMutation: import("graphql-tools").IResolverObject<any, import("../../..").IContext, any>;
     AuthQuery: import("graphql-tools").IResolverObject<any, import("../../..").IContext, any>;
     AccessTokenPayload: import("graphql-tools").IResolverObject<{
-        type: import("../service").TokenType.access;
+        type: import("..").TokenType.access;
         id: string;
         uuid: string;
         roles: string[];
@@ -17,14 +17,14 @@ declare const resolvers: {
         iss: string;
     }, import("../../..").IContext, any>;
     RefreshTokenPayload: import("graphql-tools").IResolverObject<Pick<{
-        type: import("../service").TokenType.access;
+        type: import("..").TokenType.access;
         id: string;
         uuid: string;
         roles: string[];
         exp: number;
         iss: string;
     }, "id" | "roles" | "uuid" | "exp" | "iss"> & {
-        type: import("../service").TokenType.refresh;
+        type: import("..").TokenType.refresh;
         associated: string;
     }, import("../../..").IContext, any>;
 };

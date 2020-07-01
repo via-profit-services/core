@@ -2,7 +2,8 @@ import { IResolverObject } from 'graphql-tools';
 
 import { ServerError, BadRequestError, UnauthorizedError } from '../../../errorHandlers';
 import { IContext } from '../../../types';
-import AuthService, { TokenType } from '../service';
+import AuthService from '../service';
+import { TokenType } from '../types';
 import { SubscriptioTriggers } from './AuthSubscription';
 
 const authMutationResolver: IResolverObject<any, IContext> = {

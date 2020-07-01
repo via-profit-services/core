@@ -16,7 +16,7 @@ import { ILoggerCollection } from './logger';
 import {
   IJwtConfig,
   IAccessToken,
-} from './schemas/auth/service';
+} from './schemas/auth/types';
 
 export interface IInitProps {
   port?: number;

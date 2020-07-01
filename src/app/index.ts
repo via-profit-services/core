@@ -37,9 +37,8 @@ import {
   common,
   scalar,
 } from '../schemas';
-import AuthService, {
-  TokenType,
-} from '../schemas/auth/service';
+import AuthService from '../schemas/auth/service';
+import { TokenType } from '../schemas/auth/types';
 import {
   IInitDefaultProps,
   IInitProps,
