@@ -190,7 +190,13 @@ export default class AuthService {
     const { logger, knex, redis } = context;
 
     const ids = Array.isArray(accessTokenIdOrIds) ? accessTokenIdOrIds : [accessTokenIdOrIds];
-    redis.sadd(REDIS_TOKENS_BLACKLIST, ids);
+
+    try {
+      redis.sadd(REDIS_TOKENS_BLACKLIST, ids);
+      logger.auth.info('New tokens has been added in BlackList', { tokenIds: ids });
+    } catch (err) {
+      throw new ServerError('Failed to update Redis BlackList', { err });
+    }
 
     const tokensList = await knex('tokens')
       .select(['tokens.account', 'tokens.id as access', 'refreshTokens.id as refresh'])
@@ -215,18 +221,18 @@ export default class AuthService {
     return Boolean(result);
   }
 
-  public async revokeAccountTokens(accountId: string): Promise<string[]> {
+  public async revokeAccountTokens(account: string): Promise<string[]> {
     const { knex } = this.props.context;
 
     const allTokens = await knex('tokens')
       .select(['id'])
-      .where({
-        account: accountId,
-      });
+      .where({ account });
 
     const ids = allTokens.map((token: { id: string }) => token.id);
 
-    await this.revokeToken(ids);
+    if (ids.length) {
+      await this.revokeToken(ids);
+    }
 
     return ids;
   }
@@ -254,7 +260,11 @@ export default class AuthService {
     const expiredIds = tokensList.map((data: {id: string}) => data.id);
 
     if (expiredIds.length) {
-      await redis.srem(REDIS_TOKENS_BLACKLIST, expiredIds);
+      try {
+        await redis.srem(REDIS_TOKENS_BLACKLIST, expiredIds);
+      } catch (err) {
+        throw new ServerError('Failed to remove data from Redis BlackList', { err });
+      }
     }
 
     await knex('tokens')

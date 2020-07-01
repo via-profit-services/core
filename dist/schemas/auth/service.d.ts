@@ -31,7 +31,7 @@ export default class AuthService {
     }): ITokenPackage;
     revokeToken(accessTokenIdOrIds: string | string[]): Promise<void>;
     isTokenRevoked(accessTokenId: string): Promise<boolean>;
-    revokeAccountTokens(accountId: string): Promise<string[]>;
+    revokeAccountTokens(account: string): Promise<string[]>;
     getTokensByIds(ids: string[]): Promise<any[]>;
     clearExpiredTokens(): Promise<void>;
     /**
