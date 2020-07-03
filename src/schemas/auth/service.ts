@@ -265,7 +265,7 @@ export default class AuthService {
       try {
         await redis.srem(REDIS_TOKENS_BLACKLIST, expiredIds);
       } catch (err) {
-        logger.server.error('Redis srem error', { erro });
+        logger.server.error('Redis srem error', { err });
         throw new ServerError('Failed to remove data from BlackList', { err });
       }
     }
