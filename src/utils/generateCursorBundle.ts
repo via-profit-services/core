@@ -83,12 +83,16 @@ export const convertJsonToKnex = <TRecord = any>(knexInstance: Knex, json: {} | 
 
 
 export const convertBetweenToKnex = (
-  knexInstance: Knex,
+  /**
+   * Put your Knex builder \
+   * For example: `knex('table').where((builder) => convertBetweenToKnex(builder, between))`
+   */
+  builder: Knex.QueryBuilder,
   between: TBetween | undefined,
   aliases?: TTableAliases,
 ) => {
   if (typeof between === 'undefined') {
-    return knexInstance;
+    return builder;
   }
 
   const aliasesMap = new Map<string, string>();
@@ -101,13 +105,13 @@ export const convertBetweenToKnex = (
 
   Object.entries(between).forEach(([field, betweenData]) => {
     const alias = aliasesMap.get(field) || aliasesMap.get('*');
-    knexInstance.whereBetween(
+    builder.whereBetween(
       alias ? `${alias}.${field}` : field,
       [betweenData.start, betweenData.end],
     );
   });
 
-  return knexInstance;
+  return builder;
 };
 
 export const applyAliases = (
