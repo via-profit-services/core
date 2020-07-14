@@ -82,6 +82,34 @@ export const convertJsonToKnex = <TRecord = any>(knexInstance: Knex, json: {} | 
 };
 
 
+export const convertBetweenToKnex = (
+  knexInstance: Knex,
+  between: TBetween | undefined,
+  aliases?: TTableAliases,
+) => {
+  if (typeof between === 'undefined') {
+    return knexInstance;
+  }
+
+  const aliasesMap = new Map<string, string>();
+  Object.entries(aliases || {}).forEach(([tableName, field]) => {
+    const fieldsArray = Array.isArray(field) ? field : [field];
+    fieldsArray.forEach((fieldName) => {
+      aliasesMap.set(fieldName, tableName);
+    });
+  });
+
+  Object.entries(between).forEach(([field, betweenData]) => {
+    const alias = aliasesMap.get(field) || aliasesMap.get('*');
+    knexInstance.whereBetween(
+      alias ? `${alias}.${field}` : field,
+      [betweenData.start, betweenData.end],
+    );
+  });
+
+  return knexInstance;
+};
+
 export const applyAliases = (
   whereClause: TWhere,
   aliases: TTableAliases,
@@ -404,8 +432,8 @@ export interface IBetweenInt {
 }
 
 export interface IBetweenMoney {
-  start: BigInt;
-  end: BigInt;
+  start: number;
+  end: number;
 }
 
 export interface TBetween {
