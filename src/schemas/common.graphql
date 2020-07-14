@@ -57,3 +57,28 @@ interface Connection {
   pageInfo: PageInfo!
   edges: [Edge]!
 }
+
+input BetweenDate {
+  start: Date!
+  end: Date!
+}
+
+input BetweenTime {
+  start: Time!
+  end: Time!
+}
+
+input BetweenDateTime {
+  start: DateTime!
+  end: DateTime!
+}
+
+input BetweenInt {
+  start: Int!
+  end: Int!
+}
+
+input BetweenMoney {
+  start: Money!
+  end: Money!
+}

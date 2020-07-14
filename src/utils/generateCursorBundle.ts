@@ -232,6 +232,7 @@ export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutp
     orderBy,
     filter,
     search,
+    between,
   } = args;
 
   const DEFAULT_LIMIT = 30;
@@ -245,6 +246,7 @@ export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutp
     where: [],
     search: false,
     offset: Math.max(Number(offset) || 0, 0),
+    between: between || {},
   };
 
 
@@ -382,6 +384,35 @@ export interface ICursorConnectionProps<T> {
   revert?: boolean;
 }
 
+export interface IBetweenDate {
+  start: Date;
+  end: Date;
+}
+
+export interface IBetweenTime {
+  start: string;
+  end: string;
+}
+export interface IBetweenDateTime {
+  start: Date;
+  end: Date;
+}
+
+export interface IBetweenInt {
+  start: number;
+  end: number;
+}
+
+export interface IBetweenMoney {
+  start: BigInt;
+  end: BigInt;
+}
+
+export interface TBetween {
+  [key: string]: IBetweenDate | IBetweenTime | IBetweenDateTime | IBetweenInt | IBetweenMoney;
+}
+
+
 export interface TInputFilter {
   first?: number;
   offset?: number;
@@ -390,6 +421,7 @@ export interface TInputFilter {
   before?: string;
   orderBy?: TOrderBy;
   search?: TInputSearch;
+  between?: TBetween;
   filter?: {
     [key: string]: TInputFilterValue | readonly string[] | readonly number[];
   };
@@ -397,7 +429,9 @@ export interface TInputFilter {
 
 type TInputFilterValue = string | number | boolean | null;
 
+
 export type TInputSearch = ISearchSingleField | ISearchSingleField[] | ISearchMultipleFields;
+
 
 interface ISearchSingleField {
   field: string;
@@ -422,6 +456,7 @@ export interface TOutputFilter {
   where: TWhere;
   revert: boolean;
   search: TOutputSearch | false;
+  between: TBetween;
 }
 
 export interface ICursorPayload {

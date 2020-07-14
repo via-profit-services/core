@@ -122,6 +122,29 @@ export interface ICursorConnectionProps<T> {
     where?: TWhere;
     revert?: boolean;
 }
+export interface IBetweenDate {
+    start: Date;
+    end: Date;
+}
+export interface IBetweenTime {
+    start: string;
+    end: string;
+}
+export interface IBetweenDateTime {
+    start: Date;
+    end: Date;
+}
+export interface IBetweenInt {
+    start: number;
+    end: number;
+}
+export interface IBetweenMoney {
+    start: BigInt;
+    end: BigInt;
+}
+export interface TBetween {
+    [key: string]: IBetweenDate | IBetweenTime | IBetweenDateTime | IBetweenInt | IBetweenMoney;
+}
 export interface TInputFilter {
     first?: number;
     offset?: number;
@@ -130,6 +153,7 @@ export interface TInputFilter {
     before?: string;
     orderBy?: TOrderBy;
     search?: TInputSearch;
+    between?: TBetween;
     filter?: {
         [key: string]: TInputFilterValue | readonly string[] | readonly number[];
     };
@@ -155,6 +179,7 @@ export interface TOutputFilter {
     where: TWhere;
     revert: boolean;
     search: TOutputSearch | false;
+    between: TBetween;
 }
 export interface ICursorPayload {
     offset: number;
