@@ -44,7 +44,10 @@ export declare const nodeToEdge: <T>(node: Node<T>, cursorName: string, cursorPa
  */
 export declare const convertOrderByToKnex: (orderBy: TOrderBy) => TOrderByKnex;
 export declare const convertJsonToKnex: <TRecord = any>(knexInstance: Knex<any, unknown[]>, json: {} | any[]) => Knex.Raw<TRecord>;
-export declare const convertBetweenToKnex: (builder: Knex.QueryBuilder<any, any>, between: TBetween, aliases?: TTableAliases) => Knex.QueryBuilder<any, any>;
+export declare const convertBetweenToKnex: (builder: Knex.QueryBuilder<any, any>, between: TBetween, options?: {
+    aliases?: TTableAliases;
+    timezone: string;
+}) => Knex.QueryBuilder<any, any>;
 export declare const applyAliases: (whereClause: TWhere, aliases: TTableAliases) => TWhere;
 export declare const convertWhereToKnex: (builder: Knex.QueryBuilder<any, any>, whereClause: TWhere | {
     [key: string]: string | number | boolean;

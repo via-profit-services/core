@@ -1,4 +1,5 @@
 import Knex from 'knex';
+import moment from 'moment-timezone';
 import { ServerError } from '../errorHandlers';
 
 export enum IDirectionRange {
@@ -89,8 +90,17 @@ export const convertBetweenToKnex = (
    */
   builder: Knex.QueryBuilder,
   between: TBetween | undefined,
-  aliases?: TTableAliases,
+  options?: {
+    aliases?: TTableAliases;
+    timezone: string;
+  }
+  ,
 ) => {
+  const { aliases, timezone } = options || {
+    aliases: {},
+    timezone: 'UTC',
+  };
+
   if (typeof between === 'undefined') {
     return builder;
   }
@@ -107,7 +117,14 @@ export const convertBetweenToKnex = (
     const alias = aliasesMap.get(field) || aliasesMap.get('*');
     builder.whereBetween(
       alias ? `${alias}.${field}` : field,
-      [betweenData.start, betweenData.end],
+      [
+        betweenData.start instanceof Date
+          ? moment.tz(betweenData.start, timezone).format()
+          : betweenData.start,
+        betweenData.end instanceof Date
+          ? moment.tz(betweenData.end, timezone).format()
+          : betweenData.end,
+      ],
     );
   });
 
