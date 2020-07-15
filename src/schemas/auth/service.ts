@@ -212,10 +212,15 @@ export default class AuthService {
   }
 
   public async isTokenRevoked(accessTokenId: string): Promise<boolean> {
-    const { redis } = this.props.context;
+    const { redis, logger } = this.props.context;
 
-    const result = await redis.sismember(REDIS_TOKENS_BLACKLIST, accessTokenId);
-    return Boolean(result);
+    try {
+      const result = await redis.sismember(REDIS_TOKENS_BLACKLIST, accessTokenId);
+      return Boolean(result);
+    } catch (err) {
+      logger.server.error('Redis sismember error', { err });
+      throw new ServerError('Failed to check token', { err });
+    }
   }
 
   public async revokeAccountTokens(account: string): Promise<string[]> {
@@ -248,7 +253,7 @@ export default class AuthService {
 
   public async clearExpiredTokens() {
     const { context } = this.props;
-    const { knex, redis } = context;
+    const { knex, redis, logger } = context;
 
     const tokensList = await knex('tokens')
       .select('id')
@@ -260,7 +265,8 @@ export default class AuthService {
       try {
         await redis.srem(REDIS_TOKENS_BLACKLIST, expiredIds);
       } catch (err) {
-        throw new ServerError('Failed to remove data from Redis BlackList', { err });
+        logger.server.error('Redis srem error', { err });
+        throw new ServerError('Failed to remove data from BlackList', { err });
       }
     }
 

@@ -44,6 +44,10 @@ export declare const nodeToEdge: <T>(node: Node<T>, cursorName: string, cursorPa
  */
 export declare const convertOrderByToKnex: (orderBy: TOrderBy) => TOrderByKnex;
 export declare const convertJsonToKnex: <TRecord = any>(knexInstance: Knex<any, unknown[]>, json: {} | any[]) => Knex.Raw<TRecord>;
+export declare const convertBetweenToKnex: (builder: Knex.QueryBuilder<any, any>, between: TBetween, options?: {
+    aliases?: TTableAliases;
+    timezone: string;
+}) => Knex.QueryBuilder<any, any>;
 export declare const applyAliases: (whereClause: TWhere, aliases: TTableAliases) => TWhere;
 export declare const convertWhereToKnex: (builder: Knex.QueryBuilder<any, any>, whereClause: TWhere | {
     [key: string]: string | number | boolean;
@@ -122,6 +126,29 @@ export interface ICursorConnectionProps<T> {
     where?: TWhere;
     revert?: boolean;
 }
+export interface IBetweenDate {
+    start: Date;
+    end: Date;
+}
+export interface IBetweenTime {
+    start: string;
+    end: string;
+}
+export interface IBetweenDateTime {
+    start: Date;
+    end: Date;
+}
+export interface IBetweenInt {
+    start: number;
+    end: number;
+}
+export interface IBetweenMoney {
+    start: number;
+    end: number;
+}
+export interface TBetween {
+    [key: string]: IBetweenDate | IBetweenTime | IBetweenDateTime | IBetweenInt | IBetweenMoney;
+}
 export interface TInputFilter {
     first?: number;
     offset?: number;
@@ -130,6 +157,7 @@ export interface TInputFilter {
     before?: string;
     orderBy?: TOrderBy;
     search?: TInputSearch;
+    between?: TBetween;
     filter?: {
         [key: string]: TInputFilterValue | readonly string[] | readonly number[];
     };
@@ -155,6 +183,7 @@ export interface TOutputFilter {
     where: TWhere;
     revert: boolean;
     search: TOutputSearch | false;
+    between: TBetween;
 }
 export interface ICursorPayload {
     offset: number;

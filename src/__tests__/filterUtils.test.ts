@@ -92,4 +92,26 @@ describe('Filter utils', () => {
 
     done();
   });
+
+  it('Between. Should return between', (done) => {
+    const { between } = buildQueryFilter({
+      between: {
+        price: {
+          start: 1500,
+          end: 16000,
+        },
+      },
+    });
+
+    const expected = {
+      price: {
+        start: 1500,
+        end: 16000,
+      },
+    };
+
+    expect(between).toEqual(expected);
+
+    done();
+  });
 });

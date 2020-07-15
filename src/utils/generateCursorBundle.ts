@@ -1,4 +1,5 @@
 import Knex from 'knex';
+import moment from 'moment-timezone';
 import { ServerError } from '../errorHandlers';
 
 export enum IDirectionRange {
@@ -81,6 +82,54 @@ export const convertJsonToKnex = <TRecord = any>(knexInstance: Knex, json: {} | 
   return knexInstance.raw<TRecord>(`'${JSON.stringify(json)}'::jsonb`);
 };
 
+
+export const convertBetweenToKnex = (
+  /**
+   * Put your Knex builder \
+   * For example: `knex('table').where((builder) => convertBetweenToKnex(builder, between))`
+   */
+  builder: Knex.QueryBuilder,
+  between: TBetween | undefined,
+  options?: {
+    aliases?: TTableAliases;
+    timezone: string;
+  }
+  ,
+) => {
+  const { aliases, timezone } = options || {
+    aliases: {},
+    timezone: 'UTC',
+  };
+
+  if (typeof between === 'undefined') {
+    return builder;
+  }
+
+  const aliasesMap = new Map<string, string>();
+  Object.entries(aliases || {}).forEach(([tableName, field]) => {
+    const fieldsArray = Array.isArray(field) ? field : [field];
+    fieldsArray.forEach((fieldName) => {
+      aliasesMap.set(fieldName, tableName);
+    });
+  });
+
+  Object.entries(between).forEach(([field, betweenData]) => {
+    const alias = aliasesMap.get(field) || aliasesMap.get('*');
+    builder.whereBetween(
+      alias ? `${alias}.${field}` : field,
+      [
+        betweenData.start instanceof Date
+          ? moment.tz(betweenData.start, timezone).format()
+          : betweenData.start,
+        betweenData.end instanceof Date
+          ? moment.tz(betweenData.end, timezone).format()
+          : betweenData.end,
+      ],
+    );
+  });
+
+  return builder;
+};
 
 export const applyAliases = (
   whereClause: TWhere,
@@ -232,6 +281,7 @@ export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutp
     orderBy,
     filter,
     search,
+    between,
   } = args;
 
   const DEFAULT_LIMIT = 30;
@@ -245,6 +295,7 @@ export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutp
     where: [],
     search: false,
     offset: Math.max(Number(offset) || 0, 0),
+    between: between || {},
   };
 
 
@@ -382,6 +433,35 @@ export interface ICursorConnectionProps<T> {
   revert?: boolean;
 }
 
+export interface IBetweenDate {
+  start: Date;
+  end: Date;
+}
+
+export interface IBetweenTime {
+  start: string;
+  end: string;
+}
+export interface IBetweenDateTime {
+  start: Date;
+  end: Date;
+}
+
+export interface IBetweenInt {
+  start: number;
+  end: number;
+}
+
+export interface IBetweenMoney {
+  start: number;
+  end: number;
+}
+
+export interface TBetween {
+  [key: string]: IBetweenDate | IBetweenTime | IBetweenDateTime | IBetweenInt | IBetweenMoney;
+}
+
+
 export interface TInputFilter {
   first?: number;
   offset?: number;
@@ -390,6 +470,7 @@ export interface TInputFilter {
   before?: string;
   orderBy?: TOrderBy;
   search?: TInputSearch;
+  between?: TBetween;
   filter?: {
     [key: string]: TInputFilterValue | readonly string[] | readonly number[];
   };
@@ -397,7 +478,9 @@ export interface TInputFilter {
 
 type TInputFilterValue = string | number | boolean | null;
 
+
 export type TInputSearch = ISearchSingleField | ISearchSingleField[] | ISearchMultipleFields;
+
 
 interface ISearchSingleField {
   field: string;
@@ -422,6 +505,7 @@ export interface TOutputFilter {
   where: TWhere;
   revert: boolean;
   search: TOutputSearch | false;
+  between: TBetween;
 }
 
 export interface ICursorPayload {
