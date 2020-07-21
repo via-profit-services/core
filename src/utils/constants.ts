@@ -33,7 +33,7 @@ export const LOG_FILENAME_SESSIONS = 'sessions-%DATE%.log';
 export const LOG_DATE_PATTERNT = 'YYYY-MM-DD';
 export const LOG_MAX_SIZE = '20m';
 export const LOG_MAX_FILES = '14d';
-
+export const WHITELIST_MUTATION_QUERIES = ['getAccessToken', 'refreshToken', 'validateToken'];
 
 /** Depricated */
 export const LOG_MAZ_FILES = '14d';

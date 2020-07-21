@@ -2,6 +2,7 @@
 import fs from 'fs';
 import bcryptjs from 'bcryptjs';
 import { Request } from 'express';
+import { parse, OperationDefinitionNode } from 'graphql';
 import jwt from 'jsonwebtoken';
 import moment from 'moment-timezone';
 import { v4 as uuidv4 } from 'uuid';
@@ -12,6 +13,7 @@ import {
   TOKEN_BEARER_KEY,
   TOKEN_BEARER,
   REDIS_TOKENS_BLACKLIST,
+  WHITELIST_MUTATION_QUERIES,
 } from '../../utils';
 import {
   IAccount, AccountStatus, TokenType, ITokenPackage, ITokenInfo,
@@ -23,6 +25,26 @@ export default class AuthService {
 
   public constructor(props: Props) {
     this.props = props;
+  }
+
+  public static isWhitelistRequest(request: Request) {
+    const { body } = request;
+    const allowedFieldNames = WHITELIST_MUTATION_QUERIES;
+    const ast = parse(body.query);
+    const allowd: boolean[] = [];
+    ast.definitions.forEach((definition: OperationDefinitionNode) => {
+      [...definition?.selectionSet?.selections || []].forEach((selection: any) => {
+        [...selection?.selectionSet?.selections || []].forEach((sel: any) => {
+          if (sel.kind === 'Field' && allowedFieldNames.includes(sel?.name?.value)) {
+            allowd.push(true);
+          } else {
+            allowd.push(false);
+          }
+        });
+      });
+    });
+
+    return allowd.every((field) => field === true);
   }
 
   /**

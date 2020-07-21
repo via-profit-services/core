@@ -465,9 +465,8 @@ class App {
       endpoint,
       graphqlHTTP(
         async (req): Promise<OptionsData & { subscriptionEndpoint?: string }> => {
-          const useSSL = serverOptions?.cert;
-          const token = AuthService.extractToken(TokenType.access, req as Request);
-          if (token !== '') {
+          if (!AuthService.isWhitelistRequest(req as Request)) {
+            const token = AuthService.extractToken(TokenType.access, req as Request);
             const payload = await authService.verifyToken(token);
 
             if (!payload) {
@@ -481,6 +480,7 @@ class App {
             context.token = payload;
           }
 
+          const useSSL = serverOptions?.cert;
           const deviceDetector = new DeviceDetector();
           context.deviceInfo = deviceDetector.parse(req.headers['user-agent']);
 
