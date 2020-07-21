@@ -28,6 +28,7 @@ export declare const LOG_FILENAME_SESSIONS = "sessions-%DATE%.log";
 export declare const LOG_DATE_PATTERNT = "YYYY-MM-DD";
 export declare const LOG_MAX_SIZE = "20m";
 export declare const LOG_MAX_FILES = "14d";
+export declare const WHITELIST_MUTATION_QUERIES: string[];
 /** Depricated */
 export declare const LOG_MAZ_FILES = "14d";
 /** Depricated */

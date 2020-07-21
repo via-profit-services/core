@@ -4,6 +4,7 @@ import { IAccount, TokenType, ITokenPackage, ITokenInfo } from './types';
 export default class AuthService {
     private props;
     constructor(props: Props);
+    static isWhitelistRequest(request: Request): boolean;
     /**
      * Crypt password string by bcryptjs
      * @param  {string} password
