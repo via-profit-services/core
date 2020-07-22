@@ -350,6 +350,20 @@ _Извлекает из массива типа `<Node>` ключи и возв
 | `/auth/verify-token`     | `{"token": "1NiIsInR5cCI6IkpXVdGDss..."}` | В случае успеха ответ будет содержать поле `result` с информацией о токене. В случае недействительного токена поле `result` будет пустым |
 
 
+Пример запроса Access Token для `curl`:
+
+```bash
+curl -i -X POST \
+  -H "Content-Type:application/json" \
+  -d \
+'{
+  "login": "dev",
+  "password": "dev"
+}' \
+'https://localhost:3005/auth/get-access-token'
+
+```
+
 ### Payload токена
 
 Каждый токен содержит `payload` данные:
