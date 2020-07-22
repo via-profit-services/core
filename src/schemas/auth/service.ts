@@ -2,7 +2,6 @@
 import fs from 'fs';
 import bcryptjs from 'bcryptjs';
 import { Request } from 'express';
-import { parse, OperationDefinitionNode } from 'graphql';
 import jwt from 'jsonwebtoken';
 import moment from 'moment-timezone';
 import { v4 as uuidv4 } from 'uuid';
@@ -13,10 +12,9 @@ import {
   TOKEN_BEARER_KEY,
   TOKEN_BEARER,
   REDIS_TOKENS_BLACKLIST,
-  WHITELIST_MUTATION_QUERIES,
 } from '../../utils';
 import {
-  IAccount, AccountStatus, TokenType, ITokenPackage, ITokenInfo,
+  IAccount, TokenType, ITokenPackage, ITokenInfo,
 } from './types';
 
 
@@ -27,25 +25,6 @@ export default class AuthService {
     this.props = props;
   }
 
-  public static isWhitelistRequest(request: Request) {
-    const { body } = request;
-    const allowedFieldNames = WHITELIST_MUTATION_QUERIES;
-    const ast = parse(body.query);
-    const allowd: boolean[] = [];
-    ast.definitions.forEach((definition: OperationDefinitionNode) => {
-      [...definition?.selectionSet?.selections || []].forEach((selection: any) => {
-        [...selection?.selectionSet?.selections || []].forEach((sel: any) => {
-          if (sel.kind === 'Field' && allowedFieldNames.includes(sel?.name?.value)) {
-            allowd.push(true);
-          } else {
-            allowd.push(false);
-          }
-        });
-      });
-    });
-
-    return allowd.every((field) => field === true);
-  }
 
   /**
    * Crypt password string by bcryptjs
@@ -57,7 +36,8 @@ export default class AuthService {
     return bcryptjs.hashSync(password, salt);
   }
 
-  public async getAccountByCredentials(login: string, password: string): Promise<Pick<IAccount, 'id' | 'roles'>> {
+  public async getAccountByCredentials(login: string, password: string): Promise<Pick<IAccount,
+  'id' | 'roles' | 'password' | 'status' | 'roles'> | null> {
     const { context } = this.props;
     const { knex } = context;
 
@@ -70,12 +50,12 @@ export default class AuthService {
       .first();
 
     if (!account || !bcryptjs.compareSync(password, String(account.password))) {
-      throw new BadRequestError('Invalid login or password');
+      return null;
     }
 
-    if (account.status === AccountStatus.forbidden) {
-      throw new BadRequestError('Account locked');
-    }
+    // if (account.status === AccountStatus.forbidden) {
+    //   throw new BadRequestError('Account locked');
+    // }
 
     return account;
   }

@@ -22,6 +22,7 @@ import sessionStoreFactory from 'session-file-store';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { v4 as uuidv4 } from 'uuid';
 
+import { authMiddleware } from '../auth';
 import { knexProvider } from '../databaseManager';
 import {
   UnauthorizedError,
@@ -48,6 +49,7 @@ import {
 } from '../types';
 import {
   DEFAULT_SERVER_PORT,
+  DEFAULT_AUTH_ENDPOINT,
   DEFAULT_GRAPHQL_ENDPOINT,
   DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT,
   DEFAULT_SERVER_TIMEZONE,
@@ -73,6 +75,7 @@ class App {
     this.props = {
       port: DEFAULT_SERVER_PORT,
       endpoint: DEFAULT_GRAPHQL_ENDPOINT,
+      authEndpoint: DEFAULT_AUTH_ENDPOINT,
       timezone: DEFAULT_SERVER_TIMEZONE,
       subscriptionEndpoint: DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT,
       usePlayground: process.env.NODE_ENV === 'development',
@@ -103,6 +106,7 @@ class App {
       usePlayground,
       useVoyager,
       endpoint,
+      authEndpoint,
       routes,
       serverOptions,
       subscriptionEndpoint,
@@ -132,6 +136,7 @@ class App {
       // set resolver URL's list
       const resolveUrl: IBootstrapCallbackArgs['resolveUrl'] = {
         graphql: `${host}:${port}${endpoint}`,
+        auth: `${host}:${port}${authEndpoint}`,
         subscriptions: `ws${useSSL ? 's' : ''}://localhost:${port}${subscriptionEndpoint}`,
       };
 
@@ -209,6 +214,7 @@ class App {
       typeDefs,
       resolvers,
       endpoint,
+      authEndpoint,
       timezone,
       port,
       jwt,
@@ -415,6 +421,8 @@ class App {
       app.use(staticOptions.prefix, express.static(staticPath));
     }
 
+    app.use(authMiddleware({ context, endpoint: authEndpoint }));
+
     // Request handler (request logger) middleware
     app.use(requestHandlerMiddleware({ context }));
 
@@ -465,20 +473,18 @@ class App {
       endpoint,
       graphqlHTTP(
         async (req): Promise<OptionsData & { subscriptionEndpoint?: string }> => {
-          if (!AuthService.isWhitelistRequest(req as Request)) {
-            const token = AuthService.extractToken(TokenType.access, req as Request);
-            const payload = await authService.verifyToken(token);
+          const token = AuthService.extractToken(TokenType.access, req as Request);
+          const payload = await authService.verifyToken(token);
 
-            if (!payload) {
-              throw new UnauthorizedError('Invalid token');
-            }
-
-            if (payload.type !== TokenType.access) {
-              throw new UnauthorizedError('Is not an access token');
-            }
-
-            context.token = payload;
+          if (!payload) {
+            throw new UnauthorizedError('Invalid token');
           }
+
+          if (payload.type !== TokenType.access) {
+            throw new UnauthorizedError('Is not an access token');
+          }
+
+          context.token = payload;
 
           const useSSL = serverOptions?.cert;
           const deviceDetector = new DeviceDetector();
