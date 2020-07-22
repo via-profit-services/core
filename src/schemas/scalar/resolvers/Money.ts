@@ -20,7 +20,7 @@ export default new GraphQLScalarType({
       throw new TypeError(`Value is not a valid Integer: ${value}`);
     }
 
-    return BigInt(value);
+    return parseInt(value, 10);
   },
 
   parseLiteral(ast) {
@@ -31,7 +31,7 @@ export default new GraphQLScalarType({
     }
 
     try {
-      const result = BigInt(ast.value);
+      const result = parseInt(ast.value, 10);
 
       return result;
     } catch (err) {

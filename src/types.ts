@@ -20,6 +20,7 @@ import {
 
 export interface IInitProps {
   port?: number;
+  authEndpoint?: string;
   endpoint?: string;
   subscriptionEndpoint?: string;
   timezone?: string;
@@ -60,6 +61,7 @@ export interface IServerOptions extends https.ServerOptions {
 
 export interface IInitDefaultProps extends IInitProps {
   port: number;
+  authEndpoint: string;
   endpoint: string;
   subscriptionEndpoint: string;
   timezone: string;
@@ -101,6 +103,7 @@ export interface IBootstrapCallbackArgs {
   context: IContext;
   resolveUrl: {
     graphql: string;
+    auth: string;
     graphiql?: string;
     voyager?: string;
     subscriptions?: string;

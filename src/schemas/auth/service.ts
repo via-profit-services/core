@@ -14,7 +14,7 @@ import {
   REDIS_TOKENS_BLACKLIST,
 } from '../../utils';
 import {
-  IAccount, AccountStatus, TokenType, ITokenPackage, ITokenInfo,
+  IAccount, TokenType, ITokenPackage, ITokenInfo,
 } from './types';
 
 
@@ -24,6 +24,7 @@ export default class AuthService {
   public constructor(props: Props) {
     this.props = props;
   }
+
 
   /**
    * Crypt password string by bcryptjs
@@ -35,7 +36,8 @@ export default class AuthService {
     return bcryptjs.hashSync(password, salt);
   }
 
-  public async getAccountByCredentials(login: string, password: string): Promise<Pick<IAccount, 'id' | 'roles'>> {
+  public async getAccountByCredentials(login: string, password: string): Promise<Pick<IAccount,
+  'id' | 'roles' | 'password' | 'status' | 'roles'> | null> {
     const { context } = this.props;
     const { knex } = context;
 
@@ -48,12 +50,12 @@ export default class AuthService {
       .first();
 
     if (!account || !bcryptjs.compareSync(password, String(account.password))) {
-      throw new BadRequestError('Invalid login or password');
+      return null;
     }
 
-    if (account.status === AccountStatus.forbidden) {
-      throw new BadRequestError('Account locked');
-    }
+    // if (account.status === AccountStatus.forbidden) {
+    //   throw new BadRequestError('Account locked');
+    // }
 
     return account;
   }
@@ -293,7 +295,6 @@ export default class AuthService {
     try {
       const payload = jwt.verify(String(token), privateKey) as ITokenInfo['payload'];
       const revokeStatus = await redis.sismember(REDIS_TOKENS_BLACKLIST, payload.id);
-
       if (revokeStatus) {
         logger.auth.info('Token was revoked', { payload });
         return false;
@@ -301,6 +302,7 @@ export default class AuthService {
 
       return payload;
     } catch (err) {
+      logger.auth.info('Invalid token');
       logger.server.error('Failed to validate the token', { err });
       return false;
     }

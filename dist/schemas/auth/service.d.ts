@@ -10,7 +10,7 @@ export default class AuthService {
      * @returns password hash
      */
     static cryptUserPassword(password: string): string;
-    getAccountByCredentials(login: string, password: string): Promise<Pick<IAccount, 'id' | 'roles'>>;
+    getAccountByCredentials(login: string, password: string): Promise<Pick<IAccount, 'id' | 'roles' | 'password' | 'status' | 'roles'> | null>;
     /**
      * Register tokens
      * @param  {{uuid:string;deviceInfo:{};}} data

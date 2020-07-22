@@ -1,7 +1,3 @@
-extend type Query {
-  auth: AuthQuery!
-}
-
 extend type Mutation {
   auth: AuthMutation!
 }
@@ -13,25 +9,8 @@ extend type Subscription {
   tokenWasRevoked (id: ID!): [ID!]!
 }
 
-type AuthQuery {
-  validateToken (token: String): AccessTokenPayload
-}
-
 type AuthMutation {
   """
-  Returns Access and refresh tokens
-  """
-  getAccessToken(
-    login: String!,
-    password: String!
-    ): TokensBag!
-
-  """
-  Refresh and return new Access and refresh tokens
-  """
-  refreshToken(token: String!): TokensBag!
-
-    """
   Revoke some token
   """
   revokeToken(
@@ -51,46 +30,3 @@ type AuthMutation {
     account: ID!
   ): Boolean
 }
-
-"""
-Response data when authentification is success
-"""
-type TokensBag {
-  accessToken: AccessTokenBag!
-  refreshToken: RefreshTokenBag!
-}
-
-enum TokenType {
-  access
-  refresh
-}
-
-type AccessTokenBag {
-  token: String!
-  payload: AccessTokenPayload!
-}
-
-type RefreshTokenBag {
-  token: String!
-  payload: RefreshTokenPayload!
-}
-
-type AccessTokenPayload {
-  type: TokenType!
-  id: ID!
-  uuid: String!
-  roles: [String!]!
-  exp: Int!
-  iss: String!
-}
-
-type RefreshTokenPayload {
-  type: TokenType!
-  id: ID!
-  associated: String!
-  uuid: String!
-  roles: [String!]!
-  exp: Int!
-  iss: String!
-}
-

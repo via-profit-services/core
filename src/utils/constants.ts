@@ -8,6 +8,7 @@ export const DATABASE_CLIENT = 'pg';
 
 export const DEFAULT_SERVER_PORT = 4000;
 export const DEFAULT_GRAPHQL_ENDPOINT = '/graphql';
+export const DEFAULT_AUTH_ENDPOINT = '/auth';
 export const DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT = '/subscriptions';
 export const DEFAULT_SERVER_TIMEZONE = 'UTC';
 export const DEFAULT_ROUTE_GRAPHIQL = '/graphiql';
@@ -33,7 +34,6 @@ export const LOG_FILENAME_SESSIONS = 'sessions-%DATE%.log';
 export const LOG_DATE_PATTERNT = 'YYYY-MM-DD';
 export const LOG_MAX_SIZE = '20m';
 export const LOG_MAX_FILES = '14d';
-
 
 /** Depricated */
 export const LOG_MAZ_FILES = '14d';

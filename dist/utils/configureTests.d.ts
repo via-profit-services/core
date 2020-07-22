@@ -6,6 +6,7 @@ import { IInitProps } from '../types';
 declare const configureTest: (config?: Partial<IInitProps>) => {
     config: {
         port?: number;
+        authEndpoint?: string;
         endpoint?: string;
         subscriptionEndpoint?: string;
         timezone?: string;
