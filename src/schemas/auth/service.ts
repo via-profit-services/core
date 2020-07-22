@@ -230,7 +230,8 @@ export default class AuthService {
 
     const allTokens = await knex('tokens')
       .select(['id'])
-      .where({ account });
+      .where({ account })
+      .where('expiredAt', '>=', knex.raw('now()'));
 
     const ids = allTokens.map((token: { id: string }) => token.id);
 
