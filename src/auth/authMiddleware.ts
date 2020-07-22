@@ -50,7 +50,7 @@ export default (config: IAuthMiddlewareConfig) => {
       });
     }
 
-    logger.auth.info(`Authorization attempt with login «${login}» failed. Success`);
+    logger.auth.info(`Authorization attempt with login «${login}» success`);
     const tokenBag = await authService.registerTokens({
       uuid: account.id,
       deviceInfo,
