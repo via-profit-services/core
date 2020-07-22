@@ -6,6 +6,7 @@ export declare const DATABASE_CHARSET = "UTF8";
 export declare const DATABASE_CLIENT = "pg";
 export declare const DEFAULT_SERVER_PORT = 4000;
 export declare const DEFAULT_GRAPHQL_ENDPOINT = "/graphql";
+export declare const DEFAULT_AUTH_ENDPOINT = "/auth";
 export declare const DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT = "/subscriptions";
 export declare const DEFAULT_SERVER_TIMEZONE = "UTC";
 export declare const DEFAULT_ROUTE_GRAPHIQL = "/graphiql";
@@ -28,7 +29,6 @@ export declare const LOG_FILENAME_SESSIONS = "sessions-%DATE%.log";
 export declare const LOG_DATE_PATTERNT = "YYYY-MM-DD";
 export declare const LOG_MAX_SIZE = "20m";
 export declare const LOG_MAX_FILES = "14d";
-export declare const WHITELIST_MUTATION_QUERIES: string[];
 /** Depricated */
 export declare const LOG_MAZ_FILES = "14d";
 /** Depricated */
