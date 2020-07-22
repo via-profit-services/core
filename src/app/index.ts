@@ -477,6 +477,7 @@ class App {
           const payload = await authService.verifyToken(token);
 
           if (!payload) {
+            console.log('payload', payload);
             throw new UnauthorizedError('Invalid token');
           }
 

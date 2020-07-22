@@ -63,7 +63,6 @@ export default (config: IAuthMiddlewareConfig) => {
     const { token } = body;
 
     const tokenBag = await authService.verifyToken(String(token));
-
     if (tokenBag === false) {
       logger.auth.info('Token is invalid');
       return response.status(200).send({

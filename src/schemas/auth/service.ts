@@ -295,7 +295,6 @@ export default class AuthService {
     try {
       const payload = jwt.verify(String(token), privateKey) as ITokenInfo['payload'];
       const revokeStatus = await redis.sismember(REDIS_TOKENS_BLACKLIST, payload.id);
-
       if (revokeStatus) {
         logger.auth.info('Token was revoked', { payload });
         return false;
@@ -303,6 +302,7 @@ export default class AuthService {
 
       return payload;
     } catch (err) {
+      logger.auth.info('Invalid token');
       logger.server.error('Failed to validate the token', { err });
       return false;
     }
