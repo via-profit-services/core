@@ -1,3 +1,4 @@
+import { IncomingHttpHeaders } from 'http';
 import { NextFunction, Request, Response } from 'express';
 import { IContext } from '../../types';
 
@@ -12,7 +13,18 @@ export default (config: ILoggerMiddlewareConfig) => {
     const ip = xForwardedFor || req.connection.remoteAddress;
     const ipAddress = ip === '127.0.0.1' || ip === '::1' ? 'localhost' : ip;
 
-    logger.http.info(`${ipAddress} ${method} "${originalUrl}"`, { headers });
+    const headersData: IncomingHttpHeaders = {};
+    Object.entries(headers).forEach(([param, value]) => {
+      if (param.toLowerCase() === 'authorization' && typeof value === 'string') {
+        headersData[param] = `${value.substr(0, 35)}...[HIDDEN]`;
+        return;
+      }
+      headersData[param] = value;
+    });
+
+    logger.http.info(`${ipAddress} ${method} "${originalUrl}"`, {
+      headers: headersData,
+    });
     return next();
   };
 };
