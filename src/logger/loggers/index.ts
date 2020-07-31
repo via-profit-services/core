@@ -1,4 +1,3 @@
-import accessLogger from './access';
 import authLogger from './auth';
 import httpLogger from './http';
 import serverLogger from './server';
@@ -10,6 +9,5 @@ export {
   authLogger,
   sqlLogger,
   httpLogger,
-  accessLogger,
   sessionLogger,
 };

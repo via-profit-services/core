@@ -593,9 +593,6 @@ logger.server.debug('My debug message');
 
 - `session` - серверный логгер уровня `info` для регистрации сессий. Имеет транспорт:
   - DailyRotateFile уровня `info`. Записывает в файл `sessions-%DATE%.log`
-- `access` - серверный логгер уровня `info` для регистрации всех соединений. Имеет два транспорта:
-  - DailyRotateFile уровня `warn`. Записывает в файл `access-%DATE%.log`
-  - DailyRotateFile уровня `info`. Записывает в файл `access-%DATE%.log`
 - `server` - серверный логгер уровня `debug` для регистрации ошибок и отладочных данных. Имеет два транспорта:
   - DailyRotateFile уровня `error`. Записывает в файл `errors-%DATE%.log`
   - DailyRotateFile уровня `warn`. Записывает в файл `warnings-%DATE%.log`

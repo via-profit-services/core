@@ -1,7 +1,7 @@
 import { Logger } from 'winston';
 import 'winston-daily-rotate-file';
 import {
-  authLogger, httpLogger, serverLogger, sqlLogger, accessLogger, sessionLogger,
+  authLogger, httpLogger, serverLogger, sqlLogger, sessionLogger,
 } from '../loggers';
 
 // eslint-disable-next-line import/no-mutable-exports
@@ -11,7 +11,6 @@ const configureLogger = (config: ILoggerConfig) => {
   const { loggers, ...loggerConfig } = config;
 
   logger = {
-    access: accessLogger(loggerConfig),
     auth: authLogger(loggerConfig),
     http: httpLogger(loggerConfig),
     server: serverLogger(loggerConfig),
@@ -28,7 +27,6 @@ export interface ILoggerCollection {
   sql: Logger;
   auth: Logger;
   http: Logger;
-  access: Logger;
   session: Logger;
   [key: string]: Logger;
 }

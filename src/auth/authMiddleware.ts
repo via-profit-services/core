@@ -121,5 +121,21 @@ export default (config: IAuthMiddlewareConfig) => {
     return response.status(200).send(tokenBag);
   });
 
+  router.post(`${endpoint}*`, (request, response) => {
+    const { originalUrl } = request;
+    logger.server.debug(`Invalid post request ${originalUrl}`);
+    return response.status(404).send({
+      errors: [{ message: 'The address is not served' }],
+    });
+  });
+
+  router.get(`${endpoint}*`, (request, response) => {
+    const { originalUrl } = request;
+    logger.server.debug(`Invalid get request ${originalUrl}`);
+    return response.status(404).send({
+      errors: [{ message: 'The address is not served' }],
+    });
+  });
+
   return router;
 };
