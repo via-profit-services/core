@@ -40,7 +40,7 @@
 ### Установка
 
 ```bash
-yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.28.3
+yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.29.0
 ```
 
 Список версий см. [здесь](https://gitlab.com/via-profit-services/core/-/tags/)
