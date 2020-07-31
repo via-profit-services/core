@@ -7,6 +7,7 @@ export interface ILoggerCollection {
     sql: Logger;
     auth: Logger;
     http: Logger;
+    access: Logger;
     session: Logger;
     [key: string]: Logger;
 }
