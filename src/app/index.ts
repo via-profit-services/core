@@ -60,7 +60,6 @@ import {
   DEFAULT_SESSION_TTL,
   MAXIMUM_REQUEST_BODY_SIZE,
 } from '../utils';
-import { accessMiddleware } from '../utils/accessMiddleware';
 import { configureTokens } from '../utils/configureTokens';
 import { CronJobManager } from '../utils/cronJobManager';
 import { DisableIntrospectionQueries } from '../utils/disableIntrospection';
@@ -140,18 +139,25 @@ class App {
         subscriptions: `ws${useSSL ? 's' : ''}://localhost:${port}${subscriptionEndpoint}`,
       };
 
+
+      logger.server.debug(`App server started at «${resolveUrl.graphql}»`);
+      logger.server.debug(`Authentification server started at «${resolveUrl.auth}»`);
+
       if (usePlayground) {
         resolveUrl.graphiql = `${host}:${port}${endpoint}${DEFAULT_ROUTE_GRAPHIQL}`;
+        logger.server.debug(`Graphiql resolved at «${resolveUrl.graphiql}»`);
       }
 
       if (useVoyager) {
         resolveUrl.voyager = `${host}:${port}${routes.voyager}`;
+        logger.server.debug(`Voyager resolved at «${resolveUrl.voyager}»`);
       }
 
-      logger.server.debug(`App server started at «${resolveUrl.graphql}»`);
 
-      // connect websockrt subscriptions werver
+      // connect websocket subscriptions werver
       this.createSubscriptionServer({ schema, server, context });
+
+      logger.server.debug(`Suscription server started at ${resolveUrl.subscriptions}`);
 
       if (callback !== undefined) {
         callback({
@@ -410,7 +416,6 @@ class App {
     app.use(express.urlencoded({ extended: true, limit: MAXIMUM_REQUEST_BODY_SIZE }));
     app.use(cookieParser(cookieSign));
     app.use(headersMiddleware());
-    app.use(accessMiddleware({ context }));
 
     // define express static
     if (staticOptions) {
