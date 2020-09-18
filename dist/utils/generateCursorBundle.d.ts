@@ -1,4 +1,4 @@
-import Knex from 'knex';
+import { Knex } from '../databaseManager';
 export declare enum IDirectionRange {
     ASC = "ASC",
     DESC = "DESC"
@@ -43,7 +43,7 @@ export declare const nodeToEdge: <T>(node: Node<T>, cursorName: string, cursorPa
  * @param { TOrderBy } orderBy Array of objects econtains { field: "", direction: "" }
  */
 export declare const convertOrderByToKnex: (orderBy: TOrderBy) => TOrderByKnex;
-export declare const convertJsonToKnex: <TRecord = any>(knexInstance: Knex<any, unknown[]>, json: {} | any[]) => Knex.Raw<TRecord>;
+export declare const convertJsonToKnex: <TRecord = any>(knex: Knex<any, unknown[]>, json: {} | any[]) => Knex.Raw<TRecord>;
 export declare const convertBetweenToKnex: (builder: Knex.QueryBuilder<any, any>, between: TBetween, options?: {
     aliases?: TTableAliases;
     timezone: string;

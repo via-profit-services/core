@@ -1,12 +1,10 @@
-/// <reference types="node" />
 /// <reference types="yargs" />
 declare const args: {
     [x: string]: unknown;
-    endpoint: string;
-    token: string;
-    filename: string;
-    method?: "POST" | "GET";
-    headers?: import("http").OutgoingHttpHeaders;
+    endpoint: unknown;
+    token: unknown;
+    filename?: unknown;
+    method?: unknown;
     _: string[];
     $0: string;
 };
