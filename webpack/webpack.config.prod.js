@@ -59,6 +59,10 @@ Website    https://via-profit.ru
             source: './src/database/seeds/*',
             destination: './dist/database/seeds/',
           },
+          {
+            source: './src/bin/stub/*',
+            destination: './dist/bin/stub/',
+          },
         ],
         delete: ['./dist/playground'],
       },

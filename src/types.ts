@@ -11,7 +11,7 @@ import { RedisOptions, Redis as RedisInterface } from 'ioredis';
 import { Options as SesstionStoreOptions } from 'session-file-store';
 import { ServerOptions as IWebsocketServerOption } from 'ws';
 
-import { IDBConfig, KnexInstance } from './databaseManager';
+import { IDBConfig, Knex } from './databaseManager';
 import { ILoggerCollection } from './logger';
 import {
   IJwtConfig,
@@ -82,7 +82,7 @@ export interface IInitDefaultProps extends IInitProps {
 export interface IContext {
   endpoint: string;
   jwt: IJwtConfig;
-  knex: KnexInstance;
+  knex: Knex;
   logger: ILoggerCollection;
   timezone: string;
   startTime: any;

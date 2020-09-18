@@ -40,7 +40,7 @@
 ### Установка
 
 ```bash
-yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.29.2
+yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.30.0
 ```
 
 Список версий см. [здесь](https://gitlab.com/via-profit-services/core/-/tags/)
@@ -348,7 +348,6 @@ _Извлекает из массива типа `<Node>` ключи и возв
 | `/auth/get-access-token` | `{"login": "user", "password": "pass"}`   | В случае успеха - access и refresh токены. В случае ошибки - Код 401 и текст ошибки                                                      |
 | `/auth/refresh-token`    | `{"token": "iOiJSUzI1NiIsInR5cCI6Ik..."}` | В случае успеха - access и refresh токены. В случае ошибки - Код 401 и текст ошибки                                                      |
 | `/auth/verify-token`     | `{"token": "1NiIsInR5cCI6IkpXVdGDss..."}` | В случае успеха ответ будет содержать поле `result` с информацией о токене. В случае недействительного токена поле `result` будет пустым |
-
 
 Пример запроса Access Token для `curl`:
 
@@ -850,9 +849,4 @@ throw new BadRequestError('Some Error');
 
 Пакет имеет `cli` интерфейс `via-profit-core`
 
-Список команд:
-
-| Команда           | Параметры                                                                                                                                                                | Описание                                                                                                                  | Пример                                                                                       |
-| :---------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------- |
-| `get-migrations`  | `--migrations` (alis `-m`) - Копировать миграции<br>`--seeds` (alis `-s`) - копировать сиды                                                                              | Осуществляет поиск файлов миграций во всех пакетах из `node_modules` и копирует их в директорию миграций текущего проекта | `via-profit-core get-migrations -ms`                                                         |
-| `download-schema` | `<endpoint>` - Url адрес graphQL сервера<br>`<token>` - Access токен аутентификации<br>`[filename]` - Файл сохранения схемы<br>`[method]` - Метод запроса (POST или GET) | Скачивает SDL схемы в указанный файл                                                                                      | `via-profit-core download-schema https://example.com/gql BU7YR%FGnhygTYBDJ ./schema.graphql` |
+Список команд доступен в меню `--help`: `yarn via-profit-core --help`

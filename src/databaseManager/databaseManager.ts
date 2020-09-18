@@ -1,5 +1,6 @@
 import { performance } from 'perf_hooks';
-import knex, { PgConnectionConfig, MigratorConfig, SeedsConfig } from 'knex';
+import knex from 'knex';
+import * as Knex from 'knex';
 import moment from 'moment-timezone';
 import { types } from 'pg';
 import { ServerError } from '../errorHandlers';
@@ -90,14 +91,13 @@ export const knexProvider = (config: IDBConfig) => {
 };
 
 export default knexProvider;
-
-export type KnexInstance = knex;
+export { knex, Knex };
 
 export interface IDBConfig {
   logger: ILoggerCollection;
-  connection: PgConnectionConfig;
+  connection: Knex.PgConnectionConfig;
   timezone?: string;
   localTimezone: string;
-  migrations?: MigratorConfig;
-  seeds?: SeedsConfig;
+  migrations?: Knex.MigratorConfig;
+  seeds?: Knex.SeedsConfig;
 }

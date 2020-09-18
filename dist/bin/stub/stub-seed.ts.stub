@@ -1,0 +1,18 @@
+/* eslint-disable */
+
+import { Knex } from '@via-profit-services/core';
+
+export async function seed(knex: Knex): Promise<unknown> {
+
+  return knex('')
+    .del()
+    .then(() => {
+      const data = [...new Array(100).keys()].map((index) => {
+        return {
+        // ..
+        };
+      });
+
+      return knex('').insert(data);
+    });
+}
