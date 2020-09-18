@@ -1,4 +1,4 @@
-import { Config } from 'knex';
+import { Knex } from '../databaseManager';
 import { configureApp } from './configureApp';
 
 const { database } = configureApp();
@@ -7,7 +7,7 @@ const { timezone, ...dbConfig } = database;
 const CHARSET = 'UTF8';
 const CLIENT = 'pg';
 
-const config: Config = {
+const config: Knex.Config = {
   client: CLIENT,
   ...dbConfig,
   pool: {

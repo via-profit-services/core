@@ -1,5 +1,5 @@
-import Knex from 'knex';
 import moment from 'moment-timezone';
+import { Knex } from '../databaseManager';
 import { ServerError } from '../errorHandlers';
 
 export enum IDirectionRange {
@@ -78,8 +78,8 @@ export const convertOrderByToKnex = (orderBy: TOrderBy | undefined):
 
 
 // eslint-disable-next-line arrow-body-style
-export const convertJsonToKnex = <TRecord = any>(knexInstance: Knex, json: {} | Array<any>) => {
-  return knexInstance.raw<TRecord>(`'${JSON.stringify(json)}'::jsonb`);
+export const convertJsonToKnex = <TRecord = any>(knex: Knex, json: {} | Array<any>) => {
+  return knex.raw<TRecord>(`'${JSON.stringify(json)}'::jsonb`);
 };
 
 
