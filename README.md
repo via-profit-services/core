@@ -10,6 +10,7 @@
 - [Зависимости](#dependency)
 - [Установка и настройка](#setup)
 - [Как использовать](#how-to-use)
+- [Changelog](./CHANGELOG.md)
 - [Аутентификация](#authentication)
 - [Авторизация](#authorization)
 - [GraphQL скалярные типы](#graphql-scalar)
