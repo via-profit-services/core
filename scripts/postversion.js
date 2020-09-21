@@ -45,7 +45,7 @@ spawn('git', ['add', '--all'], { stdio: 'inherit' })
       process.exit(1);
     }
 
-    spawn('git', ['commit', '-m', '"Bump"'], { stdio: 'inherit' })
+    spawn('git', ['commit', '-m', 'Bump'], { stdio: 'inherit' })
       .on('exit', (commonError) => {
         if (commonError) {
           console.log(chalk.red('git error'));
