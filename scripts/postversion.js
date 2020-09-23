@@ -10,7 +10,7 @@ const filesToContentReplace = ['./README.md'];
 const replacements = [
   {
     name: 'version number of install info',
-    regexp: /(?<=via-profit-services\/core.git#semver:)\^\d+\.\d+\.\d+/,
+    regexp: /(?<=via-profit-services\/core.git#semver:\^)\d+\.\d+\.\d+/,
     replacement: newPackageVersion,
   },
   {

@@ -88,7 +88,7 @@ import { Knex } from '@via-profit-services/core';
 ### Установка
 
 ```bash
-yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:0.30.1
+yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.30.1
 ```
 
 Список версий см. [здесь](https://gitlab.com/via-profit-services/core/-/tags/)
