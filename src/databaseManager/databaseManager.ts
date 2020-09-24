@@ -1,9 +1,9 @@
 import { performance } from 'perf_hooks';
+import chalk from 'chalk';
 import knex from 'knex';
 import * as Knex from 'knex';
 import moment from 'moment-timezone';
 import { types } from 'pg';
-import { ServerError } from '../errorHandlers';
 import { ILoggerCollection } from '../logger';
 import { DATABASE_CHARSET, DATABASE_CLIENT } from '../utils';
 
@@ -84,7 +84,11 @@ export const knexProvider = (config: IDBConfig) => {
     })
     .catch((err) => {
       logger.server.error(err.name, err);
-      throw new ServerError(err);
+      console.log('');
+      console.log(chalk.red('Database connection failure.'));
+      console.log(chalk.red('Please check your database connection details.'));
+      console.log(chalk.red('Make sure that the database is working properly.'));
+      console.log('');
     });
 
   return instance;
