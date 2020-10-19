@@ -137,8 +137,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 /* eslint-disable import/no-extraneous-dependencies */
 const fs_1 = __importDefault(__webpack_require__(1));
-const path_1 = __importDefault(__webpack_require__(4));
-const chalk_1 = __importDefault(__webpack_require__(9));
+const path_1 = __importDefault(__webpack_require__(3));
+const chalk_1 = __importDefault(__webpack_require__(8));
 const migrations_1 = __webpack_require__(31);
 const yargsModule = {
     command: 'knex <command>',
@@ -270,6 +270,16 @@ const yargsModule = {
                 }
                 yield migrations_1.execKnex(`seed:make ${args.name} --stub ${stubFile}`, args.knexfile);
             }))
+                .command('run-all', 'Run all seed files', (b) => b.options({
+                knexfile: {
+                    alias: 'k',
+                    type: 'string',
+                    demandOption: true,
+                    decribe: 'Location of the knexfile',
+                },
+            }), (args) => __awaiter(void 0, void 0, void 0, function* () {
+                yield migrations_1.execKnex('seed:run', args.knexfile);
+            }))
                 .command('run <name>', 'Run seed file', (b) => b.options({
                 knexfile: {
                     alias: 'k',
@@ -313,7 +323,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(__webpack_require__(1));
-const path_1 = __importDefault(__webpack_require__(4));
+const path_1 = __importDefault(__webpack_require__(3));
 const utilities_1 = __webpack_require__(15);
 exports.downloadSchema = (options) => __awaiter(void 0, void 0, void 0, function* () {
     const { endpoint, method, token, filename, headers, } = options;
@@ -340,6 +350,13 @@ module.exports = require("graphql/utilities");
 
 /***/ }),
 
+/***/ 3:
+/***/ (function(module, exports) {
+
+module.exports = require("path");
+
+/***/ }),
+
 /***/ 31:
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -361,8 +378,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const child_process_1 = __webpack_require__(100);
 const fs_1 = __importDefault(__webpack_require__(1));
-const path_1 = __importDefault(__webpack_require__(4));
-const chalk_1 = __importDefault(__webpack_require__(9));
+const path_1 = __importDefault(__webpack_require__(3));
+const chalk_1 = __importDefault(__webpack_require__(8));
 const dotenv_1 = __importDefault(__webpack_require__(101));
 const glob_1 = __importDefault(__webpack_require__(102));
 exports.listMigrationsPerPackage = () => {
@@ -465,14 +482,7 @@ exports.execKnex = (knexCommand, knexfile) => __awaiter(void 0, void 0, void 0, 
 
 /***/ }),
 
-/***/ 4:
-/***/ (function(module, exports) {
-
-module.exports = require("path");
-
-/***/ }),
-
-/***/ 9:
+/***/ 8:
 /***/ (function(module, exports) {
 
 module.exports = require("chalk");

@@ -10,7 +10,7 @@ const filesToContentReplace = ['./README.md'];
 const replacements = [
   {
     name: 'version number of install info',
-    regexp: /(?<=via-profit-services\/core.git#semver:)\^\d+\.\d+\.\d+/,
+    regexp: /(?<=via-profit-services\/core.git#semver:\^)\d+\.\d+\.\d+/,
     replacement: newPackageVersion,
   },
   {
@@ -45,7 +45,7 @@ spawn('git', ['add', '--all'], { stdio: 'inherit' })
       process.exit(1);
     }
 
-    spawn('git', ['commit', '-m', '"Bump"'], { stdio: 'inherit' })
+    spawn('git', ['commit', '-m', 'Bump'], { stdio: 'inherit' })
       .on('exit', (commonError) => {
         if (commonError) {
           console.log(chalk.red('git error'));

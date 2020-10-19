@@ -24,6 +24,9 @@ interface KnexRun {
   name: string;
   knexfile: string;
 }
+interface KnexRunSeeds {
+  knexfile: string;
+}
 
 export type KnexArgs = KnexMigrate | KnexList | KnexMake | KnexRun;
 
@@ -206,6 +209,21 @@ const yargsModule: CommandModule<KnexArgs, KnexArgs> = {
                 }
 
                 await execKnex(`seed:make ${args.name} --stub ${stubFile}`, args.knexfile);
+              },
+            )
+            .command<KnexRunSeeds>(
+              'run-all',
+              'Run all seed files',
+              (b) => b.options({
+                knexfile: {
+                  alias: 'k',
+                  type: 'string',
+                  demandOption: true,
+                  decribe: 'Location of the knexfile',
+                },
+              }),
+              async (args) => {
+                await execKnex('seed:run', args.knexfile);
               },
             )
             .command<KnexRun>(

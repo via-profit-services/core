@@ -20,7 +20,7 @@ spawn('yarn', ['dist'], { stdio: 'inherit' })
           process.exit(1);
         }
 
-        spawn('git', ['commit', '-m', '"Build"'], { stdio: 'inherit' })
+        spawn('git', ['commit', '-m', 'Build'], { stdio: 'inherit' })
           .on('exit', (commitError) => {
             if (commitError) {
               console.log(chalk.red('git error'));

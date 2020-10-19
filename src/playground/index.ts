@@ -3,8 +3,12 @@ import chalk from 'chalk';
 import { App } from '../app';
 import { configureApp } from '../utils/configureApp';
 import { configureTokens } from '../utils/configureTokens';
+import * as orders from './schemas/orders';
 
-const config = configureApp();
+const config = configureApp({
+  typeDefs: [orders.typeDefs],
+  resolvers: [orders.resolvers],
+});
 
 
 const app = new App(config);

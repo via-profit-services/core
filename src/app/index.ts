@@ -506,7 +506,7 @@ class App {
             context,
             graphiql: usePlayground,
             extensions: debug ? extensions : undefined,
-            schema: applyMiddleware(schema, ...graphQLMiddlewares),
+            schema: applyMiddleware<any, IContext, any>(schema, ...graphQLMiddlewares),
             subscriptionEndpoint: `ws${useSSL ? 's' : ''}://localhost:${port}${subscriptionEndpoint}`,
             customFormatErrorFn: (error) => customFormatErrorFn({ error, context, debug }),
             validationRules: !enableIntrospection ? [DisableIntrospectionQueries] : [],

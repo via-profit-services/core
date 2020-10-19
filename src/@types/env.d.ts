@@ -35,7 +35,6 @@ declare namespace NodeJS {
     JWT_ISSUER: string;
     JWT_PRIVATEKEY: string;
     JWT_PUBLICKEY: string;
-    JWT_BLACKLIST: string;
 
     TIMEZONE: string;
 

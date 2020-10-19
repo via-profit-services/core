@@ -4,7 +4,7 @@ import https from 'https';
 import DeviceDetector from 'device-detector-js';
 import { NextFunction, Request, Response } from 'express';
 import { GraphQLSchema } from 'graphql';
-import { IMiddlewareGenerator } from 'graphql-middleware';
+import { IMiddleware } from 'graphql-middleware';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { ITypedef, IResolvers } from 'graphql-tools';
 import { RedisOptions, Redis as RedisInterface } from 'ioredis';
@@ -20,7 +20,7 @@ export interface IInitProps {
     subscriptionEndpoint?: string;
     timezone?: string;
     typeDefs?: ITypedef[];
-    middlewares?: IMiddlewareGenerator<any, Partial<IContext>, any>[];
+    middlewares?: IMiddleware<any, IContext, any>[];
     resolvers?: Array<IResolvers<any, Partial<IContext>>>;
     jwt: IJwtConfig;
     database: Omit<IDBConfig, 'logger' | 'localTimezone'>;
