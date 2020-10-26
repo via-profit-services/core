@@ -199,9 +199,9 @@ type MyModuleMutation {
 
 ```ts
 import { IContext } from '@via-profit-services/core';
-import { IResolverObject } from 'graphql-tools';
+import { IObjectTypeResolver } from 'graphql-tools';
 
-const resolvers: IResolverObject<any, IContext> = {
+const resolvers: IObjectTypeResolver<any, IContext> = {
   Query: {
     myModule: () => ({}),
   },
@@ -280,10 +280,10 @@ import {
   IDirectionRange,
   TInputFilter,
 } from '@via-profit-services/core';
-import { IResolverObject } from 'graphql-tools';
+import { IObjectTypeResolver } from 'graphql-tools';
 import MyService from './my-service';
 
-export const MyQueries: IResolverObject<any, IContext, TInputFilter> = {
+export const MyQueries: IObjectTypeResolver<any, IContext, TInputFilter> = {
   list: async (obj, args, context) => {
     // аргумент args = { first, last, after, before, orderBy }
 
@@ -734,13 +734,13 @@ export default function createLoaders(context: IContext) {
 _file resolver.ts_
 
 ```ts
-import { IResolverObject } from 'graphql-tools';
+import { IObjectTypeResolver } from 'graphql-tools';
 import { TInputFilter, IContext } from '@via-profit-services/core';
 
 // Импортируем функцию создания пула даталоадеров
 import createLoaders from './dataloader';
 
-export const personsQueryResolver: IResolverObject<any, IContext, TInputFilter> = {
+export const personsQueryResolver: IObjectTypeResolver<any, IContext, TInputFilter> = {
   // Резолвер, который должен вернуть информацию из БД
   getPersonById: (parent, args, context) => {
     const { id } = args;

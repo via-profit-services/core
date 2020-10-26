@@ -9,7 +9,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import DeviceDetector from 'device-detector-js';
 import express, { Express, Request } from 'express';
-import graphqlHTTP, { OptionsData, RequestInfo } from 'express-graphql';
+import { graphqlHTTP, OptionsData, RequestInfo } from 'express-graphql';
 import session from 'express-session';
 import { GraphQLSchema, execute, subscribe } from 'graphql';
 import { applyMiddleware } from 'graphql-middleware';
@@ -263,9 +263,9 @@ class App {
         auth.resolvers,
         ...resolvers || [],
       ],
-      resolverValidationOptions: {
-        requireResolversForResolveType: false,
-      },
+      // resolverValidationOptions: {
+      // requireResolversForResolveType: false,
+      // },
     });
 
     // define knex instance

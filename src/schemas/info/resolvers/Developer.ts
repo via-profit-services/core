@@ -1,9 +1,9 @@
-import { IResolverObject } from 'graphql-tools';
+import { IObjectTypeResolver } from 'graphql-tools';
 
 import { IContext } from '../../../types';
 import { Developer, IDeveloper } from '../service';
 
-const developerResolver: IResolverObject<Partial<IDeveloper>, IContext> = {
+const developerResolver: IObjectTypeResolver<Partial<IDeveloper>, IContext> = {
   name: () => Developer.name,
   url: () => Developer.url,
   email: () => Developer.email,

@@ -84,7 +84,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 96);
+/******/ 	return __webpack_require__(__webpack_require__.s = 95);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -99,25 +99,18 @@ module.exports = require("fs");
 /***/ 100:
 /***/ (function(module, exports) {
 
-module.exports = require("child_process");
+module.exports = require("dotenv");
 
 /***/ }),
 
 /***/ 101:
 /***/ (function(module, exports) {
 
-module.exports = require("dotenv");
-
-/***/ }),
-
-/***/ 102:
-/***/ (function(module, exports) {
-
 module.exports = require("glob");
 
 /***/ }),
 
-/***/ 103:
+/***/ 102:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -304,7 +297,7 @@ exports.default = yargsModule;
 
 /***/ }),
 
-/***/ 14:
+/***/ 15:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -324,7 +317,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(__webpack_require__(1));
 const path_1 = __importDefault(__webpack_require__(3));
-const utilities_1 = __webpack_require__(15);
+const utilities_1 = __webpack_require__(16);
 exports.downloadSchema = (options) => __awaiter(void 0, void 0, void 0, function* () {
     const { endpoint, method, token, filename, headers, } = options;
     const response = yield fetch(endpoint, {
@@ -343,7 +336,7 @@ exports.downloadSchema = (options) => __awaiter(void 0, void 0, void 0, function
 
 /***/ }),
 
-/***/ 15:
+/***/ 16:
 /***/ (function(module, exports) {
 
 module.exports = require("graphql/utilities");
@@ -376,12 +369,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const child_process_1 = __webpack_require__(100);
+const child_process_1 = __webpack_require__(99);
 const fs_1 = __importDefault(__webpack_require__(1));
 const path_1 = __importDefault(__webpack_require__(3));
 const chalk_1 = __importDefault(__webpack_require__(8));
-const dotenv_1 = __importDefault(__webpack_require__(101));
-const glob_1 = __importDefault(__webpack_require__(102));
+const dotenv_1 = __importDefault(__webpack_require__(100));
+const glob_1 = __importDefault(__webpack_require__(101));
 exports.listMigrationsPerPackage = () => {
     const list = [];
     const projectsList = glob_1.default.sync(`${process.cwd()}/node_modules/@via-profit-services/*/`);
@@ -489,7 +482,7 @@ module.exports = require("chalk");
 
 /***/ }),
 
-/***/ 96:
+/***/ 95:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -499,10 +492,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /* eslint-disable import/no-extraneous-dependencies */
-const yargs_1 = __importDefault(__webpack_require__(97));
-const cli_download_schema_1 = __importDefault(__webpack_require__(98));
-const cli_get_migrations_1 = __importDefault(__webpack_require__(99));
-const cli_knex_1 = __importDefault(__webpack_require__(103));
+const yargs_1 = __importDefault(__webpack_require__(96));
+const cli_download_schema_1 = __importDefault(__webpack_require__(97));
+const cli_get_migrations_1 = __importDefault(__webpack_require__(98));
+const cli_knex_1 = __importDefault(__webpack_require__(102));
 const args = yargs_1.default
     .command(cli_download_schema_1.default)
     .command(cli_get_migrations_1.default)
@@ -514,14 +507,14 @@ exports.default = args;
 
 /***/ }),
 
-/***/ 97:
+/***/ 96:
 /***/ (function(module, exports) {
 
 module.exports = require("yargs");
 
 /***/ }),
 
-/***/ 98:
+/***/ 97:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -537,7 +530,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const downloadSchema_1 = __webpack_require__(14);
+const downloadSchema_1 = __webpack_require__(15);
 const yargsModule = {
     command: 'download-schema <endpoint> <token> [filename] [method]',
     describe: 'Download GraphQL schema by introspection',
@@ -561,7 +554,7 @@ exports.default = yargsModule;
 
 /***/ }),
 
-/***/ 99:
+/***/ 98:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -601,6 +594,13 @@ const yargsModule = {
 };
 exports.default = yargsModule;
 
+
+/***/ }),
+
+/***/ 99:
+/***/ (function(module, exports) {
+
+module.exports = require("child_process");
 
 /***/ })
 

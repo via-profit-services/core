@@ -1,4 +1,4 @@
-import { IResolverObject } from 'graphql-tools';
+import { IObjectTypeResolver } from 'graphql-tools';
 import { IContext } from '../../../types';
-declare const infoQueryResolver: IResolverObject<any, IContext>;
+declare const infoQueryResolver: IObjectTypeResolver<any, IContext>;
 export default infoQueryResolver;

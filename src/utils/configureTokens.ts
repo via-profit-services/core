@@ -1,4 +1,4 @@
-import uuidv4 from 'uuid/v4';
+import { v4 as uuidv4 } from 'uuid';
 import AuthService from '../schemas/auth/service';
 import { IContext } from '../types';
 

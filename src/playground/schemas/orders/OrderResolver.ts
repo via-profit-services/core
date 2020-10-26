@@ -1,10 +1,10 @@
-import { IResolverObject, IFieldResolver } from 'graphql-tools';
+import { IObjectTypeResolver, IFieldResolver } from 'graphql-tools';
 
 import { IContext } from '../../../types';
 import orders from './orders';
 import { IOrder } from './types';
 
-type TOrderResolver = IResolverObject<{id: string}, IContext>;
+type TOrderResolver = IObjectTypeResolver<{id: string}, IContext>;
 
 
 const OrderResolver = new Proxy<TOrderResolver>({
