@@ -1,12 +1,11 @@
-import { IResolverObject } from 'graphql-tools';
 import { withFilter } from '../../../app';
-import { IContext } from '../../../types';
+import { IContext, IObjectTypeResolver } from '../../../types';
 
 export enum SubscriptioTriggers {
   TOKEN_REVOKED = 'token-revoked',
 }
 
-const authSubscription: IResolverObject<any, IContext> = {
+const authSubscription: IObjectTypeResolver<any, IContext> = {
 
   // fire when token with variables.id was revoked
   tokenWasRevoked: {

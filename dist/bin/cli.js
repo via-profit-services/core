@@ -84,7 +84,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 96);
+/******/ 	return __webpack_require__(__webpack_require__.s = 97);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -97,27 +97,70 @@ module.exports = require("fs");
 /***/ }),
 
 /***/ 100:
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-module.exports = require("child_process");
+"use strict";
+
+/* eslint-disable import/no-extraneous-dependencies */
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const migrations_1 = __webpack_require__(31);
+const yargsModule = {
+    command: 'get-migrations',
+    describe: 'Copy all migration and/or seed files from @via-profit-services modules into your project',
+    handler: (args) => __awaiter(void 0, void 0, void 0, function* () { return migrations_1.getMigrations(args); }),
+    builder: (builder) => {
+        return builder
+            .options({
+            migrations: {
+                alias: 'm',
+                type: 'boolean',
+            },
+            seeds: {
+                alias: 's',
+                type: 'boolean',
+            },
+        })
+            .example('$0 get-migrations -m', 'Copy all migration files into your project')
+            .example('$0 get-migrations -s', 'Copy all seed files into your project')
+            .example('$0 get-migrations -m -s', 'Copy all migration and seed files into your project');
+    },
+};
+exports.default = yargsModule;
+
 
 /***/ }),
 
 /***/ 101:
 /***/ (function(module, exports) {
 
-module.exports = require("dotenv");
+module.exports = require("child_process");
 
 /***/ }),
 
 /***/ 102:
 /***/ (function(module, exports) {
 
-module.exports = require("glob");
+module.exports = require("dotenv");
 
 /***/ }),
 
 /***/ 103:
+/***/ (function(module, exports) {
+
+module.exports = require("glob");
+
+/***/ }),
+
+/***/ 104:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -137,8 +180,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 /* eslint-disable import/no-extraneous-dependencies */
 const fs_1 = __importDefault(__webpack_require__(1));
-const path_1 = __importDefault(__webpack_require__(3));
-const chalk_1 = __importDefault(__webpack_require__(8));
+const path_1 = __importDefault(__webpack_require__(4));
+const chalk_1 = __importDefault(__webpack_require__(7));
 const migrations_1 = __webpack_require__(31);
 const yargsModule = {
     command: 'knex <command>',
@@ -323,7 +366,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(__webpack_require__(1));
-const path_1 = __importDefault(__webpack_require__(3));
+const path_1 = __importDefault(__webpack_require__(4));
 const utilities_1 = __webpack_require__(15);
 exports.downloadSchema = (options) => __awaiter(void 0, void 0, void 0, function* () {
     const { endpoint, method, token, filename, headers, } = options;
@@ -350,13 +393,6 @@ module.exports = require("graphql/utilities");
 
 /***/ }),
 
-/***/ 3:
-/***/ (function(module, exports) {
-
-module.exports = require("path");
-
-/***/ }),
-
 /***/ 31:
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -376,12 +412,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const child_process_1 = __webpack_require__(100);
+const child_process_1 = __webpack_require__(101);
 const fs_1 = __importDefault(__webpack_require__(1));
-const path_1 = __importDefault(__webpack_require__(3));
-const chalk_1 = __importDefault(__webpack_require__(8));
-const dotenv_1 = __importDefault(__webpack_require__(101));
-const glob_1 = __importDefault(__webpack_require__(102));
+const path_1 = __importDefault(__webpack_require__(4));
+const chalk_1 = __importDefault(__webpack_require__(7));
+const dotenv_1 = __importDefault(__webpack_require__(102));
+const glob_1 = __importDefault(__webpack_require__(103));
 exports.listMigrationsPerPackage = () => {
     const list = [];
     const projectsList = glob_1.default.sync(`${process.cwd()}/node_modules/@via-profit-services/*/`);
@@ -482,14 +518,21 @@ exports.execKnex = (knexCommand, knexfile) => __awaiter(void 0, void 0, void 0, 
 
 /***/ }),
 
-/***/ 8:
+/***/ 4:
+/***/ (function(module, exports) {
+
+module.exports = require("path");
+
+/***/ }),
+
+/***/ 7:
 /***/ (function(module, exports) {
 
 module.exports = require("chalk");
 
 /***/ }),
 
-/***/ 96:
+/***/ 97:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -499,10 +542,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /* eslint-disable import/no-extraneous-dependencies */
-const yargs_1 = __importDefault(__webpack_require__(97));
-const cli_download_schema_1 = __importDefault(__webpack_require__(98));
-const cli_get_migrations_1 = __importDefault(__webpack_require__(99));
-const cli_knex_1 = __importDefault(__webpack_require__(103));
+const yargs_1 = __importDefault(__webpack_require__(98));
+const cli_download_schema_1 = __importDefault(__webpack_require__(99));
+const cli_get_migrations_1 = __importDefault(__webpack_require__(100));
+const cli_knex_1 = __importDefault(__webpack_require__(104));
 const args = yargs_1.default
     .command(cli_download_schema_1.default)
     .command(cli_get_migrations_1.default)
@@ -514,14 +557,14 @@ exports.default = args;
 
 /***/ }),
 
-/***/ 97:
+/***/ 98:
 /***/ (function(module, exports) {
 
 module.exports = require("yargs");
 
 /***/ }),
 
-/***/ 98:
+/***/ 99:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -554,49 +597,6 @@ const yargsModule = {
         return builder
             .example('$0 download-schema https://example.com/gql MyToken ./schema.graphql', 'Download GraphQL schema into the ./schema.graphql file')
             .example('$0 download-schema https://example.com/gql MyToken', 'Download GraphQL schema and return this as string');
-    },
-};
-exports.default = yargsModule;
-
-
-/***/ }),
-
-/***/ 99:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-/* eslint-disable import/no-extraneous-dependencies */
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const migrations_1 = __webpack_require__(31);
-const yargsModule = {
-    command: 'get-migrations',
-    describe: 'Copy all migration and/or seed files from @via-profit-services modules into your project',
-    handler: (args) => __awaiter(void 0, void 0, void 0, function* () { return migrations_1.getMigrations(args); }),
-    builder: (builder) => {
-        return builder
-            .options({
-            migrations: {
-                alias: 'm',
-                type: 'boolean',
-            },
-            seeds: {
-                alias: 's',
-                type: 'boolean',
-            },
-        })
-            .example('$0 get-migrations -m', 'Copy all migration files into your project')
-            .example('$0 get-migrations -s', 'Copy all seed files into your project')
-            .example('$0 get-migrations -m -s', 'Copy all migration and seed files into your project');
     },
 };
 exports.default = yargsModule;

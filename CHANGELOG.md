@@ -84,3 +84,46 @@ import { Knex } from '@via-profit-services/core';
 ### Основные изменения
  - В CLI интерфейс добавлен метод позволяющий запустить все сиды разом (`via-profit-core knex seed run-all`)
 
+## 0.30.4
+###### *26 Октября 2020*
+
+### Основные изменения
+ - Обновление основных зависимостей до свежих версий
+ - Проверка работоспособности на node `14.0.0`
+ - Добавлен `Knex.PoolConfig` в настройки подключения к базе данных
+
+## 0.30.5
+###### *26 Октября 2020*
+
+### Основные изменения
+ - Логгер [Winston](https://github.com/winstonjs/winston) теперь экспортируется прямо из ядра:
+  
+  ```ts
+  import { Winston } from '@via-profit-services/core';
+
+  const { format, transports, createLogger } = Winston;
+  createLogger({
+    level: 'debug',
+    format: format.combine(
+      format.metadata(),
+      format.json(),
+    )
+  })
+
+
+  ```
+ - [GeaphQL Tools](https://github.com/ardatan/graphql-tools) и все его типы теперь экспортируются напрямую из ядра:
+  
+  ```ts
+  import { IObjectTypeResolver, IFieldResolver, IContext } from '@via-profit-services/core';
+
+  const ResolverObject: IObjectTypeResolver<any, Context> = {
+    getTimezone: (parent, args, context) => context.timezone,
+  };
+  ``` 
+
+## 0.30.7
+###### *26 Октября 2020*
+
+### Основные изменения
+ - Добавлены типы для расширений `.graphql`

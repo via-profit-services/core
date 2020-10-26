@@ -1,10 +1,8 @@
-import { IResolverObject, IFieldResolver } from 'graphql-tools';
-
-import { IContext } from '../../../types';
+import { IContext, IObjectTypeResolver, IFieldResolver } from '../../../types';
 import { IRefreshToken } from '../types';
 
 type IParent = IRefreshToken['payload'] | null;
-type TAccountResolver = IResolverObject<IParent, IContext>;
+type TAccountResolver = IObjectTypeResolver<IParent, IContext>;
 
 
 const refreshTokenPayloadResolver = new Proxy<TAccountResolver>({

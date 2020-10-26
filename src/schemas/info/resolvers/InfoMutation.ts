@@ -1,8 +1,6 @@
-import { IResolverObject } from 'graphql-tools';
+import { IContext, IObjectTypeResolver } from '../../../types';
 
-import { IContext } from '../../../types';
-
-const infoMutationResolver: IResolverObject<any, IContext> = {
+const infoMutationResolver: IObjectTypeResolver<any, IContext> = {
   echo: (parent, args: EchoArgs, context) => {
     const { str } = args;
     const { pubsub } = context;

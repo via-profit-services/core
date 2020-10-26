@@ -1,11 +1,9 @@
-import { IResolverObject } from 'graphql-tools';
-
 import { ServerError } from '../../../errorHandlers';
-import { IContext } from '../../../types';
+import { IContext, IObjectTypeResolver } from '../../../types';
 import AuthService from '../service';
 import { SubscriptioTriggers } from './AuthSubscription';
 
-const authMutationResolver: IResolverObject<any, IContext> = {
+const authMutationResolver: IObjectTypeResolver<any, IContext> = {
   revokeToken: async (parent, args: { id: string }, context) => {
     const { pubsub } = context;
     const { id } = args;

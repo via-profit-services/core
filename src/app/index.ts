@@ -9,13 +9,12 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import DeviceDetector from 'device-detector-js';
 import express, { Express, Request } from 'express';
-import graphqlHTTP, { OptionsData, RequestInfo } from 'express-graphql';
+import { graphqlHTTP, OptionsData, RequestInfo } from 'express-graphql';
 import session from 'express-session';
 import { GraphQLSchema, execute, subscribe } from 'graphql';
 import { applyMiddleware } from 'graphql-middleware';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { withFilter } from 'graphql-subscriptions';
-import { makeExecutableSchema } from 'graphql-tools';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 import Redis from 'ioredis';
 import sessionStoreFactory from 'session-file-store';
@@ -46,6 +45,7 @@ import {
   IBootstrapCallbackArgs,
   ISubServerConfig,
   IContext,
+  makeExecutableSchema,
 } from '../types';
 import {
   DEFAULT_SERVER_PORT,
@@ -263,9 +263,9 @@ class App {
         auth.resolvers,
         ...resolvers || [],
       ],
-      resolverValidationOptions: {
-        requireResolversForResolveType: false,
-      },
+      // resolverValidationOptions: {
+      // requireResolversForResolveType: false,
+      // },
     });
 
     // define knex instance

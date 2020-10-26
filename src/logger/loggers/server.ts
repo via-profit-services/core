@@ -1,6 +1,3 @@
-import { transports, createLogger } from 'winston';
-import 'winston-daily-rotate-file';
-
 import {
   LOG_FILENAME_ERRORS,
   LOG_FILENAME_DEBUG,
@@ -9,10 +6,13 @@ import {
   LOG_MAX_SIZE,
   LOG_MAX_FILES,
 } from '../../utils/constants';
+import { Winston } from '../utils/configureLogger';
+
 import loggerFormatter from '../utils/logFormatter';
 
 export default (config: Config) => {
   const { logDir } = config;
+  const { createLogger, transports } = Winston;
 
   return createLogger({
     level: 'debug',

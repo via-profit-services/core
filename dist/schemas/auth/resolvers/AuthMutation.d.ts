@@ -1,4 +1,3 @@
-import { IResolverObject } from 'graphql-tools';
-import { IContext } from '../../../types';
-declare const authMutationResolver: IResolverObject<any, IContext>;
+import { IContext, IObjectTypeResolver } from '../../../types';
+declare const authMutationResolver: IObjectTypeResolver<any, IContext>;
 export default authMutationResolver;

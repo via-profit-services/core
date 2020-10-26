@@ -5,7 +5,7 @@
 > Via Profit services / **Core** - это основной пакет `via-profit-services` предоставляющий [GraphQL](https://graphql.org/)-сервер и сервер аутентификации. Пакет осуществляет обвязку между всеми имеющимися модулями данной системы и реализует собой приложение.
 
 
-![version-badge](https://img.shields.io/static/v1?label=version&message=0.30.3&color=blueviolet)
+![version-badge](https://img.shields.io/static/v1?label=version&message=0.30.7&color=blueviolet)
 
 
 ## Содержание
@@ -88,7 +88,7 @@ import { Knex } from '@via-profit-services/core';
 ### Установка
 
 ```bash
-yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.30.3
+yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.30.7
 ```
 
 Список версий см. [здесь](https://gitlab.com/via-profit-services/core/-/tags/)
@@ -198,10 +198,9 @@ type MyModuleMutation {
 2. Создайте резолвер
 
 ```ts
-import { IContext } from '@via-profit-services/core';
-import { IResolverObject } from 'graphql-tools';
+import { IContext, IObjectTypeResolver } from '@via-profit-services/core';
 
-const resolvers: IResolverObject<any, IContext> = {
+const resolvers: IObjectTypeResolver<any, IContext> = {
   Query: {
     myModule: () => ({}),
   },
@@ -279,11 +278,12 @@ import {
   buildQueryFilter,
   IDirectionRange,
   TInputFilter,
+  IObjectTypeResolver,
 } from '@via-profit-services/core';
-import { IResolverObject } from 'graphql-tools';
+
 import MyService from './my-service';
 
-export const MyQueries: IResolverObject<any, IContext, TInputFilter> = {
+export const MyQueries: IObjectTypeResolver<any, IContext, TInputFilter> = {
   list: async (obj, args, context) => {
     // аргумент args = { first, last, after, before, orderBy }
 
@@ -734,13 +734,12 @@ export default function createLoaders(context: IContext) {
 _file resolver.ts_
 
 ```ts
-import { IResolverObject } from 'graphql-tools';
-import { TInputFilter, IContext } from '@via-profit-services/core';
+import { TInputFilter, IContext, IObjectTypeResolver } from '@via-profit-services/core';
 
 // Импортируем функцию создания пула даталоадеров
 import createLoaders from './dataloader';
 
-export const personsQueryResolver: IResolverObject<any, IContext, TInputFilter> = {
+export const personsQueryResolver: IObjectTypeResolver<any, IContext, TInputFilter> = {
   // Резолвер, который должен вернуть информацию из БД
   getPersonById: (parent, args, context) => {
     const { id } = args;

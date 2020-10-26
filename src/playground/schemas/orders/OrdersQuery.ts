@@ -1,9 +1,7 @@
-import { IResolverObject } from 'graphql-tools';
-
-import { IContext } from '../../../types';
+import { IContext, IObjectTypeResolver } from '../../../types';
 import orders from './orders';
 
-const OrdersQuery: IResolverObject<any, IContext> = {
+const OrdersQuery: IObjectTypeResolver<any, IContext> = {
   order: (parent, args: {id: string}) => {
     const { id } = args;
     const order = orders.find((o) => o.id === id) || null;

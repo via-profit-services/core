@@ -1,4 +1,6 @@
-import { format } from 'winston';
+import { Winston } from './configureLogger';
+
+const { format } = Winston;
 
 export default format.combine(
   format.metadata(),

@@ -3,16 +3,18 @@ import http from 'http';
 import https from 'https';
 import DeviceDetector from 'device-detector-js';
 import { NextFunction, Request, Response } from 'express';
-import { GraphQLSchema } from 'graphql';
+import { GraphQLSchema, DocumentNode } from 'graphql';
 import { IMiddleware } from 'graphql-middleware';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { ITypedef, IResolvers } from 'graphql-tools';
 import { RedisOptions, Redis as RedisInterface } from 'ioredis';
 import { Options as SesstionStoreOptions } from 'session-file-store';
 import { ServerOptions as IWebsocketServerOption } from 'ws';
+import './graphql-ext';
 import { IDBConfig, Knex } from './databaseManager';
 import { ILoggerCollection } from './logger';
 import { IJwtConfig, IAccessToken } from './schemas/auth/types';
+export * from 'graphql-tools';
 export interface IInitProps {
     port?: number;
     authEndpoint?: string;
@@ -101,3 +103,4 @@ export declare type IExpressMidlewareContainer = (props: {
     context: IContext;
 }) => IExpressMiddleware;
 export declare type IExpressMiddleware = (request?: Request, response?: Response, next?: NextFunction) => void;
+export declare type GraphQLExtension = DocumentNode;
