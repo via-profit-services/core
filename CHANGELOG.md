@@ -112,7 +112,8 @@ import { Knex } from '@via-profit-services/core';
 
 
   ```
- - [GeaphQL Tools](https://github.com/ardatan/graphql-tools) и все его типы теперь экспортируются напрямую из ядра:
+ - [GeaphQL Tools / Schema](https://www.graphql-tools.com/docs/api/modules/schema) и все его типы теперь экспортируются напрямую из ядра:
+ - [GeaphQL Tools / Utils](https://www.graphql-tools.com/docs/api/modules/utils) и все его типы теперь экспортируются напрямую из ядра:
   
   ```ts
   import { IObjectTypeResolver, IFieldResolver, IContext } from '@via-profit-services/core';

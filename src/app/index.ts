@@ -4,6 +4,7 @@ import http from 'http';
 import https from 'https';
 import path from 'path';
 import { performance } from 'perf_hooks';
+import { makeExecutableSchema } from '@graphql-tools/schema';
 import chalk from 'chalk';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -45,7 +46,6 @@ import {
   IBootstrapCallbackArgs,
   ISubServerConfig,
   IContext,
-  makeExecutableSchema,
 } from '../types';
 import {
   DEFAULT_SERVER_PORT,
@@ -64,7 +64,6 @@ import { configureTokens } from '../utils/configureTokens';
 import { CronJobManager } from '../utils/cronJobManager';
 import { DisableIntrospectionQueries } from '../utils/disableIntrospection';
 import { headersMiddleware } from '../utils/headersMiddleware';
-
 
 class App {
   public props: IInitDefaultProps;
