@@ -10,6 +10,7 @@ import { ITypedef, IResolvers } from 'graphql-tools';
 import { RedisOptions, Redis as RedisInterface } from 'ioredis';
 import { Options as SesstionStoreOptions } from 'session-file-store';
 import { ServerOptions as IWebsocketServerOption } from 'ws';
+import './graphql-ext';
 import { IDBConfig, Knex } from './databaseManager';
 import { ILoggerCollection } from './logger';
 import { IJwtConfig, IAccessToken } from './schemas/auth/types';
