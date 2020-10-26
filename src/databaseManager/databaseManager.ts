@@ -12,7 +12,7 @@ const DEFAULT_TIMEZONE = 'UTC';
 
 export const knexProvider = (config: IDBConfig) => {
   const {
-    connection, logger, timezone, localTimezone,
+    connection, logger, timezone, localTimezone, pool,
   } = config;
   const times: { [key: string]: any } = {};
 
@@ -33,6 +33,7 @@ export const knexProvider = (config: IDBConfig) => {
     client: DATABASE_CLIENT,
     connection,
     pool: {
+      ...pool,
       afterCreate: (conn: any, done: Function) => {
         conn.query(
           `
@@ -104,4 +105,5 @@ export interface IDBConfig {
   localTimezone: string;
   migrations?: Knex.MigratorConfig;
   seeds?: Knex.SeedsConfig;
+  pool?: Knex.PoolConfig;
 }
