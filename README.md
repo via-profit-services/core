@@ -198,8 +198,7 @@ type MyModuleMutation {
 2. Создайте резолвер
 
 ```ts
-import { IContext } from '@via-profit-services/core';
-import { IObjectTypeResolver } from 'graphql-tools';
+import { IContext, IObjectTypeResolver } from '@via-profit-services/core';
 
 const resolvers: IObjectTypeResolver<any, IContext> = {
   Query: {
@@ -279,8 +278,9 @@ import {
   buildQueryFilter,
   IDirectionRange,
   TInputFilter,
+  IObjectTypeResolver,
 } from '@via-profit-services/core';
-import { IObjectTypeResolver } from 'graphql-tools';
+
 import MyService from './my-service';
 
 export const MyQueries: IObjectTypeResolver<any, IContext, TInputFilter> = {
@@ -734,8 +734,7 @@ export default function createLoaders(context: IContext) {
 _file resolver.ts_
 
 ```ts
-import { IObjectTypeResolver } from 'graphql-tools';
-import { TInputFilter, IContext } from '@via-profit-services/core';
+import { TInputFilter, IContext, IObjectTypeResolver } from '@via-profit-services/core';
 
 // Импортируем функцию создания пула даталоадеров
 import createLoaders from './dataloader';
