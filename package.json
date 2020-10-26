@@ -40,8 +40,6 @@
     "author": "Via Profit <promo@via-profit.ru>",
     "license": "MIT",
     "dependencies": {
-        "@graphql-toolkit/core": "^0.9.1",
-        "@graphql-toolkit/schema-merging": "^0.9.1",
         "@graphql-tools/schema": "^7.0.0",
         "@graphql-tools/utils": "^7.0.0",
         "@types/ws": "^7.2.4",
