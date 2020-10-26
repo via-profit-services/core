@@ -1,6 +1,4 @@
-import { IObjectTypeResolver, IFieldResolver } from 'graphql-tools';
-
-import { IContext } from '../../../types';
+import { IContext, IObjectTypeResolver, IFieldResolver } from '../../../types';
 import { IRefreshToken } from '../types';
 
 type IParent = IRefreshToken['payload'] | null;

@@ -1,5 +1,6 @@
-import { Logger } from 'winston';
+import Winston from 'winston';
 import 'winston-daily-rotate-file';
+
 import {
   authLogger, httpLogger, serverLogger, sqlLogger, sessionLogger, accessLogger,
 } from '../loggers';
@@ -24,19 +25,19 @@ const configureLogger = (config: ILoggerConfig) => {
 };
 
 export interface ILoggerCollection {
-  server: Logger;
-  sql: Logger;
-  auth: Logger;
-  http: Logger;
-  access: Logger;
-  session: Logger;
-  [key: string]: Logger;
+  server: Winston.Logger;
+  sql: Winston.Logger;
+  auth: Winston.Logger;
+  http: Winston.Logger;
+  access: Winston.Logger;
+  session: Winston.Logger;
+  [key: string]: Winston.Logger;
 }
 
 export interface ILoggerConfig {
   logDir: string;
-  loggers?: { [key: string]: Logger };
+  loggers?: { [key: string]: Winston.Logger };
 }
 
 export default configureLogger;
-export { logger, configureLogger };
+export { logger, configureLogger, Winston };

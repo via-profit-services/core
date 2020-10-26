@@ -1,6 +1,4 @@
-import { IObjectTypeResolver } from 'graphql-tools';
-
-import { IContext } from '../../../types';
+import { IContext, IObjectTypeResolver } from '../../../types';
 
 const infoMutationResolver: IObjectTypeResolver<any, IContext> = {
   echo: (parent, args: EchoArgs, context) => {

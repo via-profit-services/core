@@ -1,6 +1,4 @@
-import { IObjectTypeResolver } from 'graphql-tools';
-
-import { IContext } from '../../../types';
+import { IContext, IObjectTypeResolver } from '../../../types';
 import orders from './orders';
 
 const OrdersQuery: IObjectTypeResolver<any, IContext> = {

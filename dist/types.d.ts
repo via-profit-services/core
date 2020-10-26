@@ -13,6 +13,7 @@ import { ServerOptions as IWebsocketServerOption } from 'ws';
 import { IDBConfig, Knex } from './databaseManager';
 import { ILoggerCollection } from './logger';
 import { IJwtConfig, IAccessToken } from './schemas/auth/types';
+export * from 'graphql-tools';
 export interface IInitProps {
     port?: number;
     authEndpoint?: string;

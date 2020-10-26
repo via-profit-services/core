@@ -1,5 +1,4 @@
-import { IObjectTypeResolver } from 'graphql-tools';
-import { IContext } from '../../../types';
+import { IContext, IObjectTypeResolver } from '../../../types';
 export declare enum SubscriptioTriggers {
     TOKEN_REVOKED = "token-revoked"
 }

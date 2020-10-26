@@ -1,6 +1,5 @@
-import { IObjectTypeResolver, IFieldResolver } from 'graphql-tools';
 
-import { IContext } from '../../../types';
+import { IContext, IObjectTypeResolver, IFieldResolver } from '../../../types';
 import orders from './orders';
 import { IOrder } from './types';
 

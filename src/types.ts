@@ -18,6 +18,8 @@ import {
   IAccessToken,
 } from './schemas/auth/types';
 
+export * from 'graphql-tools';
+
 export interface IInitProps {
   port?: number;
   authEndpoint?: string;

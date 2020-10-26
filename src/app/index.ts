@@ -15,7 +15,6 @@ import { GraphQLSchema, execute, subscribe } from 'graphql';
 import { applyMiddleware } from 'graphql-middleware';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { withFilter } from 'graphql-subscriptions';
-import { makeExecutableSchema } from 'graphql-tools';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 import Redis from 'ioredis';
 import sessionStoreFactory from 'session-file-store';
@@ -46,6 +45,7 @@ import {
   IBootstrapCallbackArgs,
   ISubServerConfig,
   IContext,
+  makeExecutableSchema,
 } from '../types';
 import {
   DEFAULT_SERVER_PORT,

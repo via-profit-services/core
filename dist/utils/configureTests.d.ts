@@ -10,9 +10,9 @@ declare const configureTest: (config?: Partial<IInitProps>) => {
         endpoint?: string;
         subscriptionEndpoint?: string;
         timezone?: string;
-        typeDefs?: import("graphql-tools").ITypedef[];
+        typeDefs?: import("@graphql-tools/utils/Interfaces").ITypedef[];
         middlewares?: import("graphql-middleware").IMiddleware<any, import("../types").IContext, any>[];
-        resolvers?: Record<string, import("graphql-tools").IUnionTypeResolver | import("graphql-tools").IScalarTypeResolver | import("graphql-tools").IEnumTypeResolver | import("graphql-tools").IInputObjectTypeResolver | import("graphql-tools").IFieldResolver<any, Partial<import("../types").IContext>, Record<string, any>, any> | import("graphql-tools").IObjectTypeResolver<any, Partial<import("../types").IContext>, any> | import("graphql-tools").IInterfaceTypeResolver<any, Partial<import("../types").IContext>, any>>[];
+        resolvers?: Record<string, import("@graphql-tools/utils/Interfaces").IUnionTypeResolver | import("@graphql-tools/utils/Interfaces").IScalarTypeResolver | import("@graphql-tools/utils/Interfaces").IEnumTypeResolver | import("@graphql-tools/utils/Interfaces").IInputObjectTypeResolver | import("@graphql-tools/utils/Interfaces").IFieldResolver<any, Partial<import("../types").IContext>, Record<string, any>, any> | import("@graphql-tools/utils/Interfaces").IObjectTypeResolver<any, Partial<import("../types").IContext>, any> | import("@graphql-tools/utils/Interfaces").IInterfaceTypeResolver<any, Partial<import("../types").IContext>, any>>[];
         jwt: import("../schemas/auth").IJwtConfig;
         database: Pick<import("..").IDBConfig, "migrations" | "seeds" | "connection" | "timezone" | "pool">;
         redis: import("ioredis").RedisOptions;

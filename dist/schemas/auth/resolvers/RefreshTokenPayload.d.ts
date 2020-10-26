@@ -1,5 +1,4 @@
-import { IObjectTypeResolver } from 'graphql-tools';
-import { IContext } from '../../../types';
+import { IContext, IObjectTypeResolver } from '../../../types';
 declare const refreshTokenPayloadResolver: IObjectTypeResolver<Pick<{
     type: import("../types").TokenType.access;
     id: string;
