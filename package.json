@@ -2,7 +2,7 @@
     "name": "@via-profit-services/core",
     "private": true,
     "support": "https://via-profit.ru",
-    "version": "0.30.5",
+    "version": "0.30.6",
     "description": "Via Profit Core service",
     "main": "dist/index.js",
     "scripts": {
