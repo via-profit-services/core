@@ -1,3 +1,72 @@
+## 0.30.7
+###### *26 Октября 2020*
+
+### Основные изменения
+ - Добавлены типы для расширений `.graphql`
+
+
+## 0.30.5
+###### *26 Октября 2020*
+
+### Основные изменения
+ - Логгер [Winston](https://github.com/winstonjs/winston) теперь экспортируется прямо из ядра:
+  
+  ```ts
+  import { Winston } from '@via-profit-services/core';
+
+  const { format, transports, createLogger } = Winston;
+  createLogger({
+    level: 'debug',
+    format: format.combine(
+      format.metadata(),
+      format.json(),
+    )
+  })
+
+
+  ```
+ - [GeaphQL Tools / Schema](https://www.graphql-tools.com/docs/api/modules/schema) и все его типы теперь экспортируются напрямую из ядра:
+ - [GeaphQL Tools / Utils](https://www.graphql-tools.com/docs/api/modules/utils) и все его типы теперь экспортируются напрямую из ядра:
+  
+  ```ts
+  import { IObjectTypeResolver, IFieldResolver, IContext } from '@via-profit-services/core';
+
+  const ResolverObject: IObjectTypeResolver<any, Context> = {
+    getTimezone: (parent, args, context) => context.timezone,
+  };
+  ``` 
+
+## 0.30.4
+###### *26 Октября 2020*
+
+### Основные изменения
+ - Обновление основных зависимостей до свежих версий
+ - Проверка работоспособности на node `14.0.0`
+ - Добавлен `Knex.PoolConfig` в настройки подключения к базе данных
+
+
+## 0.30.3
+###### *19 Октября 2020*
+
+### Основные изменения
+ - В CLI интерфейс добавлен метод позволяющий запустить все сиды разом (`via-profit-core knex seed run-all`)
+
+
+
+## 0.30.2
+###### *24 Сентября 2020*
+
+### Основные изменения
+ - Добавлен вывод `console.log` в случае, если при запуске сервера не удается соединиться с сервером базы банных
+
+
+## 0.30.1
+###### *21 Сентября 2020*
+
+### Основные изменения
+
+Изменены внутренние скрипты сборки проекта. Функционал не затронут
+
 ## 0.30.0
 ###### *18 Сентября 2020*
 
@@ -61,70 +130,3 @@ import * as Knex from 'knex';
 ```ts
 import { Knex } from '@via-profit-services/core';
 ```
-
-
-## 0.30.1
-###### *21 Сентября 2020*
-
-### Основные изменения
-
-Изменены внутренние скрипты сборки проекта. Функционал не затронут
-
-
-## 0.30.2
-###### *24 Сентября 2020*
-
-### Основные изменения
- - Добавлен вывод `console.log` в случае, если при запуске сервера не удается соединиться с сервером базы банных
-
-
-## 0.30.3
-###### *19 Октября 2020*
-
-### Основные изменения
- - В CLI интерфейс добавлен метод позволяющий запустить все сиды разом (`via-profit-core knex seed run-all`)
-
-## 0.30.4
-###### *26 Октября 2020*
-
-### Основные изменения
- - Обновление основных зависимостей до свежих версий
- - Проверка работоспособности на node `14.0.0`
- - Добавлен `Knex.PoolConfig` в настройки подключения к базе данных
-
-## 0.30.5
-###### *26 Октября 2020*
-
-### Основные изменения
- - Логгер [Winston](https://github.com/winstonjs/winston) теперь экспортируется прямо из ядра:
-  
-  ```ts
-  import { Winston } from '@via-profit-services/core';
-
-  const { format, transports, createLogger } = Winston;
-  createLogger({
-    level: 'debug',
-    format: format.combine(
-      format.metadata(),
-      format.json(),
-    )
-  })
-
-
-  ```
- - [GeaphQL Tools / Schema](https://www.graphql-tools.com/docs/api/modules/schema) и все его типы теперь экспортируются напрямую из ядра:
- - [GeaphQL Tools / Utils](https://www.graphql-tools.com/docs/api/modules/utils) и все его типы теперь экспортируются напрямую из ядра:
-  
-  ```ts
-  import { IObjectTypeResolver, IFieldResolver, IContext } from '@via-profit-services/core';
-
-  const ResolverObject: IObjectTypeResolver<any, Context> = {
-    getTimezone: (parent, args, context) => context.timezone,
-  };
-  ``` 
-
-## 0.30.7
-###### *26 Октября 2020*
-
-### Основные изменения
- - Добавлены типы для расширений `.graphql`
