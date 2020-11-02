@@ -1,16 +1,15 @@
 /* eslint-disable import/max-dependencies */
 import http from 'http';
 import https from 'https';
+import { IResolvers, ITypedef } from '@graphql-tools/utils';
 import DeviceDetector from 'device-detector-js';
 import { NextFunction, Request, Response } from 'express';
 import { GraphQLSchema, DocumentNode } from 'graphql';
 import { IMiddleware } from 'graphql-middleware';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { ITypedef, IResolvers } from 'graphql-tools';
 import { RedisOptions, Redis as RedisInterface } from 'ioredis';
 import { Options as SesstionStoreOptions } from 'session-file-store';
 import { ServerOptions as IWebsocketServerOption } from 'ws';
-
 import './graphql-ext';
 import { IDBConfig, Knex } from './databaseManager';
 import { ILoggerCollection } from './logger';
@@ -19,8 +18,8 @@ import {
   IAccessToken,
 } from './schemas/auth/types';
 
-export * from 'graphql-tools';
-
+export * from '@graphql-tools/utils';
+export * from '@graphql-tools/schema';
 
 export interface IInitProps {
   port?: number;

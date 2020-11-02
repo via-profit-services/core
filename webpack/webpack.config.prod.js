@@ -39,7 +39,7 @@ module.exports = merge(baseConfig, {
       banner: `
 Via Profit Services / Core
 
-Repository https://gitlab.com/via-profit-services/core
+Repository https://github.com/via-profit-services/core
 Contact    promo@via-profit.ru
 Website    https://via-profit.ru
       `,

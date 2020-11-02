@@ -2,10 +2,10 @@
 
 ![via-profit-services-cover](./assets/via-profit-services-cover.png)
 
-> Via Profit services / **Core** - это основной пакет `via-profit-services` предоставляющий [GraphQL](https://graphql.org/)-сервер и сервер аутентификации. Пакет осуществляет обвязку между всеми имеющимися модулями данной системы и реализует собой приложение.
+> Via Profit services / **Core** - это основной пакет `via-profit-services` предоставляющий [GraphQL](https://graphql.org/)-сервер и сервер аутентификации. Пакет осуществляет обвязку между всеми имеющимися модулями данной системы и реализует собой приложение
 
 
-![version-badge](https://img.shields.io/static/v1?label=version&message=0.30.7&color=blueviolet)
+![version-badge](https://img.shields.io/static/v1?label=version&message=0.30.8&color=blueviolet)
 
 
 ## Содержание
@@ -88,10 +88,10 @@ import { Knex } from '@via-profit-services/core';
 ### Установка
 
 ```bash
-yarn add ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.30.7
+yarn add ssh://git@github.com:via-profit-services/core.git#semver:^0.30.8
 ```
 
-Список версий см. [здесь](https://gitlab.com/via-profit-services/core/-/tags/)
+Список версий см. [здесь](https://github.com/via-profit-services/core/-/tags/)
 
 ### Настройка сертификатов
 

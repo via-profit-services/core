@@ -64,7 +64,7 @@ npm manifest:
       },
       "repository": {
           "type": "git",
-          "url": "git@gitlab.com:via-profit-services/core.git"
+          "url": "git@github.com:via-profit-services/core.git"
       },
       "author": "Via Profit <promo@via-profit.ru>",
       "license": "MIT",

@@ -91,7 +91,7 @@ psql --host=localhost --username=services --dbname=services_core --password
 Склонируйте репозиторий
 
 ```bash
-git clone git@gitlab.com:via-profit-services/core.git
+git clone git@github.com:via-profit-services/core.git
 ```
 
 **Замечание:** _(Необязательно)_ Чтобы запустить localhost на SSL используйте [mkcert](https://github.com/FiloSottile/mkcert) 
