@@ -38,7 +38,7 @@ module.exports = merge(baseConfig, {
     }),
     new BannerPlugin({
       banner: `
-Via Profit Services / Core v${packageInfo.version}
+Via Profit Services / Core
 
 Repository ${packageInfo.repository.url}
 Contact    ${packageInfo.support}
