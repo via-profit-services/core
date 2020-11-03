@@ -1,6 +1,5 @@
 {
     "name": "@via-profit-services/core",
-    "private": false,
     "support": "https://via-profit.ru",
     "version": "0.30.8",
     "description": "Via Profit Core service",
@@ -9,6 +8,10 @@
         "node": ">= 12.8.3",
         "npm": ">= 6.14.8"
     },
+    "keywords": [
+        "graphql",
+        "via-profit"
+    ],
     "scripts": {
         "dist": "yarn lint && yarn test && yarn build:dist",
         "start": "yarn start:dev",
@@ -32,7 +35,8 @@
         "release:patch": "yarn version --patch",
         "release:minor": "yarn version --minor",
         "release:major": "yarn version --major",
-        "release:prerelease": "yarn version --prerelease"
+        "release:prerelease": "yarn version --prerelease",
+        "publish": "npm publish --access public"
     },
     "bin": {
         "via-profit-core": "./dist/bin/cli.js"
