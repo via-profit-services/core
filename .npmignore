@@ -1,3 +1,14 @@
-*.*
-!dist/*
-!*.d.ts
+.*
+assets
+build
+keys
+log
+public
+sessions
+src
+webpack
+sandbox.js
+tsconfig.*
+jest.config.js
+yarn.lock
+yarn-error.lock

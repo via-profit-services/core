@@ -1,9 +1,11 @@
+/* eslint-disable no-console */
 import { performance } from 'perf_hooks';
 import chalk from 'chalk';
 import knex from 'knex';
 import * as Knex from 'knex';
 import moment from 'moment-timezone';
 import { types } from 'pg';
+
 import { ILoggerCollection } from '../logger';
 import { DATABASE_CHARSET, DATABASE_CLIENT } from '../utils';
 
@@ -34,7 +36,7 @@ export const knexProvider = (config: IDBConfig) => {
     connection,
     pool: {
       ...pool,
-      afterCreate: (conn: any, done: Function) => {
+      afterCreate: (conn: any, done: any) => {
         conn.query(
           `
             SET TIMEZONE = '${timezone || DEFAULT_TIMEZONE}';
@@ -81,6 +83,7 @@ export const knexProvider = (config: IDBConfig) => {
     .raw('SELECT 1+1 AS result')
     .then(() => {
       logger.server.debug('Test the Database connection by trying to authenticate is OK');
+
       return true;
     })
     .catch((err) => {

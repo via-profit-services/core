@@ -33,6 +33,7 @@ export default class AuthService {
    */
   public static cryptUserPassword(password: string) {
     const salt = bcryptjs.genSaltSync(10);
+
     return bcryptjs.hashSync(password, salt);
   }
 
@@ -65,7 +66,7 @@ export default class AuthService {
    * @param  {{uuid:string;deviceInfo:{};}} data
    * @returns ITokenInfo
    */
-  public async registerTokens(data: { uuid: string; deviceInfo?: {} }): Promise<ITokenPackage> {
+  public async registerTokens(data: { uuid: string; deviceInfo?: any }): Promise<ITokenPackage> {
     const { context } = this.props;
     const { knex, logger } = context;
 
@@ -218,6 +219,7 @@ export default class AuthService {
 
     try {
       const result = await redis.sismember(REDIS_TOKENS_BLACKLIST, accessTokenId);
+
       return Boolean(result);
     } catch (err) {
       logger.server.error('Redis sismember error', { err });
@@ -298,6 +300,7 @@ export default class AuthService {
       const revokeStatus = await redis.sismember(REDIS_TOKENS_BLACKLIST, payload.id);
       if (revokeStatus) {
         logger.auth.info('Token was revoked', { payload });
+
         return false;
       }
 
@@ -305,6 +308,7 @@ export default class AuthService {
     } catch (err) {
       logger.auth.info('Invalid token');
       logger.server.error('Failed to validate the token', { err });
+
       return false;
     }
   }

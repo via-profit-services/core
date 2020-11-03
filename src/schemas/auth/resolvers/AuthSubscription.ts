@@ -11,9 +11,9 @@ const authSubscription: IObjectTypeResolver<any, IContext> = {
   tokenWasRevoked: {
 
     subscribe: withFilter(
-      (parens, args, context: IContext) => {
-        return context.pubsub.asyncIterator(SubscriptioTriggers.TOKEN_REVOKED);
-      },
+      (parens, args, context: IContext) => context.pubsub.asyncIterator(
+        SubscriptioTriggers.TOKEN_REVOKED,
+      ),
       (payload: {
         tokenWasRevoked: string[];
       }, variables: {

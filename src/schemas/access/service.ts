@@ -33,6 +33,7 @@ export default class AccessService {
   public async isInBlackList(ipAddress: string) {
     const { redis } = this.props.context;
     const result = await redis.sismember(REDIS_IP_BLACKLIST, ipAddress);
+
     return Boolean(result);
   }
 }

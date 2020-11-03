@@ -1,5 +1,6 @@
 import faker from 'faker/locale/ru';
 import { v4 as uuidv4 } from 'uuid';
+
 import {
   nodeToEdge,
   makeNodeCursor,

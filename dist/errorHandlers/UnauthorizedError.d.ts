@@ -1,6 +1,6 @@
 import { ErrorHandler } from './index';
 export default class UnauthorizedError extends Error implements ErrorHandler {
-    metaData: {};
+    metaData: any;
     status: number;
-    constructor(message: string, metaData?: {});
+    constructor(message: string, metaData?: any);
 }

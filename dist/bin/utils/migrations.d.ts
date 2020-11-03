@@ -6,8 +6,8 @@ export declare const listMigrationsPerPackage: () => {
     };
 }[];
 export declare const getMigrations: (params: {
-    migrations: boolean;
-    seeds: boolean;
+    migrations: string;
+    seeds: string;
 }) => void;
 export declare const resolveKnexfile: (knexfile: string) => string;
 export declare const execKnex: (knexCommand: string, knexfile: string) => Promise<unknown>;

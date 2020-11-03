@@ -1,10 +1,10 @@
+/* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
 
 import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
-import dotenv from 'dotenv';
 import glob from 'glob';
 
 export const listMigrationsPerPackage = () => {
@@ -37,71 +37,80 @@ export const listMigrationsPerPackage = () => {
       files: projectInfo,
     });
   });
+
   return list;
 };
 
-export const getMigrations = (params: { migrations: boolean; seeds: boolean }) => {
-  const localDotEnvFile = path.resolve(process.cwd(), '.env');
+export const getMigrations = (params: { migrations: string; seeds: string }) => {
 
-  if (fs.existsSync(localDotEnvFile)) {
-    const dotEnvData = dotenv.config({ path: localDotEnvFile }).parsed;
-    const migrationsListPerPackage = listMigrationsPerPackage();
+  console.log('migrations', params.migrations)
+  console.log('seeds', params.seeds)
 
-    migrationsListPerPackage.forEach((projectData) => {
-      const { files, project } = projectData;
+  const migrationsListPerPackage = listMigrationsPerPackage();
 
-      if (params.migrations && dotEnvData.DB_MIGRATIONS_DIRECTORY !== undefined) {
-        let affected = 0;
-        console.log('');
-        console.log(`Migrations from project ${chalk.magenta(project)}`);
-        const migrationsDestPath = path.resolve(process.cwd(), dotEnvData.DB_MIGRATIONS_DIRECTORY);
-        files.migrations.forEach((migrationSourceFile) => {
-          const destinationFile = path.join(migrationsDestPath, path.basename(migrationSourceFile));
-          if (!fs.existsSync(destinationFile)) {
-            affected += 1;
-            fs.copyFileSync(migrationSourceFile, destinationFile);
-            console.log(
-              `${chalk.yellow('Was created migration file')} ${chalk.cyan(path.basename(migrationSourceFile))}`,
-            );
-          }
+  migrationsListPerPackage.forEach((projectData) => {
+    const { files, project } = projectData;
+
+    if (params.migrations) {
+      let affected = 0;
+      console.log('');
+      console.log(`Migrations from project ${chalk.magenta(project)}`);
+      const migrationsDestPath = path.resolve(process.cwd(), params.migrations);
+      if (!fs.existsSync(migrationsDestPath)) {
+        fs.mkdirSync(migrationsDestPath, {
+          recursive: true,
         });
-
-        if (affected) {
-          console.log(`${chalk.bold.green(affected.toString())} ${chalk.yellow('file[s] was copied')}`);
-        } else {
-          console.log(chalk.grey('No files was copied'));
-        }
       }
 
-      if (params.seeds && dotEnvData.DB_SEEDS_DIRECTORY !== undefined) {
-        let affected = 0;
-        console.log('');
-        console.log(`Seeds for ${chalk.magenta(project)}`);
-
-        const seedsDestPath = path.resolve(process.cwd(), dotEnvData.DB_SEEDS_DIRECTORY);
-        files.seeds.forEach((seedSourceFile) => {
-          const destinationFile = path.join(seedsDestPath, path.basename(seedSourceFile));
-          if (!fs.existsSync(destinationFile)) {
-            affected += 1;
-            fs.copyFileSync(seedSourceFile, destinationFile);
-            console.log(`${chalk.yellow('Was created seed file')} ${chalk.cyan(path.basename(seedSourceFile))}`);
-          }
-        });
-
-        if (affected) {
-          console.log(`${chalk.bold.green(affected.toString())} ${chalk.yellow('file[s] was copied')}`);
-        } else {
-          console.log(chalk.grey('No files was copied'));
+      files.migrations.forEach((migrationSourceFile) => {
+        const destinationFile = path.join(migrationsDestPath, path.basename(migrationSourceFile));
+        if (!fs.existsSync(destinationFile)) {
+          affected += 1;
+          fs.copyFileSync(migrationSourceFile, destinationFile);
+          console.log(
+            `${chalk.yellow('Was created migration file')} ${chalk.cyan(path.basename(migrationSourceFile))}`,
+          );
         }
+      });
+
+      if (affected) {
+        console.log(`${chalk.bold.green(affected.toString())} ${chalk.yellow('file[s] was copied')}`);
+      } else {
+        console.log(chalk.grey('No files was copied'));
       }
-    });
-  }
+    }
+
+    if (params.seeds) {
+      let affected = 0;
+      console.log('');
+      console.log(`Seeds for ${chalk.magenta(project)}`);
+
+      const seedsDestPath = path.resolve(process.cwd(), params.seeds);
+      if (!fs.existsSync(seedsDestPath)) {
+        fs.mkdirSync(seedsDestPath, {
+          recursive: true,
+        });
+      }
+      files.seeds.forEach((seedSourceFile) => {
+        const destinationFile = path.join(seedsDestPath, path.basename(seedSourceFile));
+        if (!fs.existsSync(destinationFile)) {
+          affected += 1;
+          fs.copyFileSync(seedSourceFile, destinationFile);
+          console.log(`${chalk.yellow('Was created seed file')} ${chalk.cyan(path.basename(seedSourceFile))}`);
+        }
+      });
+
+      if (affected) {
+        console.log(`${chalk.bold.green(affected.toString())} ${chalk.yellow('file[s] was copied')}`);
+      } else {
+        console.log(chalk.grey('No files was copied'));
+      }
+    }
+  });
 };
 
 
-export const resolveKnexfile = (knexfile: string) => {
-  return path.resolve(process.cwd(), knexfile);
-};
+export const resolveKnexfile = (knexfile: string) => path.resolve(process.cwd(), knexfile);
 
 export const execKnex = async (knexCommand: string, knexfile: string) => {
   const localKnexfile = resolveKnexfile(knexfile);

@@ -1,8 +1,9 @@
+/* eslint-disable no-console */
 import { IContext, IObjectTypeResolver } from '../../../types';
 import orders from './orders';
 
 const OrdersQuery: IObjectTypeResolver<any, IContext> = {
-  order: (parent, args: {id: string}) => {
+  order: (_, args: {id: string}) => {
     const { id } = args;
     const order = orders.find((o) => o.id === id) || null;
 
@@ -10,6 +11,7 @@ const OrdersQuery: IObjectTypeResolver<any, IContext> = {
   },
   list: () => {
     console.log('get orders list');
+
     return orders;
   },
 };

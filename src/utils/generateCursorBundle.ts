@@ -1,4 +1,5 @@
 import moment from 'moment-timezone';
+
 import { Knex } from '../databaseManager';
 import { ServerError } from '../errorHandlers';
 
@@ -35,16 +36,18 @@ export const stringToCursor = (str: string) => Buffer.from(String(str), 'utf8').
 export const cursorToString = (cursor: string) => Buffer.from(cursor, 'base64').toString('utf8');
 
 
-export const makeNodeCursor = (cursorName: string, cursorPayload: ICursorPayload): string => {
-  return stringToCursor([
+export const makeNodeCursor = (
+  cursorName: string,
+  cursorPayload: ICursorPayload,
+): string => stringToCursor([
     JSON.stringify(cursorPayload),
     cursorName,
   ].join('---'));
-};
 
 export const getCursorPayload = (cursor: string): ICursorPayload => {
   try {
     const cursorPayload = cursorToString(cursor).split('---')[0] || '';
+
     return JSON.parse(cursorPayload);
   } catch (err) {
     throw new ServerError('Failed to decode cursor payload', { err });
@@ -78,7 +81,7 @@ export const convertOrderByToKnex = (orderBy: TOrderBy | undefined):
 
 
 // eslint-disable-next-line arrow-body-style
-export const convertJsonToKnex = <TRecord = any>(knex: Knex, json: {} | Array<any>) => {
+export const convertJsonToKnex = <TRecord = any>(knex: Knex, json: any | Array<any>) => {
   return knex.raw<TRecord>(`'${JSON.stringify(json)}'::jsonb`);
 };
 
@@ -245,14 +248,12 @@ export const buildCursorConnection = <T>(
   } = props;
 
   // const edges = nodesToEdges(nodes, cursorName);
-  const edges = nodes.map((node, index) => {
-    return nodeToEdge(node, cursorName, {
+  const edges = nodes.map((node, index) => nodeToEdge(node, cursorName, {
       offset: (offset || 0) + index + 1,
       limit,
       where: where || [],
       orderBy: orderBy || [],
-    });
-  });
+    }));
   const startCursor = edges.length ? edges[0].cursor : undefined;
   const endCursor = edges.length ? edges[edges.length - 1].cursor : undefined;
   const hasPreviousPage = (offset || 0) > 0;
@@ -302,6 +303,7 @@ export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutp
   // if cursor was provied in after or before property
   if (after || before) {
     const cursorPayload = getCursorPayload(after || before);
+
     return {
       ...outputFilter,
       ...cursorPayload,
@@ -355,6 +357,7 @@ export const buildQueryFilter = <TArgs extends TInputFilter>(args: TArgs): TOutp
 export const extractNodeField = <T, K extends keyof Node<T>>(
   nodes: Node<T>[], field: K): Node<T>[K][] => {
   const elems = [...nodes].map((n) => n[field]);
+
   return elems;
 };
 
@@ -377,11 +380,9 @@ export const collateForDataloader = <T>(
 /**
  * Format array of IDs to object with id key
  */
-export const arrayOfIdsToArrayOfObjectIds = (array: string[]) => {
-  return array.length
+export const arrayOfIdsToArrayOfObjectIds = (array: string[]) => array.length
     ? array.map((id) => ({ id }))
     : null;
-};
 
 /**
  * GraphQL PageInfo

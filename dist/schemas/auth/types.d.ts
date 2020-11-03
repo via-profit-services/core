@@ -17,7 +17,7 @@ export interface IAccount {
     roles: IAccountRole[];
     createdAt: Date;
     updatedAt: Date;
-    deleted: Boolean;
+    deleted: boolean;
 }
 /**
  * @see: JWT configuration. See [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)

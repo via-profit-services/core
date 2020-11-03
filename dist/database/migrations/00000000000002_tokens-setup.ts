@@ -6,9 +6,7 @@
  * This migration will create `tokens` table
  */
 
-import * as Knex from 'knex';
-
-export async function up(knex: Knex): Promise<any> {
+export async function up(knex: any): Promise<any> {
   return knex.raw(`
 
     DROP TYPE IF EXISTS "tokenType";
@@ -37,7 +35,7 @@ export async function up(knex: Knex): Promise<any> {
   `);
 }
 
-export async function down(knex: Knex): Promise<any> {
+export async function down(knex: any): Promise<any> {
   return knex.raw(`
     DROP TABLE IF EXISTS "tokens" CASCADE;
     DROP TYPE IF EXISTS "tokenType" CASCADE;

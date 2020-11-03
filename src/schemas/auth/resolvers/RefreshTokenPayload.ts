@@ -14,9 +14,8 @@ const refreshTokenPayloadResolver = new Proxy<TAccountResolver>({
   iss: () => ({}),
 }, {
   get: (target, prop: keyof IRefreshToken['payload']) => {
-    const resolver: IFieldResolver<IParent, IContext> = async (parent) => {
-      return parent[prop];
-    };
+    const resolver: IFieldResolver<IParent, IContext> = async (parent) => parent[prop];
+
     return resolver;
   },
 });

@@ -1,3 +1,5 @@
 /src/@types/**
 /dist/**
 /build/**
+/docs/**
+/examples/**

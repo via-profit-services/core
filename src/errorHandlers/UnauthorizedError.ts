@@ -1,11 +1,11 @@
 import { ErrorHandler } from './index';
 
 export default class UnauthorizedError extends Error implements ErrorHandler {
-  public metaData: {};
+  public metaData: any;
 
   public status: number;
 
-  constructor(message: string, metaData?: {}) {
+  constructor(message: string, metaData?: any) {
     super(message);
 
     this.name = 'UnauthorizedError';

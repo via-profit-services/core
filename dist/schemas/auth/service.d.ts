@@ -18,7 +18,7 @@ export default class AuthService {
      */
     registerTokens(data: {
         uuid: string;
-        deviceInfo?: {};
+        deviceInfo?: any;
     }): Promise<ITokenPackage>;
     generateTokens(payload: Pick<ITokenInfo['payload'], 'uuid' | 'roles'>, exp?: {
         access: number;

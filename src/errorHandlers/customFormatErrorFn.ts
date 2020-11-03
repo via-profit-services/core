@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import chalk from 'chalk';
 import { GraphQLError } from 'graphql';
 
@@ -68,6 +69,7 @@ export const customFormatErrorFn = (props: IProps) => {
     console.log('');
     console.log(chalk.red('============== End of Error report =============='));
     console.log('');
+
     return {
       message: error.message,
       locations: error.locations,
