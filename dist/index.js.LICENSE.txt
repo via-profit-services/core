@@ -1,9 +1,8 @@
 /*!
  * 
- * Via Profit Services / Core
+ * Via Profit Services / Core v0.30.8
  * 
- * Repository https://github.com/via-profit-services/core
- * Contact    promo@via-profit.ru
- * Website    https://via-profit.ru
+ * Repository git@github.com:via-profit-services/core.git
+ * Contact    https://via-profit.ru
  *       
  */
