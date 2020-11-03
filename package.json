@@ -1,7 +1,7 @@
 {
     "name": "@via-profit-services/core",
     "support": "https://via-profit.ru",
-    "version": "0.30.8",
+    "version": "0.30.9",
     "description": "Via Profit Core service",
     "main": "dist/index.js",
     "engines": {
@@ -35,8 +35,7 @@
         "release:patch": "yarn version --patch",
         "release:minor": "yarn version --minor",
         "release:major": "yarn version --major",
-        "release:prerelease": "yarn version --prerelease",
-        "publish": "npm publish --access public"
+        "release:prerelease": "yarn version --prerelease"
     },
     "bin": {
         "via-profit-core": "./dist/bin/cli.js"
