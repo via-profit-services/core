@@ -88,10 +88,10 @@ import { Knex } from '@via-profit-services/core';
 ### Установка
 
 ```bash
-yarn add ssh://git@github.com:via-profit-services/core.git#semver:^0.30.8
+yarn add @via-profit-services/core
 ```
 
-Список версий см. [здесь](https://github.com/via-profit-services/core/-/tags/)
+Список версий см. [здесь](https://github.com/via-profit-services/core/releases)
 
 ### Настройка сертификатов
 
