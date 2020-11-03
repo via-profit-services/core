@@ -5,7 +5,8 @@
 > Via Profit services / **Core** - это основной пакет `via-profit-services` предоставляющий [GraphQL](https://graphql.org/)-сервер и сервер аутентификации. Пакет осуществляет обвязку между всеми имеющимися модулями данной системы и реализует собой приложение
 
 
-![version-badge](https://img.shields.io/static/v1?label=version&message=0.30.9&color=blueviolet)
+![npm (scoped)](https://img.shields.io/npm/v/@via-profit-services/core?color=green)
+![Libraries.io dependency status for latest release, scoped npm package](https://img.shields.io/librariesio/release/npm/@via-profit-services/core?color=red)
 
 
 ## Содержание
