@@ -1,10 +1,14 @@
 {
     "name": "@via-profit-services/core",
-    "private": true,
+    "private": false,
     "support": "https://via-profit.ru",
     "version": "0.30.8",
     "description": "Via Profit Core service",
     "main": "dist/index.js",
+    "engines": {
+        "node": ">= 12.8.3",
+        "npm": ">= 6.14.8"
+    },
     "scripts": {
         "dist": "yarn lint && yarn test && yarn build:dist",
         "start": "yarn start:dev",
@@ -37,7 +41,15 @@
         "type": "git",
         "url": "git@github.com:via-profit-services/core.git"
     },
-    "author": "Via Profit <promo@via-profit.ru>",
+    "author": {
+        "name": "Via Profit",
+        "email": "promo@via-profit.ru",
+        "url": "https://dev.via-profit.ru"
+    },
+    "contributors": [
+        "Vaily Novosad <delhsmail@gmail.com>",
+        "Pavel Natalin <trubonru@gmail.com>"
+    ],
     "license": "MIT",
     "dependencies": {
         "@graphql-tools/schema": "^7.0.0",
