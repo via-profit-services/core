@@ -5,6 +5,7 @@ const { ProgressPlugin, IgnorePlugin, BannerPlugin } = require('webpack');
 const merge = require('webpack-merge');
 const nodeExternals = require('webpack-node-externals');
 const WebpackShellPlugin = require('webpack-shell-plugin');
+const packageInfo = require('../package.json');
 const baseConfig = require('./webpack.config.base');
 
 module.exports = merge(baseConfig, {
@@ -37,11 +38,10 @@ module.exports = merge(baseConfig, {
     }),
     new BannerPlugin({
       banner: `
-Via Profit Services / Core
+Via Profit Services / Core v${packageInfo.version}
 
-Repository https://github.com/via-profit-services/core
-Contact    promo@via-profit.ru
-Website    https://via-profit.ru
+Repository ${packageInfo.repository.url}
+Contact    ${packageInfo.support}
       `,
       test: /index\.js/,
     }),

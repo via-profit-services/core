@@ -35,8 +35,7 @@
         "release:patch": "yarn version --patch",
         "release:minor": "yarn version --minor",
         "release:major": "yarn version --major",
-        "release:prerelease": "yarn version --prerelease",
-        "publish": "npm publish --access public"
+        "release:prerelease": "yarn version --prerelease"
     },
     "bin": {
         "via-profit-core": "./dist/bin/cli.js"
