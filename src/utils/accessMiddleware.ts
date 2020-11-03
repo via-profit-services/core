@@ -17,6 +17,7 @@ export const accessMiddleware = (props: IProps) => async (
     logger.access.warn(
       `The ip address [${ipAddress}] is blacklisted. The request was blocked`, { ipAddress },
     );
+
     return res.json({ response: { status: 69 } }).end();
   }
 

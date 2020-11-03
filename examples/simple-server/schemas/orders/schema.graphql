@@ -1,0 +1,13 @@
+extend type Query {
+  orders: OrdersQuery!
+}
+
+type OrdersQuery {
+  list: [Order!]
+  order(id: ID!): Order
+}
+
+type Order {
+  id: String
+  number: String
+}

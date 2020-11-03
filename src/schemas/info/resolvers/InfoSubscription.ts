@@ -2,9 +2,7 @@ import { IContext } from '../../../types';
 
 const infoSubscriptionResolver = {
   info: {
-    subscribe: (parent: any, args: any, context: IContext) => {
-      return context.pubsub.asyncIterator('info');
-    },
+    subscribe: (parent: any, args: any, context: IContext) => context.pubsub.asyncIterator('info'),
   },
 };
 

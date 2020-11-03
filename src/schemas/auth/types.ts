@@ -21,7 +21,7 @@ export interface IAccount {
   roles: IAccountRole[];
   createdAt: Date;
   updatedAt: Date;
-  deleted: Boolean;
+  deleted: boolean;
 }
 
 

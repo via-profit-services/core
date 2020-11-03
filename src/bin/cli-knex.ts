@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
 import fs from 'fs';
 import path from 'path';
@@ -34,14 +35,12 @@ const yargsModule: CommandModule<KnexArgs, KnexArgs> = {
   command: 'knex <command>',
   describe: 'knex-cli provider',
   handler: () => { /* */ },
-  builder: (builder) => {
-    return builder
+  builder: (builder) => builder
       .example('$0 knex migrate latest ./knexfile.ts', 'Apply all of the next migrations')
       .command(
         'migrate <command>',
         'Apply/Undo/Make migrations',
-        (migrationBuilder) => {
-          return migrationBuilder
+        (migrationBuilder) => migrationBuilder
             .command<KnexMigrate>(
               'latest',
               'Apply all of the next migrations',
@@ -167,14 +166,12 @@ const yargsModule: CommandModule<KnexArgs, KnexArgs> = {
                 }
                 await execKnex(`migrate:make ${args.name}  --stub ${stubFile}`, args.knexfile);
               },
-            );
-        },
+            ),
       )
       .command(
         'seed <command>',
         'Apply/Make seeds',
-        (seedBuilder) => {
-          return seedBuilder
+        (seedBuilder) => seedBuilder
             .command<KnexMake>(
               'make',
               'Creating new seed file',
@@ -246,10 +243,8 @@ const yargsModule: CommandModule<KnexArgs, KnexArgs> = {
               async (args) => {
                 await execKnex(`seed:run ${args.name}`, args.knexfile);
               },
-            );
-        },
-      );
-  },
+            ),
+      ),
 };
 
 export default yargsModule;

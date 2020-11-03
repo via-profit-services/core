@@ -1,5 +1,6 @@
 import { IncomingHttpHeaders } from 'http';
 import { NextFunction, Request, Response } from 'express';
+
 import { IContext } from '../../types';
 
 export default (config: ILoggerMiddlewareConfig) => {
@@ -17,6 +18,7 @@ export default (config: ILoggerMiddlewareConfig) => {
     Object.entries(headers).forEach(([param, value]) => {
       if (param.toLowerCase() === 'authorization' && typeof value === 'string') {
         headersData[param] = `${value.substr(0, 35)}...[HIDDEN]`;
+
         return;
       }
       headersData[param] = value;
@@ -25,6 +27,7 @@ export default (config: ILoggerMiddlewareConfig) => {
     logger.http.info(`${ipAddress} ${method} "${originalUrl}"`, {
       headers: headersData,
     });
+
     return next();
   };
 };

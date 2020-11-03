@@ -6,10 +6,9 @@
  * This migration will create development account
  */
 
-import * as Knex from 'knex';
 import { v4 as uuidv4 } from 'uuid';
 
-export async function up(knex: Knex): Promise<any> {
+export async function up(knex: any): Promise<any> {
   return knex('accounts').insert({
     id: uuidv4(),
     name: 'Developer',
@@ -22,7 +21,7 @@ export async function up(knex: Knex): Promise<any> {
   });
 }
 
-export async function down(knex: Knex): Promise<any> {
+export async function down(knex: any): Promise<any> {
   return knex('accounts').del().where({
     login: 'dev',
   });

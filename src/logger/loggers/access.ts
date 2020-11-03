@@ -11,6 +11,7 @@ import loggerFormatter from '../utils/logFormatter';
 export default (config: Config) => {
   const { logDir } = config;
   const { createLogger, transports } = Winston;
+
   return createLogger({
     level: 'info',
     format: loggerFormatter,

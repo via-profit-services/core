@@ -125,11 +125,9 @@ const yargsModule = {
             method: method === 'POST' ? 'POST' : 'GET',
         });
     }),
-    builder: (builder) => {
-        return builder
-            .example('$0 download-schema https://example.com/gql MyToken ./schema.graphql', 'Download GraphQL schema into the ./schema.graphql file')
-            .example('$0 download-schema https://example.com/gql MyToken', 'Download GraphQL schema and return this as string');
-    },
+    builder: (builder) => builder
+        .example('$0 download-schema https://example.com/gql MyToken ./schema.graphql', 'Download GraphQL schema into the ./schema.graphql file')
+        .example('$0 download-schema https://example.com/gql MyToken', 'Download GraphQL schema and return this as string'),
 };
 exports.default = yargsModule;
 
@@ -155,24 +153,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const migrations_1 = __webpack_require__(31);
 const yargsModule = {
     command: 'get-migrations',
-    describe: 'Copy all migration and/or seed files from @via-profit-services modules into your project',
+    describe: 'Copy migration and/or seed files from @via-profit-services modules into your project',
     handler: (args) => __awaiter(void 0, void 0, void 0, function* () { return migrations_1.getMigrations(args); }),
-    builder: (builder) => {
-        return builder
-            .options({
-            migrations: {
-                alias: 'm',
-                type: 'boolean',
-            },
-            seeds: {
-                alias: 's',
-                type: 'boolean',
-            },
-        })
-            .example('$0 get-migrations -m', 'Copy all migration files into your project')
-            .example('$0 get-migrations -s', 'Copy all seed files into your project')
-            .example('$0 get-migrations -m -s', 'Copy all migration and seed files into your project');
-    },
+    builder: (builder) => builder
+        .options({
+        migrations: {
+            alias: 'm',
+            type: 'string',
+        },
+        seeds: {
+            alias: 's',
+            type: 'string',
+        },
+    })
+        .example('$0 get-migrations -m ./database/migrations', 'Copy all migration files into your project')
+        .example('$0 get-migrations -s ./database/seeds', 'Copy all seed files into your project'),
 };
 exports.default = yargsModule;
 
@@ -189,18 +184,11 @@ module.exports = require("child_process");
 /***/ 103:
 /***/ (function(module, exports) {
 
-module.exports = require("dotenv");
-
-/***/ }),
-
-/***/ 104:
-/***/ (function(module, exports) {
-
 module.exports = require("glob");
 
 /***/ }),
 
-/***/ 105:
+/***/ 104:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -218,6 +206,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
 const fs_1 = __importDefault(__webpack_require__(1));
 const path_1 = __importDefault(__webpack_require__(4));
@@ -227,160 +216,154 @@ const yargsModule = {
     command: 'knex <command>',
     describe: 'knex-cli provider',
     handler: () => { },
-    builder: (builder) => {
-        return builder
-            .example('$0 knex migrate latest ./knexfile.ts', 'Apply all of the next migrations')
-            .command('migrate <command>', 'Apply/Undo/Make migrations', (migrationBuilder) => {
-            return migrationBuilder
-                .command('latest', 'Apply all of the next migrations', (b) => b.options({
-                knexfile: {
-                    alias: 'k',
-                    type: 'string',
-                    demandOption: true,
-                    decribe: 'Location of the knexfile',
-                },
-            }), (args) => __awaiter(void 0, void 0, void 0, function* () {
-                yield migrations_1.execKnex('migrate:latest', args.knexfile);
-            }))
-                .command('up', 'Apply next migration', (b) => b.options({
-                knexfile: {
-                    alias: 'k',
-                    type: 'string',
-                    demandOption: true,
-                    decribe: 'Location of the knexfile',
-                },
-            }), (args) => __awaiter(void 0, void 0, void 0, function* () {
-                yield migrations_1.execKnex('migrate:up', args.knexfile);
-            }))
-                .command('down', 'Undo last single of migration', (b) => b.options({
-                knexfile: {
-                    alias: 'k',
-                    type: 'string',
-                    demandOption: true,
-                    decribe: 'Location of the knexfile',
-                },
-            }), (args) => __awaiter(void 0, void 0, void 0, function* () {
-                yield migrations_1.execKnex('migrate:down', args.knexfile);
-            }))
-                .command('rollback', 'Undo last migrations', (b) => b.options({
-                knexfile: {
-                    alias: 'k',
-                    type: 'string',
-                    demandOption: true,
-                    decribe: 'Location of the knexfile',
-                },
-            }), (args) => __awaiter(void 0, void 0, void 0, function* () {
-                yield migrations_1.execKnex('migrate:rollback', args.knexfile);
-            }))
-                .command('rollback-all', 'Undo all migrations', (b) => b.options({
-                knexfile: {
-                    alias: 'k',
-                    type: 'string',
-                    demandOption: true,
-                    decribe: 'Location of the knexfile',
-                },
-            }), (args) => __awaiter(void 0, void 0, void 0, function* () {
-                yield migrations_1.execKnex('migrate:rollback --all', args.knexfile);
-            }))
-                .command('list', 'To list both completed and pending migrations', (b) => b.options({
-                knexfile: {
-                    alias: 'k',
-                    type: 'string',
-                    demandOption: true,
-                    decribe: 'Location of the knexfile',
-                },
-            }), (args) => __awaiter(void 0, void 0, void 0, function* () {
-                yield migrations_1.execKnex('migrate:list', args.knexfile);
-            }))
-                .command('make', 'Creating new migration file', (b) => b.options({
-                knexfile: {
-                    alias: 'k',
-                    type: 'string',
-                    demandOption: true,
-                    decribe: 'Location of the knexfile',
-                },
-                name: {
-                    alias: 'n',
-                    type: 'string',
-                    demandOption: true,
-                    decribe: 'Migration filename',
-                },
-                stub: {
-                    alias: 's',
-                    type: 'string',
-                    decribe: 'Template file',
-                },
-            }), (args) => __awaiter(void 0, void 0, void 0, function* () {
-                const knexfileDir = path_1.default.dirname(migrations_1.resolveKnexfile(args.knexfile));
-                const stubFile = args.stub
-                    ? path_1.default.resolve(knexfileDir, args.stub)
-                    : path_1.default.resolve(`${process.cwd()}/node_modules/@via-profit-services/core/dist/bin/stub/stub-migration.ts.stub`);
-                if (!fs_1.default.existsSync(stubFile)) {
-                    console.log(chalk_1.default.red(`Stubfile not found in «${stubFile}»`));
-                    process.exit(1);
-                }
-                yield migrations_1.execKnex(`migrate:make ${args.name}  --stub ${stubFile}`, args.knexfile);
-            }));
-        })
-            .command('seed <command>', 'Apply/Make seeds', (seedBuilder) => {
-            return seedBuilder
-                .command('make', 'Creating new seed file', (b) => b.options({
-                knexfile: {
-                    alias: 'k',
-                    type: 'string',
-                    demandOption: true,
-                    decribe: 'Location of the knexfile',
-                },
-                name: {
-                    alias: 'n',
-                    type: 'string',
-                    demandOption: true,
-                    decribe: 'Seed filename',
-                },
-                stub: {
-                    alias: 's',
-                    type: 'string',
-                    decribe: 'Template file',
-                },
-            }), (args) => __awaiter(void 0, void 0, void 0, function* () {
-                const knexfileDir = path_1.default.dirname(migrations_1.resolveKnexfile(args.knexfile));
-                const stubFile = args.stub
-                    ? path_1.default.resolve(knexfileDir, args.stub)
-                    : path_1.default.resolve(`${process.cwd()}/node_modules/@via-profit-services/core/dist/bin/stub/stub-seed.ts.stub`);
-                if (!fs_1.default.existsSync(stubFile)) {
-                    console.log(chalk_1.default.red(`Stubfile not found in «${stubFile}»`));
-                    process.exit(1);
-                }
-                yield migrations_1.execKnex(`seed:make ${args.name} --stub ${stubFile}`, args.knexfile);
-            }))
-                .command('run-all', 'Run all seed files', (b) => b.options({
-                knexfile: {
-                    alias: 'k',
-                    type: 'string',
-                    demandOption: true,
-                    decribe: 'Location of the knexfile',
-                },
-            }), (args) => __awaiter(void 0, void 0, void 0, function* () {
-                yield migrations_1.execKnex('seed:run', args.knexfile);
-            }))
-                .command('run <name>', 'Run seed file', (b) => b.options({
-                knexfile: {
-                    alias: 'k',
-                    type: 'string',
-                    demandOption: true,
-                    decribe: 'Location of the knexfile',
-                },
-                name: {
-                    alias: 'n',
-                    type: 'string',
-                    demandOption: true,
-                    decribe: 'Seed filename',
-                },
-            }), (args) => __awaiter(void 0, void 0, void 0, function* () {
-                yield migrations_1.execKnex(`seed:run ${args.name}`, args.knexfile);
-            }));
-        });
-    },
+    builder: (builder) => builder
+        .example('$0 knex migrate latest ./knexfile.ts', 'Apply all of the next migrations')
+        .command('migrate <command>', 'Apply/Undo/Make migrations', (migrationBuilder) => migrationBuilder
+        .command('latest', 'Apply all of the next migrations', (b) => b.options({
+        knexfile: {
+            alias: 'k',
+            type: 'string',
+            demandOption: true,
+            decribe: 'Location of the knexfile',
+        },
+    }), (args) => __awaiter(void 0, void 0, void 0, function* () {
+        yield migrations_1.execKnex('migrate:latest', args.knexfile);
+    }))
+        .command('up', 'Apply next migration', (b) => b.options({
+        knexfile: {
+            alias: 'k',
+            type: 'string',
+            demandOption: true,
+            decribe: 'Location of the knexfile',
+        },
+    }), (args) => __awaiter(void 0, void 0, void 0, function* () {
+        yield migrations_1.execKnex('migrate:up', args.knexfile);
+    }))
+        .command('down', 'Undo last single of migration', (b) => b.options({
+        knexfile: {
+            alias: 'k',
+            type: 'string',
+            demandOption: true,
+            decribe: 'Location of the knexfile',
+        },
+    }), (args) => __awaiter(void 0, void 0, void 0, function* () {
+        yield migrations_1.execKnex('migrate:down', args.knexfile);
+    }))
+        .command('rollback', 'Undo last migrations', (b) => b.options({
+        knexfile: {
+            alias: 'k',
+            type: 'string',
+            demandOption: true,
+            decribe: 'Location of the knexfile',
+        },
+    }), (args) => __awaiter(void 0, void 0, void 0, function* () {
+        yield migrations_1.execKnex('migrate:rollback', args.knexfile);
+    }))
+        .command('rollback-all', 'Undo all migrations', (b) => b.options({
+        knexfile: {
+            alias: 'k',
+            type: 'string',
+            demandOption: true,
+            decribe: 'Location of the knexfile',
+        },
+    }), (args) => __awaiter(void 0, void 0, void 0, function* () {
+        yield migrations_1.execKnex('migrate:rollback --all', args.knexfile);
+    }))
+        .command('list', 'To list both completed and pending migrations', (b) => b.options({
+        knexfile: {
+            alias: 'k',
+            type: 'string',
+            demandOption: true,
+            decribe: 'Location of the knexfile',
+        },
+    }), (args) => __awaiter(void 0, void 0, void 0, function* () {
+        yield migrations_1.execKnex('migrate:list', args.knexfile);
+    }))
+        .command('make', 'Creating new migration file', (b) => b.options({
+        knexfile: {
+            alias: 'k',
+            type: 'string',
+            demandOption: true,
+            decribe: 'Location of the knexfile',
+        },
+        name: {
+            alias: 'n',
+            type: 'string',
+            demandOption: true,
+            decribe: 'Migration filename',
+        },
+        stub: {
+            alias: 's',
+            type: 'string',
+            decribe: 'Template file',
+        },
+    }), (args) => __awaiter(void 0, void 0, void 0, function* () {
+        const knexfileDir = path_1.default.dirname(migrations_1.resolveKnexfile(args.knexfile));
+        const stubFile = args.stub
+            ? path_1.default.resolve(knexfileDir, args.stub)
+            : path_1.default.resolve(`${process.cwd()}/node_modules/@via-profit-services/core/dist/bin/stub/stub-migration.ts.stub`);
+        if (!fs_1.default.existsSync(stubFile)) {
+            console.log(chalk_1.default.red(`Stubfile not found in «${stubFile}»`));
+            process.exit(1);
+        }
+        yield migrations_1.execKnex(`migrate:make ${args.name}  --stub ${stubFile}`, args.knexfile);
+    })))
+        .command('seed <command>', 'Apply/Make seeds', (seedBuilder) => seedBuilder
+        .command('make', 'Creating new seed file', (b) => b.options({
+        knexfile: {
+            alias: 'k',
+            type: 'string',
+            demandOption: true,
+            decribe: 'Location of the knexfile',
+        },
+        name: {
+            alias: 'n',
+            type: 'string',
+            demandOption: true,
+            decribe: 'Seed filename',
+        },
+        stub: {
+            alias: 's',
+            type: 'string',
+            decribe: 'Template file',
+        },
+    }), (args) => __awaiter(void 0, void 0, void 0, function* () {
+        const knexfileDir = path_1.default.dirname(migrations_1.resolveKnexfile(args.knexfile));
+        const stubFile = args.stub
+            ? path_1.default.resolve(knexfileDir, args.stub)
+            : path_1.default.resolve(`${process.cwd()}/node_modules/@via-profit-services/core/dist/bin/stub/stub-seed.ts.stub`);
+        if (!fs_1.default.existsSync(stubFile)) {
+            console.log(chalk_1.default.red(`Stubfile not found in «${stubFile}»`));
+            process.exit(1);
+        }
+        yield migrations_1.execKnex(`seed:make ${args.name} --stub ${stubFile}`, args.knexfile);
+    }))
+        .command('run-all', 'Run all seed files', (b) => b.options({
+        knexfile: {
+            alias: 'k',
+            type: 'string',
+            demandOption: true,
+            decribe: 'Location of the knexfile',
+        },
+    }), (args) => __awaiter(void 0, void 0, void 0, function* () {
+        yield migrations_1.execKnex('seed:run', args.knexfile);
+    }))
+        .command('run <name>', 'Run seed file', (b) => b.options({
+        knexfile: {
+            alias: 'k',
+            type: 'string',
+            demandOption: true,
+            decribe: 'Location of the knexfile',
+        },
+        name: {
+            alias: 'n',
+            type: 'string',
+            demandOption: true,
+            decribe: 'Seed filename',
+        },
+    }), (args) => __awaiter(void 0, void 0, void 0, function* () {
+        yield migrations_1.execKnex(`seed:run ${args.name}`, args.knexfile);
+    }))),
 };
 exports.default = yargsModule;
 
@@ -438,6 +421,7 @@ module.exports = require("graphql/utilities");
 
 "use strict";
 
+/* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -456,8 +440,7 @@ const child_process_1 = __webpack_require__(102);
 const fs_1 = __importDefault(__webpack_require__(1));
 const path_1 = __importDefault(__webpack_require__(4));
 const chalk_1 = __importDefault(__webpack_require__(7));
-const dotenv_1 = __importDefault(__webpack_require__(103));
-const glob_1 = __importDefault(__webpack_require__(104));
+const glob_1 = __importDefault(__webpack_require__(103));
 exports.listMigrationsPerPackage = () => {
     const list = [];
     const projectsList = glob_1.default.sync(`${process.cwd()}/node_modules/@via-profit-services/*/`);
@@ -483,58 +466,64 @@ exports.listMigrationsPerPackage = () => {
     return list;
 };
 exports.getMigrations = (params) => {
-    const localDotEnvFile = path_1.default.resolve(process.cwd(), '.env');
-    if (fs_1.default.existsSync(localDotEnvFile)) {
-        const dotEnvData = dotenv_1.default.config({ path: localDotEnvFile }).parsed;
-        const migrationsListPerPackage = exports.listMigrationsPerPackage();
-        migrationsListPerPackage.forEach((projectData) => {
-            const { files, project } = projectData;
-            if (params.migrations && dotEnvData.DB_MIGRATIONS_DIRECTORY !== undefined) {
-                let affected = 0;
-                console.log('');
-                console.log(`Migrations from project ${chalk_1.default.magenta(project)}`);
-                const migrationsDestPath = path_1.default.resolve(process.cwd(), dotEnvData.DB_MIGRATIONS_DIRECTORY);
-                files.migrations.forEach((migrationSourceFile) => {
-                    const destinationFile = path_1.default.join(migrationsDestPath, path_1.default.basename(migrationSourceFile));
-                    if (!fs_1.default.existsSync(destinationFile)) {
-                        affected += 1;
-                        fs_1.default.copyFileSync(migrationSourceFile, destinationFile);
-                        console.log(`${chalk_1.default.yellow('Was created migration file')} ${chalk_1.default.cyan(path_1.default.basename(migrationSourceFile))}`);
-                    }
+    console.log('migrations', params.migrations);
+    console.log('seeds', params.seeds);
+    const migrationsListPerPackage = exports.listMigrationsPerPackage();
+    migrationsListPerPackage.forEach((projectData) => {
+        const { files, project } = projectData;
+        if (params.migrations) {
+            let affected = 0;
+            console.log('');
+            console.log(`Migrations from project ${chalk_1.default.magenta(project)}`);
+            const migrationsDestPath = path_1.default.resolve(process.cwd(), params.migrations);
+            if (!fs_1.default.existsSync(migrationsDestPath)) {
+                fs_1.default.mkdirSync(migrationsDestPath, {
+                    recursive: true,
                 });
-                if (affected) {
-                    console.log(`${chalk_1.default.bold.green(affected.toString())} ${chalk_1.default.yellow('file[s] was copied')}`);
-                }
-                else {
-                    console.log(chalk_1.default.grey('No files was copied'));
-                }
             }
-            if (params.seeds && dotEnvData.DB_SEEDS_DIRECTORY !== undefined) {
-                let affected = 0;
-                console.log('');
-                console.log(`Seeds for ${chalk_1.default.magenta(project)}`);
-                const seedsDestPath = path_1.default.resolve(process.cwd(), dotEnvData.DB_SEEDS_DIRECTORY);
-                files.seeds.forEach((seedSourceFile) => {
-                    const destinationFile = path_1.default.join(seedsDestPath, path_1.default.basename(seedSourceFile));
-                    if (!fs_1.default.existsSync(destinationFile)) {
-                        affected += 1;
-                        fs_1.default.copyFileSync(seedSourceFile, destinationFile);
-                        console.log(`${chalk_1.default.yellow('Was created seed file')} ${chalk_1.default.cyan(path_1.default.basename(seedSourceFile))}`);
-                    }
+            files.migrations.forEach((migrationSourceFile) => {
+                const destinationFile = path_1.default.join(migrationsDestPath, path_1.default.basename(migrationSourceFile));
+                if (!fs_1.default.existsSync(destinationFile)) {
+                    affected += 1;
+                    fs_1.default.copyFileSync(migrationSourceFile, destinationFile);
+                    console.log(`${chalk_1.default.yellow('Was created migration file')} ${chalk_1.default.cyan(path_1.default.basename(migrationSourceFile))}`);
+                }
+            });
+            if (affected) {
+                console.log(`${chalk_1.default.bold.green(affected.toString())} ${chalk_1.default.yellow('file[s] was copied')}`);
+            }
+            else {
+                console.log(chalk_1.default.grey('No files was copied'));
+            }
+        }
+        if (params.seeds) {
+            let affected = 0;
+            console.log('');
+            console.log(`Seeds for ${chalk_1.default.magenta(project)}`);
+            const seedsDestPath = path_1.default.resolve(process.cwd(), params.seeds);
+            if (!fs_1.default.existsSync(seedsDestPath)) {
+                fs_1.default.mkdirSync(seedsDestPath, {
+                    recursive: true,
                 });
-                if (affected) {
-                    console.log(`${chalk_1.default.bold.green(affected.toString())} ${chalk_1.default.yellow('file[s] was copied')}`);
-                }
-                else {
-                    console.log(chalk_1.default.grey('No files was copied'));
-                }
             }
-        });
-    }
+            files.seeds.forEach((seedSourceFile) => {
+                const destinationFile = path_1.default.join(seedsDestPath, path_1.default.basename(seedSourceFile));
+                if (!fs_1.default.existsSync(destinationFile)) {
+                    affected += 1;
+                    fs_1.default.copyFileSync(seedSourceFile, destinationFile);
+                    console.log(`${chalk_1.default.yellow('Was created seed file')} ${chalk_1.default.cyan(path_1.default.basename(seedSourceFile))}`);
+                }
+            });
+            if (affected) {
+                console.log(`${chalk_1.default.bold.green(affected.toString())} ${chalk_1.default.yellow('file[s] was copied')}`);
+            }
+            else {
+                console.log(chalk_1.default.grey('No files was copied'));
+            }
+        }
+    });
 };
-exports.resolveKnexfile = (knexfile) => {
-    return path_1.default.resolve(process.cwd(), knexfile);
-};
+exports.resolveKnexfile = (knexfile) => path_1.default.resolve(process.cwd(), knexfile);
 exports.execKnex = (knexCommand, knexfile) => __awaiter(void 0, void 0, void 0, function* () {
     const localKnexfile = exports.resolveKnexfile(knexfile);
     return new Promise((resolve) => {
@@ -585,7 +574,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const yargs_1 = __importDefault(__webpack_require__(99));
 const cli_download_schema_1 = __importDefault(__webpack_require__(100));
 const cli_get_migrations_1 = __importDefault(__webpack_require__(101));
-const cli_knex_1 = __importDefault(__webpack_require__(105));
+const cli_knex_1 = __importDefault(__webpack_require__(104));
 const args = yargs_1.default
     .command(cli_download_schema_1.default)
     .command(cli_get_migrations_1.default)

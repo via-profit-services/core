@@ -1,11 +1,11 @@
 import { ErrorHandler } from './index';
 
 export default class ForbiddenError extends Error implements ErrorHandler {
-  public metaData: {};
+  public metaData: any;
 
   public status: number;
 
-  constructor(message: string, metaData?: {}) {
+  constructor(message: string, metaData?: any) {
     super(message);
 
     this.name = 'ForbiddenError';

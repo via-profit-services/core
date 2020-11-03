@@ -24,6 +24,7 @@ export const downloadSchema = async (options: IDownloadSchemaOptions) => {
 
   const schemaJSON = await response.json();
   const clientSchema = printSchema(buildClientSchema(schemaJSON.data));
+
   return fs.writeFileSync(path.resolve(filename), clientSchema);
 };
 

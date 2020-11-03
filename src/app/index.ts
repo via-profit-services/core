@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable import/max-dependencies */
 import fs from 'fs';
 import http from 'http';
@@ -194,6 +195,7 @@ class App {
           }
 
           context.token = payload;
+
           return context;
         },
         onDisconnect: (webSocket: any) => {
@@ -464,11 +466,9 @@ class App {
     }
 
 
-    const extensions = (requestInfo: RequestInfo & { context: IContext}) => {
-      return {
+    const extensions = (requestInfo: RequestInfo & { context: IContext}) => ({
         queryTimeMs: performance.now() - requestInfo.context.startTime,
-      };
-    };
+      });
 
     const authService = new AuthService({ context });
 

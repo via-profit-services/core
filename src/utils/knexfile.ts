@@ -11,7 +11,7 @@ const config: Knex.Config = {
   client: CLIENT,
   ...dbConfig,
   pool: {
-    afterCreate: (conn: any, done: Function) => {
+    afterCreate: (conn: any, done: any) => {
       conn.query(
         `
           SET TIMEZONE = '${timezone}';

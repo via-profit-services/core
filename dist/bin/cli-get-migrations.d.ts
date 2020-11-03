@@ -1,7 +1,7 @@
 import { CommandModule } from 'yargs';
 export interface GetMigrationsArgs {
-    migrations: boolean;
-    seeds: boolean;
+    migrations: string;
+    seeds: string;
 }
 declare const yargsModule: CommandModule<GetMigrationsArgs, GetMigrationsArgs>;
 export default yargsModule;

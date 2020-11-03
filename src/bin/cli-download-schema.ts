@@ -1,6 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 
 import { CommandModule } from 'yargs';
+
 import { downloadSchema } from '../utils/downloadSchema';
 
 export interface DownloadSchemaArgs {
@@ -24,8 +25,7 @@ const yargsModule: CommandModule<DownloadSchemaArgs, DownloadSchemaArgs> = {
       method: method === 'POST' ? 'POST' : 'GET',
     });
   },
-  builder: (builder) => {
-    return builder
+  builder: (builder) => builder
       .example(
         '$0 download-schema https://example.com/gql MyToken ./schema.graphql',
         'Download GraphQL schema into the ./schema.graphql file',
@@ -33,8 +33,7 @@ const yargsModule: CommandModule<DownloadSchemaArgs, DownloadSchemaArgs> = {
       .example(
         '$0 download-schema https://example.com/gql MyToken',
         'Download GraphQL schema and return this as string',
-      );
-  },
+      ),
 };
 
 export default yargsModule;

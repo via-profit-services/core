@@ -38,6 +38,7 @@ export default (config: IAuthMiddlewareConfig) => {
 
     if (!account) {
       logger.auth.info(`Authorization attempt with login «${login}» failed. Invalid login or password`);
+
       return response.status(401).send({
         errors: [{ message: 'Invalid login or password' }],
       });
@@ -45,6 +46,7 @@ export default (config: IAuthMiddlewareConfig) => {
 
     if (account.status === AccountStatus.forbidden) {
       logger.auth.info(`Authorization attempt with login «${login}» failed. Account locked`);
+
       return response.status(401).send({
         errors: [{ message: 'Account locked' }],
       });
@@ -55,6 +57,7 @@ export default (config: IAuthMiddlewareConfig) => {
       uuid: account.id,
       deviceInfo,
     });
+
     return response.status(200).send(tokenBag);
   });
 
@@ -65,6 +68,7 @@ export default (config: IAuthMiddlewareConfig) => {
     const tokenBag = await authService.verifyToken(String(token));
     if (tokenBag === false) {
       logger.auth.info('Token is invalid');
+
       return response.status(200).send({
         status: false,
         reason: 'Token is invalid',
@@ -73,6 +77,7 @@ export default (config: IAuthMiddlewareConfig) => {
     }
 
     logger.auth.info('Token verification success');
+
     return response.status(200).send({
       status: true,
       reason: 'Token is valid',
@@ -88,6 +93,7 @@ export default (config: IAuthMiddlewareConfig) => {
 
     if (!payload) {
       logger.auth.info('Token is invalid', { payload });
+
       return response.status(400).send({
         errors: [{ message: 'Token is invalid' }],
       });
@@ -95,6 +101,7 @@ export default (config: IAuthMiddlewareConfig) => {
 
     if (payload.type !== TokenType.refresh) {
       logger.auth.info('Tried to refresh token by access token. Rejected', { payload });
+
       return response.status(400).send({
         errors: [{ message: 'Is not a refresh token' }],
       });
@@ -103,6 +110,7 @@ export default (config: IAuthMiddlewareConfig) => {
     // check to token exist
     if (!(await authService.checkTokenExist(payload.id))) {
       logger.auth.info('Tried to refresh token by revoked refresh token. Rejected', { payload });
+
       return response.status(400).send({
         errors: [{ message: 'This token was revoked' }],
       });
@@ -118,12 +126,14 @@ export default (config: IAuthMiddlewareConfig) => {
     });
 
     logger.auth.info('Token refreshing success');
+
     return response.status(200).send(tokenBag);
   });
 
   router.post(`${endpoint}*`, (request, response) => {
     const { originalUrl } = request;
     logger.server.debug(`Invalid post request ${originalUrl}`);
+
     return response.status(404).send({
       errors: [{ message: 'The address is not served' }],
     });
@@ -132,6 +142,7 @@ export default (config: IAuthMiddlewareConfig) => {
   router.get(`${endpoint}*`, (request, response) => {
     const { originalUrl } = request;
     logger.server.debug(`Invalid get request ${originalUrl}`);
+
     return response.status(404).send({
       errors: [{ message: 'The address is not served' }],
     });
