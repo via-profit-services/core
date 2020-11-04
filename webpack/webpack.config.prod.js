@@ -1,12 +1,11 @@
 /* eslint-disable import/order */
 /* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
+const fs = require('fs');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
-const TerserPlugin = require('terser-webpack-plugin');
 const { ProgressPlugin, IgnorePlugin, BannerPlugin } = require('webpack');
-const merge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 const nodeExternals = require('webpack-node-externals');
-const WebpackShellPlugin = require('webpack-shell-plugin');
 const packageInfo = require('../package.json');
 const baseConfig = require('./webpack.config.base');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
@@ -15,6 +14,7 @@ module.exports = merge(baseConfig, {
   entry: {
     index: path.resolve(__dirname, '../src/index.ts'),
     'bin/cli': path.resolve(__dirname, '../src/bin/cli.ts'),
+    // playground: path.resolve(__dirname, '../src/playground/index.ts'),
   },
   output: {
     path: path.join(__dirname, '../dist/'),
@@ -22,13 +22,6 @@ module.exports = merge(baseConfig, {
     libraryTarget: 'commonjs2',
   },
   mode: 'production',
-  optimization: {
-    minimizer: [
-      new TerserPlugin({
-        exclude: [/cli\.js/],
-      }),
-    ],
-  },
   plugins: [
     new ProgressPlugin(),
     new IgnorePlugin(/m[sy]sql2?|oracle(db)?|sqlite3/),
@@ -70,9 +63,16 @@ Contact    ${packageInfo.support}
         delete: ['./dist/playground'],
       },
     }),
-    new WebpackShellPlugin({
-      onBuildEnd: ['chmod +x ./dist/bin/cli.js'],
-    }),
+    // chmod +x for ./bin/cli.js
+    {
+      apply: (compiler) => {
+        compiler.hooks.afterEmit.tapAsync('WebpackAfterBuild', (_, callback) => {
+          fs.chmodSync(path.resolve(__dirname, '../dist/bin/cli.js'), '755');
+          callback();
+        });
+
+      },
+    },
     new BundleAnalyzerPlugin({
       analyzerMode: process.env.ANALYZE ? 'server' : 'disabled',
       openAnalyzer: true,
