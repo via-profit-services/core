@@ -1,8 +1,0 @@
-/*!
- * 
- * Via Profit Services / Core
- * 
- * Repository git@github.com:via-profit-services/core.git
- * Contact    https://via-profit.ru
- *       
- */
