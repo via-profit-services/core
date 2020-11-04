@@ -3,12 +3,12 @@
 const path = require('path');
 const fs = require('fs');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
-const { ProgressPlugin, IgnorePlugin, BannerPlugin } = require('webpack');
+const { ProgressPlugin, BannerPlugin } = require('webpack');
 const { merge } = require('webpack-merge');
-const nodeExternals = require('webpack-node-externals');
 const packageInfo = require('../package.json');
 const baseConfig = require('./webpack.config.base');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const ViaProfitCoreWebpackPlugins = require('./ViaProfitCoreWebpackPlugins');
 
 module.exports = merge(baseConfig, {
   entry: {
@@ -24,9 +24,19 @@ module.exports = merge(baseConfig, {
   mode: 'production',
   plugins: [
     new ProgressPlugin(),
-    new IgnorePlugin(/m[sy]sql2?|oracle(db)?|sqlite3/),
-    new IgnorePlugin(/pg-native/),
-    new IgnorePlugin(/pg-query-stream/),
+    // new IgnorePlugin({
+    //   resourceRegExp: /m[sy]sql2?|oracle(db)?|sqlite3/,
+    // }),
+    // new IgnorePlugin({
+    //   resourceRegExp: /pg-native/,
+    // }),
+    // new IgnorePlugin({
+    //   resourceRegExp: /pg-query-stream/,
+    // }),
+    // new IgnorePlugin({
+    //   resourceRegExp: /vue/,
+    // }),
+    ...ViaProfitCoreWebpackPlugins,
     new BannerPlugin({
       banner: '#!/usr/bin/env node\n/* eslint-disable */',
       raw: true,
@@ -59,6 +69,14 @@ Contact    ${packageInfo.support}
             source: './src/bin/stub/*',
             destination: './dist/bin/stub/',
           },
+          {
+            source: './webpack/ViaProfitCoreWebpackPlugins.js',
+            destination: './dist/webpack/index.js',
+          },
+          {
+            source: './webpack/ViaProfitCoreWebpackPlugins.d.ts',
+            destination: './dist/webpack/index.d.ts',
+          },
         ],
         delete: ['./dist/playground'],
       },
@@ -78,6 +96,13 @@ Contact    ${packageInfo.support}
       openAnalyzer: true,
     }),
   ],
-
-  externals: [nodeExternals()],
+  optimization: {
+    minimize: false,
+  },
+  // externals: {
+  //   lodash: { commonjs: 'lodash' },
+  //   moment: { commonjs: 'moment' },
+  //   uuid: { commonjs: 'uuid' },
+  //   'moment-timezone': { commonjs: 'moment-timezone' },
+  // },
 });
