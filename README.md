@@ -19,7 +19,8 @@
 
 ## ToDo
 
- - [ ] Исключить [Voyager](https://github.com/APIs-guru/graphql-voyager) из сборки
+ - [ ] Исключить [Voyager](https://github.com/APIs-guru/graphql-voyager) из сборки в свзи с объемным числом зависимостей и большим размером бандла
+ - [ ] Исключить `GraphiQL` из сборки в свзи с большим размером бандла при сборке (~1MB)
 
 Документация [здесь](./docs/README.md)
 
