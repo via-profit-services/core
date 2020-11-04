@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
 const NodemonPlugin = require('nodemon-webpack-plugin');
 const { ProgressPlugin } = require('webpack');

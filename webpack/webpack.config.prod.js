@@ -1,3 +1,5 @@
+/* eslint-disable import/order */
+/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
@@ -7,6 +9,7 @@ const nodeExternals = require('webpack-node-externals');
 const WebpackShellPlugin = require('webpack-shell-plugin');
 const packageInfo = require('../package.json');
 const baseConfig = require('./webpack.config.base');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = merge(baseConfig, {
   entry: {
@@ -69,6 +72,10 @@ Contact    ${packageInfo.support}
     }),
     new WebpackShellPlugin({
       onBuildEnd: ['chmod +x ./dist/bin/cli.js'],
+    }),
+    new BundleAnalyzerPlugin({
+      analyzerMode: process.env.ANALYZE ? 'server' : 'disabled',
+      openAnalyzer: true,
     }),
   ],
 
