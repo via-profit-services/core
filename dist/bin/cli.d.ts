@@ -1,4 +1,3 @@
-/// <reference types="yargs" />
 declare const args: {
     [x: string]: unknown;
     endpoint: unknown;
@@ -7,5 +6,10 @@ declare const args: {
     method?: unknown;
     _: string[];
     $0: string;
+    migrations: unknown;
+    seeds: unknown;
+    knexfile: unknown;
+    name: unknown;
+    stub?: unknown;
 };
 export default args;

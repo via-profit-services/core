@@ -42,14 +42,14 @@ export declare const nodeToEdge: <T>(node: Node<T>, cursorName: string, cursorPa
  * Convert GraphQL OrderBy array to Knex OrderBy array format
  * @param { TOrderBy } orderBy Array of objects econtains { field: "", direction: "" }
  */
-export declare const convertOrderByToKnex: (orderBy: TOrderBy) => TOrderByKnex;
-export declare const convertJsonToKnex: <TRecord = any>(knex: Knex<any, unknown[]>, json: any) => Knex.Raw<TRecord>;
-export declare const convertBetweenToKnex: (builder: Knex.QueryBuilder<any, any>, between: TBetween, options?: {
+export declare const convertOrderByToKnex: (orderBy: TOrderBy | undefined) => TOrderByKnex;
+export declare const convertJsonToKnex: <TRecord = any>(knex: Knex, json: any | Array<any>) => Knex.Raw<TRecord>;
+export declare const convertBetweenToKnex: (builder: Knex.QueryBuilder, between: TBetween | undefined, options?: {
     aliases?: TTableAliases;
     timezone: string;
 }) => Knex.QueryBuilder<any, any>;
 export declare const applyAliases: (whereClause: TWhere, aliases: TTableAliases) => TWhere;
-export declare const convertWhereToKnex: (builder: Knex.QueryBuilder<any, any>, whereClause: TWhere | {
+export declare const convertWhereToKnex: (builder: Knex.QueryBuilder, whereClause: TWhere | {
     [key: string]: string | number | boolean;
 }, aliases?: TTableAliases) => Knex.QueryBuilder<any, any>;
 /**

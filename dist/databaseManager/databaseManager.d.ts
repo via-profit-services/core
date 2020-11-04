@@ -10,6 +10,6 @@ export interface IDBConfig {
     timezone?: string;
     localTimezone: string;
     migrations?: Knex.MigratorConfig;
-    seeds?: Knex.SeedsConfig;
+    seeds?: Knex.SeederConfig;
     pool?: Knex.PoolConfig;
 }
