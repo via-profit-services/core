@@ -35,6 +35,26 @@ yarn yarn via-profit-core knex migrate latest --knexfile src/utils/knexfile.ts
 
 #### <a name="setup"></a> Настройка
 
+Для корректной сборки проекта в `production` режиме, при использовании **webpack**, необходимо подлючить дополнительные плагины:
+
+_webpack.config.js_
+
+```js
+const viaProfitWebpackPligins = require('@via-profit-services/core/dist/webpack');
+
+module.exports = {
+  target: 'node',
+  mode: 'production',
+  ...
+  plugins: [
+    ...viaProfitWebpackPligins,  // <-- Put ViaProfit Webpack plugins here 
+  ],
+};
+
+```
+
+
+
 Для работы [JWT](https://github.com/auth0/node-jsonwebtoken) необходимо сгенерировать SSH-ключи используя алгоритм, например, `RS256`.
 
 **Замечание:** При запросе `passphrase` просто нажмите _Enter_ для того, чтобы этот параметр остался пустым. То же самое необходимо сделать при подтверждении `passphrase`.
