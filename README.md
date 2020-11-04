@@ -19,7 +19,7 @@
 
 ## ToDo
 
- - Исключить [Voyager](https://github.com/APIs-guru/graphql-voyager) из сборки
+ - [ ] Исключить [Voyager](https://github.com/APIs-guru/graphql-voyager) из сборки
 
 Документация [здесь](./docs/README.md)
 
