@@ -135,7 +135,6 @@
         "faker": "^4.1.0",
         "filemanager-webpack-plugin": "^2.0.5",
         "glob": "^7.1.6",
-        "graphql-voyager": "^1.0.0-rc.31",
         "husky": "^4.2.3",
         "jest": "^24.9.0",
         "jest-transform-graphql": "^2.1.0",
