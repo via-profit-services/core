@@ -1,7 +1,7 @@
 {
     "name": "@via-profit-services/core",
     "support": "https://via-profit.ru",
-    "version": "0.31.0",
+    "version": "0.31.1",
     "description": "Via Profit Core service",
     "main": "dist/index.js",
     "engines": {
