@@ -40,14 +40,14 @@ yarn yarn via-profit-core knex migrate latest --knexfile src/utils/knexfile.ts
 _webpack.config.js_
 
 ```js
-const viaProfitWebpackPligins = require('@via-profit-services/core/dist/webpack');
+const ViaProfitPlugin = require('@via-profit-services/core/dist/webpack');
 
 module.exports = {
   target: 'node',
   mode: 'production',
   ...
   plugins: [
-    ...viaProfitWebpackPligins,  // <-- Put ViaProfit Webpack plugins here 
+    new ViaProfitPlugin(), 
   ],
 };
 
