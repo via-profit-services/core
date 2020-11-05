@@ -11,9 +11,7 @@ import graphqlRbacMiddleware from './graphqlRbacMiddleware';
 const rootPath = path.join(__dirname, '..', '..');
 
 // dotenv configuration
-dotenv.config({
-  path: path.resolve(rootPath, '.env'),
-});
+dotenv.config();
 
 const useSSL = typeof process.env.SSL_CERT !== 'undefined' && typeof process.env.SSL_KEY !== 'undefined';
 const serverConfig: IInitProps = {
@@ -61,6 +59,7 @@ const serverConfig: IInitProps = {
     staticDir: path.resolve(process.env.STATIC_DIR),
   },
   middlewares: [graphqlRbacMiddleware],
+  enableIntrospection: true,
 };
 
 const configureApp = (props?: IProps): IInitProps => {

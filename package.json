@@ -1,7 +1,7 @@
 {
     "name": "@via-profit-services/core",
     "support": "https://via-profit.ru",
-    "version": "0.30.13",
+    "version": "0.31.0",
     "description": "Via Profit Core service",
     "main": "dist/index.js",
     "engines": {
@@ -75,7 +75,6 @@
         "graphql-redis-subscriptions": "^2.2.1",
         "graphql-subscriptions": "^1.1.0",
         "graphql-tag": "^2.11.0",
-        "graphql-voyager": "^1.0.0-rc.28",
         "ioredis": "^4.16.3",
         "jsonwebtoken": "^8.5.1",
         "knex": "^0.21.1",

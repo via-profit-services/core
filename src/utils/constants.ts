@@ -11,11 +11,10 @@ export const DEFAULT_GRAPHQL_ENDPOINT = '/graphql';
 export const DEFAULT_AUTH_ENDPOINT = '/auth';
 export const DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT = '/subscriptions';
 export const DEFAULT_SERVER_TIMEZONE = 'UTC';
-export const DEFAULT_ROUTE_GRAPHIQL = '/graphiql';
-export const DEFAULT_ROUTE_VOYAGER = '/voyager';
 export const DEFAULT_SESSION_SECRET = 'DCBUN0HUKGY4WGHAK5446GAJDFHSKA';
 export const DEFAULT_SESSION_TTL = 3600;
 export const DEFAULT_SESSION_PATH = './sessions';
+export const DEFAULT_INTROSPECTION_STATE = false;
 
 export const MAXIMUM_REQUEST_BODY_SIZE = '50mb';
 

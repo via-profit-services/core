@@ -1,5 +1,5 @@
 import authMiddleware from './authMiddleware';
+import graphQLAuthMiddleware from './graphQLAuthMiddleware';
 
-export { authMiddleware };
-
-export default authMiddleware;
+export * from './const';
+export { authMiddleware, graphQLAuthMiddleware };

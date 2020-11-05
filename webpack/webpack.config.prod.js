@@ -3,12 +3,12 @@
 const path = require('path');
 const fs = require('fs');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
-const { ProgressPlugin, IgnorePlugin, BannerPlugin } = require('webpack');
+const { ProgressPlugin, BannerPlugin } = require('webpack');
 const { merge } = require('webpack-merge');
-const nodeExternals = require('webpack-node-externals');
 const packageInfo = require('../package.json');
 const baseConfig = require('./webpack.config.base');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const ViaProfitPlugin = require('../externals/webpack-plugin');
 
 module.exports = merge(baseConfig, {
   entry: {
@@ -24,9 +24,7 @@ module.exports = merge(baseConfig, {
   mode: 'production',
   plugins: [
     new ProgressPlugin(),
-    new IgnorePlugin(/m[sy]sql2?|oracle(db)?|sqlite3/),
-    new IgnorePlugin(/pg-native/),
-    new IgnorePlugin(/pg-query-stream/),
+    new ViaProfitPlugin(),
     new BannerPlugin({
       banner: '#!/usr/bin/env node\n/* eslint-disable */',
       raw: true,
@@ -59,8 +57,15 @@ Contact    ${packageInfo.support}
             source: './src/bin/stub/*',
             destination: './dist/bin/stub/',
           },
+          {
+            source: './externals/webpack-plugin/*',
+            destination: './dist/webpack/',
+          },
         ],
-        delete: ['./dist/playground'],
+        delete: [
+          './dist/playground',
+          './dist/webpack-plugin',
+        ],
       },
     }),
     // chmod +x for ./bin/cli.js
@@ -78,6 +83,18 @@ Contact    ${packageInfo.support}
       openAnalyzer: true,
     }),
   ],
-
-  externals: [nodeExternals()],
+  optimization: {
+    minimize: false,
+  },
+  externals: {
+    moment: {
+      commonjs2: 'moment',
+    },
+    'moment-timezone': {
+      commonjs2: 'moment-timezone',
+    },
+    uuid: {
+      commonjs2: 'uuid',
+    },
+  },
 });
