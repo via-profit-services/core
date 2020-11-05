@@ -4,16 +4,26 @@
 
 ## Содержание
 
+- [Зависимости](#dependencies)
 - [Установка](#install)
 - [Миграции](#migrations)
 - [Настройка](#setup)
 
+
+### <a name="dependencies"></a> Зависимости
+
+  Модули, которые необходимо установить вручную
+
+ - [moment](https://github.com/moment/moment)
+ - [moment-timezone](https://github.com/moment/moment-timezone)
+ - [uuid](https://github.com/uuidjs/uuid)
+
 ### <a name="install"></a> Установка
 
-В некоторых миграциях встречается импорт `uuid`, поэтому вам придется установить этот пакет вместе с `@via-profit-services/core`
+Установите необходимые зависимости и сам модуль `@via-profit-services/core`
 
 ```bash
-yarn add uuid @via-profit-services/core
+yarn add uuid moment moment-timezone @via-profit-services/core
 yarn add --dev @types/uuid
 ```
 
