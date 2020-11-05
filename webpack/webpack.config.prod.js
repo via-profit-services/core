@@ -83,9 +83,6 @@ Contact    ${packageInfo.support}
       openAnalyzer: true,
     }),
   ],
-  optimization: {
-    minimize: false,
-  },
   externals: {
     moment: {
       commonjs2: 'moment',
