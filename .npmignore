@@ -6,7 +6,7 @@
 /public
 /sessions
 /src
-/webpack/webpack.config.*
+/webpack
 /sandbox.js
 /tsconfig.*
 /jest.config.js
