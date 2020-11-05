@@ -6,8 +6,8 @@
 
 - [Зависимости](#dependencies)
 - [Установка](#install)
-- [Миграции](#migrations)
 - [Настройка](#setup)
+- [Миграции](#migrations)
 
 
 ### <a name="dependencies"></a> Зависимости
@@ -32,16 +32,6 @@ yarn add --dev @types/uuid
 ```bash
 yarn add --dev bcryptjs @types/bcryptjs faker @types/faker
 ```
-
-### <a name="migrations"></a> Миграции
-
-После первой установки примените все необходимые миграции:
-
-```bash
-yarn yarn via-profit-core knex migrate latest --knexfile src/utils/knexfile.ts
-```
-
-После применения миграций вам будет доступен один единственный аккаунт **Developer**. Для входа в учетную запись используйте логин и пароль - **dev**. Аккаунт Developer имеет следующие роли: `["admin", "developer"]`
 
 #### <a name="setup"></a> Настройка
 
@@ -77,3 +67,14 @@ openssl rsa -in jwtRS256.key -pubout -outform PEM -out jwtRS256.key.pub
 ```
 
 После выполнения команд будут создан приватный ключ(`jwtRS256.key`) и публичный ключ (`jwtRS256.key.pub`)
+
+### <a name="migrations"></a> Миграции
+
+После первой установки примените все необходимые миграции:
+
+```bash
+yarn yarn via-profit-core knex migrate latest --knexfile src/utils/knexfile.ts
+```
+
+После применения миграций вам будет доступен один единственный аккаунт **Developer**. Для входа в учетную запись используйте логин и пароль - **dev**. Аккаунт Developer имеет следующие роли: `["admin", "developer"]`
+
