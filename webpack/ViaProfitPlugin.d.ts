@@ -1,5 +1,11 @@
-import { WebpackPluginInstance } from 'webpack';
+import { WebpackPluginInstance, Compiler } from 'webpack';
 
-type ViaProfitCoreWebpackPlugins = WebpackPluginInstance[];
+export namespace ViaProfitPlugin {
 
-export default ViaProfitCoreWebpackPlugins;
+}
+
+export default class ViaProfitPlugin implements WebpackPluginInstance {
+    constructor();
+
+    apply(compiler: Compiler): void;
+}
