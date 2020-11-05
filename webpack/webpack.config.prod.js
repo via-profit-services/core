@@ -8,7 +8,7 @@ const { merge } = require('webpack-merge');
 const packageInfo = require('../package.json');
 const baseConfig = require('./webpack.config.base');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
-const ViaProfitCoreWebpackPlugins = require('./ViaProfitCoreWebpackPlugins');
+const ViaProfitPlugin = require('./ViaProfitPlugin');
 
 module.exports = merge(baseConfig, {
   entry: {
@@ -24,19 +24,7 @@ module.exports = merge(baseConfig, {
   mode: 'production',
   plugins: [
     new ProgressPlugin(),
-    // new IgnorePlugin({
-    //   resourceRegExp: /m[sy]sql2?|oracle(db)?|sqlite3/,
-    // }),
-    // new IgnorePlugin({
-    //   resourceRegExp: /pg-native/,
-    // }),
-    // new IgnorePlugin({
-    //   resourceRegExp: /pg-query-stream/,
-    // }),
-    // new IgnorePlugin({
-    //   resourceRegExp: /vue/,
-    // }),
-    ...ViaProfitCoreWebpackPlugins,
+    new ViaProfitPlugin(),
     new BannerPlugin({
       banner: '#!/usr/bin/env node\n/* eslint-disable */',
       raw: true,
@@ -70,11 +58,11 @@ Contact    ${packageInfo.support}
             destination: './dist/bin/stub/',
           },
           {
-            source: './webpack/ViaProfitCoreWebpackPlugins.js',
+            source: './webpack/ViaProfitPlugin.js',
             destination: './dist/webpack/index.js',
           },
           {
-            source: './webpack/ViaProfitCoreWebpackPlugins.d.ts',
+            source: './webpack/ViaProfitPlugin.d.ts',
             destination: './dist/webpack/index.d.ts',
           },
         ],
