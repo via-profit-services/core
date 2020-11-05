@@ -10,6 +10,9 @@
 # webpack temporary dir
 /build
 
+# dist
+/dist
+
 /sessions
 
 # jwt keys
