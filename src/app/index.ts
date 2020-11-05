@@ -6,7 +6,6 @@ import https from 'https';
 import path from 'path';
 import { performance } from 'perf_hooks';
 import { makeExecutableSchema } from '@graphql-tools/schema';
-import chalk from 'chalk';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import DeviceDetector from 'device-detector-js';
@@ -17,13 +16,17 @@ import { GraphQLSchema, execute, subscribe } from 'graphql';
 import { applyMiddleware } from 'graphql-middleware';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { withFilter } from 'graphql-subscriptions';
-import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 import Redis from 'ioredis';
 import sessionStoreFactory from 'session-file-store';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { v4 as uuidv4 } from 'uuid';
 
-import { authMiddleware } from '../auth';
+import {
+  authMiddleware,
+  graphQLAuthMiddleware,
+  ACCESS_TOKEN_EMPTY_ID,
+  ACCESS_TOKEN_EMPTY_UUID,
+} from '../auth';
 import { knexProvider } from '../databaseManager';
 import {
   UnauthorizedError,
@@ -34,7 +37,6 @@ import errorMiddleware from '../errorHandlers/errorMiddleware';
 import { requestHandlerMiddleware } from '../logger';
 import {
   info,
-  // accounts,
   auth,
   common,
   scalar,
@@ -53,15 +55,13 @@ import {
   DEFAULT_AUTH_ENDPOINT,
   DEFAULT_GRAPHQL_ENDPOINT,
   DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT,
+  DEFAULT_INTROSPECTION_STATE,
   DEFAULT_SERVER_TIMEZONE,
-  DEFAULT_ROUTE_VOYAGER,
-  DEFAULT_ROUTE_GRAPHIQL,
   DEFAULT_SESSION_SECRET,
   DEFAULT_SESSION_PATH,
   DEFAULT_SESSION_TTL,
   MAXIMUM_REQUEST_BODY_SIZE,
 } from '../utils';
-import { configureTokens } from '../utils/configureTokens';
 import { CronJobManager } from '../utils/cronJobManager';
 import { DisableIntrospectionQueries } from '../utils/disableIntrospection';
 import { headersMiddleware } from '../utils/headersMiddleware';
@@ -77,9 +77,7 @@ class App {
       authEndpoint: DEFAULT_AUTH_ENDPOINT,
       timezone: DEFAULT_SERVER_TIMEZONE,
       subscriptionEndpoint: DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT,
-      usePlayground: process.env.NODE_ENV === 'development',
-      enableIntrospection: process.env.NODE_ENV === 'development',
-      useVoyager: process.env.NODE_ENV === 'development',
+      enableIntrospection: DEFAULT_INTROSPECTION_STATE,
       debug: process.env.NODE_ENV === 'development',
       ...props,
     } as IInitDefaultProps;
@@ -94,7 +92,6 @@ class App {
 
     // combine default routes with passed
     this.props.routes = {
-      voyager: DEFAULT_ROUTE_VOYAGER,
       ...this.props.routes,
     } as IInitDefaultProps['routes'];
   }
@@ -102,11 +99,8 @@ class App {
   public bootstrap(callback?: (args: IBootstrapCallbackArgs) => void) {
     const {
       port,
-      usePlayground,
-      useVoyager,
       endpoint,
       authEndpoint,
-      routes,
       serverOptions,
       subscriptionEndpoint,
     } = this.props;
@@ -142,16 +136,6 @@ class App {
 
       logger.server.debug(`App server started at «${resolveUrl.graphql}»`);
       logger.server.debug(`Authentification server started at «${resolveUrl.auth}»`);
-
-      if (usePlayground) {
-        resolveUrl.graphiql = `${host}:${port}${endpoint}${DEFAULT_ROUTE_GRAPHIQL}`;
-        logger.server.debug(`Graphiql resolved at «${resolveUrl.graphiql}»`);
-      }
-
-      if (useVoyager) {
-        resolveUrl.voyager = `${host}:${port}${routes.voyager}`;
-        logger.server.debug(`Voyager resolved at «${resolveUrl.voyager}»`);
-      }
 
 
       // connect websocket subscriptions werver
@@ -232,9 +216,7 @@ class App {
       logger,
       routes,
       subscriptionEndpoint,
-      usePlayground,
       enableIntrospection,
-      useVoyager,
       serverOptions,
       debug,
       staticOptions,
@@ -381,8 +363,8 @@ class App {
       startTime: 0,
       token: {
         type: TokenType.access,
-        id: '',
-        uuid: '',
+        id: ACCESS_TOKEN_EMPTY_ID,
+        uuid: ACCESS_TOKEN_EMPTY_UUID,
         roles: [],
         exp: 0,
         iss: '',
@@ -427,6 +409,8 @@ class App {
       app.use(staticOptions.prefix, express.static(staticPath));
     }
 
+    // Express middleware for manage /auth request only
+    // e.g. /auth/get-access-token, /auth/refresh-token and etc.
     app.use(authMiddleware({ context, endpoint: authEndpoint }));
 
     // Request handler (request logger) middleware
@@ -441,31 +425,6 @@ class App {
     // This middleware must be defined last
     app.use(errorMiddleware({ context }));
 
-
-    // GraohQL Voyager middleware
-    if (useVoyager) {
-      const { accessToken } = configureTokens([''], context);
-      logger.server.debug('New AccessToken was created special for GraphQL voyager', { accessToken });
-      console.log('');
-      console.log(
-        `${chalk.yellow.bold('Note: ')}${chalk.yellow('An access token was created specifically for GraphQL voyager')}`,
-      );
-      console.log(
-        `${chalk.yellow('This token was expire at')} ${chalk.yellowBright.bold(new Date(Date.now() + 1800 * 1000))}`,
-      );
-      console.log(chalk.yellow('After the token expires, you must restart the application'));
-      app.use(
-        routes.voyager,
-        voyagerMiddleware({
-          endpointUrl: endpoint,
-          headersJS: JSON.stringify({
-            Authorization: `Bearer ${accessToken.token}`,
-          }),
-        }),
-      );
-    }
-
-
     const extensions = (requestInfo: RequestInfo & { context: IContext}) => ({
         queryTimeMs: performance.now() - requestInfo.context.startTime,
       });
@@ -477,35 +436,27 @@ class App {
       endpoint,
       graphqlHTTP(
         async (req): Promise<OptionsData & { subscriptionEndpoint?: string }> => {
+
           const token = AuthService.extractToken(TokenType.access, req as Request);
-          const payload = await authService.verifyToken(token);
+          const tokenPayload = await authService.verifyToken(token);
 
-          if (!payload) {
-            throw new UnauthorizedError('Invalid token');
+          if (tokenPayload && tokenPayload.type === TokenType.access) {
+            context.token = tokenPayload;
           }
-
-          if (payload.type !== TokenType.access) {
-            throw new UnauthorizedError('Is not an access token');
-          }
-
-          context.token = payload;
 
           const useSSL = serverOptions?.cert;
           const deviceDetector = new DeviceDetector();
           context.deviceInfo = deviceDetector.parse(req.headers['user-agent']);
 
           context.startTime = performance.now();
-          const graphQLMiddlewares = [
 
-            // other middlewares
-            ...middlewares || [],
-          ];
+          const graphQLMiddlewares = [graphQLAuthMiddleware, ...middlewares || []];
 
           return {
             context,
-            graphiql: usePlayground,
             extensions: debug ? extensions : undefined,
             schema: applyMiddleware<any, IContext, any>(schema, ...graphQLMiddlewares),
+            graphiql: false,
             subscriptionEndpoint: `ws${useSSL ? 's' : ''}://localhost:${port}${subscriptionEndpoint}`,
             customFormatErrorFn: (error) => customFormatErrorFn({ error, context, debug }),
             validationRules: !enableIntrospection ? [DisableIntrospectionQueries] : [],

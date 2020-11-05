@@ -36,11 +36,9 @@ export interface IInitProps {
   redis: RedisOptions;
   logger: ILoggerCollection;
   routes?: {
-    voyager?: string;
+    auth: string;
   };
   enableIntrospection?: boolean;
-  usePlayground?: boolean;
-  useVoyager?: boolean;
   serverOptions?: IServerOptions;
   websocketOptions?: IWebsocketServerOption;
   debug?: boolean;
@@ -69,14 +67,7 @@ export interface IInitDefaultProps extends IInitProps {
   endpoint: string;
   subscriptionEndpoint: string;
   timezone: string;
-  routes: {
-    playground: string;
-    voyager: string;
-    [key: string]: string;
-  };
-  usePlayground: boolean;
   enableIntrospection: boolean;
-  useVoyager: boolean;
   debug: boolean;
 }
 
@@ -108,8 +99,6 @@ export interface IBootstrapCallbackArgs {
   resolveUrl: {
     graphql: string;
     auth: string;
-    graphiql?: string;
-    voyager?: string;
     subscriptions?: string;
   };
 }

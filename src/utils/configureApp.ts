@@ -1,7 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
+import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 
+import { Express } from '../index';
 import { configureLogger } from '../logger';
 import { IInitProps } from '../types';
 import graphqlRbacMiddleware from './graphqlRbacMiddleware';
@@ -11,9 +13,7 @@ import graphqlRbacMiddleware from './graphqlRbacMiddleware';
 const rootPath = path.join(__dirname, '..', '..');
 
 // dotenv configuration
-dotenv.config({
-  path: path.resolve(rootPath, '.env'),
-});
+dotenv.config();
 
 const useSSL = typeof process.env.SSL_CERT !== 'undefined' && typeof process.env.SSL_KEY !== 'undefined';
 const serverConfig: IInitProps = {
@@ -61,6 +61,15 @@ const serverConfig: IInitProps = {
     staticDir: path.resolve(process.env.STATIC_DIR),
   },
   middlewares: [graphqlRbacMiddleware],
+  enableIntrospection: true,
+  expressMiddlewares: [
+    ({ context }) => {
+      const router = Express.Router();
+      router.use('/voyager', voyagerMiddleware({ endpointUrl: context.endpoint }))
+
+      return router;
+    },
+  ],
 };
 
 const configureApp = (props?: IProps): IInitProps => {

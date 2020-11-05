@@ -1,9 +1,18 @@
 import path from 'path';
-import { IInitProps, configureLogger } from '@via-profit-services/core';
+import { IInitProps, configureLogger, Express } from '@via-profit-services/core';
+import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 
 const configureApp = (props?: Partial<IInitProps>): IInitProps => {
   return {
     enableIntrospection: true,
+    expressMiddlewares: [
+      ({ context }) => {
+        const router = Express.Router();
+        router.use('/voyager', voyagerMiddleware({ endpointUrl: context.endpoint }))
+
+        return router;
+      },
+    ],
     port: 9000,
     logger: configureLogger({
       logDir: path.resolve(__dirname, '../log'),

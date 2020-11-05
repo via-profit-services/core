@@ -15,7 +15,7 @@ const config = configureApp({
 const app = new App(config);
 app.bootstrap(({ resolveUrl, context }) => {
   const {
-    graphql, subscriptions, graphiql, auth,
+    graphql, subscriptions, auth,
   } = resolveUrl;
 
   const { accessToken } = configureTokens(['development', 'admin'], context);
@@ -26,7 +26,6 @@ app.bootstrap(({ resolveUrl, context }) => {
 
   console.log('');
   console.log(`Authorization server started at ${chalk.blue(auth)}`);
-  console.log(`Playground graphiql started at ${chalk.magenta(graphiql)}`);
   console.log(`GraphQL server started at ${chalk.yellow(graphql)}`);
   console.log(`Subscription server started at ${chalk.green(subscriptions)}`);
 });

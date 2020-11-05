@@ -8,7 +8,7 @@ const { merge } = require('webpack-merge');
 const packageInfo = require('../package.json');
 const baseConfig = require('./webpack.config.base');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
-const ViaProfitPlugin = require('./ViaProfitPlugin');
+const ViaProfitPlugin = require('../externals/webpack-plugin');
 
 module.exports = merge(baseConfig, {
   entry: {
@@ -58,15 +58,14 @@ Contact    ${packageInfo.support}
             destination: './dist/bin/stub/',
           },
           {
-            source: './webpack/ViaProfitPlugin.js',
-            destination: './dist/webpack/index.js',
-          },
-          {
-            source: './webpack/ViaProfitPlugin.d.ts',
-            destination: './dist/webpack/index.d.ts',
+            source: './externals/webpack-plugin/*',
+            destination: './dist/webpack/',
           },
         ],
-        delete: ['./dist/playground'],
+        delete: [
+          './dist/playground',
+          './dist/webpack-plugin',
+        ],
       },
     }),
     // chmod +x for ./bin/cli.js
@@ -87,10 +86,15 @@ Contact    ${packageInfo.support}
   optimization: {
     minimize: false,
   },
-  // externals: {
-  //   lodash: { commonjs: 'lodash' },
-  //   moment: { commonjs: 'moment' },
-  //   uuid: { commonjs: 'uuid' },
-  //   'moment-timezone': { commonjs: 'moment-timezone' },
-  // },
+  externals: {
+    moment: {
+      commonjs2: 'moment',
+    },
+    'moment-timezone': {
+      commonjs2: 'moment-timezone',
+    },
+    uuid: {
+      commonjs2: 'uuid',
+    },
+  },
 });
