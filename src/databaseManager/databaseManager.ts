@@ -6,8 +6,8 @@ import * as Knex from 'knex';
 import moment from 'moment-timezone';
 import { types } from 'pg';
 
-import { ILoggerCollection } from '../logger';
-import { DATABASE_CHARSET, DATABASE_CLIENT } from '../utils';
+import { ILoggerCollection } from '~/logger';
+import { DATABASE_CHARSET, DATABASE_CLIENT } from '~/utils';
 
 const ENABLE_PG_TYPES = true;
 const DEFAULT_TIMEZONE = 'UTC';

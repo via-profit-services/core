@@ -7,11 +7,16 @@ import { IInitProps } from '../types';
 import graphqlRbacMiddleware from './graphqlRbacMiddleware';
 
 
-// project root path
-const rootPath = path.join(__dirname, '..', '..');
+const isKnex = process.argv[1].match(/knex$/);
+
+const rootPath = isKnex
+  ? path.resolve(process.cwd(), '../..')
+  : path.resolve(process.cwd());
+
 
 // dotenv configuration
-dotenv.config();
+dotenv.config({ path: path.resolve(rootPath, '.env') });
+
 
 const useSSL = typeof process.env.SSL_CERT !== 'undefined' && typeof process.env.SSL_KEY !== 'undefined';
 const serverConfig: IInitProps = {

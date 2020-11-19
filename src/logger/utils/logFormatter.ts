@@ -2,7 +2,7 @@ import { Winston } from './configureLogger';
 
 const { format } = Winston;
 
-export default format.combine(
+export const logFormatter = format.combine(
   format.metadata(),
   format.json(),
   format.timestamp({ format: 'YYYY-MM-DDTHH:mm:ssZZ' }),
@@ -16,3 +16,5 @@ export default format.combine(
     return `${timestamp} ${level}: ${message} ${meta ? JSON.stringify(meta) : ''}`;
   }),
 );
+
+export default logFormatter;
