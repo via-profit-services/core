@@ -14,7 +14,7 @@ type GraphQLErrorM = GraphQLError & {
   originalError: ErrorHandler;
 }
 
-export const customFormatErrorFn = (props: IProps) => {
+const customFormatErrorFn = (props: IProps) => {
   const { error, context, debug } = props;
   const { logger, token } = context;
   const { originalError } = error as GraphQLErrorM;

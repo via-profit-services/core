@@ -51,4 +51,4 @@ class ViaProfitPlugin implements WebpackPluginInstance {
   }
 }
 
-module.exports = ViaProfitPlugin;
+export default ViaProfitPlugin;

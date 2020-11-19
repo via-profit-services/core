@@ -23,7 +23,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import {
   authMiddleware,
-  graphQLAuthMiddleware,
+  graphQLAccessMiddleware,
   ACCESS_TOKEN_EMPTY_ID,
   ACCESS_TOKEN_EMPTY_UUID,
 } from '../auth';
@@ -440,17 +440,22 @@ class App {
           const token = AuthService.extractToken(TokenType.access, req as Request);
           const tokenPayload = await authService.verifyToken(token);
 
-          if (tokenPayload && tokenPayload.type === TokenType.access) {
-            context.token = tokenPayload;
+          if (
+            !tokenPayload
+            || tokenPayload.type !== TokenType.access
+            || tokenPayload.id === ACCESS_TOKEN_EMPTY_ID
+          ) {
+            throw new UnauthorizedError('Invalid token');
           }
+
 
           const useSSL = serverOptions?.cert;
           const deviceDetector = new DeviceDetector();
+          context.token = tokenPayload;
           context.deviceInfo = deviceDetector.parse(req.headers['user-agent']);
-
           context.startTime = performance.now();
 
-          const graphQLMiddlewares = [graphQLAuthMiddleware, ...middlewares || []];
+          const graphQLMiddlewares = [graphQLAccessMiddleware, ...middlewares || []];
 
           return {
             context,
