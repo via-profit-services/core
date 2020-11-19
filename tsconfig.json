@@ -2,22 +2,29 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "baseUrl": "./src",
-    "declaration": false,
+    "declaration": true,
     "esModuleInterop": true,
     "module": "commonjs",
-    // "module": "amd",
     "moduleResolution": "node",
     "noImplicitAny": true,
-    "outDir": "./build",
+    "outDir": "./dist",
     "paths": {
-      "~/*": ["./*"]
+      "~/*": [ "./*" ]
     },
     "resolveJsonModule": true,
     "rootDir": "./src",
-    "sourceMap": true,
+    "sourceMap": false,
     "target": "es6",
-    "typeRoots": ["node_modules/@types", "src/@types"]
+    "typeRoots": [
+      "node_modules/@types",
+      "src/@types"
+    ]
   },
-  "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts"],
-  "include": ["src/**/*"]
+  "exclude": [
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts"
+  ],
+  "include": [
+    "src/**/*"
+  ]
 }

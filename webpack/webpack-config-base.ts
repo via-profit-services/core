@@ -1,8 +1,9 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-const path = require('path');
-const tsTransformPaths = require('@zerollup/ts-transform-paths');
+import path from 'path';
+import { Configuration } from 'webpack';
+import ts from 'typescript';
+import tsTransformPaths from '@zerollup/ts-transform-paths';
 
-module.exports = {
+const webpackBaseConfig: Configuration = {
   target: 'node',
   module: {
     rules: [
@@ -13,24 +14,18 @@ module.exports = {
           {
             loader: 'ts-loader',
             options: {
-              configFile: path.resolve(
-                __dirname,
-                process.env.NODE_ENV === 'development' ? '../tsconfig.json' : '../tsconfig.prod.json',
-              ),
-              getCustomTransformers: (program) => {
+              getCustomTransformers: (program: ts.Program) => {
                 const transformer = tsTransformPaths(program);
 
                 return {
-                  // for updating paths in generated code
                   before: [transformer.before],
-                  // for updating paths in declaration files
                   afterDeclarations: [transformer.afterDeclarations],
                 };
               },
             },
           },
           {
-            loader: 'shebang-loader',
+            loader: 'shebang-loader', // Fix Unexpected character '#' in #!/usr/bin/env node
           },
         ],
       },
@@ -58,3 +53,5 @@ module.exports = {
     },
   },
 };
+
+export default webpackBaseConfig;
