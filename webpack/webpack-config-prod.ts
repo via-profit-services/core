@@ -8,7 +8,6 @@ import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 
 import packageInfo from '../package.json';
 import baseConfig from './webpack-config-base';
-// import ViaProfitPlugin from '../externals/webpack-plugin';
 import ViaProfitPlugin from '../src/webpack-plugin';
 
 module.exports = merge(baseConfig, {
@@ -41,36 +40,6 @@ Contact    ${packageInfo.support}
       `,
       test: /index\.js/,
     }),
-    // new FileManagerPlugin({
-    //   onStart: {
-    //     delete: ['./dist'],
-    //   },
-    //   onEnd: {
-    //     copy: [
-    //       {
-    //         source: './src/database/migrations/*',
-    //         destination: './dist/database/migrations/',
-    //       },
-    //       {
-    //         source: './src/database/seeds/*',
-    //         destination: './dist/database/seeds/',
-    //       },
-    //       {
-    //         source: './src/bin/stub/*',
-    //         destination: './dist/bin/stub/',
-    //       },
-    //       {
-    //         source: './externals/webpack-plugin/*',
-    //         destination: './dist/webpack/',
-    //       },
-    //     ],
-    //     delete: [
-    //       './dist/playground',
-    //       './dist/webpack-plugin',
-    //     ],
-    //   },
-    // }),
-    // chmod +x for ./bin/cli.js
     {
       apply: (compiler: Compiler) => {
         compiler.hooks.afterEmit.tapAsync('WebpackAfterBuild', (_, callback) => {
@@ -87,11 +56,7 @@ Contact    ${packageInfo.support}
   ],
   resolve: {
     plugins: [
-      new TsconfigPathsPlugin({
-
-        // configFile: path.resolve(__dirname, '../tsconfig.json'),
-        // extensions: ['.ts', '.json', '.mjs', '.graphql'],
-      }),
+      new TsconfigPathsPlugin(),
     ],
   },
   externals: {
