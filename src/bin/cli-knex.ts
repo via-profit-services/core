@@ -224,7 +224,7 @@ const yargsModule: CommandModule<KnexArgs, KnexArgs> = {
               },
             )
             .command<KnexRun>(
-              'run <name>',
+              'run',
               'Run seed file',
               (b) => b.options({
                 knexfile: {
