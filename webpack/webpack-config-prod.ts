@@ -1,10 +1,12 @@
+/* eslint-disable import/extensions */
+/* eslint-disable no-console */
 import path from 'path';
-import fs from 'fs';
-// import FileManagerPlugin from 'filemanager-webpack-plugin';
+import fs from 'fs-extra';
 import { ProgressPlugin, BannerPlugin, Compiler } from 'webpack';
 import { merge } from 'webpack-merge';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
+import chalk from 'chalk';
 
 import packageInfo from '../package.json';
 import baseConfig from './webpack-config-base';
@@ -43,7 +45,16 @@ Contact    ${packageInfo.support}
     {
       apply: (compiler: Compiler) => {
         compiler.hooks.afterEmit.tapAsync('WebpackAfterBuild', (_, callback) => {
+
+          console.log(chalk.green('chmod 755 for ../dist/bin/cli.js'));
           fs.chmodSync(path.resolve(__dirname, '../dist/bin/cli.js'), '755');
+
+          console.log(chalk.green('Copy stub files'));
+          fs.copySync(
+            path.resolve(__dirname, '../src/bin/stub'),
+            path.resolve(__dirname, '../dist/bin/stub'),
+          );
+
           callback();
         });
 
