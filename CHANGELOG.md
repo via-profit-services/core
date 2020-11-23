@@ -1,3 +1,12 @@
+## 0.31.5
+###### *23 Ноября 2020*
+
+ - Исправлены типы для экспорта webpack плагина. Теперь плагин импортируется так:
+ ```js
+ const ViaProfitPlugin = require('@via-profit-services/core/dist/webpack-plugin');
+
+ ```
+
 ## 0.31.4
 ###### *20 Ноября 2020*
 

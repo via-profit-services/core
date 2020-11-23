@@ -1,7 +1,7 @@
 {
     "name": "@via-profit-services/core",
     "support": "https://via-profit.ru",
-    "version": "0.31.4",
+    "version": "0.31.5",
     "description": "Via Profit Core service",
     "main": "dist/index.js",
     "engines": {
@@ -120,7 +120,7 @@
         "@types/yargs": "^15.0.9",
         "@typescript-eslint/eslint-plugin": "^4.6.1",
         "@typescript-eslint/parser": "^4.6.1",
-        "@via-profit-services/eslint-config": "^0.1.9",
+        "@via-profit-services/eslint-config": "^0.1.10",
         "@zerollup/ts-transform-paths": "^1.7.11",
         "child-process-promise": "^2.2.1",
         "cross-env": "^6.0.3",

@@ -40,7 +40,7 @@ yarn add --dev bcryptjs @types/bcryptjs faker @types/faker
 _webpack.config.js_
 
 ```js
-const ViaProfitPlugin = require('@via-profit-services/core/dist/webpack');
+const ViaProfitPlugin = require('@via-profit-services/core/dist/webpack-plugin');
 
 module.exports = {
   target: 'node',
