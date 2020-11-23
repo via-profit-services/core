@@ -926,10 +926,10 @@
     "@typescript-eslint/types" "4.6.1"
     eslint-visitor-keys "^2.0.0"
 
-"@via-profit-services/eslint-config@^0.1.9":
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/@via-profit-services/eslint-config/-/eslint-config-0.1.9.tgz#ddf388b2c68d42135a24a8081c2144a56c343ebe"
-  integrity sha512-dC9jzh7U8QXkxpbKMC5vdqcWuu7sdqkxyGsBvpfTIoyel/9RHXqJ75ePTc7kJnkumxXWZd8l5bM4xA8gB7ztrA==
+"@via-profit-services/eslint-config@^0.1.10":
+  version "0.1.10"
+  resolved "https://registry.yarnpkg.com/@via-profit-services/eslint-config/-/eslint-config-0.1.10.tgz#bffaf4627a0e3face876e553782d33aa3408b81c"
+  integrity sha512-AaNARTc/7FgYiJ/iprqfHEdIkQraULzTChenC++sM2Mn4Hn05+EM7qgdUYpXL9CVc4RvJVSrosma8GnadPzIvw==
 
 "@webassemblyjs/ast@1.9.0":
   version "1.9.0"

@@ -1,21 +1,21 @@
-/* eslint-disable import/extensions */
 /* eslint-disable no-console */
 import path from 'path';
 import fs from 'fs-extra';
-import { ProgressPlugin, BannerPlugin, Compiler } from 'webpack';
+import { ProgressPlugin, BannerPlugin, Compiler, Configuration } from 'webpack';
 import { merge } from 'webpack-merge';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 import chalk from 'chalk';
 
 import packageInfo from '../package.json';
-import baseConfig from './webpack-config-base';
+import webpackBaseConfig from './webpack-config-base';
 import ViaProfitPlugin from '../src/webpack-plugin';
 
-module.exports = merge(baseConfig, {
-  entry: {
+const webpackProdConfig: Configuration = merge(webpackBaseConfig, {
+entry: {
     index: path.resolve(__dirname, '../src/index.ts'),
     'bin/cli': path.resolve(__dirname, '../src/bin/cli.ts'),
+    'webpack-plugin': path.resolve(__dirname, '../src/webpack-plugin/index.ts'),
   },
   output: {
     path: path.join(__dirname, '../dist/'),
@@ -82,3 +82,5 @@ Contact    ${packageInfo.support}
     },
   },
 });
+
+export default webpackProdConfig;
