@@ -51,8 +51,14 @@ Contact    ${packageInfo.support}
 
           console.log(chalk.green('Copy stub files'));
           fs.copySync(
-            path.resolve(__dirname, '../src/bin/stub'),
-            path.resolve(__dirname, '../dist/bin/stub'),
+            path.resolve(__dirname, '../src/bin/stub/'),
+            path.resolve(__dirname, '../dist/bin/stub/'),
+          );
+
+          console.log(chalk.green('Copy migration files'));
+          fs.copySync(
+            path.resolve(__dirname, '../src/database/migrations/'),
+            path.resolve(__dirname, '../dist/database/migrations/'),
           );
 
           callback();
