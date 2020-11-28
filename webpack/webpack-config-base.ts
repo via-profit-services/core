@@ -1,7 +1,7 @@
-import path from 'path';
-import { Configuration } from 'webpack';
-import ts from 'typescript';
 import tsTransformPaths from '@zerollup/ts-transform-paths';
+import path from 'path';
+import ts from 'typescript';
+import { Configuration } from 'webpack';
 
 const webpackBaseConfig: Configuration = {
   target: 'node',

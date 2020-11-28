@@ -1,15 +1,15 @@
 /* eslint-disable no-console */
-import path from 'path';
-import fs from 'fs-extra';
-import { ProgressPlugin, BannerPlugin, Compiler, Configuration } from 'webpack';
-import { merge } from 'webpack-merge';
-import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
-import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 import chalk from 'chalk';
+import fs from 'fs-extra';
+import path from 'path';
+import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
+import { ProgressPlugin, BannerPlugin, Compiler, Configuration } from 'webpack';
+import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
+import { merge } from 'webpack-merge';
 
 import packageInfo from '../package.json';
-import webpackBaseConfig from './webpack-config-base';
 import ViaProfitPlugin from '../src/webpack-plugin';
+import webpackBaseConfig from './webpack-config-base';
 
 const webpackProdConfig: Configuration = merge(webpackBaseConfig, {
 entry: {

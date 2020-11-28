@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
 
+import chalk from 'chalk';
 import { spawn } from 'child_process';
 import fs from 'fs';
-import path from 'path';
-import chalk from 'chalk';
 import glob from 'glob';
+import path from 'path';
 
 export const listMigrationsPerPackage = () => {
   const list: Array<{

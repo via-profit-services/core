@@ -1,6 +1,6 @@
-import { Configuration, ProgressPlugin, WebpackPluginInstance } from 'webpack';
 import NodemonPlugin from 'nodemon-webpack-plugin';
 import path from 'path';
+import { Configuration, ProgressPlugin, WebpackPluginInstance } from 'webpack';
 import { merge } from 'webpack-merge';
 import nodeExternals from 'webpack-node-externals';
 

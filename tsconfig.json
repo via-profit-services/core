@@ -18,7 +18,8 @@
     "typeRoots": [
       "node_modules/@types",
       "src/@types"
-    ]
+    ],
+    "types": ["node"]
   },
   "exclude": [
     "src/**/*.spec.ts",

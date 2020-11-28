@@ -1,7 +1,7 @@
 /* eslint-disable import/max-dependencies */
-import fs from 'fs';
 import bcryptjs from 'bcryptjs';
 import { Request } from 'express';
+import fs from 'fs';
 import jwt from 'jsonwebtoken';
 import moment from 'moment-timezone';
 import { v4 as uuidv4 } from 'uuid';

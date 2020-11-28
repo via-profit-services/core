@@ -1,9 +1,9 @@
 /* eslint-disable no-console */
-import { performance } from 'perf_hooks';
 import chalk from 'chalk';
 import knex from 'knex';
 import * as Knex from 'knex';
 import moment from 'moment-timezone';
+import { performance } from 'perf_hooks';
 import { types } from 'pg';
 
 import { ILoggerCollection } from '~/logger';

@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
 
 import { IContext, IObjectTypeResolver, IFieldResolver } from '../../../types';
-import { IOrder } from './types';
 import orders from './orders';
+import { IOrder } from './types';
 
 
 type TOrderResolver = IObjectTypeResolver<{id: string}, IContext>;

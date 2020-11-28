@@ -1,10 +1,5 @@
 /* eslint-disable no-console */
 /* eslint-disable import/max-dependencies */
-import fs from 'fs';
-import http from 'http';
-import https from 'https';
-import path from 'path';
-import { performance } from 'perf_hooks';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -12,11 +7,16 @@ import DeviceDetector from 'device-detector-js';
 import express, { Express, Request } from 'express';
 import { graphqlHTTP, OptionsData, RequestInfo } from 'express-graphql';
 import session from 'express-session';
+import fs from 'fs';
 import { GraphQLSchema, execute, subscribe } from 'graphql';
 import { applyMiddleware } from 'graphql-middleware';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { withFilter } from 'graphql-subscriptions';
+import http from 'http';
+import https from 'https';
 import Redis from 'ioredis';
+import path from 'path';
+import { performance } from 'perf_hooks';
 import sessionStoreFactory from 'session-file-store';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { v4 as uuidv4 } from 'uuid';

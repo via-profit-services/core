@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
+import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
-import chalk from 'chalk';
 import { CommandModule } from 'yargs';
 
 import { execKnex, resolveKnexfile } from './utils/migrations';

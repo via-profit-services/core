@@ -19,3 +19,9 @@
 /keys
 
 dump.rdb
+
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions

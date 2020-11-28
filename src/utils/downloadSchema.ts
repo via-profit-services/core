@@ -1,7 +1,7 @@
 import fs from 'fs';
+import { buildClientSchema, getIntrospectionQuery, printSchema } from 'graphql/utilities';
 import { OutgoingHttpHeaders } from 'http';
 import path from 'path';
-import { buildClientSchema, getIntrospectionQuery, printSchema } from 'graphql/utilities';
 
 export const downloadSchema = async (options: IDownloadSchemaOptions) => {
   const {
