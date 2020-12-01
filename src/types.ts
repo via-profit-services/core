@@ -1,6 +1,4 @@
 /* eslint-disable import/max-dependencies */
-import { IResolvers, ITypedef } from '@graphql-tools/utils';
-import DeviceDetector from 'device-detector-js';
 import { NextFunction, Request, Response } from 'express';
 import { GraphQLSchema, DocumentNode } from 'graphql';
 import { IMiddleware } from 'graphql-middleware';
@@ -9,45 +7,108 @@ import http from 'http';
 import https from 'https';
 import { RedisOptions, Redis as RedisInterface } from 'ioredis';
 import { Options as SesstionStoreOptions } from 'session-file-store';
-import { ServerOptions as IWebsocketServerOption } from 'ws';
+import Winston from 'winston';
+import { ServerOptions as WebsocketServerOption } from 'ws';
 
 import './graphql-ext';
-import { IDBConfig, Knex } from './databaseManager';
-import { ILoggerCollection } from './logger';
-import {
-  IJwtConfig,
-  IAccessToken,
-} from './schemas/auth/types';
 
-export * from '@graphql-tools/utils';
-export * from '@graphql-tools/schema';
 
-export interface IInitProps {
-  port?: number;
-  authEndpoint?: string;
-  endpoint?: string;
-  subscriptionEndpoint?: string;
-  timezone?: string;
-  typeDefs?: ITypedef[];
-  middlewares?: IMiddleware<any, IContext, any>[];
-  resolvers?: Array<IResolvers<any, Partial<IContext>>>;
-  jwt: IJwtConfig;
-  database: Omit<IDBConfig, 'logger' | 'localTimezone'>;
-  redis: RedisOptions;
-  logger: ILoggerCollection;
-  routes?: {
-    auth: string;
-  };
-  enableIntrospection?: boolean;
-  serverOptions?: IServerOptions;
-  websocketOptions?: IWebsocketServerOption;
-  debug?: boolean;
-  staticOptions?: IStaticOptions;
-  expressMiddlewares?: IExpressMidlewareContainer[];
-  sessions?: SesstionStoreOptions | false;
+export interface LoggersCollection {
+  /**
+   * Server logger \
+   *\
+   * Transports:
+   *  - `warn` - File transport
+   *  - `error` - File transport
+   *  - `debug` - File transport
+   */
+  server: Winston.Logger;
 }
 
-export interface IStaticOptions {
+export interface LoggersConfig {
+  logDir: string;
+}
+
+
+export interface InitProps {
+  /**
+   * Main port number
+   */
+  port?: number;
+
+  /**
+   * Graphql endpoint\
+   * \
+   * Default: `/graphql`
+   */
+  endpoint?: string;
+
+  /**
+   * Graphql subscription endpoint\
+   * \
+   * Default: `/subscriptions`
+   */
+  subscriptionEndpoint?: string;
+
+  /**
+   * Server timezone
+   * \
+   * Default: `UTC`
+   */
+  timezone?: string;
+
+  /**
+   * Logs directory
+   * \
+   * Default: `./log`
+   */
+  logDir?: string;
+
+  /**
+   * Allow introspection queries
+   * \
+   * Default: `false`
+   */
+  enableIntrospection?: boolean;
+
+  /**
+   * GraphQL Schema Definition
+   * @see: https://graphql.org
+   */
+  schema: GraphQLSchema;
+  redis: RedisOptions;
+  serverOptions?: IServerOptions;
+  websocketOptions?: WebsocketServerOption;
+  debug?: boolean;
+  staticOptions?: StaticOptions;
+  sessions?: SesstionStoreOptions | false;
+  middlewares?: Middleware[];
+}
+
+export interface Middleware {
+  express?: ExpressMidlewareFactory;
+  context?: ContextMiddlewareFacotry;
+  graphql?: IMiddleware;
+}
+
+export interface MiddlewareFactoryProps {
+  context: Context;
+  config: InitDefaultProps;
+}
+
+export type ExpressMidlewareFactory = (props: MiddlewareFactoryProps) => IExpressMiddleware;
+
+export type IExpressMiddleware = (
+  request?: Request,
+  response?: Response,
+  next?: NextFunction
+) => void;
+
+
+export type ContextMiddlewareFacotry = (props: MiddlewareFactoryProps) => Context;
+
+
+export interface StaticOptions {
   /** Prefix path (e.g. `/static`) @see https://expressjs.com/ru/starter/static-files.html */
   prefix: string;
 
@@ -61,7 +122,7 @@ export interface IServerOptions extends https.ServerOptions {
   cookieSign?: string;
 }
 
-export interface IInitDefaultProps extends IInitProps {
+export interface InitDefaultProps extends InitProps {
   port: number;
   authEndpoint: string;
   endpoint: string;
@@ -69,42 +130,35 @@ export interface IInitDefaultProps extends IInitProps {
   timezone: string;
   enableIntrospection: boolean;
   debug: boolean;
+  logDir: string;
 }
 
 /**
  * Cntext is an object shared by all the resolvers of a specific execution
  */
-export interface IContext {
+export interface Context {
   endpoint: string;
-  jwt: IJwtConfig;
-  knex: Knex;
-  logger: ILoggerCollection;
+  logger: LoggersCollection;
   timezone: string;
   startTime: any;
   pubsub: RedisPubSub;
   redis: RedisInterface;
-  deviceInfo: DeviceDetector.DeviceDetectorResult;
-  token: IAccessToken['payload'];
 }
 
-export interface ISubServerConfig {
+export interface SubServerConfig {
   schema: GraphQLSchema;
   server: https.Server | http.Server;
-  context: IContext;
+  context: Context;
 }
 
-export interface IBootstrapCallbackArgs {
+export interface BootstrapCallbackArgs {
   port: number;
-  context: IContext;
+  context: Context;
   resolveUrl: {
     graphql: string;
-    auth: string;
     subscriptions?: string;
   };
 }
-export type IExpressMidlewareContainer = (props: {context: IContext}) => IExpressMiddleware;
 
-export type IExpressMiddleware = (
-  request?: Request, response?: Response, next?: NextFunction) => void;
 
 export type GraphQLExtension = DocumentNode;

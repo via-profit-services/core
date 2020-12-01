@@ -1,8 +1,8 @@
 import path from 'path';
-import { IInitProps, configureLogger, Express } from '@via-profit-services/core';
+import { InitProps, configureLogger, Express } from '@via-profit-services/core';
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 
-const configureApp = (props?: Partial<IInitProps>): IInitProps => {
+const configureApp = (props?: Partial<InitProps>): InitProps => {
   return {
     enableIntrospection: true,
     expressMiddlewares: [

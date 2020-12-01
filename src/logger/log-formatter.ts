@@ -1,4 +1,4 @@
-import { Winston } from './configureLogger';
+import Winston from 'winston';
 
 const { format } = Winston;
 

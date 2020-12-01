@@ -11,7 +11,7 @@
 _file dataloader.ts_
 
 ```ts
-import { IContext, DataLoader, Node, collateForDataloader } from '@via-profit-services/core';
+import { Context, DataLoader, Node, collateForDataloader } from '@via-profit-services/core';
 import PersonService, { Person } from 'my-service';
 
 // Интерфейс пула даталоадеров модуля
@@ -27,7 +27,7 @@ const loaders: Loaders = {
 // Функция создания даталоадеров модуля
 // Если лоадеры уже были созданы, то функция просто их вернет,
 // либо создаст новый пул
-export default function createLoaders(context: IContext) {
+export default function createLoaders(context: Context) {
   // Проверяем, создавался ли уже этот пул
   if (loaders.persons !== null) {
     return loaders;
@@ -54,12 +54,12 @@ export default function createLoaders(context: IContext) {
 _file resolver.ts_
 
 ```ts
-import { TInputFilter, IContext, IObjectTypeResolver } from '@via-profit-services/core';
+import { TInputFilter, Context, IObjectTypeResolver } from '@via-profit-services/core';
 
 // Импортируем функцию создания пула даталоадеров
 import createLoaders from './dataloader';
 
-export const personsQueryResolver: IObjectTypeResolver<any, IContext, TInputFilter> = {
+export const personsQueryResolver: IObjectTypeResolver<any, Context, TInputFilter> = {
   // Резолвер, который должен вернуть информацию из БД
   getPersonById: (parent, args, context) => {
     const { id } = args;

@@ -1,7 +1,7 @@
 import path from 'path';
-import { IInitProps, configureLogger } from '@via-profit-services/core';
+import { InitProps, configureLogger } from '@via-profit-services/core';
 
-const configureApp = (props?: Partial<IInitProps>): IInitProps => {
+const configureApp = (props?: Partial<InitProps>): InitProps => {
   return {
     enableIntrospection: true,
     port: 9000,

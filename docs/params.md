@@ -2,14 +2,14 @@
 
 > Via Profit services / **Core**
 
-Параметры определяются интерфейсом <IInitProps>, который можно импортировать для создания отдельного модуля конфигурации:
+Параметры определяются интерфейсом <InitProps>, который можно импортировать для создания отдельного модуля конфигурации:
 
 _Пример организации модуля конфигурации **configureApp.ts**_
 
 ```ts
-import { IInitProps, configureLogger } from '@via-profit-services/core';
+import { InitProps, configureLogger } from '@via-profit-services/core';
 
-const configureApp: IInitProps = {
+const configureApp: InitProps = {
   port: 9000,
   logger: configureLogger({
     logDir: path.resolve(__dirname, 'log'),
@@ -51,7 +51,7 @@ export default configureApp;
 | `jwt.privateKey`                | `string`                    |      Да      | Путь до файла приватного ключа                                                                                                                                                   |
 | `jwt.publicKey`                 | `string`                    |      Да      | Путь до файла с публичным ключом                                                                                                                                                 |
 | `jwt.refreshTokenExpiresIn`     | `number`                    |      Да      | Время в формате Unix Time, определяющее момент, когда токен станет не валидным (время жизни Refresh токена в секундах)                                                           |
-| `logger`                        | `ILoggerConfig`             |      Да      | Объект настроек логгера                                                                                                                                                          |
+| `logger`                        | `LoggersConfig`             |      Да      | Объект настроек логгера                                                                                                                                                          |
 | `logger.logDir`                 | `string`                    |      Да      | Путь расположения директории логов                                                                                                                                               |
 | `logger.logDir.loggers`         | `{ [key: string]: Logger }` |      Да      | Объект произвольных логгеров, которые будут доступны в контексте                                                                                                                 |
 | `typeDefs`                      | `ITypedef[]`                |              | Массив GraphQL типов (SDL - схемы)                                                                                                                                               |

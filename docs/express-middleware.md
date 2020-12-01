@@ -3,7 +3,7 @@
 > Via Profit services / **Core**
 
 
-Для подключения `middleware` необходимо создать функцию, на вход которой будет передан объект с контекстом (`IContext`). Функция должна возвращать [Express middleware](https://expressjs.com/ru/guide/using-middleware.html).
+Для подключения `middleware` необходимо создать функцию, на вход которой будет передан объект с контекстом (`Context`). Функция должна возвращать [Express middleware](https://expressjs.com/ru/guide/using-middleware.html).
 
 Пример подключения `middleware`:
 

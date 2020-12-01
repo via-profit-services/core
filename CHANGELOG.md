@@ -101,7 +101,7 @@
  - [GeaphQL Tools / Utils](https://www.graphql-tools.com/docs/api/modules/utils) и все его типы теперь экспортируются напрямую из ядра:
   
   ```ts
-  import { IObjectTypeResolver, IFieldResolver, IContext } from '@via-profit-services/core';
+  import { IObjectTypeResolver, IFieldResolver, Context } from '@via-profit-services/core';
 
   const ResolverObject: IObjectTypeResolver<any, Context> = {
     getTimezone: (parent, args, context) => context.timezone,

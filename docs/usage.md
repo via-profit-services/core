@@ -46,9 +46,9 @@ type MyModuleMutation {
 _Пример резолвера **my-resolver.ts**_
 
 ```ts
-import { IContext, IObjectTypeResolver } from '@via-profit-services/core';
+import { Context, IObjectTypeResolver } from '@via-profit-services/core';
 
-const resolvers: IObjectTypeResolver<any, IContext> = {
+const resolvers: IObjectTypeResolver<any, Context> = {
   Query: {
     myModule: () => ({}),
   },

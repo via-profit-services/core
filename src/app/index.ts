@@ -1,10 +1,7 @@
-/* eslint-disable no-console */
 /* eslint-disable import/max-dependencies */
-import { makeExecutableSchema } from '@graphql-tools/schema';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import DeviceDetector from 'device-detector-js';
-import express, { Express, Request } from 'express';
+import express, { Express } from 'express';
 import { graphqlHTTP, OptionsData, RequestInfo } from 'express-graphql';
 import session from 'express-session';
 import fs from 'fs';
@@ -21,38 +18,12 @@ import sessionStoreFactory from 'session-file-store';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { v4 as uuidv4 } from 'uuid';
 
-import {
-  authMiddleware,
-  graphQLAccessMiddleware,
-  ACCESS_TOKEN_EMPTY_ID,
-  ACCESS_TOKEN_EMPTY_UUID,
-} from '../auth';
-import { knexProvider } from '../databaseManager';
-import {
-  UnauthorizedError,
-  customFormatErrorFn,
-  ServerError,
-} from '../errorHandlers';
+import { customFormatErrorFn, ServerError } from '../errorHandlers';
 import errorMiddleware from '../errorHandlers/errorMiddleware';
-import { requestHandlerMiddleware } from '../logger';
-import {
-  info,
-  auth,
-  common,
-  scalar,
-} from '../schemas';
-import AuthService from '../schemas/auth/service';
-import { TokenType } from '../schemas/auth/types';
-import {
-  IInitDefaultProps,
-  IInitProps,
-  IBootstrapCallbackArgs,
-  ISubServerConfig,
-  IContext,
-} from '../types';
+import { configureLogger } from '../logger/configure-logger';
+import { InitDefaultProps, InitProps, BootstrapCallbackArgs, SubServerConfig, Context } from '../types';
 import {
   DEFAULT_SERVER_PORT,
-  DEFAULT_AUTH_ENDPOINT,
   DEFAULT_GRAPHQL_ENDPOINT,
   DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT,
   DEFAULT_INTROSPECTION_STATE,
@@ -61,26 +32,26 @@ import {
   DEFAULT_SESSION_PATH,
   DEFAULT_SESSION_TTL,
   MAXIMUM_REQUEST_BODY_SIZE,
-} from '../utils';
-import { CronJobManager } from '../utils/cronJobManager';
+  DEFAULT_LOG_DIR,
+} from '../utils/constants';
 import { DisableIntrospectionQueries } from '../utils/disableIntrospection';
 import { headersMiddleware } from '../utils/headersMiddleware';
 
 class App {
-  public props: IInitDefaultProps;
+  public props: InitDefaultProps;
 
-  public constructor(props: IInitProps) {
+  public constructor(props: InitProps) {
     // combine default props with passed props
     this.props = {
       port: DEFAULT_SERVER_PORT,
       endpoint: DEFAULT_GRAPHQL_ENDPOINT,
-      authEndpoint: DEFAULT_AUTH_ENDPOINT,
       timezone: DEFAULT_SERVER_TIMEZONE,
       subscriptionEndpoint: DEFAULT_GRAPHQL_SUBSCRIPTION_ENDPOINT,
       enableIntrospection: DEFAULT_INTROSPECTION_STATE,
+      logDir: DEFAULT_LOG_DIR,
       debug: process.env.NODE_ENV === 'development',
       ...props,
-    } as IInitDefaultProps;
+    } as InitDefaultProps;
 
     // combine default session settings with passed
     this.props.sessions = this.props.sessions === false ? false : {
@@ -89,18 +60,12 @@ class App {
       secret: DEFAULT_SESSION_SECRET,
       ...this.props.sessions,
     };
-
-    // combine default routes with passed
-    this.props.routes = {
-      ...this.props.routes,
-    } as IInitDefaultProps['routes'];
   }
 
-  public bootstrap(callback?: (args: IBootstrapCallbackArgs) => void) {
+  public bootstrap(callback?: (args: BootstrapCallbackArgs) => void) {
     const {
       port,
       endpoint,
-      authEndpoint,
       serverOptions,
       subscriptionEndpoint,
     } = this.props;
@@ -127,15 +92,13 @@ class App {
     // Run HTTP server
     server.listen(port, () => {
       // set resolver URL's list
-      const resolveUrl: IBootstrapCallbackArgs['resolveUrl'] = {
+      const resolveUrl: BootstrapCallbackArgs['resolveUrl'] = {
         graphql: `${host}:${port}${endpoint}`,
-        auth: `${host}:${port}${authEndpoint}`,
         subscriptions: `ws${useSSL ? 's' : ''}://localhost:${port}${subscriptionEndpoint}`,
       };
 
 
       logger.server.debug(`App server started at «${resolveUrl.graphql}»`);
-      logger.server.debug(`Authentification server started at «${resolveUrl.auth}»`);
 
 
       // connect websocket subscriptions werver
@@ -153,11 +116,9 @@ class App {
     });
   }
 
-  public createSubscriptionServer(config: ISubServerConfig) {
+  public createSubscriptionServer(config: SubServerConfig) {
     const { subscriptionEndpoint, websocketOptions } = this.props;
     const { server, schema, context } = config;
-
-    const authService = new AuthService({ context });
 
     // @see https://github.com/apollographql/subscriptions-transport-ws/blob/master/docs/source/express.md
     return new SubscriptionServer(
@@ -165,23 +126,7 @@ class App {
         execute,
         schema,
         subscribe,
-        onConnect: async (connectionParams: any) => {
-          const token = AuthService.extractTokenFromSubscription(connectionParams);
-
-          const payload = await authService.verifyToken(token);
-
-          if (!payload) {
-            throw new UnauthorizedError('Invalid token');
-          }
-
-          if (payload.type !== TokenType.access) {
-            throw new UnauthorizedError('Is not an access token');
-          }
-
-          context.token = payload;
-
-          return context;
-        },
+        onConnect: async () => context,
         onDisconnect: (webSocket: any) => {
           webSocket.close();
           webSocket.terminate();
@@ -195,71 +140,28 @@ class App {
     );
   }
 
-  public createApp(): {
-    app: Express;
-      context: IContext;
-      schema: GraphQLSchema;
-      routes: IInitProps['routes'];
-      } {
+  public createApp(): { app: Express; context: Context; schema: GraphQLSchema;} {
     const {
-      typeDefs,
-      resolvers,
+      schema,
       endpoint,
-      authEndpoint,
       timezone,
       port,
-      jwt,
       middlewares,
-      database,
-      expressMiddlewares,
       redis,
-      logger,
-      routes,
+      logDir,
       subscriptionEndpoint,
       enableIntrospection,
       serverOptions,
       debug,
       staticOptions,
       sessions,
-    } = this.props as IInitDefaultProps;
+    } = this.props as InitDefaultProps;
 
     const { cookieSign } = serverOptions || {};
 
-    logger.server.debug('Create application proc was started');
-
-    // init main server handle
+    const logger = configureLogger({ logDir });
     const app = express();
 
-    const schema = makeExecutableSchema({
-      typeDefs: [
-        scalar.typeDefs,
-        common.typeDefs,
-        info.typeDefs,
-        // accounts.typeDefs,
-        auth.typeDefs,
-        ...typeDefs || [],
-      ],
-      resolvers: [
-        scalar.resolvers,
-        info.resolvers,
-        // accounts.resolvers,
-        auth.resolvers,
-        ...resolvers || [],
-      ],
-      // resolverValidationOptions: {
-      // requireResolversForResolveType: false,
-      // },
-    });
-
-    // define knex instance
-    const knex = knexProvider({
-      localTimezone: timezone,
-      logger,
-      ...database,
-    });
-
-    // configure cron job manager
-    CronJobManager.configure({ logger });
 
     let redisHandle: Redis.Redis;
     let redisPublisherHandle: Redis.Redis;
@@ -328,10 +230,10 @@ class App {
 
 
     // combine finally context object
-    const context: IContext = {
+    const preContext: Context = {
       endpoint,
       timezone,
-      jwt,
+      startTime: 0,
       logger,
       redis: redisHandle,
       pubsub: new RedisPubSub({
@@ -339,42 +241,36 @@ class App {
         subscriber: redisSubscriberHandle,
         connection: redis,
       }),
-      knex,
-      deviceInfo: {
-        client: {
-          type: '',
-          name: '',
-          version: '',
-          engine: '',
-          engineVersion: '',
-        },
-        os: {
-          name: '',
-          version: '',
-          platform: '',
-        },
-        device: {
-          type: '',
-          brand: '',
-          model: '',
-        },
-        bot: null,
-      },
-      startTime: 0,
-      token: {
-        type: TokenType.access,
-        id: ACCESS_TOKEN_EMPTY_ID,
-        uuid: ACCESS_TOKEN_EMPTY_UUID,
-        roles: [],
-        exp: 0,
-        iss: '',
-      },
     };
+
+
+    const contextMiddlewares = [...middlewares || []]
+      .filter(({ context }) => context !== undefined)
+      .map(({ context }) => context);
+
+    // try to apply context middlewares
+    const context: Context = [...contextMiddlewares || []]
+      .reduce((prevContextState, middleware) => {
+
+        try {
+          return {
+          ...prevContextState,
+          ...middleware({
+            config: this.props,
+            context: prevContextState,
+          }),
+        }
+        } catch (err) {
+
+          throw new ServerError('Failed to load context middleware', { err });
+        }
+    }, preContext);
+
 
     // use sessions
     if (sessions !== false) {
       const SessionStore = sessionStoreFactory(session);
-      sessions.logFn = (msg) => logger.session.info(msg);
+      sessions.logFn = (msg) => logger.server.info(msg);
       app.use(session({
         store: new SessionStore(sessions),
         secret: sessions.secret,
@@ -409,59 +305,47 @@ class App {
       app.use(staticOptions.prefix, express.static(staticPath));
     }
 
-    // Express middleware for manage /auth request only
-    // e.g. /auth/get-access-token, /auth/refresh-token and etc.
-    app.use(authMiddleware({ context, endpoint: authEndpoint }));
+    // apply Express middlewares
+    [...middlewares || []]
+      .filter(({ express }) => express !== undefined)
+      .map(({ express }) => express)
+      .forEach((middleware) => {
+      try {
+        app.use(middleware({
+          context,
+          config: this.props,
+        }));
+      } catch (err) {
+        throw new ServerError('Failed to load Express middleware', { err });
+      }
+    });
 
-    // Request handler (request logger) middleware
-    app.use(requestHandlerMiddleware({ context }));
-
-    if (expressMiddlewares && expressMiddlewares.length) {
-      expressMiddlewares.forEach((middleware) => {
-        app.use(middleware({ context }));
-      });
-    }
 
     // This middleware must be defined last
     app.use(errorMiddleware({ context }));
 
-    const extensions = (requestInfo: RequestInfo & { context: IContext}) => ({
-        queryTimeMs: performance.now() - requestInfo.context.startTime,
-      });
+    const extensions = (requestInfo: RequestInfo & { context: Context}) => ({
+      queryTimeMs: performance.now() - requestInfo.context.startTime,
+    });
 
-    const authService = new AuthService({ context });
+    const graphqlMiddlewares = [...middlewares || []]
+      .filter(({ graphql }) => graphql !== undefined)
+      .map(({ graphql }) => graphql);
 
     // GraphQL server
     app.use(
       endpoint,
       graphqlHTTP(
-        async (req): Promise<OptionsData & { subscriptionEndpoint?: string }> => {
-
-          const token = AuthService.extractToken(TokenType.access, req as Request);
-          const tokenPayload = await authService.verifyToken(token);
-
-          if (
-            !tokenPayload
-            || tokenPayload.type !== TokenType.access
-            || tokenPayload.id === ACCESS_TOKEN_EMPTY_ID
-          ) {
-            throw new UnauthorizedError('Invalid token');
-          }
-
+        async (): Promise<OptionsData & { subscriptionEndpoint?: string }> => {
 
           const useSSL = serverOptions?.cert;
-          const deviceDetector = new DeviceDetector();
-          context.token = tokenPayload;
-          context.deviceInfo = deviceDetector.parse(req.headers['user-agent']);
           context.startTime = performance.now();
-
-          const graphQLMiddlewares = [graphQLAccessMiddleware, ...middlewares || []];
 
           return {
             context,
-            extensions: debug ? extensions : undefined,
-            schema: applyMiddleware<any, IContext, any>(schema, ...graphQLMiddlewares),
             graphiql: false,
+            schema: applyMiddleware<any, Context, any>(schema, ...graphqlMiddlewares),
+            extensions: debug ? extensions : undefined,
             subscriptionEndpoint: `ws${useSSL ? 's' : ''}://localhost:${port}${subscriptionEndpoint}`,
             customFormatErrorFn: (error) => customFormatErrorFn({ error, context, debug }),
             validationRules: !enableIntrospection ? [DisableIntrospectionQueries] : [],
@@ -473,22 +357,7 @@ class App {
 
     logger.server.debug('Application was created');
 
-    CronJobManager.addJob('__clearExpiredTokens', {
-      cronTime: process.env.NODE_ENV === 'development'
-        ? '* 5 * * * *'
-        : '* 0 5 * * *',
-      onTick: async () => {
-        await authService.clearExpiredTokens();
-      },
-      start: true,
-    });
-
-    return {
-      app,
-      context,
-      schema,
-      routes,
-    };
+    return { app, context, schema };
   }
 }
 

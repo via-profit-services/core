@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
-  Request, Response, NextFunction, ErrorRequestHandler,
+  Request, Response, NextFunction,
 } from 'express';
 
-import { IContext } from '../types';
+import { Context } from '../types';
 import customFormatErrorFn from './customFormatErrorFn';
 
 interface IProps {
-  context: IContext;
+  context: Context;
 }
 
 const accessMiddleware = (props: IProps) => (

@@ -73,7 +73,7 @@ _Преобразует входные данные от GraphQL_
 
 ```ts
 import {
-  IContext,
+  Context,
   buildQueryFilter,
   IDirectionRange,
   TInputFilter,
@@ -82,7 +82,7 @@ import {
 
 import MyService from './my-service';
 
-export const MyQueries: IObjectTypeResolver<any, IContext, TInputFilter> = {
+export const MyQueries: IObjectTypeResolver<any, Context, TInputFilter> = {
   list: async (obj, args, context) => {
     // аргумент args = { first, last, after, before, orderBy }
 

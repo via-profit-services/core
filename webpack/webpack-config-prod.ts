@@ -1,21 +1,14 @@
-/* eslint-disable no-console */
-import chalk from 'chalk';
-import fs from 'fs-extra';
 import path from 'path';
-import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
-import { ProgressPlugin, BannerPlugin, Compiler, Configuration } from 'webpack';
+import { BannerPlugin, Configuration } from 'webpack';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import { merge } from 'webpack-merge';
 
 import packageInfo from '../package.json';
-import ViaProfitPlugin from '../src/webpack-plugin';
 import webpackBaseConfig from './webpack-config-base';
 
 const webpackProdConfig: Configuration = merge(webpackBaseConfig, {
-entry: {
+  entry: {
     index: path.resolve(__dirname, '../src/index.ts'),
-    'bin/cli': path.resolve(__dirname, '../src/bin/cli.ts'),
-    'webpack-plugin': path.resolve(__dirname, '../src/webpack-plugin/index.ts'),
   },
   output: {
     path: path.join(__dirname, '../dist/'),
@@ -24,15 +17,6 @@ entry: {
   },
   mode: 'production',
   plugins: [
-    new ProgressPlugin({
-      modules: true,
-    }),
-    new ViaProfitPlugin(),
-    new BannerPlugin({
-      banner: '#!/usr/bin/env node\n/* eslint-disable */',
-      raw: true,
-      test: /cli\.js/,
-    }),
     new BannerPlugin({
       banner: `
 Via Profit Services / Core
@@ -42,50 +26,42 @@ Contact    ${packageInfo.support}
       `,
       test: /index\.js/,
     }),
-    {
-      apply: (compiler: Compiler) => {
-        compiler.hooks.afterEmit.tapAsync('WebpackAfterBuild', (_, callback) => {
+    // {
+    //   apply: (compiler: Compiler) => {
+    //     compiler.hooks.afterEmit.tapAsync('WebpackAfterBuild', (_, callback) => {
 
-          console.log(chalk.green('chmod 755 for ../dist/bin/cli.js'));
-          fs.chmodSync(path.resolve(__dirname, '../dist/bin/cli.js'), '755');
+    //       console.log(chalk.green('chmod 755 for ../dist/bin/cli.js'));
+    //       fs.chmodSync(path.resolve(__dirname, '../dist/bin/cli.js'), '755');
 
-          console.log(chalk.green('Copy stub files'));
-          fs.copySync(
-            path.resolve(__dirname, '../src/bin/stub/'),
-            path.resolve(__dirname, '../dist/bin/stub/'),
-          );
+    //       console.log(chalk.green('Copy stub files'));
+    //       fs.copySync(
+    //         path.resolve(__dirname, '../src/bin/stub/'),
+    //         path.resolve(__dirname, '../dist/bin/stub/'),
+    //       );
 
-          console.log(chalk.green('Copy migration files'));
-          fs.copySync(
-            path.resolve(__dirname, '../src/database/migrations/'),
-            path.resolve(__dirname, '../dist/database/migrations/'),
-          );
+    //       console.log(chalk.green('Copy migration files'));
+    //       fs.copySync(
+    //         path.resolve(__dirname, '../src/database/migrations/'),
+    //         path.resolve(__dirname, '../dist/database/migrations/'),
+    //       );
 
-          callback();
-        });
+    //       callback();
+    //     });
 
-      },
-    },
+    //   },
+    // },
     new BundleAnalyzerPlugin({
       analyzerMode: process.env.ANALYZE ? 'server' : 'disabled',
       openAnalyzer: true,
-    }),
+    }) as any,
   ],
-  resolve: {
-    plugins: [
-      new TsconfigPathsPlugin(),
-    ],
-  },
   externals: {
-    moment: {
-      commonjs2: 'moment',
-    },
-    'moment-timezone': {
-      commonjs2: 'moment-timezone',
-    },
-    uuid: {
-      commonjs2: 'uuid',
-    },
+    'supports-color': 'supports-color',
+    'moment-timezone': 'moment-timezone',
+    graphql: 'graphql',
+    moment: 'moment',
+    uuid: 'uuid',
+    express: 'express',
   },
 });
 

@@ -4,14 +4,14 @@
 
 Объект контекст передается в соответствии со спецификацией GraphQL и доступен из всех резолверов.
 
-Контекст опиывается интерфейсом `<IContext>`:
+Контекст опиывается интерфейсом `<Context>`:
 
 ```ts
-interface IContext {
+interface Context {
   endpoint: string; // GraphQL endpoint
   jwt: IJwtConfig; // Параметры JSON web token
   knex: KnexInstance; // Инстанс Knex
-  logger: ILoggerCollection; // Объект логгеров
+  logger: LoggersCollection; // Объект логгеров
   pubsub: RedisPubSub (https://github.com/davidyaha/graphql-redis-subscriptions)
   redis: Redis (https://github.com/luin/ioredis/)
   timezone: string; // Текущая временная зона

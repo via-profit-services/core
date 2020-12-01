@@ -14,10 +14,10 @@
       "sourceMaps": true,
       "restart": true,
       "outFiles": [
-        "${workspaceRoot}/build/**/*.js"
+        "${workspaceRoot}/dist/**/*.js"
       ],
-      "localRoot": "${workspaceRoot}/src/playground/index.ts",
-      "remoteRoot": "${workspaceRoot}/build/playground.js",
+      "localRoot": "${workspaceRoot}/src/playground.ts",
+      "remoteRoot": "${workspaceRoot}/dist/playground.js",
       "trace": true
     },
     {

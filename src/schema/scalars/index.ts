@@ -6,7 +6,7 @@ import Money from './Money';
 import Time from './Time';
 import URL from './URL';
 
-export {
+const scalars = {
   Date,
   DateTime,
   EmailAddress,
@@ -16,3 +16,5 @@ export {
   JSON,
   JSONObject,
 };
+
+export default scalars;
