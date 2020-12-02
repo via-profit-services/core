@@ -29,6 +29,7 @@ export default (config: LoggersConfig): Logger => {
         zippedArchive: true,
         maxSize: LOG_MAX_SIZE,
         maxFiles: LOG_MAX_FILES,
+
       }),
       new transports.DailyRotateFile({
         filename: `${logDir}/${LOG_FILENAME_ERRORS}`,

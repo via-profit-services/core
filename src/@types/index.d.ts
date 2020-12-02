@@ -375,6 +375,6 @@ export class ServerError extends Error implements ErrorHandler {
     ) => void;
   }
   
-  export { Winston, withFilter };
+  export { withFilter };
   export default Application;
 }

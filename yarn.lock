@@ -1174,6 +1174,8 @@ __metadata:
     moment: "*"
     moment-timezone: "*"
     uuid: "*"
+    winston: "*"
+    winston-daily-rotate-file: "*"
   dependenciesMeta:
     bufferutil:
       optional: true

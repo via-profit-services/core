@@ -55,8 +55,6 @@
         "raw-body": "^2.4.1",
         "session-file-store": "^1.5.0",
         "subscriptions-transport-ws": "^0.9.18",
-        "winston": "^3.3.3",
-        "winston-daily-rotate-file": "^4.5.0",
         "ws": "^7.3.1"
     },
     "devDependencies": {
@@ -126,14 +124,18 @@
         "webpack-bundle-analyzer": "^4.2.0",
         "webpack-cli": "^4.2.0",
         "webpack-dev-server": "^3.11.0",
-        "webpack-merge": "^5.4.0"
+        "webpack-merge": "^5.4.0",
+        "winston": "^3.3.3",
+        "winston-daily-rotate-file": "^4.5.0"
     },
     "peerDependencies": {
         "express": "*",
         "graphql": "*",
         "moment": "*",
         "moment-timezone": "*",
-        "uuid": "*"
+        "uuid": "*",
+        "winston": "*",
+        "winston-daily-rotate-file": "*"
     },
     "optionalDependencies": {
         "bufferutil": "^4.0.2",

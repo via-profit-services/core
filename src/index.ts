@@ -1,7 +1,5 @@
 import DataLoader from 'dataloader';
 import { withFilter } from 'graphql-subscriptions';
-import Winston from 'winston';
-import 'winston-daily-rotate-file';
 
 import Application from './app';
 import logFormatter from './logger/log-formatter';
@@ -20,7 +18,6 @@ export {
   DataLoader,
   withFilter,
   logFormatter,
-  Winston,
 };
 
 export default Application;
