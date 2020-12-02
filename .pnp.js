@@ -39,11 +39,11 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["@jagi/jest-transform-graphql", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:1.0.2"],
             ["@types/bluebird", "npm:3.5.33"],
+            ["@types/content-type", "npm:1.1.3"],
             ["@types/cookie-parser", "npm:1.4.2"],
             ["@types/cors", "npm:2.8.8"],
             ["@types/cron", "npm:1.7.2"],
             ["@types/express", "npm:4.17.9"],
-            ["@types/express-graphql", "npm:0.9.0"],
             ["@types/express-session", "npm:1.17.3"],
             ["@types/fs-extra", "npm:9.0.4"],
             ["@types/ioredis", "npm:4.17.8"],
@@ -67,6 +67,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@via-profit-services/eslint-config", "npm:0.1.11"],
             ["@zerollup/ts-transform-paths", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:1.7.18"],
             ["chalk", "npm:3.0.0"],
+            ["content-type", "npm:1.0.4"],
             ["cookie-parser", "npm:1.4.5"],
             ["cors", "npm:2.8.5"],
             ["cron", "npm:1.8.2"],
@@ -87,7 +88,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint-plugin-standard", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.1.0"],
             ["express", "npm:4.17.1"],
             ["express-async-handler", "npm:1.1.4"],
-            ["express-graphql", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:0.12.0"],
             ["express-session", "npm:1.17.1"],
             ["fs-extra", "npm:9.0.1"],
             ["graphql", "npm:15.4.0"],
@@ -104,6 +104,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["nodemon", "npm:2.0.6"],
             ["null-loader", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.0.1"],
             ["prettier", "npm:2.2.1"],
+            ["raw-body", "npm:2.4.1"],
             ["rimraf", "npm:3.0.2"],
             ["session-file-store", "npm:1.5.0"],
             ["shebang-loader", "npm:0.0.1"],
@@ -758,6 +759,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
+      ["@types/content-type", [
+        ["npm:1.1.3", {
+          "packageLocation": "./.yarn/cache/@types-content-type-npm-1.1.3-6701095761-5cb9976726.zip/node_modules/@types/content-type/",
+          "packageDependencies": [
+            ["@types/content-type", "npm:1.1.3"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
       ["@types/cookie-parser", [
         ["npm:1.4.2", {
           "packageLocation": "./.yarn/cache/@types-cookie-parser-npm-1.4.2-e1bc89ec98-a27ce8cddf.zip/node_modules/@types/cookie-parser/",
@@ -838,16 +848,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/express-serve-static-core", "npm:4.17.14"],
             ["@types/qs", "npm:6.9.5"],
             ["@types/serve-static", "npm:1.13.8"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["@types/express-graphql", [
-        ["npm:0.9.0", {
-          "packageLocation": "./.yarn/cache/@types-express-graphql-npm-0.9.0-81ccb0b6d9-c2d9d403ad.zip/node_modules/@types/express-graphql/",
-          "packageDependencies": [
-            ["@types/express-graphql", "npm:0.9.0"],
-            ["express-graphql", "virtual:81ccb0b6d9dec0de8117538ffcff243340f76bc1d9e508d68bcd2e95fad3568eca34fcb375bfffd59e37a816a80c197efedec7ace2a30b447f88f1e672f9663e#npm:0.12.0"]
           ],
           "linkType": "HARD",
         }]
@@ -1407,11 +1407,11 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@via-profit-services/core", "workspace:."],
             ["@jagi/jest-transform-graphql", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:1.0.2"],
             ["@types/bluebird", "npm:3.5.33"],
+            ["@types/content-type", "npm:1.1.3"],
             ["@types/cookie-parser", "npm:1.4.2"],
             ["@types/cors", "npm:2.8.8"],
             ["@types/cron", "npm:1.7.2"],
             ["@types/express", "npm:4.17.9"],
-            ["@types/express-graphql", "npm:0.9.0"],
             ["@types/express-session", "npm:1.17.3"],
             ["@types/fs-extra", "npm:9.0.4"],
             ["@types/ioredis", "npm:4.17.8"],
@@ -1435,6 +1435,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@via-profit-services/eslint-config", "npm:0.1.11"],
             ["@zerollup/ts-transform-paths", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:1.7.18"],
             ["chalk", "npm:3.0.0"],
+            ["content-type", "npm:1.0.4"],
             ["cookie-parser", "npm:1.4.5"],
             ["cors", "npm:2.8.5"],
             ["cron", "npm:1.8.2"],
@@ -1455,7 +1456,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint-plugin-standard", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.1.0"],
             ["express", "npm:4.17.1"],
             ["express-async-handler", "npm:1.1.4"],
-            ["express-graphql", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:0.12.0"],
             ["express-session", "npm:1.17.1"],
             ["fs-extra", "npm:9.0.1"],
             ["graphql", "npm:15.4.0"],
@@ -1472,6 +1472,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["nodemon", "npm:2.0.6"],
             ["null-loader", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.0.1"],
             ["prettier", "npm:2.2.1"],
+            ["raw-body", "npm:2.4.1"],
             ["rimraf", "npm:3.0.2"],
             ["session-file-store", "npm:1.5.0"],
             ["shebang-loader", "npm:0.0.1"],
@@ -5027,42 +5028,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
-      ["express-graphql", [
-        ["virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:0.12.0", {
-          "packageLocation": "./.yarn/$$virtual/express-graphql-virtual-33519a09d2/0/cache/express-graphql-npm-0.12.0-0ae188e52e-d0b1aa947c.zip/node_modules/express-graphql/",
-          "packageDependencies": [
-            ["express-graphql", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:0.12.0"],
-            ["@types/graphql", null],
-            ["accepts", "npm:1.3.7"],
-            ["content-type", "npm:1.0.4"],
-            ["graphql", "npm:15.4.0"],
-            ["http-errors", "npm:1.8.0"],
-            ["raw-body", "npm:2.4.1"]
-          ],
-          "packagePeers": [
-            "@types/graphql",
-            "graphql"
-          ],
-          "linkType": "HARD",
-        }],
-        ["virtual:81ccb0b6d9dec0de8117538ffcff243340f76bc1d9e508d68bcd2e95fad3568eca34fcb375bfffd59e37a816a80c197efedec7ace2a30b447f88f1e672f9663e#npm:0.12.0", {
-          "packageLocation": "./.yarn/$$virtual/express-graphql-virtual-6f28d93d51/0/cache/express-graphql-npm-0.12.0-0ae188e52e-d0b1aa947c.zip/node_modules/express-graphql/",
-          "packageDependencies": [
-            ["express-graphql", "virtual:81ccb0b6d9dec0de8117538ffcff243340f76bc1d9e508d68bcd2e95fad3568eca34fcb375bfffd59e37a816a80c197efedec7ace2a30b447f88f1e672f9663e#npm:0.12.0"],
-            ["@types/graphql", null],
-            ["accepts", "npm:1.3.7"],
-            ["content-type", "npm:1.0.4"],
-            ["graphql", null],
-            ["http-errors", "npm:1.8.0"],
-            ["raw-body", "npm:2.4.1"]
-          ],
-          "packagePeers": [
-            "@types/graphql",
-            "graphql"
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
       ["express-session", [
         ["npm:1.17.1", {
           "packageLocation": "./.yarn/cache/express-session-npm-1.17.1-e06c1269f1-f40acdd82f.zip/node_modules/express-session/",
@@ -6146,18 +6111,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["depd", "npm:1.1.2"],
             ["inherits", "npm:2.0.4"],
             ["setprototypeof", "npm:1.1.1"],
-            ["statuses", "npm:1.5.0"],
-            ["toidentifier", "npm:1.0.0"]
-          ],
-          "linkType": "HARD",
-        }],
-        ["npm:1.8.0", {
-          "packageLocation": "./.yarn/cache/http-errors-npm-1.8.0-4399ea3b8d-95ad78508b.zip/node_modules/http-errors/",
-          "packageDependencies": [
-            ["http-errors", "npm:1.8.0"],
-            ["depd", "npm:1.1.2"],
-            ["inherits", "npm:2.0.4"],
-            ["setprototypeof", "npm:1.2.0"],
             ["statuses", "npm:1.5.0"],
             ["toidentifier", "npm:1.0.0"]
           ],
@@ -10534,13 +10487,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/setprototypeof-npm-1.1.1-706b6318ec-0efed4da5a.zip/node_modules/setprototypeof/",
           "packageDependencies": [
             ["setprototypeof", "npm:1.1.1"]
-          ],
-          "linkType": "HARD",
-        }],
-        ["npm:1.2.0", {
-          "packageLocation": "./.yarn/cache/setprototypeof-npm-1.2.0-0fedbdcd3a-7269143985.zip/node_modules/setprototypeof/",
-          "packageDependencies": [
-            ["setprototypeof", "npm:1.2.0"]
           ],
           "linkType": "HARD",
         }]

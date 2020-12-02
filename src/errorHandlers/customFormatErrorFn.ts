@@ -48,7 +48,7 @@ const customFormatErrorFn = (props: IProps) => {
 
   if (debug) {
     console.log('');
-    console.log('============== Caught the Error ==============');
+    console.log('\x1b[31m%s\x1b[0m', '============== Caught the Error ==============');
     console.log('');
 
     if (originalError) {
@@ -57,14 +57,14 @@ const customFormatErrorFn = (props: IProps) => {
       }
 
       if (originalError.metaData) {
-        console.log('Error metadata', originalError.metaData);
+        console.log('\x1b[33m%s\x1b[0m', 'Error metadata', originalError.metaData);
       }
     }
 
     console.log('');
     console.log(error.stack);
     console.log('');
-    console.log('============== End of Error report ==============');
+    console.log('\x1b[31m%s\x1b[0m', '============== End of Error report ==============');
     console.log('');
 
     return {

@@ -3,7 +3,7 @@ import type { InitDefaultProps, BootstrapCallbackArgs, SubServerConfig, Context,
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { Express } from 'express';
-import { graphqlHTTP, OptionsData, RequestInfo } from 'express-graphql';
+// import { graphqlHTTP, OptionsData, RequestInfo } from 'express-graphql';
 import session from 'express-session';
 import fs from 'fs';
 import { GraphQLSchema, execute, subscribe } from 'graphql';
@@ -33,6 +33,7 @@ import {
 import customFormatErrorFn from '../errorHandlers/customFormatErrorFn';
 import errorMiddleware from '../errorHandlers/errorMiddleware';
 import ServerError from '../errorHandlers/ServerError';
+import { graphqlHTTP, OptionsData, RequestInfo } from '../graphql-express';
 import configureLogger from '../logger/configure-logger';
 import { DisableIntrospectionQueries } from '../utils/disableIntrospection';
 import headersMiddleware from '../utils/headersMiddleware';
@@ -344,7 +345,6 @@ class Application {
 
           return {
             context,
-            graphiql: false,
             schema: applyMiddleware<any, Context, any>(schema, ...graphqlMiddlewares),
             extensions: debug ? extensions : undefined,
             subscriptionEndpoint: `ws${useSSL ? 's' : ''}://localhost:${port}${subscriptionEndpoint}`,
