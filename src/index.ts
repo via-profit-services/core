@@ -1,32 +1,21 @@
-import DefaultResolvers from './schema/resolvers/DefaultResolvers';
-import Date from './schema/scalars/Date';
-import DateTime from './schema/scalars/DateTime';
-import EmailAddress from './schema/scalars/EmailAddress';
-import { JSON, JSONObject } from './schema/scalars/JSON';
-import Money from './schema/scalars/Money';
-import Time from './schema/scalars/Time';
-import URL from './schema/scalars/URL';
-import schema from './schema/typeDefs';
+import DataLoader from 'dataloader';
+import { withFilter } from 'graphql-subscriptions';
 
-const scalars = {
-  Date,
-  DateTime,
-  EmailAddress,
-  Money,
-  Time,
-  URL,
-  JSON,
-  JSONObject,
-};
+import Application from './app';
+import resolvers from './schema/resolvers';
+import typeDefs from './schema/typeDefs';
 
-const resolvers = {
-  ...scalars,
-  ...DefaultResolvers,
-}
-
-export * from './types';
-export * from './app';
-export * from './utils';
 export * from './logger';
 export * from './errorHandlers';
-export { schema, resolvers, scalars };
+export * from './utils/cursors';
+export * from './utils/nodes';
+export * from './utils/filters';
+
+export {
+  typeDefs,
+  resolvers,
+  DataLoader,
+  withFilter,
+};
+
+export default Application;

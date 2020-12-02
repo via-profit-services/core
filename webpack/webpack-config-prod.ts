@@ -1,5 +1,6 @@
+import fs from 'fs';
 import path from 'path';
-import { BannerPlugin, Configuration } from 'webpack';
+import { BannerPlugin, Configuration, Compiler } from 'webpack';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import { merge } from 'webpack-merge';
 
@@ -26,30 +27,27 @@ Contact    ${packageInfo.support}
       `,
       test: /index\.js/,
     }),
-    // {
-    //   apply: (compiler: Compiler) => {
-    //     compiler.hooks.afterEmit.tapAsync('WebpackAfterBuild', (_, callback) => {
+    {
+      apply: (compiler: Compiler) => {
+        compiler.hooks.beforeRun.tapAsync('WebpackBeforeBuild', (_, callback) => {
 
-    //       console.log(chalk.green('chmod 755 for ../dist/bin/cli.js'));
-    //       fs.chmodSync(path.resolve(__dirname, '../dist/bin/cli.js'), '755');
+          if (fs.existsSync(path.join(__dirname, '../dist/'))) {
+            fs.rmdirSync(path.join(__dirname, '../dist/'), { recursive: true })
+          }
 
-    //       console.log(chalk.green('Copy stub files'));
-    //       fs.copySync(
-    //         path.resolve(__dirname, '../src/bin/stub/'),
-    //         path.resolve(__dirname, '../dist/bin/stub/'),
-    //       );
+          callback();
+        });
 
-    //       console.log(chalk.green('Copy migration files'));
-    //       fs.copySync(
-    //         path.resolve(__dirname, '../src/database/migrations/'),
-    //         path.resolve(__dirname, '../dist/database/migrations/'),
-    //       );
+        compiler.hooks.afterEmit.tapAsync('WebpackAfterBuild', (_, callback) => {
+          fs.copyFileSync(
+            path.resolve(__dirname, '../src/@types/index.d.ts'),
+            path.resolve(__dirname, '../dist/index.d.ts'),
+          );
+          callback();
+        });
 
-    //       callback();
-    //     });
-
-    //   },
-    // },
+      },
+    },
     new BundleAnalyzerPlugin({
       analyzerMode: process.env.ANALYZE ? 'server' : 'disabled',
       openAnalyzer: true,

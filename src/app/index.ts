@@ -1,4 +1,5 @@
 /* eslint-disable import/max-dependencies */
+import type { InitDefaultProps, BootstrapCallbackArgs, SubServerConfig, Context, InitProps } from '@via-profit-services/core';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { Express } from 'express';
@@ -8,7 +9,6 @@ import fs from 'fs';
 import { GraphQLSchema, execute, subscribe } from 'graphql';
 import { applyMiddleware } from 'graphql-middleware';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { withFilter } from 'graphql-subscriptions';
 import http from 'http';
 import https from 'https';
 import Redis from 'ioredis';
@@ -18,10 +18,6 @@ import sessionStoreFactory from 'session-file-store';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { v4 as uuidv4 } from 'uuid';
 
-import { customFormatErrorFn, ServerError } from '../errorHandlers';
-import errorMiddleware from '../errorHandlers/errorMiddleware';
-import { configureLogger } from '../logger/configure-logger';
-import { InitDefaultProps, InitProps, BootstrapCallbackArgs, SubServerConfig, Context } from '../types';
 import {
   DEFAULT_SERVER_PORT,
   DEFAULT_GRAPHQL_ENDPOINT,
@@ -33,11 +29,16 @@ import {
   DEFAULT_SESSION_TTL,
   MAXIMUM_REQUEST_BODY_SIZE,
   DEFAULT_LOG_DIR,
-} from '../utils/constants';
+} from '../constants';
+import customFormatErrorFn from '../errorHandlers/customFormatErrorFn';
+import errorMiddleware from '../errorHandlers/errorMiddleware';
+import ServerError from '../errorHandlers/ServerError';
+import configureLogger from '../logger/configure-logger';
 import { DisableIntrospectionQueries } from '../utils/disableIntrospection';
-import { headersMiddleware } from '../utils/headersMiddleware';
+import headersMiddleware from '../utils/headersMiddleware';
 
-class App {
+
+class Application {
   public props: InitDefaultProps;
 
   public constructor(props: InitProps) {
@@ -361,5 +362,4 @@ class App {
   }
 }
 
-export default App;
-export { App, withFilter };
+export default Application;

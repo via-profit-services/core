@@ -2,7 +2,7 @@
 // import { buildClientSchema, getIntrospectionQuery, printSchema } from 'graphql/utilities';
 // import { OutgoingHttpHeaders } from 'http';
 // import path from 'path';
-export const downloadSchema = () => {}
+// export const downloadSchema = () => {}
 // export const downloadSchema = async (options: IDownloadSchemaOptions) => {
 //   const {
 //     endpoint, method, token, filename, headers,

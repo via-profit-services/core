@@ -1,12 +1,11 @@
 /* eslint-disable no-console */
+import type { ErrorHandler, Context } from '@via-profit-services/core';
 import { GraphQLError } from 'graphql';
 
-import { Context } from '../types';
 import BadRequestError from './BadRequestError';
 import ForbiddenError from './ForbiddenError';
 import NotFoundError from './NotFoundError';
 import ServerError from './ServerError';
-import { ErrorHandler } from './types';
 
 type GraphQLErrorM = GraphQLError & {
   originalError: ErrorHandler;

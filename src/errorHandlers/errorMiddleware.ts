@@ -1,9 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-  Request, Response, NextFunction,
-} from 'express';
+import type { Context } from '@via-profit-services/core';
+import type { Request, Response, NextFunction } from 'express';
 
-import { Context } from '../types';
 import customFormatErrorFn from './customFormatErrorFn';
 
 interface IProps {
@@ -12,9 +9,9 @@ interface IProps {
 
 const accessMiddleware = (props: IProps) => (
   error: any,
-  req: Request,
-  res: Response,
-  next: NextFunction,
+  _req: Request,
+  _res: Response,
+  _next: NextFunction,
 ) => {
   const { context } = props;
 
