@@ -18,16 +18,7 @@ const customFormatErrorFn = (props: IProps) => {
   const stack = error.stack.split('\n') || [];
 
   switch (true) {
-    // case originalError instanceof UnauthorizedError:
-    //   logger.auth.error(originalError.message, {
-    //     ...error, meta: originalError.metaData, token, stack,
-    //   });
-    //   break;
-
     case originalError instanceof ForbiddenError:
-      // logger.auth.error(originalError.message, {
-      //   ...error, meta: originalError.metaData, stack,
-      // });
       logger.server.error(originalError.message, {
         ...error, meta: originalError.metaData, stack,
       });
@@ -53,7 +44,7 @@ const customFormatErrorFn = (props: IProps) => {
 
     if (originalError) {
       if (originalError.message) {
-        console.log(originalError.message);
+        console.log('\x1b[33m%s\x1b[0m', originalError.message);
       }
 
       if (originalError.metaData) {
@@ -62,7 +53,7 @@ const customFormatErrorFn = (props: IProps) => {
     }
 
     console.log('');
-    console.log(error.stack);
+    console.log('\x1b[33m%s\x1b[0m', error.stack);
     console.log('');
     console.log('\x1b[31m%s\x1b[0m', '============== End of Error report ==============');
     console.log('');
