@@ -21,4 +21,3 @@ export const LOG_FILENAME_WARNINGS = 'warnings-%DATE%.log';
 export const LOG_DATE_PATTERNT = 'YYYY-MM-DD';
 export const LOG_MAX_SIZE = '20m';
 export const LOG_MAX_FILES = '14d';
-

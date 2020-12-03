@@ -1,4 +1,4 @@
-import type { WhereAction, OutputFilter, OutputSearch, ApplyAliases, WhereField, BuildQueryFilter } from '@via-profit-services/core';
+import type { OutputFilter, OutputSearch, ApplyAliases, WhereField, BuildQueryFilter } from '@via-profit-services/core';
 
 import { DEFAULT_NODES_LIMIT } from '../constants';
 import { getCursorPayload } from './cursors';
@@ -67,17 +67,9 @@ export const buildQueryFilter: BuildQueryFilter = (args) => {
     if (!Array.isArray(filter)) {
       Object.entries(filter).forEach(([field, value]) => {
         if (Array.isArray(value)) {
-          outputFilter.where.push([
-            field,
-            'in' as WhereAction.IN,
-            value,
-          ]);
+          outputFilter.where.push([ field, 'in', value ]);
         } else {
-          outputFilter.where.push([
-            field,
-            '=' as WhereAction.EQ,
-            value,
-          ]);
+          outputFilter.where.push([ field, '=', value ]);
         }
       });
     }

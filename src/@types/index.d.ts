@@ -10,6 +10,7 @@ declare module '@via-profit-services/core' {
   import { IMiddleware } from 'graphql-middleware';
   import { RedisPubSub } from 'graphql-redis-subscriptions';
   import { withFilter } from 'graphql-subscriptions';
+  import DataLoader from 'dataloader';
   import http from 'http';
   import https from 'https';
   import { RedisOptions, Redis as RedisInterface } from 'ioredis';
@@ -302,10 +303,8 @@ declare module '@via-profit-services/core' {
   }[];
   export type ApplyAliases = (whereClause: Where, aliases: TableAliases) => Where;
   export type BuildQueryFilter = <T extends InputFilter>(args: T) => OutputFilter;
- 
-
-
-export class ServerError extends Error implements ErrorHandler {
+  
+  export class ServerError extends Error implements ErrorHandler {
       metaData: any;
       status: number;
       constructor(message: string, metaData?: any);
@@ -325,25 +324,10 @@ export class ServerError extends Error implements ErrorHandler {
       status: number;
       constructor(message: string, metaData?: any);
   }
-  export enum DirectionRange {
-      ASC = "ASC",
-      DESC = "DESC"
-  }
-  export enum WhereAction {
-      EQ = "=",
-      NEQ = "<>",
-      GT = ">",
-      LT = "<",
-      GTE = ">=",
-      LTE = "<=",
-      IN = "in",
-      NOTIN = "notIn",
-      LIKE = "like",
-      ILIKE = "ilike",
-      NULL = "IS NULL",
-      NOTNULL = "IS NOT NULL"
-  }
 
+  export type DirectionRange = 'asc' | 'desc';
+  export type WhereAction = '=' | '<>' | '>' | '<' | '>=' | '<=' | 'in' | 'notIn' | 'like' | 'ilike' | 'is null' | 'is not null';
+  
   export const logFormatter: Winston.Logform.Format;
   export const typeDefs: DocumentNode;
   export const resolvers: any;
@@ -375,6 +359,6 @@ export class ServerError extends Error implements ErrorHandler {
     ) => void;
   }
   
-  export { withFilter };
+  export { withFilter, DataLoader };
   export default Application;
 }

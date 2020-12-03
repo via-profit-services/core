@@ -232,7 +232,7 @@ class Application {
 
 
     // combine finally context object
-    const preContext: Context = {
+    const context: Context = {
       endpoint,
       timezone,
       startTime: 0,
@@ -244,29 +244,6 @@ class Application {
         connection: redis,
       }),
     };
-
-
-    const contextMiddlewares = [...middlewares || []]
-      .filter(({ context }) => context !== undefined)
-      .map(({ context }) => context);
-
-    // try to apply context middlewares
-    const context: Context = [...contextMiddlewares || []]
-      .reduce((prevContextState, middleware) => {
-
-        try {
-          return {
-          ...prevContextState,
-          ...middleware({
-            config: this.props,
-            context: prevContextState,
-          }),
-        }
-        } catch (err) {
-
-          throw new ServerError('Failed to load context middleware', { err });
-        }
-    }, preContext);
 
 
     // use sessions
@@ -343,8 +320,32 @@ class Application {
           const useSSL = serverOptions?.cert;
           context.startTime = performance.now();
 
+
+          const contextMiddlewares = [...middlewares || []]
+            .filter(({ context }) => context !== undefined)
+            .map(({ context }) => context);
+
+          // try to apply context middlewares
+          const mutableContext: Context = [...contextMiddlewares || []]
+            .reduce((prevContextState, middleware) => {
+
+              try {
+                return {
+                ...prevContextState,
+                ...middleware({
+                  config: this.props,
+                  context: prevContextState,
+                }),
+              }
+              } catch (err) {
+
+                throw new ServerError('Failed to load context middleware', { err });
+              }
+          }, context);
+
+
           return {
-            context,
+            context: mutableContext,
             schema: applyMiddleware<any, Context, any>(schema, ...graphqlMiddlewares),
             extensions: debug ? extensions : undefined,
             subscriptionEndpoint: `ws${useSSL ? 's' : ''}://localhost:${port}${subscriptionEndpoint}`,
