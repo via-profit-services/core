@@ -8,6 +8,7 @@
       "name": "Attach to debugger",
       "type": "node",
       "request": "attach",
+      "stopOnEntry": false,
       "protocol": "inspector",
       "port": 9229,
       "sourceMaps": true,
