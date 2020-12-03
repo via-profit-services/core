@@ -1,3 +1,5 @@
+// Fork of https://github.com/graphql/express-graphql
+
 import type {
   ASTVisitor,
   DocumentNode,

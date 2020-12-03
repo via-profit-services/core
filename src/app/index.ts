@@ -9,8 +9,7 @@ import fs from 'fs';
 import { GraphQLSchema, execute, subscribe } from 'graphql';
 import { applyMiddleware } from 'graphql-middleware';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import http from 'http';
-import https from 'https';
+import { createServer, Server } from 'http';
 import Redis from 'ioredis';
 import path from 'path';
 import { performance } from 'perf_hooks';
@@ -74,29 +73,26 @@ class Application {
 
     const { app, schema, context } = this.createApp();
     const { logger } = context;
-    const useSSL = serverOptions?.cert;
 
     process.on('warning', (e) => logger.server.warn(e.name, e));
 
-    let server: http.Server | https.Server;
+    let server: Server;
     try {
-      server = useSSL
-        ? https.createServer(serverOptions || {}, app)
-        : http.createServer(serverOptions || {}, app);
+      server = createServer(serverOptions || {}, app);
     } catch (err) {
       logger.server.error('Failed to start server', { err });
       throw new ServerError('Failed to start server', err);
     }
 
 
-    const host = `http${useSSL ? 's' : ''}://localhost`;
+    const host = 'http://localhost';
 
     // Run HTTP server
     server.listen(port, () => {
       // set resolver URL's list
       const resolveUrl: BootstrapCallbackArgs['resolveUrl'] = {
         graphql: `${host}:${port}${endpoint}`,
-        subscriptions: `ws${useSSL ? 's' : ''}://localhost:${port}${subscriptionEndpoint}`,
+        subscriptions: `ws://localhost:${port}${subscriptionEndpoint}`,
       };
 
 
@@ -315,11 +311,9 @@ class Application {
     app.use(
       endpoint,
       graphqlHTTP(
-        async (): Promise<OptionsData & { subscriptionEndpoint?: string }> => {
+        async (request): Promise<OptionsData & { subscriptionEndpoint?: string }> => {
 
-          const useSSL = serverOptions?.cert;
           context.startTime = performance.now();
-
 
           const contextMiddlewares = [...middlewares || []]
             .filter(({ context }) => context !== undefined)
@@ -335,6 +329,7 @@ class Application {
                 ...middleware({
                   config: this.props,
                   context: prevContextState,
+                  request,
                 }),
               }
               } catch (err) {
@@ -348,7 +343,7 @@ class Application {
             context: mutableContext,
             schema: applyMiddleware<any, Context, any>(schema, ...graphqlMiddlewares),
             extensions: debug ? extensions : undefined,
-            subscriptionEndpoint: `ws${useSSL ? 's' : ''}://localhost:${port}${subscriptionEndpoint}`,
+            subscriptionEndpoint: `ws://localhost:${port}${subscriptionEndpoint}`,
             customFormatErrorFn: (error) => customFormatErrorFn({ error, context, debug }),
             validationRules: !enableIntrospection ? [DisableIntrospectionQueries] : [],
           };

@@ -11,8 +11,7 @@ declare module '@via-profit-services/core' {
   import { RedisPubSub } from 'graphql-redis-subscriptions';
   import { withFilter } from 'graphql-subscriptions';
   import DataLoader from 'dataloader';
-  import http from 'http';
-  import https from 'https';
+  import { IncomingMessage, Server as HTTPServer, ServerOptions as HTTPServerOptions } from 'http';
   import { RedisOptions, Redis as RedisInterface } from 'ioredis';
   import { Options as SesstionStoreOptions } from 'session-file-store';
   import Winston from 'winston';
@@ -91,28 +90,31 @@ declare module '@via-profit-services/core' {
       middlewares?: Middleware[];
   }
   export interface Middleware {
+      graphql?: IMiddleware;
       express?: ExpressMidlewareFactory;
       context?: ContextMiddlewareFacotry;
-      graphql?: IMiddleware;
   }
-  export interface MiddlewareFactoryProps {
-      context: Context;
-      config: InitDefaultProps;
+  export interface ContextMiddlewareFactoryProps {
+    context: Context;
+    config: InitDefaultProps;
+    request: IncomingMessage;
   }
-  export type ExpressMidlewareFactory = (props: MiddlewareFactoryProps) => IExpressMiddleware;
-  export type IExpressMiddleware = (request?: Request, response?: Response, next?: NextFunction) => void;
-  export type ContextMiddlewareFacotry = (props: MiddlewareFactoryProps) => Context;
+  export interface ExpressMiddlewareFactoryProps {
+    context: Context;
+    config: InitDefaultProps;    
+  }
+  export type ExpressMiddleware = (request?: Request, response?: Response, next?: NextFunction) => void;
+  export type ExpressMidlewareFactory = (props: ExpressMiddlewareFactoryProps) => ExpressMiddleware;
+  export type ContextMiddlewareFacotry = (props: ContextMiddlewareFactoryProps) => Context;
   export interface StaticOptions {
       /** Prefix path (e.g. `/static`) @see https://expressjs.com/ru/starter/static-files.html */
       prefix: string;
       /** Static real path (e.g. `/public`) @see https://expressjs.com/ru/starter/static-files.html */
       staticDir: string;
   }
-  export interface ServerOptions extends https.ServerOptions {
-      key?: https.ServerOptions['key'];
-      cert?: https.ServerOptions['cert'];
+  export type ServerOptions = HTTPServerOptions & {
       cookieSign?: string;
-  }
+  };
   export interface InitDefaultProps extends InitProps {
       port: number;
       authEndpoint: string;
@@ -125,7 +127,7 @@ declare module '@via-profit-services/core' {
   }
   export interface SubServerConfig {
     schema: GraphQLSchema;
-    server: https.Server | http.Server;
+    server: HTTPServer;
     context: Context;
   }
   
@@ -180,7 +182,7 @@ declare module '@via-profit-services/core' {
       node: Node<T>;
       cursor: string;
   }
-  export interface IListResponse<T> {
+  export interface ListResponse<T> {
       totalCount: number;
       offset: number;
       limit: number;
