@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import { makeExecutableSchema } from '@graphql-tools/schema';
+import { createLogger } from 'winston';
 
 import Application, { typeDefs, resolvers } from '../index';
 
@@ -20,26 +21,23 @@ const app = new Application({
   },
   middlewares: [
     {
-      context: ({ context }) => {
-        console.log('middleware body')
-
-        return context;
-      },
+      context: ({ context }) => ({
+          ...context,
+          logger: {
+            ...context.logger,
+            test: createLogger(),
+          },
+        }),
     },
   ],
 });
 
-app.bootstrap(({ resolveUrl, context }) => {
+app.bootstrap(({ resolveUrl, logger }) => {
   const {
     graphql,
     subscriptions,
   } = resolveUrl;
 
-  const { logger } = context;
-  logger.server.debug('Server logger bootstrap')
-  // logger.sql.debug('SQL logger bootstrap')
-  console.log({ logger })
-  console.log('');
-  console.log(`GraphQL server started at ${graphql}`);
-  console.log(`Subscription server started at ${subscriptions}`);
+  logger.server.debug(`GraphQL server started at ${graphql}`);
+  logger.server.debug(`Subscription server started at ${subscriptions}`);
 });
