@@ -133,7 +133,9 @@ declare module '@via-profit-services/core' {
   
   export interface BootstrapCallbackArgs {
     port: number;
-    context: Context;
+    logger: {
+        server: Logger;
+    };
     resolveUrl: {
         graphql: string;
         subscriptions?: string;
