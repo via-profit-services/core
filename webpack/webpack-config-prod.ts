@@ -56,14 +56,16 @@ Contact    ${packageInfo.support}
       openAnalyzer: true,
     }) as any,
   ],
-  externals: {
-    'supports-color': 'supports-color',
-    'moment-timezone': 'moment-timezone',
-    graphql: 'graphql',
-    moment: 'moment',
-    uuid: 'uuid',
-    express: 'express',
-  },
+  externals: [
+    /winston/,
+    /winston-daily-rotate-file/,
+    /supports-color/,
+    /moment/,
+    /moment-timezone/,
+    /graphql/,
+    /uuid/,
+    /express/,
+  ],
 });
 
 export default webpackProdConfig;
