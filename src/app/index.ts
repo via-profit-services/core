@@ -314,12 +314,13 @@ class Application {
         async (request): Promise<OptionsData & { subscriptionEndpoint?: string }> => {
 
           context.startTime = performance.now();
-
           const contextMiddlewares = [...middlewares || []]
-            .filter(({ context }) => context !== undefined)
-            .map(({ context }) => context);
+          .filter(({ context }) => context !== undefined)
+          .map(({ context }) => context);
+          console.log(`contextMiddlewares length ${contextMiddlewares.length}`);
 
           // try to apply context middlewares
+          // console.log('reduce a');
           const mutableContext: Context = [...contextMiddlewares || []]
             .reduce((prevContextState, middleware) => {
 

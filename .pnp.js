@@ -37,6 +37,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         [null, {
           "packageLocation": "./",
           "packageDependencies": [
+            ["@graphql-tools/schema", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:7.1.2"],
             ["@jagi/jest-transform-graphql", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:1.0.2"],
             ["@types/bluebird", "npm:3.5.33"],
             ["@types/content-type", "npm:1.1.3"],
@@ -119,11 +120,22 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["webpack-cli", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.2.0"],
             ["webpack-dev-server", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:3.11.0"],
             ["webpack-merge", "npm:5.4.0"],
+            ["webpack-node-externals", "npm:2.5.2"],
             ["winston", "npm:3.3.3"],
             ["winston-daily-rotate-file", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.5.0"],
             ["ws", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:7.4.0"]
           ],
           "linkType": "SOFT",
+        }]
+      ]],
+      ["@ardatan/aggregate-error", [
+        ["npm:0.0.6", {
+          "packageLocation": "./.yarn/cache/@ardatan-aggregate-error-npm-0.0.6-0f1d22ed0c-c11138d0cb.zip/node_modules/@ardatan/aggregate-error/",
+          "packageDependencies": [
+            ["@ardatan/aggregate-error", "npm:0.0.6"],
+            ["tslib", "npm:2.0.3"]
+          ],
+          "linkType": "HARD",
         }]
       ]],
       ["@babel/code-frame", [
@@ -424,6 +436,41 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["lodash", "npm:4.17.20"],
             ["minimatch", "npm:3.0.4"],
             ["strip-json-comments", "npm:3.1.1"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["@graphql-tools/schema", [
+        ["virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:7.1.2", {
+          "packageLocation": "./.yarn/$$virtual/@graphql-tools-schema-virtual-b7d6c26e68/0/cache/@graphql-tools-schema-npm-7.1.2-f852c0ff35-86b1a075fe.zip/node_modules/@graphql-tools/schema/",
+          "packageDependencies": [
+            ["@graphql-tools/schema", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:7.1.2"],
+            ["@graphql-tools/utils", "virtual:b7d6c26e684d8ecdf8e720422983856a4a9a3e214fa9f60f09523f2ab3b9cda33063888c911837d892386c48714df30b1991f8016a4434a122c2409de2a2f929#npm:7.1.4"],
+            ["@types/graphql", null],
+            ["graphql", "npm:15.4.0"],
+            ["tslib", "npm:2.0.3"]
+          ],
+          "packagePeers": [
+            "@types/graphql",
+            "graphql"
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["@graphql-tools/utils", [
+        ["virtual:b7d6c26e684d8ecdf8e720422983856a4a9a3e214fa9f60f09523f2ab3b9cda33063888c911837d892386c48714df30b1991f8016a4434a122c2409de2a2f929#npm:7.1.4", {
+          "packageLocation": "./.yarn/$$virtual/@graphql-tools-utils-virtual-508e020983/0/cache/@graphql-tools-utils-npm-7.1.4-596ec0b492-1d91f8d4ba.zip/node_modules/@graphql-tools/utils/",
+          "packageDependencies": [
+            ["@graphql-tools/utils", "virtual:b7d6c26e684d8ecdf8e720422983856a4a9a3e214fa9f60f09523f2ab3b9cda33063888c911837d892386c48714df30b1991f8016a4434a122c2409de2a2f929#npm:7.1.4"],
+            ["@ardatan/aggregate-error", "npm:0.0.6"],
+            ["@types/graphql", null],
+            ["camel-case", "npm:4.1.2"],
+            ["graphql", "npm:15.4.0"],
+            ["tslib", "npm:2.0.3"]
+          ],
+          "packagePeers": [
+            "@types/graphql",
+            "graphql"
           ],
           "linkType": "HARD",
         }]
@@ -1372,6 +1419,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",
           "packageDependencies": [
             ["@via-profit-services/core", "workspace:."],
+            ["@graphql-tools/schema", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:7.1.2"],
             ["@jagi/jest-transform-graphql", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:1.0.2"],
             ["@types/bluebird", "npm:3.5.33"],
             ["@types/content-type", "npm:1.1.3"],
@@ -1454,6 +1502,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["webpack-cli", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.2.0"],
             ["webpack-dev-server", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:3.11.0"],
             ["webpack-merge", "npm:5.4.0"],
+            ["webpack-node-externals", "npm:2.5.2"],
             ["winston", "npm:3.3.3"],
             ["winston-daily-rotate-file", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.5.0"],
             ["ws", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:7.4.0"]
@@ -2914,6 +2963,17 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/callsites-npm-3.1.0-268f989910-f726bf10d7.zip/node_modules/callsites/",
           "packageDependencies": [
             ["callsites", "npm:3.1.0"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["camel-case", [
+        ["npm:4.1.2", {
+          "packageLocation": "./.yarn/cache/camel-case-npm-4.1.2-082bf67a9a-0b8dcfb424.zip/node_modules/camel-case/",
+          "packageDependencies": [
+            ["camel-case", "npm:4.1.2"],
+            ["pascal-case", "npm:3.1.2"],
+            ["tslib", "npm:2.0.3"]
           ],
           "linkType": "HARD",
         }]
@@ -7852,6 +7912,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
+      ["lower-case", [
+        ["npm:2.0.2", {
+          "packageLocation": "./.yarn/cache/lower-case-npm-2.0.2-151055f1c2-aabaca9cef.zip/node_modules/lower-case/",
+          "packageDependencies": [
+            ["lower-case", "npm:2.0.2"],
+            ["tslib", "npm:2.0.3"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
       ["lowercase-keys", [
         ["npm:1.0.1", {
           "packageLocation": "./.yarn/cache/lowercase-keys-npm-1.0.1-0979e653b8-ac9d79c47d.zip/node_modules/lowercase-keys/",
@@ -8314,6 +8384,17 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/nice-try-npm-1.0.5-963856b16f-330f190bf6.zip/node_modules/nice-try/",
           "packageDependencies": [
             ["nice-try", "npm:1.0.5"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["no-case", [
+        ["npm:3.0.4", {
+          "packageLocation": "./.yarn/cache/no-case-npm-3.0.4-12884c3d98-84db4909ca.zip/node_modules/no-case/",
+          "packageDependencies": [
+            ["no-case", "npm:3.0.4"],
+            ["lower-case", "npm:2.0.2"],
+            ["tslib", "npm:2.0.3"]
           ],
           "linkType": "HARD",
         }]
@@ -9069,6 +9150,17 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/parseurl-npm-1.3.3-1542397e00-52c9e86cb5.zip/node_modules/parseurl/",
           "packageDependencies": [
             ["parseurl", "npm:1.3.3"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["pascal-case", [
+        ["npm:3.1.2", {
+          "packageLocation": "./.yarn/cache/pascal-case-npm-3.1.2-35f5b9bff6-31708cecab.zip/node_modules/pascal-case/",
+          "packageDependencies": [
+            ["pascal-case", "npm:3.1.2"],
+            ["no-case", "npm:3.0.4"],
+            ["tslib", "npm:2.0.3"]
           ],
           "linkType": "HARD",
         }]
@@ -11573,6 +11665,13 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["tslib", "npm:1.14.1"]
           ],
           "linkType": "HARD",
+        }],
+        ["npm:2.0.3", {
+          "packageLocation": "./.yarn/cache/tslib-npm-2.0.3-62a2b3751d-447bfca5de.zip/node_modules/tslib/",
+          "packageDependencies": [
+            ["tslib", "npm:2.0.3"]
+          ],
+          "linkType": "HARD",
         }]
       ]],
       ["tsutils", [
@@ -12230,6 +12329,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["webpack-merge", "npm:5.4.0"],
             ["clone-deep", "npm:4.0.1"],
             ["wildcard", "npm:2.0.0"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["webpack-node-externals", [
+        ["npm:2.5.2", {
+          "packageLocation": "./.yarn/cache/webpack-node-externals-npm-2.5.2-5b19136fc9-79faea3737.zip/node_modules/webpack-node-externals/",
+          "packageDependencies": [
+            ["webpack-node-externals", "npm:2.5.2"]
           ],
           "linkType": "HARD",
         }]
