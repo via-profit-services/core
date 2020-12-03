@@ -32,12 +32,13 @@ const app = new Application({
   ],
 });
 
-app.bootstrap(({ resolveUrl, logger }) => {
+app.bootstrap(({ resolveUrl }) => {
   const {
     graphql,
     subscriptions,
   } = resolveUrl;
 
-  logger.server.debug(`GraphQL server started at ${graphql}`);
-  logger.server.debug(`Subscription server started at ${subscriptions}`);
+
+  console.log(`GraphQL server started at ${graphql}`);
+  console.log(`Subscription server started at ${subscriptions}`);
 });
