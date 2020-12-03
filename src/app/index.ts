@@ -107,8 +107,8 @@ class Application {
       if (callback !== undefined) {
         callback({
           port,
-          context,
           resolveUrl,
+          logger,
         });
       }
     });
@@ -317,22 +317,25 @@ class Application {
           const contextMiddlewares = [...middlewares || []]
           .filter(({ context }) => context !== undefined)
           .map(({ context }) => context);
-          console.log(`contextMiddlewares length ${contextMiddlewares.length}`);
 
           // try to apply context middlewares
           // console.log('reduce a');
           const mutableContext: Context = [...contextMiddlewares || []]
             .reduce((prevContextState, middleware) => {
 
+
               try {
-                return {
-                ...prevContextState,
-                ...middleware({
+                const middlewareContext = middleware({
                   config: this.props,
                   context: prevContextState,
                   request,
-                }),
-              }
+                });
+                const newContext = {
+                  ...prevContextState,
+                  ...middlewareContext,
+                }
+
+                return newContext
               } catch (err) {
 
                 throw new ServerError('Failed to load context middleware', { err });
