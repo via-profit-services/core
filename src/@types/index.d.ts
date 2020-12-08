@@ -92,25 +92,19 @@ declare module '@via-profit-services/core' {
   export interface Middleware {
     graphql?: GraphqlMiddlewareFactory;
     express?: ExpressMidlewareFactory;
-    context?: ContextMiddlewareFacotry;
   }
-  export interface ContextMiddlewareFactoryProps {
+
+  export interface ExpressMiddlewareFactoryProps {
     context: Context;
+    config: InitDefaultProps;
+  }
+  export interface GraphqlMiddlewareFactoryProps {
     config: InitDefaultProps;
     request: IncomingMessage;
   }
-  export interface ExpressMiddlewareFactoryProps {
-    context: Context;
-    config: InitDefaultProps;    
-  }
-  export interface GraphqlMiddlewareFactoryProps {
-    context: Context;
-    config: InitDefaultProps;    
-  }
   export type GraphqlMiddleware = IMiddleware<any, Context, any>;
   export type ExpressMiddleware = (request?: Request, response?: Response, next?: NextFunction) => void;
-  export type ExpressMidlewareFactory = (props: ExpressMiddlewareFactoryProps) => Promise<ExpressMiddleware>;
-  export type ContextMiddlewareFacotry = (props: ContextMiddlewareFactoryProps) => Promise<Context>;
+  export type ExpressMidlewareFactory = (props: ExpressMiddlewareFactoryProps) => ExpressMiddleware;
   export type GraphqlMiddlewareFactory = (props: GraphqlMiddlewareFactoryProps) => GraphqlMiddleware;
   export interface StaticOptions {
       /** Prefix path (e.g. `/static`) @see https://expressjs.com/ru/starter/static-files.html */
