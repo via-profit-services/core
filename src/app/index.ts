@@ -1,5 +1,8 @@
 /* eslint-disable import/max-dependencies */
-import type { InitDefaultProps, BootstrapCallbackArgs, SubServerConfig, Context, InitProps } from '@via-profit-services/core';
+import type {
+  InitDefaultProps, BootstrapCallbackArgs, SubServerConfig, Context, InitProps,
+  ContextMiddlewareFactoryProps,
+} from '@via-profit-services/core';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { Express } from 'express';
@@ -281,19 +284,49 @@ class Application {
     }
 
     // apply Express middlewares
-    [...middlewares || []]
+    // [...middlewares || []]
+    //   .filter(({ express }) => express !== undefined)
+    //   .map(({ express }) => express)
+    //   .forEach((middleware) => {
+    //   try {
+
+    //     app.use(middleware({
+    //       context,
+    //       config: this.props,
+    //     }));
+    //   } catch (err) {
+    //     throw new ServerError('Failed to load Express middleware', { err });
+    //   }
+    // });
+
+    const expressMiddlewares = [...middlewares || []]
       .filter(({ express }) => express !== undefined)
-      .map(({ express }) => express)
-      .forEach((middleware) => {
-      try {
-        app.use(middleware({
-          context,
-          config: this.props,
-        }));
-      } catch (err) {
-        throw new ServerError('Failed to load Express middleware', { err });
-      }
-    });
+      .map(({ express }) => express);
+
+    const contextMiddlewares = [...middlewares || []]
+      .filter(({ context }) => context !== undefined)
+      .map(({ context }) => context);
+
+    const graphqlMiddlewares = [...middlewares || []]
+      .filter(({ graphql }) => graphql !== undefined)
+      .map(({ graphql }) => graphql);
+
+    // apply Express middlewares
+    [...expressMiddlewares || []]
+      .reduce(async (prevMiddleware, middleware) => {
+
+        await prevMiddleware;
+
+        try {
+          app.use(await middleware({
+            config: this.props,
+            context,
+          }));
+
+        } catch (err) {
+          throw new ServerError('Failed to load express middleware', { err });
+        }
+    }, Promise.resolve());
 
 
     // This middleware must be defined last
@@ -303,10 +336,6 @@ class Application {
       queryTimeMs: performance.now() - requestInfo.context.startTime,
     });
 
-    const graphqlMiddlewares = [...middlewares || []]
-      .filter(({ graphql }) => graphql !== undefined)
-      .map(({ graphql }) => graphql);
-
     // GraphQL server
     app.use(
       endpoint,
@@ -314,22 +343,17 @@ class Application {
         async (request): Promise<OptionsData & { subscriptionEndpoint?: string }> => {
 
           context.startTime = performance.now();
-          const contextMiddlewares = [...middlewares || []]
-          .filter(({ context }) => context !== undefined)
-          .map(({ context }) => context);
 
           // try to apply context middlewares
-          // console.log('reduce a');
-          const mutableContext: Context = [...contextMiddlewares || []]
-            .reduce((prevContextState, middleware) => {
-
-
+          const mutableContext: Context = await [...contextMiddlewares || []]
+            .reduce(async (prevContextState, middleware) => {
               try {
-                const middlewareContext = middleware({
+                const props: ContextMiddlewareFactoryProps = {
                   config: this.props,
-                  context: prevContextState,
+                  context: await prevContextState,
                   request,
-                });
+                };
+                const middlewareContext = await middleware(props);
                 const newContext = {
                   ...prevContextState,
                   ...middlewareContext,
@@ -340,12 +364,26 @@ class Application {
 
                 throw new ServerError('Failed to load context middleware', { err });
               }
-          }, context);
+          }, Promise.resolve(context));
+
+          // try to init graphql middlewares
+          const iMiddlewares = graphqlMiddlewares.map((middleware) => {
+            try {
+              const iMiddleware = middleware({
+                config: this.props,
+                context: mutableContext,
+              });
+
+              return iMiddleware;
+            } catch (err) {
+              throw new ServerError('Failed to load graphql middleware', { err });
+            }
+          })
 
 
           return {
             context: mutableContext,
-            schema: applyMiddleware<any, Context, any>(schema, ...graphqlMiddlewares),
+            schema: applyMiddleware<any, Context, any>(schema, ...iMiddlewares),
             extensions: debug ? extensions : undefined,
             subscriptionEndpoint: `ws://localhost:${port}${subscriptionEndpoint}`,
             customFormatErrorFn: (error) => customFormatErrorFn({ error, context, debug }),

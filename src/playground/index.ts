@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import { makeExecutableSchema } from '@graphql-tools/schema';
-import { createLogger } from 'winston';
 
 import Application, { typeDefs, resolvers } from '../index';
 
@@ -19,17 +18,6 @@ const app = new Application({
     port: 6379,
     password: '',
   },
-  middlewares: [
-    {
-      context: ({ context }) => ({
-          ...context,
-          logger: {
-            ...context.logger,
-            test: createLogger(),
-          },
-        }),
-    },
-  ],
 });
 
 app.bootstrap(({ resolveUrl }) => {

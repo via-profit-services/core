@@ -7,7 +7,7 @@
 declare module '@via-profit-services/core' {
   import { NextFunction, Request, Response } from 'express';
   import { GraphQLSchema, DocumentNode } from 'graphql';
-  import { IMiddleware } from 'graphql-middleware';
+  import { IMiddleware, IMiddlewareGenerator } from 'graphql-middleware';
   import { RedisPubSub } from 'graphql-redis-subscriptions';
   import { withFilter } from 'graphql-subscriptions';
   import DataLoader from 'dataloader';
@@ -90,9 +90,9 @@ declare module '@via-profit-services/core' {
       middlewares?: Middleware[];
   }
   export interface Middleware {
-      graphql?: IMiddleware;
-      express?: ExpressMidlewareFactory;
-      context?: ContextMiddlewareFacotry;
+    graphql?: GraphqlMiddlewareFactory;
+    express?: ExpressMidlewareFactory;
+    context?: ContextMiddlewareFacotry;
   }
   export interface ContextMiddlewareFactoryProps {
     context: Context;
@@ -103,9 +103,15 @@ declare module '@via-profit-services/core' {
     context: Context;
     config: InitDefaultProps;    
   }
+  export interface GraphqlMiddlewareFactoryProps {
+    context: Context;
+    config: InitDefaultProps;    
+  }
+  export type GraphqlMiddleware = IMiddleware<any, Context, any>;
   export type ExpressMiddleware = (request?: Request, response?: Response, next?: NextFunction) => void;
-  export type ExpressMidlewareFactory = (props: ExpressMiddlewareFactoryProps) => ExpressMiddleware;
-  export type ContextMiddlewareFacotry = (props: ContextMiddlewareFactoryProps) => Context;
+  export type ExpressMidlewareFactory = (props: ExpressMiddlewareFactoryProps) => Promise<ExpressMiddleware>;
+  export type ContextMiddlewareFacotry = (props: ContextMiddlewareFactoryProps) => Promise<Context>;
+  export type GraphqlMiddlewareFactory = (props: GraphqlMiddlewareFactoryProps) => GraphqlMiddleware;
   export interface StaticOptions {
       /** Prefix path (e.g. `/static`) @see https://expressjs.com/ru/starter/static-files.html */
       prefix: string;
