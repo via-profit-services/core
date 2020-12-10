@@ -38,6 +38,7 @@ const webpackBaseConfig: Configuration = {
     /^uuid$/,
     /^express$/,
     /^dataloader$/,
+    /^@graphql-tools/,
   ],
 };
 
