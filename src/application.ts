@@ -70,13 +70,6 @@ const applicationFactory: ApplicationFactory = (props) => {
 
   subscriptionsFactory(server, configurtation, context);
 
-
-  setInterval(() => {
-    pubsub.publish('info', {
-      info: 'Some string',
-    })
-  }, 2000)
-
   return application;
 }
 
