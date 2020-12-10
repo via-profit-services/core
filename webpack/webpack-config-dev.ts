@@ -2,7 +2,6 @@ import NodemonPlugin from 'nodemon-webpack-plugin';
 import path from 'path';
 import { Configuration, WebpackPluginInstance } from 'webpack';
 import { merge } from 'webpack-merge';
-import webpackNodeExternals from 'webpack-node-externals';
 
 import webpackBaseConfig from './webpack-config-base';
 
@@ -25,7 +24,6 @@ const webpackDevConfig: Configuration = merge(webpackBaseConfig, {
       watch: ['./build'],
     }) as WebpackPluginInstance,
   ],
-  externals: webpackNodeExternals(),
 });
 
 export default webpackDevConfig;

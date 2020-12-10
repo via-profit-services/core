@@ -28,6 +28,17 @@ const webpackBaseConfig: Configuration = {
   resolve: {
     extensions: ['.ts', '.mjs', '.js', '.json', '.html'],
   },
+  externals: [
+    /^winston$/,
+    /^winston-daily-rotate-file$/,
+    /^supports-color$/,
+    /^moment$/,
+    /^moment-timezone$/,
+    /^graphql$/,
+    /^uuid$/,
+    /^express$/,
+    /^dataloader$/,
+  ],
 };
 
 export default webpackBaseConfig;

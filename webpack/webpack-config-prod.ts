@@ -56,17 +56,6 @@ Contact    ${packageInfo.support}
       openAnalyzer: true,
     }) as any,
   ],
-  externals: [
-    /^winston$/,
-    /^winston-daily-rotate-file$/,
-    /^supports-color$/,
-    /^moment$/,
-    /^moment-timezone$/,
-    /^graphql$/,
-    /^uuid$/,
-    /^express$/,
-    /^dataloader$/,
-  ],
 });
 
 export default webpackProdConfig;
