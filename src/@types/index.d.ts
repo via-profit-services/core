@@ -27,10 +27,8 @@ declare module '@via-profit-services/core' {
     dataloaders: DataloadersCollection;
   }
 
-  export type DataloaderField<T> = DataLoader<string,  Node<T>>;
-
   export interface DataloadersCollection {
-    [key: string]: DataloaderField<unknown>;
+    core: DataLoader<string, Node<unknown>>;
   }
 
   export type Logger = Winston.Logger;
@@ -328,6 +326,6 @@ declare module '@via-profit-services/core' {
 
   const applicationFactory: ApplicationFactory;
 
-  export { withFilter, DataLoader };
+  export { withFilter };
   export default applicationFactory;
 }

@@ -1,6 +1,7 @@
 import type {
   Configuration, Context, ApplicationFactory,
 } from '@via-profit-services/core';
+import DataLoader from 'dataloader';
 import { Router } from 'express';
 
 import {
@@ -18,7 +19,6 @@ import {
 import configureLogger from './logger/configure-logger';
 import expressMiddlewares from './middleware';
 import { pubsubFactory, subscriptionsFactory } from './subscriptions';
-
 
 const applicationFactory: ApplicationFactory = (props) => {
   const defaultProps = {
@@ -47,6 +47,11 @@ const applicationFactory: ApplicationFactory = (props) => {
 
   const logger = configureLogger({ logDir });
   const { redis, pubsub } = pubsubFactory(configurtation, logger);
+  const coreDataloader = new DataLoader(async (ids: string[]) => ids.map((id) => ({
+    id,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  })))
 
   // combine finally context object
   const context: Context = {
@@ -55,7 +60,9 @@ const applicationFactory: ApplicationFactory = (props) => {
     logger,
     redis,
     pubsub,
-    dataloaders: {},
+    dataloaders: {
+      core: coreDataloader,
+    },
   };
 
   const application = Router();
