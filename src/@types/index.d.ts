@@ -24,10 +24,10 @@ declare module '@via-profit-services/core' {
     startTime: any;
     pubsub: RedisPubSub;
     redis: RedisInterface;
-    dataLoaders: DataLoadersCollection;
+    dataloader: DataLoaderCollection;
   }
 
-  export interface DataLoadersCollection {
+  export interface DataLoaderCollection {
     core: DataLoader<string, Node<unknown>>;
   }
 

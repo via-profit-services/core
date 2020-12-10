@@ -65,6 +65,7 @@ Contact    ${packageInfo.support}
     /^graphql$/,
     /^uuid$/,
     /^express$/,
+    /^dataloader$/,
   ],
 });
 
