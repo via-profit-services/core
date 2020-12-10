@@ -1,5 +1,6 @@
+import NodemonPlugin from 'nodemon-webpack-plugin';
 import path from 'path';
-import { Configuration } from 'webpack';
+import { Configuration, WebpackPluginInstance } from 'webpack';
 import { merge } from 'webpack-merge';
 import webpackNodeExternals from 'webpack-node-externals';
 
@@ -16,6 +17,14 @@ const webpackDevConfig: Configuration = merge(webpackBaseConfig, {
   },
   mode: 'development',
   devtool: 'source-map',
+  plugins: [
+    new NodemonPlugin({
+      exec: process.env.DEBUG
+        ? 'yarn node --inspect-brk=9229 ./build/index.js'
+        : 'yarn node ./build/index.js',
+      watch: ['./build'],
+    }) as WebpackPluginInstance,
+  ],
   externals: webpackNodeExternals(),
 });
 

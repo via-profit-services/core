@@ -1,32 +1,27 @@
 /* eslint-disable no-console */
 import { makeExecutableSchema } from '@graphql-tools/schema';
+import express from 'express';
+import { createServer } from 'http';
 
-import Application, { typeDefs, resolvers } from '../index';
+import viaProfitServerFactory, { typeDefs, resolvers } from '../index';
 
+const PORT = 9005;
+const app = express();
+const server = createServer(app);
 const schema = makeExecutableSchema({
   typeDefs,
   resolvers,
 })
 
-const app = new Application({
+app.use(viaProfitServerFactory({
+  server,
   schema,
   debug: true,
   enableIntrospection: true,
-  port: 9005,
-  redis: {
-    host: 'localhost',
-    port: 6379,
-    password: '',
-  },
-});
-
-app.bootstrap(({ resolveUrl }) => {
-  const {
-    graphql,
-    subscriptions,
-  } = resolveUrl;
+}));
 
 
-  console.log(`GraphQL server started at ${graphql}`);
-  console.log(`Subscription server started at ${subscriptions}`);
+server.listen(PORT, () => {
+  console.log(`GraphQL server started at http://localhost:${PORT}/graphql`);
+  console.log(`GraphQL server started at ws://localhost:${PORT}/graphql`);
 });

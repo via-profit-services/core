@@ -26,8 +26,8 @@ import {
 } from 'graphql';
 import type { IncomingMessage, ServerResponse } from 'http';
 
-import BadRequestError from '../errorHandlers/BadRequestError';
-import ServerError from '../errorHandlers/ServerError';
+import BadRequestError from '../../errorHandlers/BadRequestError';
+import ServerError from '../../errorHandlers/ServerError';
 import parseBody from './parse-body';
 
 // `url` is always defined for IncomingMessage coming from http.Server
@@ -131,9 +131,7 @@ export interface OptionsData {
    *
    * This function may be async.
    */
-  extensions?: (
-    info: RequestInfo,
-  ) => MaybePromise<undefined | { [key: string]: unknown }>;
+  extensions?: (info: RequestInfo ) => MaybePromise<undefined | { [key: string]: unknown }>;
 
 
   /**

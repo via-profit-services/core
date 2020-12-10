@@ -1,4 +1,4 @@
-import { DEV_INFO_DEVELOPER_EMAIL, DEV_INFO_DEVELOPER_NAME, DEV_INFO_DEVELOPER_URL } from '../../constants';
+import { DEV_INFO_DEVELOPER_EMAIL, DEV_INFO_DEVELOPER_NAME, DEV_INFO_DEVELOPER_URL } from '../constants';
 
 const InfoQuery = {
   developer: () => ({

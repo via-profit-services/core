@@ -6,7 +6,7 @@ import getBody from 'raw-body';
 import type { Inflate, Gunzip } from 'zlib';
 import zlib from 'zlib';
 
-import BadRequestError from '../errorHandlers/BadRequestError';
+import BadRequestError from '../../errorHandlers/BadRequestError';
 
 type Request = IncomingMessage & {
   body?: unknown;

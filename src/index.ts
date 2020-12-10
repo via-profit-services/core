@@ -1,10 +1,10 @@
 import DataLoader from 'dataloader';
 import { withFilter } from 'graphql-subscriptions';
 
-import Application from './app';
+import applicationFactory from './application';
 import logFormatter from './logger/log-formatter';
-import resolvers from './schema/resolvers';
-import typeDefs from './schema/typeDefs';
+import resolvers from './resolvers';
+import typeDefs from './typeDefs';
 
 
 export * from './errorHandlers';
@@ -20,4 +20,4 @@ export {
   logFormatter,
 };
 
-export default Application;
+export default applicationFactory;

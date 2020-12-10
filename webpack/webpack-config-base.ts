@@ -6,7 +6,6 @@ const webpackBaseConfig: Configuration = {
     rules: [
       {
         test: /\.ts$/,
-        exclude: /node_modules/,
         use: [
           {
             loader: 'ts-loader',
@@ -16,6 +15,10 @@ const webpackBaseConfig: Configuration = {
           },
         ],
       },
+      {
+        test: /\.html$/,
+        use: 'html-loader',
+      },
     ],
   },
   node: {
@@ -23,7 +26,7 @@ const webpackBaseConfig: Configuration = {
     __dirname: true,
   },
   resolve: {
-    extensions: ['.ts', '.mjs', '.js', '.json', '.gql', '.graphql'],
+    extensions: ['.ts', '.mjs', '.js', '.json', '.html'],
   },
 };
 

@@ -5,59 +5,61 @@
 
 /// <reference types="node" />
 declare module '@via-profit-services/core' {
-  import { NextFunction, Request, Response } from 'express';
   import { GraphQLSchema, DocumentNode } from 'graphql';
-  import { IMiddleware, IMiddlewareGenerator } from 'graphql-middleware';
+  import { IMiddleware } from 'graphql-middleware';
   import { RedisPubSub } from 'graphql-redis-subscriptions';
   import { withFilter } from 'graphql-subscriptions';
   import DataLoader from 'dataloader';
-  import { IncomingMessage, Server as HTTPServer, ServerOptions as HTTPServerOptions } from 'http';
+  import { Router } from 'express';
+  import http from 'http';
   import { RedisOptions, Redis as RedisInterface } from 'ioredis';
   import { Options as SesstionStoreOptions } from 'session-file-store';
   import Winston from 'winston';
-  import { ServerOptions as WebsocketServerOption } from 'ws';
   import 'winston-daily-rotate-file';
 
+  
   export interface Context {
-    endpoint: string;
     logger: LoggersCollection;
     timezone: string;
     startTime: any;
     pubsub: RedisPubSub;
     redis: RedisInterface;
+    dataloaders: DataloadersCollection;
   }
+
+  export type DataloaderField<T> = DataLoader<string,  Node<T>>;
+
+  export interface DataloadersCollection {
+    [key: string]: DataloaderField<unknown>;
+  }
+
   export type Logger = Winston.Logger;
   export interface LoggersCollection {
-      /**
-       * Server logger \
-       *\
-      * Transports:
-      *  - `warn` - File transport
-      *  - `error` - File transport
-      *  - `debug` - File transport
-      */
-      server: Logger;
+    /**
+     * Server logger \
+     *\
+    * Transports:
+    *  - `warn` - File transport
+    *  - `error` - File transport
+    *  - `debug` - File transport
+    */
+    server: Logger;
   }
   export interface LoggersConfig {
-      logDir: string;
+    logDir: string;
   }
+  
+  export type ApplicationFactory = (props: InitProps) => Router;
+
+  export type SubscriptionsFactory = (server: http.Server, config: Configuration, context: Context) => void;
+
+  export type PubsubFactory = (config: Configuration, logger: LoggersCollection) => {
+    pubsub: RedisPubSub;
+    redis: RedisInterface;
+  }
+
   export interface InitProps {
-      /**
-       * Main port number
-       */
-      port?: number;
-      /**
-       * Graphql endpoint\
-       * \
-       * Default: `/graphql`
-       */
-      endpoint?: string;
-      /**
-       * Graphql subscription endpoint\
-       * \
-       * Default: `/subscriptions`
-       */
-      subscriptionEndpoint?: string;
+      server: http.Server;
       /**
        * Server timezone
        * \
@@ -81,67 +83,36 @@ declare module '@via-profit-services/core' {
        * @see: https://graphql.org
        */
       schema: GraphQLSchema;
-      redis: RedisOptions;
+      redis?: RedisOptions;
       serverOptions?: ServerOptions;
-      websocketOptions?: WebsocketServerOption;
       debug?: boolean;
-      staticOptions?: StaticOptions;
-      sessions?: SesstionStoreOptions | false;
-      middlewares?: Middleware[];
-  }
-  export interface Middleware {
-    graphql?: GraphqlMiddlewareFactory;
-    express?: ExpressMidlewareFactory;
+      sessions?: SesstionStoreOptions;
+      middleware?: Middleware | Middleware[];
   }
 
-  export interface ExpressMiddlewareFactoryProps {
-    context: Context;
-    config: InitDefaultProps;
+  
+  export interface MiddlewareProps {
+    config: Configuration;
+    request: http.IncomingMessage;
   }
-  export interface GraphqlMiddlewareFactoryProps {
-    config: InitDefaultProps;
-    request: IncomingMessage;
-  }
+  
+  export type Middleware = (props: MiddlewareProps) => GraphqlMiddleware;
   export type GraphqlMiddleware = IMiddleware<any, Context, any>;
-  export type ExpressMiddleware = (request?: Request, response?: Response, next?: NextFunction) => void;
-  export type ExpressMidlewareFactory = (props: ExpressMiddlewareFactoryProps) => ExpressMiddleware;
-  export type GraphqlMiddlewareFactory = (props: GraphqlMiddlewareFactoryProps) => GraphqlMiddleware;
-  export interface StaticOptions {
-      /** Prefix path (e.g. `/static`) @see https://expressjs.com/ru/starter/static-files.html */
-      prefix: string;
-      /** Static real path (e.g. `/public`) @see https://expressjs.com/ru/starter/static-files.html */
-      staticDir: string;
-  }
-  export type ServerOptions = HTTPServerOptions & {
+  export type ServerOptions = http.ServerOptions & {
       cookieSign?: string;
   };
-  export interface InitDefaultProps extends InitProps {
-      port: number;
-      authEndpoint: string;
-      endpoint: string;
-      subscriptionEndpoint: string;
+  export interface Configuration extends InitProps {
       timezone: string;
-      enableIntrospection: boolean;
-      debug: boolean;
       logDir: string;
+      debug: boolean;
+      enableIntrospection: boolean;
   }
   export interface SubServerConfig {
     schema: GraphQLSchema;
-    server: HTTPServer;
+    server: http.Server;
     context: Context;
   }
   
-  export interface BootstrapCallbackArgs {
-    port: number;
-    logger: {
-        server: Logger;
-    };
-    resolveUrl: {
-        graphql: string;
-        subscriptions?: string;
-    };
-  }
-
   export interface ErrorHandler extends Error {
       message: string;
       status?: number;
@@ -219,57 +190,57 @@ declare module '@via-profit-services/core' {
       end: number;
   }
   export interface BetweenMoney {
-      start: number;
-      end: number;
+    start: number;
+    end: number;
   }
   export interface Between {
-      [key: string]: BetweenDate | BetweenTime | BetweenDateTime | BetweenInt | BetweenMoney;
+    [key: string]: BetweenDate | BetweenTime | BetweenDateTime | BetweenInt | BetweenMoney;
   }
   export interface InputFilter {
-      first?: number;
-      offset?: number;
-      last?: number;
-      after?: string;
-      before?: string;
-      orderBy?: OrderBy;
-      search?: InputSearch;
-      between?: Between;
-      filter?: {
-          [key: string]: InputFilterValue | readonly string[] | readonly number[];
-      };
+    first?: number;
+    offset?: number;
+    last?: number;
+    after?: string;
+    before?: string;
+    orderBy?: OrderBy;
+    search?: InputSearch;
+    between?: Between;
+    filter?: {
+        [key: string]: InputFilterValue | readonly string[] | readonly number[];
+    };
   }
   export type InputFilterValue = string | number | boolean | null;
   export type InputSearch = SearchSingleField | SearchSingleField[] | SearchMultipleFields;
   interface SearchSingleField {
-      field: string;
-      query: string;
+    field: string;
+    query: string;
   }
   interface SearchMultipleFields {
-      fields: string[];
-      query: string;
+    fields: string[];
+    query: string;
   }
   export type OutputSearch = {
-      field: string;
-      query: string;
+    field: string;
+    query: string;
   }[];
   export interface OutputFilter {
-      limit: number;
-      offset: number;
-      orderBy: OrderBy;
-      where: Where;
-      revert: boolean;
-      search: OutputSearch | false;
-      between: Between;
+    limit: number;
+    offset: number;
+    orderBy: OrderBy;
+    where: Where;
+    revert: boolean;
+    search: OutputSearch | false;
+    between: Between;
   }
   export interface CursorPayload {
-      offset: number;
-      limit: number;
-      where: Where;
-      orderBy: OrderBy;
+    offset: number;
+    limit: number;
+    where: Where;
+    orderBy: OrderBy;
   }
   export type OrderBy = {
-      field: string;
-      direction: DirectionRange;
+    field: string;
+    direction: DirectionRange;
   }[];
   export type WhereValue = string | number | boolean | null | readonly string[] | readonly number[] | undefined;
   export type WhereField = [string, WhereAction, WhereValue];
@@ -284,7 +255,7 @@ declare module '@via-profit-services/core' {
    * }
    */
   export type TableAliases = {
-      [key: string]: string | string[];
+    [key: string]: string | string[];
   };
   
   /**
@@ -309,24 +280,24 @@ declare module '@via-profit-services/core' {
   export type BuildQueryFilter = <T extends InputFilter>(args: T) => OutputFilter;
   
   export class ServerError extends Error implements ErrorHandler {
-      metaData: any;
-      status: number;
-      constructor(message: string, metaData?: any);
+    metaData: any;
+    status: number;
+    constructor(message: string, metaData?: any);
   }
   export class BadRequestError extends Error implements ErrorHandler {
-      metaData: any;
-      status: number;
-      constructor(message: string, metaData?: any);
+    metaData: any;
+    status: number;
+    constructor(message: string, metaData?: any);
   }
   export class ForbiddenError extends Error implements ErrorHandler {
-      metaData: any;
-      status: number;
-      constructor(message: string, metaData?: any);
+    metaData: any;
+    status: number;
+    constructor(message: string, metaData?: any);
   }
   export class NotFoundError extends Error implements ErrorHandler {
-      metaData: any;
-      status: number;
-      constructor(message: string, metaData?: any);
+    metaData: any;
+    status: number;
+    constructor(message: string, metaData?: any);
   }
 
   export type DirectionRange = 'asc' | 'desc';
@@ -355,14 +326,8 @@ declare module '@via-profit-services/core' {
   export const LOG_MAX_SIZE: string;
   export const LOG_MAX_FILES: string;
 
-  class Application {
-    props: InitDefaultProps;
-    constructor (props: InitProps);
-    bootstrap: (
-      callback?: (args: BootstrapCallbackArgs) => void
-    ) => void;
-  }
-  
+  const applicationFactory: ApplicationFactory;
+
   export { withFilter, DataLoader };
-  export default Application;
+  export default applicationFactory;
 }
