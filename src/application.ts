@@ -60,7 +60,7 @@ const applicationFactory: ApplicationFactory = (props) => {
     logger,
     redis,
     pubsub,
-    dataloaders: {
+    dataLoaders: {
       core: coreDataloader,
     },
   };
