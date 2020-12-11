@@ -6,14 +6,11 @@ const webpackBaseConfig: Configuration = {
     rules: [
       {
         test: /\.ts$/,
-        use: [
-          {
-            loader: 'ts-loader',
-          },
-          {
-            loader: 'shebang-loader', // Fix Unexpected character '#' in #!/usr/bin/env node
-          },
-        ],
+        use: 'ts-loader',
+      },
+      {
+        test: /\.graphql$/,
+        use: 'raw-loader',
       },
       {
         test: /\.html$/,
@@ -26,19 +23,18 @@ const webpackBaseConfig: Configuration = {
     __dirname: true,
   },
   resolve: {
-    extensions: ['.ts', '.mjs', '.js', '.json', '.html'],
+    extensions: ['.ts', '.mjs', '.js', '.json', '.graphql', '.html'],
   },
   externals: [
-    /^winston$/,
-    /^winston-daily-rotate-file$/,
+    /^winston(|-daily-rotate-file)$/,
+    /^moment(|-timezone)$/,
+    /^graphql(|-tools|\/.+)$/,
     /^supports-color$/,
-    /^moment$/,
-    /^moment-timezone$/,
-    /^graphql$/,
     /^uuid$/,
     /^express$/,
     /^dataloader$/,
-    /^@graphql-tools/,
+
+    // /\.\/schema\.graphql$/,
   ],
 };
 

@@ -1,6 +1,7 @@
 .*
 /assets
 /build
+/docs
 /keys
 /log
 /public
@@ -12,3 +13,5 @@
 /jest.config.js
 /yarn.lock
 /yarn-error.lock
+/package.tgz
+/artifacts

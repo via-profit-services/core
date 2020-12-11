@@ -1,10 +1,8 @@
 /* eslint-disable import/max-dependencies */
-import { Configuration, Context, GraphqlMiddleware } from '@via-profit-services/core';
-import cookieParser from 'cookie-parser';
+import { Configuration, Context } from '@via-profit-services/core';
 import cors from 'cors';
 import express, { Router, Request, Response, NextFunction } from 'express';
 import session from 'express-session';
-import { applyMiddleware } from 'graphql-middleware';
 import { performance } from 'perf_hooks';
 import sessionStoreFactory from 'session-file-store';
 import { v4 as uuidv4 } from 'uuid';
@@ -12,10 +10,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { MAXIMUM_REQUEST_BODY_SIZE, HEADER_X_POWERED_BY } from '../constants';
 import customFormatErrorFn from '../errorHandlers/customFormatErrorFn';
 import errorMiddleware from '../errorHandlers/errorMiddleware';
-import extensions from '../extensions';
 import notFoundFallbackHTML from '../utils/404-fallback.html';
 import { DisableIntrospectionQueries } from '../utils/disableIntrospection';
-import { graphqlHTTP } from './graphql-express';
+import graphqlMiddleware from './gql-middleware';
+// import { graphqlHTTP } from './graphql-express';
 
 type ExpressInlineFactory = (
   config: Configuration,
@@ -25,11 +23,8 @@ type ExpressInlineFactory = (
 const expressInlineFactory: ExpressInlineFactory = (config, context) => {
   const { logger } = context;
   const {
-    serverOptions, sessions, schema, middleware, enableIntrospection, debug } = config;
-  const { cookieSign } = serverOptions || {};
+    sessions, schema, enableIntrospection, debug } = config;
 
-  // cookie parser
-  const expressCookieParserMiddleware = cookieParser(cookieSign);
 
   // sessions
   const SessionStore = sessionStoreFactory(session);
@@ -83,28 +78,50 @@ const expressInlineFactory: ExpressInlineFactory = (config, context) => {
       .send(notFoundFallbackHTML);
   }
 
-  // main iddleware
-  const expressGraphqlMiddleware = graphqlHTTP((request) => {
+  // main middleware
+  // const iMiddlewares: GraphqlMiddleware[] = [];
 
-    const iMiddlewares: GraphqlMiddleware[] = [];
-    context.startTime = performance.now();
+  // const graphqlMiddlewares = middleware
+  //   ? (Array.isArray(middleware) ? middleware : [middleware])
+  //   : [];
 
-    const graphqlMiddlewares = middleware
-      ? (Array.isArray(middleware) ? middleware : [middleware])
-      : [];
+  // graphqlMiddlewares.forEach((middleware) => {
+  //   iMiddlewares.push(middleware({ config, request }))
+  // });
 
-    graphqlMiddlewares.forEach((middleware) => {
-      iMiddlewares.push(middleware({ config, request }))
-    });
+  const middleware = (config: Configuration) => {
 
-    return {
-      context,
-      schema: applyMiddleware<any, Context, any>(schema, ...iMiddlewares),
-      extensions: extensions({ debug }),
-      customFormatErrorFn: (error) => customFormatErrorFn({ error, context, debug }),
-      validationRules: !enableIntrospection ? [DisableIntrospectionQueries] : [],
-    };
+    console.log('middleware init');
+
+    return (p: any) => {
+      console.log('middleware inner');
+      console.log('middleware inner args', p);
+    }
+  }
+
+
+  // init middleware
+  middleware(config);
+
+  const expressGraphqlMiddleware = graphqlMiddleware({
+    schema,
+    context,
+    debug,
+    enableIntrospection,
   });
+  // const expressGraphqlMiddleware = graphqlHTTP((request, response, params) => {
+  //   context.startTime = performance.now();
+  //   const { query, operationName, variables } = params;
+  //   console.log({ query, operationName, variables });
+
+  //   return {
+  //     context,
+  //     schema,
+  //     extensions: extensions({ debug }),
+  //     customFormatErrorFn: (error) => customFormatErrorFn({ error, context, debug }),
+  //     validationRules: !enableIntrospection ? [DisableIntrospectionQueries] : [],
+  //   };
+  // });
 
   const router = Router();
 
@@ -113,7 +130,6 @@ const expressInlineFactory: ExpressInlineFactory = (config, context) => {
     router.use(expressCorsMiddleware);
     router.use(expressJSONMiddleware);
     router.use(expressUrlEncodedMiddleware);
-    router.use(expressCookieParserMiddleware);
     router.use(expressHeadersMiddleware);
     router.use(expressSessionMiddleware);
     router.use(expressGraphqlMiddleware);

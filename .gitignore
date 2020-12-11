@@ -19,9 +19,12 @@
 /keys
 
 dump.rdb
+/package.tgz
 
 .yarn/*
 !.yarn/releases
 !.yarn/plugins
 !.yarn/sdks
 !.yarn/versions
+
+/artifacts

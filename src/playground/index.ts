@@ -1,9 +1,11 @@
 /* eslint-disable no-console */
 import { makeExecutableSchema } from '@graphql-tools/schema';
+
 import express from 'express';
 import { createServer } from 'http';
 
-import viaProfitServerFactory, { typeDefs, resolvers } from '../index';
+import viaProfitServerFactory, { resolvers, typeDefs } from '../index';
+
 
 const PORT = 9005;
 const app = express();
@@ -18,6 +20,8 @@ app.use(viaProfitServerFactory({
   schema,
   debug: true,
   enableIntrospection: true,
+  logDir: './artifacts/log',
+  sessions: { path: './artifacts/sessions' },
 }));
 
 

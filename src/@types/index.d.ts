@@ -5,8 +5,7 @@
 
 /// <reference types="node" />
 declare module '@via-profit-services/core' {
-  import { GraphQLSchema, DocumentNode } from 'graphql';
-  import { IMiddleware } from 'graphql-middleware';
+  import { GraphQLSchema } from 'graphql';
   import { RedisPubSub } from 'graphql-redis-subscriptions';
   import { withFilter } from 'graphql-subscriptions';
   import DataLoader from 'dataloader';
@@ -82,24 +81,20 @@ declare module '@via-profit-services/core' {
        */
       schema: GraphQLSchema;
       redis?: RedisOptions;
-      serverOptions?: ServerOptions;
       debug?: boolean;
       sessions?: SesstionStoreOptions;
-      middleware?: Middleware | Middleware[];
+      // middleware?: Middleware | Middleware[];
   }
 
   
-  export interface MiddlewareProps {
-    config: Configuration;
-    request: http.IncomingMessage;
-  }
-  
-  export type Middleware = (props: MiddlewareProps) => GraphqlMiddleware;
-  export type GraphqlMiddleware = IMiddleware<any, Context, any>;
-  export type ServerOptions = http.ServerOptions & {
-      cookieSign?: string;
-  };
-  export interface Configuration extends InitProps {
+  // export interface MiddlewareProps {
+  //   config: Configuration;
+  //   request: http.IncomingMessage;
+  // }
+
+  // export type Middleware = (props: MiddlewareProps) => GraphqlMiddleware;
+  // export type GraphqlMiddleware = IMiddleware<any, Context, any>;
+  export interface Configuration extends Required<InitProps> {
       timezone: string;
       logDir: string;
       debug: boolean;
@@ -302,7 +297,6 @@ declare module '@via-profit-services/core' {
   export type WhereAction = '=' | '<>' | '>' | '<' | '>=' | '<=' | 'in' | 'notIn' | 'like' | 'ilike' | 'is null' | 'is not null';
   
   export const logFormatter: Winston.Logform.Format;
-  export const typeDefs: DocumentNode;
   export const resolvers: any;
   export const stringToCursor: StringToCursor;
   export const cursorToString: CursorToString;
@@ -316,6 +310,7 @@ declare module '@via-profit-services/core' {
   export const arrayOfIdsToArrayOfObjectIds: ArrayOfIdsToArrayOfObjectIds;
   export const applyAliases: ApplyAliases;
   export const buildQueryFilter: BuildQueryFilter;
+  export const typeDefs: string;
 
   export const LOG_FILENAME_DEBUG: string;
   export const LOG_FILENAME_ERRORS: string;
