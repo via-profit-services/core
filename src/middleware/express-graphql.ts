@@ -44,7 +44,7 @@ const expressGraphqlMiddleware = (props: ExpressGraphqlMiddlewareProps) => {
    * Express middleware
    */
   const middleware = async (request: Request<any, any, Body>, response: Response) => {
-    const { method, body, headers } = request;
+    const { method, body } = request;
     const { query, variables, operationName } = body;
     const startTime = performance.now();
     let documentAST: DocumentNode;
@@ -55,12 +55,12 @@ const expressGraphqlMiddleware = (props: ExpressGraphqlMiddlewareProps) => {
       }
 
       // Skip requests without content types.
-      if (headers['content-type'] === undefined) {
-        throw new BadRequestError('Missing Content-Type header');
-      }
+      // if (headers['content-type'] === undefined) {
+      //   throw new BadRequestError('Missing Content-Type header');
+      // }
 
       if (query == null) {
-        throw new BadRequestError('Graphql request must provide query string');
+        throw new BadRequestError('GraphQL request must provide query string');
       }
 
       // validate request
