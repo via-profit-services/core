@@ -1,7 +1,7 @@
 {
     "name": "@via-profit-services/core",
     "support": "https://via-profit.ru",
-    "version": "0.31.6-rc.4",
+    "version": "0.31.6-rc.5",
     "description": "Via Profit Core service",
     "main": "dist/index.js",
     "engines": {
@@ -43,7 +43,6 @@
     ],
     "license": "MIT",
     "devDependencies": {
-        "dataloader": "^2.0.0",
         "@graphql-tools/schema": "^7.1.2",
         "@graphql-tools/utils": "^7.1.4",
         "@jagi/jest-transform-graphql": "^1.0.2",
@@ -70,6 +69,7 @@
         "chalk": "^3.0.0",
         "cors": "^2.8.5",
         "cross-env": "^6.0.3",
+        "dataloader": "^2.0.0",
         "dotenv": "^8.2.0",
         "eslint": "^7.12.1",
         "eslint-config-prettier": "^6.15.0",

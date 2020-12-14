@@ -1,5 +1,4 @@
 import DataLoader from 'dataloader';
-import { withFilter } from 'graphql-subscriptions';
 
 import applicationFactory from './application';
 import logFormatter from './logger/log-formatter';
@@ -15,7 +14,6 @@ export {
   resolvers,
   typeDefs,
   DataLoader,
-  withFilter,
   logFormatter,
 };
 
