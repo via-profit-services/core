@@ -1,7 +1,7 @@
 import { Context } from '@via-profit-services/core';
 import { Request, Response } from 'express';
 import {
-  GraphQLError, GraphQLSchema, validateSchema, execute,
+  GraphQLError, GraphQLSchema, validateSchema, execute, specifiedRules,
   parse, Source, DocumentNode, getOperationAST, validate, ValidationRule,
  } from 'graphql';
 import { performance } from 'perf_hooks';
@@ -10,13 +10,12 @@ import BadRequestError from '../errorHandlers/BadRequestError';
 import customFormatErrorFn from '../errorHandlers/customFormatErrorFn';
 import ServerError from '../errorHandlers/ServerError';
 
-interface GraphqlMiddlewareProps {
+interface ExpressGraphqlMiddlewareProps {
   schema: GraphQLSchema;
   context: Context;
   debug: boolean;
   rootValue: unknown;
-  enableIntrospection: boolean;
-
+  validationRules: ReadonlyArray<ValidationRule>;
 }
 
 interface Body {
@@ -26,31 +25,9 @@ interface Body {
 }
 
 
-const disableIntrospectionRule: ValidationRule = (ctx) => ({
-  Field: (node) => {
-    const type = ctx.getType();
+const expressGraphqlMiddleware = (props: ExpressGraphqlMiddlewareProps) => {
 
-    if (type && ['__Schema!', '__Type!'].indexOf(String(type)) >= 0) {
-      ctx.reportError(
-        new GraphQLError(
-          `Introspection has been disabled. The field «${node.name.value}» of type «${String(type)}» is not allowed.`,
-        ),
-      );
-    }
-  },
-})
-
-
-const expressGraphqlMiddleware = (props: GraphqlMiddlewareProps) => {
-
-  const { schema, context, debug, enableIntrospection, rootValue } = props;
-  // const { logger } = context;
-
-  const validationRules: ValidationRule[] = [];
-
-  if (!enableIntrospection) {
-    validationRules.push(disableIntrospectionRule);
-  }
+  const { schema, context, debug, rootValue, validationRules } = props;
 
   if (!schema) {
     throw new ServerError('GraphQL middleware options must contain a schema')
@@ -96,7 +73,10 @@ const expressGraphqlMiddleware = (props: GraphqlMiddlewareProps) => {
       }
 
       // Validate AST, reporting any errors.
-      const validationErrors = validate(schema, documentAST, validationRules);
+      const validationErrors = validate(schema, documentAST, [
+        ...specifiedRules,
+        ...validationRules,
+      ]);
       if (validationErrors.length > 0) {
         return response.status(500).json({
           errors: validationErrors,
@@ -113,6 +93,7 @@ const expressGraphqlMiddleware = (props: GraphqlMiddlewareProps) => {
           throw new BadRequestError(`Can only perform a ${operationAST.operation} operation from a POST request`);
         }
       }
+
     } catch (prepareErrors) {
       const errors = new GraphQLError(
         'GraphQL Prepare error',

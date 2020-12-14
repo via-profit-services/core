@@ -6,12 +6,12 @@ export interface InfoMutationArgs {
 
 const InfoMutation = {
   echo: (_parents: any, args: InfoMutationArgs, context: Context) => {
-    const { pubsub } = context;
+    // const { pubsub } = context;
     const { str } = args;
 
-    pubsub.publish('info', {
-      info: str,
-    });
+    // pubsub.publish('info', {
+    //   info: str,
+    // });
 
     return str;
   },

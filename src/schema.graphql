@@ -6,9 +6,6 @@ type Mutation {
   info: InfoMutation!
 }
 
-type Subscription {
-  info: String!
-}
 
 type InfoQuery {
   developer: Developer!

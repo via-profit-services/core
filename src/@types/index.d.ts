@@ -5,14 +5,10 @@
 
 /// <reference types="node" />
 declare module '@via-profit-services/core' {
-  import { GraphQLSchema } from 'graphql';
-  import { RedisPubSub } from 'graphql-redis-subscriptions';
-  import { withFilter } from 'graphql-subscriptions';
+  import { GraphQLSchema, ValidationRule } from 'graphql';
   import DataLoader from 'dataloader';
   import { Router } from 'express';
   import http from 'http';
-  import { RedisOptions, Redis as RedisInterface } from 'ioredis';
-  import { Options as SesstionStoreOptions } from 'session-file-store';
   import Winston from 'winston';
   import 'winston-daily-rotate-file';
 
@@ -20,9 +16,6 @@ declare module '@via-profit-services/core' {
   export interface Context {
     logger: LoggersCollection;
     timezone: string;
-    startTime: any;
-    pubsub: RedisPubSub;
-    redis: RedisInterface;
     dataloader: DataLoaderCollection;
   }
 
@@ -46,14 +39,10 @@ declare module '@via-profit-services/core' {
     logDir: string;
   }
   
-  export type ApplicationFactory = (props: InitProps) => Router;
-
-  export type SubscriptionsFactory = (server: http.Server, config: Configuration, context: Context) => void;
-
-  export type PubsubFactory = (config: Configuration, logger: LoggersCollection) => {
-    pubsub: RedisPubSub;
-    redis: RedisInterface;
-  }
+  export type ApplicationFactory = (props: InitProps) => {
+    viaProfitGraphql: Router;
+    context: Context;
+  };
 
   export interface InitProps {
       server: http.Server;
@@ -80,28 +69,31 @@ declare module '@via-profit-services/core' {
        * @see: https://graphql.org
        */
       schema: GraphQLSchema;
-      redis?: RedisOptions;
+      /**
+       * Debug mode \
+       * \
+       * Default: `false`
+       */
       debug?: boolean;
-      sessions?: SesstionStoreOptions;
       rootValue?: unknown;
-      // middleware?: Middleware | Middleware[];
+      middleware?: Middleware | Middleware[];
   }
 
+  export interface MiddlewareProps {
+    config: Configuration;
+    context: Context;
+  }
+
+  export interface MiddlewareResponse {
+    context?: Context;
+    validationRule?: ValidationRule | ValidationRule[];
+  }
+
+  export type Middleware = (props: MiddlewareProps) => MiddlewareResponse;
+
+
+  export type Configuration = Required<InitProps>;
   
-  // export interface MiddlewareProps {
-  //   config: Configuration;
-  //   request: http.IncomingMessage;
-  // }
-
-  // export type Middleware = (props: MiddlewareProps) => GraphqlMiddleware;
-  // export type GraphqlMiddleware = IMiddleware<any, Context, any>;
-  export interface Configuration extends Required<InitProps> {
-      timezone: string;
-      logDir: string;
-      debug: boolean;
-      rootValue: unknown;
-      enableIntrospection: boolean;
-  }
   export interface SubServerConfig {
     schema: GraphQLSchema;
     server: http.Server;
@@ -323,6 +315,6 @@ declare module '@via-profit-services/core' {
 
   const applicationFactory: ApplicationFactory;
 
-  export { withFilter };
+  // export { withFilter };
   export default applicationFactory;
 }

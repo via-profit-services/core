@@ -5,12 +5,12 @@ import InfoQuery from './InfoQuery';
 import Mutation from './Mutation';
 import Query from './Query';
 import scalars from './scalars';
-import Subscription from './Subscription';
+// import Subscription from './Subscription';
 
 const resolvers: IResolvers = {
   Query,
   Mutation,
-  Subscription,
+  // Subscription,
   InfoQuery,
   InfoMutation,
   ...scalars,

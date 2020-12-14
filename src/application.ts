@@ -8,43 +8,25 @@ import {
   DEFAULT_INTROSPECTION_STATE,
   DEFAULT_SERVER_TIMEZONE,
   DEFAULT_LOG_DIR,
-  DEFAULT_SESSION_PATH,
-  DEFAULT_SESSION_SECRET,
-  DEFAULT_SESSION_TTL,
-  DEFAULT_REDIS_HOST,
-  DEFAULT_REDIS_PASSWORD,
-  DEFAULT_REDIS_PORT,
 } from './constants';
 import configureLogger from './logger/configure-logger';
-import expressMiddlewares from './middleware';
-import { pubsubFactory, subscriptionsFactory } from './subscriptions';
+import expressMiddlewares from './middleware/express';
 
 const applicationFactory: ApplicationFactory = (props) => {
   const configurtation: Configuration = {
     timezone: DEFAULT_SERVER_TIMEZONE,
+    middleware: [],
     enableIntrospection: DEFAULT_INTROSPECTION_STATE,
     logDir: DEFAULT_LOG_DIR,
     debug: process.env.NODE_ENV === 'development',
     rootValue: undefined,
     ...props,
-    sessions: {
-      path: DEFAULT_SESSION_PATH,
-      ttl: DEFAULT_SESSION_TTL,
-      secret: DEFAULT_SESSION_SECRET,
-      ...props.sessions,
-    },
-    redis: {
-      host: DEFAULT_REDIS_HOST,
-      port: DEFAULT_REDIS_PORT,
-      password: DEFAULT_REDIS_PASSWORD,
-      ...props.redis,
-    },
+
   };
 
 
-  const { timezone, logDir, server } = configurtation;
+  const { timezone, logDir } = configurtation;
   const logger = configureLogger({ logDir });
-  const { redis, pubsub } = pubsubFactory(configurtation, logger);
   const coreDataloader = new DataLoader(async (ids: string[]) => ids.map((id) => ({
     id,
     createdAt: new Date(),
@@ -54,21 +36,19 @@ const applicationFactory: ApplicationFactory = (props) => {
   // combine finally context object
   const context: Context = {
     timezone,
-    startTime: 0,
     logger,
-    redis,
-    pubsub,
     dataloader: {
       core: coreDataloader,
     },
   };
 
-  const application = Router();
-  application.use(expressMiddlewares(configurtation, context));
+  const viaProfitGraphql = Router();
+  viaProfitGraphql.use(expressMiddlewares(configurtation, context));
 
-  subscriptionsFactory(server, configurtation, context);
-
-  return application;
+  return {
+    viaProfitGraphql,
+    context,
+  };
 }
 
 export default applicationFactory;

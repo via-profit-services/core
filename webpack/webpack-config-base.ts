@@ -30,11 +30,8 @@ const webpackBaseConfig: Configuration = {
     /^moment(|-timezone)$/,
     /^graphql(|-tools|\/.+)$/,
     /^supports-color$/,
-    /^uuid$/,
     /^express$/,
     /^dataloader$/,
-
-    // /\.\/schema\.graphql$/,
   ],
 };
 
