@@ -1,9 +1,7 @@
 /* eslint-disable import/max-dependencies */
 import { Configuration, Context } from '@via-profit-services/core';
-import cors from 'cors';
 import express, { Router, Request, Response, NextFunction } from 'express';
 import session from 'express-session';
-import { performance } from 'perf_hooks';
 import sessionStoreFactory from 'session-file-store';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -13,7 +11,6 @@ import errorMiddleware from '../errorHandlers/errorMiddleware';
 import notFoundFallbackHTML from '../utils/404-fallback.html';
 import { DisableIntrospectionQueries } from '../utils/disableIntrospection';
 import graphqlMiddleware from './gql-middleware';
-// import { graphqlHTTP } from './graphql-express';
 
 type ExpressInlineFactory = (
   config: Configuration,
@@ -23,7 +20,7 @@ type ExpressInlineFactory = (
 const expressInlineFactory: ExpressInlineFactory = (config, context) => {
   const { logger } = context;
   const {
-    sessions, schema, enableIntrospection, debug } = config;
+    sessions, schema, enableIntrospection, debug, rootValue } = config;
 
 
   // sessions
@@ -44,10 +41,10 @@ const expressInlineFactory: ExpressInlineFactory = (config, context) => {
   const expressErrorMiddleware = errorMiddleware({ context });
 
   // cors
-  const expressCorsMiddleware = cors({
-    credentials: true,
-    origin: (_origin, callback) => callback(null, true),
-  });
+  // const expressCorsMiddleware = cors({
+  //   credentials: true,
+  //   origin: (_origin, callback) => callback(null, true),
+  // });
 
   // json
   const expressJSONMiddleware = express.json({
@@ -107,6 +104,7 @@ const expressInlineFactory: ExpressInlineFactory = (config, context) => {
     schema,
     context,
     debug,
+    rootValue,
     enableIntrospection,
   });
   // const expressGraphqlMiddleware = graphqlHTTP((request, response, params) => {
@@ -127,7 +125,7 @@ const expressInlineFactory: ExpressInlineFactory = (config, context) => {
 
   // apply express middlewares
   try {
-    router.use(expressCorsMiddleware);
+    // router.use(expressCorsMiddleware);
     router.use(expressJSONMiddleware);
     router.use(expressUrlEncodedMiddleware);
     router.use(expressHeadersMiddleware);

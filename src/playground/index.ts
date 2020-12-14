@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { makeExecutableSchema } from '@graphql-tools/schema';
 
+import cors from 'cors';
 import express from 'express';
 import { createServer } from 'http';
 
@@ -13,16 +14,18 @@ const server = createServer(app);
 const schema = makeExecutableSchema({
   typeDefs,
   resolvers,
-})
-
-app.use(viaProfitServerFactory({
+});
+const viaProfitServerMiddleware = viaProfitServerFactory({
   server,
   schema,
   debug: true,
   enableIntrospection: true,
   logDir: './artifacts/log',
   sessions: { path: './artifacts/sessions' },
-}));
+});
+
+app.use(cors());
+app.use('/graphql', viaProfitServerMiddleware);
 
 
 server.listen(PORT, () => {

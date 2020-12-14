@@ -83,6 +83,7 @@ declare module '@via-profit-services/core' {
       redis?: RedisOptions;
       debug?: boolean;
       sessions?: SesstionStoreOptions;
+      rootValue?: unknown;
       // middleware?: Middleware | Middleware[];
   }
 
@@ -98,6 +99,7 @@ declare module '@via-profit-services/core' {
       timezone: string;
       logDir: string;
       debug: boolean;
+      rootValue: unknown;
       enableIntrospection: boolean;
   }
   export interface SubServerConfig {

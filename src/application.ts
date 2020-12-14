@@ -25,6 +25,7 @@ const applicationFactory: ApplicationFactory = (props) => {
     enableIntrospection: DEFAULT_INTROSPECTION_STATE,
     logDir: DEFAULT_LOG_DIR,
     debug: process.env.NODE_ENV === 'development',
+    rootValue: undefined,
     ...props,
     sessions: {
       path: DEFAULT_SESSION_PATH,
