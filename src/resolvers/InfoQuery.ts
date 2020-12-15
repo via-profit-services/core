@@ -3,11 +3,7 @@ import type { Context } from '@via-profit-services/core';
 
 
 const InfoQuery: IObjectTypeResolver<any, Context> = {
-  developer: (parent, args, context) =>
-    // console.log(context);
-
-     ({})
-  ,
+  developer: () => ({}),
 };
 
 export default InfoQuery;
