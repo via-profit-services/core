@@ -50,10 +50,10 @@ const applyMiddlewares: ApplyMiddleware = async (props) => {
     }
 
     // replace context
-    composedContext = mdlwreData.context || context;
+    composedContext = mdlwreData.context || composedContext;
 
     // replace schema
-    composedSchema = mdlwreData.schema || schema;
+    composedSchema = mdlwreData.schema || composedSchema;
 
   }, Promise.resolve())
 

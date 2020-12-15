@@ -1,11 +1,13 @@
-import { DEV_INFO_DEVELOPER_EMAIL, DEV_INFO_DEVELOPER_NAME, DEV_INFO_DEVELOPER_URL } from '../constants';
+import type { IObjectTypeResolver } from '@graphql-tools/utils';
+import type { Context } from '@via-profit-services/core';
 
-const InfoQuery = {
-  developer: () => ({
-    name: () => DEV_INFO_DEVELOPER_NAME,
-    url: () => DEV_INFO_DEVELOPER_URL,
-    email: () => DEV_INFO_DEVELOPER_EMAIL,
-  }),
+
+const InfoQuery: IObjectTypeResolver<any, Context> = {
+  developer: (parent, args, context) =>
+    // console.log(context);
+
+     ({})
+  ,
 };
 
 export default InfoQuery;
