@@ -1,4 +1,3 @@
-/* eslint-disable import/max-dependencies */
 import type { Configuration, Context } from '@via-profit-services/core';
 import express, { Router, Request, Response } from 'express';
 
@@ -17,8 +16,7 @@ type ExpressInlineFactory = (
 
 const expressInlineFactory: ExpressInlineFactory = (config, context) => {
   const { logger } = context;
-  const {
-    schema, debug, rootValue, middleware } = config;
+  const { schema, debug, rootValue, middleware } = config;
 
   // display errors
   const expressErrorMiddleware = errorMiddleware({ context });
@@ -50,6 +48,7 @@ const expressInlineFactory: ExpressInlineFactory = (config, context) => {
     middleware: composeMiddlewares(middleware, graphqlIntrospectionMiddleware),
     context,
     config,
+    schema,
   });
 
   const expressGraphqlMiddleware = expressGraphqlMiddlewareFactory({

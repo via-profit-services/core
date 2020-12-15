@@ -87,6 +87,7 @@ declare module '@via-profit-services/core' {
   export interface MiddlewareResponse {
     context?: Context;
     validationRule?: ValidationRule | ValidationRule[];
+    schema?: GraphQLSchema;
   }
 
   export type Middleware = (props: MiddlewareProps) => MiddlewareResponse;
