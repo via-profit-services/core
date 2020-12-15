@@ -112,12 +112,12 @@ const applicationFactory: ApplicationFactory = async (props) => {
         throw new BadRequestError('GraphQL only supports GET and POST requests');
       }
 
-      if (query == null) {
+      if (!query && headers?.connection !== 'Upgrade') {
         throw new BadRequestError('GraphQL request must provide query string');
       }
 
       // Skip requests without content types.
-      if (headers['content-type'] === undefined) {
+      if (headers['content-type'] === undefined && headers?.connection !== 'Upgrade') {
         throw new BadRequestError('Missing Content-Type header');
       }
 
