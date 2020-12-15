@@ -1,11 +1,14 @@
-import type { Context, Configuration, Middleware } from '@via-profit-services/core';
+import type { Context, Configuration, Middleware, MaybePromise } from '@via-profit-services/core';
+import type { Request } from 'express';
 import type { ValidationRule, GraphQLSchema } from 'graphql';
 
+
 interface ApplyMiddlewareProps {
-  middleware: Middleware[];
+  middlewares: Middleware[];
   context: Context;
   config: Configuration;
   schema: GraphQLSchema;
+  request: Request;
 }
 
 interface ApplyMiddlewareResponse {
@@ -15,10 +18,10 @@ interface ApplyMiddlewareResponse {
 
 }
 
-type ApplyMiddleware = (props: ApplyMiddlewareProps) => ApplyMiddlewareResponse;
+type ApplyMiddleware = (props: ApplyMiddlewareProps) => MaybePromise<ApplyMiddlewareResponse>;
 
-const applyMiddlewares: ApplyMiddleware = (props) => {
-  const { middleware, config, context, schema } = props;
+const applyMiddlewares: ApplyMiddleware = async (props) => {
+  const { middlewares, config, context, schema, request } = props;
 
 
   // define validation rules and new context
@@ -26,12 +29,15 @@ const applyMiddlewares: ApplyMiddleware = (props) => {
   let composedContext: Context = { ...context };
   let composedSchema: GraphQLSchema = schema;
 
-  middleware.forEach((mdlwre) => {
+  await middlewares.reduce(async (prev, middleware) => {
+    await prev;
 
     // init middleware
-    const mdlwreData = mdlwre({
+    const mdlwreData = await middleware({
       config,
+      schema: composedSchema,
       context: composedContext,
+      request,
     });
 
     // append validation rules
@@ -49,7 +55,8 @@ const applyMiddlewares: ApplyMiddleware = (props) => {
     // replace schema
     composedSchema = mdlwreData.schema || schema;
 
-  });
+  }, Promise.resolve())
+
 
   return {
     context: composedContext,

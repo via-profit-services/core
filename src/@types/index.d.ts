@@ -7,12 +7,14 @@
 declare module '@via-profit-services/core' {
   import { GraphQLSchema, ValidationRule } from 'graphql';
   import DataLoader from 'dataloader';
-  import { Router } from 'express';
+  import { Router, Request, Response, NextFunction } from 'express';
   import http from 'http';
   import Winston from 'winston';
   import 'winston-daily-rotate-file';
-
   
+  export type ExpressMiddleware = (req?: Request, resp?: Response, next?: NextFunction) => any;
+  export type MaybePromise<T> = Promise<T> | T;
+
   export interface Context {
     logger: LoggersCollection;
     timezone: string;
@@ -39,10 +41,9 @@ declare module '@via-profit-services/core' {
     logDir: string;
   }
   
-  export type ApplicationFactory = (props: InitProps) => {
+  export type ApplicationFactory = (props: InitProps) => Promise<{
     viaProfitGraphql: Router;
-    context: Context;
-  };
+  }>;
 
   export interface InitProps {
       server: http.Server;
@@ -82,6 +83,8 @@ declare module '@via-profit-services/core' {
   export interface MiddlewareProps {
     config: Configuration;
     context: Context;
+    request: Request;
+    schema: GraphQLSchema;
   }
 
   export interface MiddlewareResponse {
@@ -90,7 +93,7 @@ declare module '@via-profit-services/core' {
     schema?: GraphQLSchema;
   }
 
-  export type Middleware = (props: MiddlewareProps) => MiddlewareResponse;
+  export type Middleware = (props: MiddlewareProps) => MaybePromise<MiddlewareResponse>;
 
 
   export type Configuration = Required<InitProps>;
@@ -316,6 +319,5 @@ declare module '@via-profit-services/core' {
 
   const applicationFactory: ApplicationFactory;
 
-  // export { withFilter };
   export default applicationFactory;
 }

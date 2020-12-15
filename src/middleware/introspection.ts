@@ -3,6 +3,7 @@ import { ValidationRule, GraphQLError } from 'graphql';
 
 const introspectionMiddleware: Middleware = ({ config, context }) => {
   const { enableIntrospection } = config;
+
   const validationRule: ValidationRule = (validationContext) => ({
     Field: (node) => {
       const type = validationContext.getType();
