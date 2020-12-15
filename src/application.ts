@@ -3,10 +3,10 @@ import type {
   Configuration, Context, ApplicationFactory,
 } from '@via-profit-services/core';
 import DataLoader from 'dataloader';
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response } from 'express';
 import {
   GraphQLError, validateSchema, execute, specifiedRules,
-  parse, Source, DocumentNode, getOperationAST, validate,
+  parse, Source, getOperationAST, validate, ValidationRule, GraphQLSchema,
  } from 'graphql';
 import { performance } from 'perf_hooks';
 
@@ -43,7 +43,7 @@ const applicationFactory: ApplicationFactory = async (props) => {
   };
 
 
-  const { timezone, logDir, middleware, schema, rootValue, debug } = configurtation;
+  const { timezone, logDir, middleware, rootValue, debug } = configurtation;
   const logger = configureLogger({ logDir });
   const coreDataloader = new DataLoader(async (ids: string[]) => ids.map((id) => ({
     id,
@@ -71,64 +71,66 @@ const applicationFactory: ApplicationFactory = async (props) => {
     limit: MAXIMUM_REQUEST_BODY_SIZE,
   });
 
-  const expressErrorMiddleware = (
-    error: GraphQLError,
-    _req: Request,
-    _res: Response,
-    _next: NextFunction,
-  ) => customFormatErrorFn({ context: initialContext, error, debug });
-
 
   const expressGraphqlMiddleware = async (
     request: Request<any, any, Body>,
     response: Response,
   ) => {
     const middlewares = composeMiddlewares(middleware, graphqlIntrospectionMiddleware);
-    const { validationRules, context } = await applyMiddlewares({
-      context: initialContext,
-      config: configurtation,
-      schema,
-      middlewares,
-      request,
-    });
 
-    if (!schema) {
-      throw new ServerError('GraphQL middleware options must contain a schema')
-    }
 
-    // validate request
-    const graphqlErrors = validateSchema(schema);
-    if (graphqlErrors.length > 0) {
-      throw new ServerError('GraphQL schema validation error.', { graphqlErrors });
-    }
-
-    const { method, body, headers } = request;
-    const { query, variables, operationName } = body;
-    const startTime = performance.now();
-    let documentAST: DocumentNode;
+    let validationRules: ValidationRule[] = [];
+    let context: Context = initialContext;
+    let schema: GraphQLSchema = configurtation.schema;
 
     try {
-      if (!['GET', 'POST'].includes(method)) {
-        throw new BadRequestError('GraphQL only supports GET and POST requests');
+      try {
+        const middlewaresResponse = await applyMiddlewares({
+          context: initialContext,
+          config: configurtation,
+          schema: configurtation.schema,
+          middlewares,
+          request,
+        });
+        validationRules = middlewaresResponse.validationRules;
+        context = middlewaresResponse.context;
+        schema = middlewaresResponse.schema;
+
+      } catch (err) {
+        throw new ServerError('GraphQL Error. Failed to load middlewares', { err });
       }
 
-      if (!query && headers?.connection !== 'Upgrade') {
-        throw new BadRequestError('GraphQL request must provide query string');
-      }
 
-      // Skip requests without content types.
-      if (headers['content-type'] === undefined && headers?.connection !== 'Upgrade') {
-        throw new BadRequestError('Missing Content-Type header');
+      if (!schema) {
+        throw new ServerError('GraphQL Error. GraphQL middleware options must contain a schema', { schema });
       }
 
       // validate request
-      try {
-        documentAST = parse(new Source(query, 'GraphQL request'));
-      } catch (syntaxErrors) {
-        return response.status(500).json({
-          errors: syntaxErrors,
-        })
+      const graphqlErrors = validateSchema(schema);
+      if (graphqlErrors.length > 0) {
+        throw new ServerError('GraphQL Error. GraphQL schema validation error.', { graphqlErrors });
       }
+
+      const { method, body, headers } = request;
+      const { query, variables, operationName } = body;
+      const startTime = performance.now();
+
+      if (!['GET', 'POST'].includes(method)) {
+        throw new BadRequestError('GraphQL Error. GraphQL only supports GET and POST requests');
+      }
+
+      if (!query) {
+        return;
+        // throw new BadRequestError('GraphQL Error. GraphQL request must provide query string');
+      }
+
+      // Skip requests without content types.
+      if (headers['content-type'] === undefined) {
+        throw new BadRequestError('GraphQL Error. Missing Content-Type header');
+      }
+
+
+      const documentAST = parse(new Source(query, 'GraphQL request'));
 
       // Validate AST, reporting any errors.
       const validationErrors = validate(schema, documentAST, [
@@ -136,9 +138,7 @@ const applicationFactory: ApplicationFactory = async (props) => {
         ...validationRules,
       ]);
       if (validationErrors.length > 0) {
-        return response.status(500).json({
-          errors: validationErrors,
-        })
+        throw new BadRequestError('GraphQL Error. Validation Error', { graphqlErrors: validationErrors })
       }
 
 
@@ -148,27 +148,11 @@ const applicationFactory: ApplicationFactory = async (props) => {
         const operationAST = getOperationAST(documentAST, operationName);
         if (operationAST && operationAST.operation !== 'query') {
           // Otherwise, report a 405: Method Not Allowed error.
-          throw new BadRequestError(`Can only perform a ${operationAST.operation} operation from a POST request`);
+          throw new BadRequestError(`GraphQL Error. Can only perform a ${operationAST.operation} operation from a POST request`);
         }
       }
 
-    } catch (prepareErrors) {
-      const errors = new GraphQLError(
-        'GraphQL Prepare error',
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        prepareErrors,
-      );
-
-      return response.status(prepareErrors.status || 500).json({
-        errors: [errors].map((error) => customFormatErrorFn({ error, context, debug })),
-      })
-    }
-
-
-    try {
+      // try {
       const { errors, data } = await execute({
         variableValues: variables,
         document: documentAST,
@@ -179,7 +163,7 @@ const applicationFactory: ApplicationFactory = async (props) => {
       });
 
       if (errors) {
-        return response.json({ errors })
+        throw new ServerError('GraphQL Error.', { graphqlErrors: errors });
       }
 
       const extensions = !debug ? undefined : {
@@ -189,32 +173,27 @@ const applicationFactory: ApplicationFactory = async (props) => {
         },
       };
 
-      return response.json({
+      response.status(200).json({
         data,
         extensions,
       })
 
-    } catch (executionErrors) {
-      const errors = new GraphQLError(
-        'GraphQL Context error',
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        executionErrors,
-      );
+    } catch (originalError) {
 
-      return response.status(executionErrors.status || 500).json({
-        errors: [errors].map((error) => customFormatErrorFn({ error, context, debug })),
-      })
+      const errors: GraphQLError[] = originalError?.metaData?.graphqlErrors ?? [];
+
+      response.status(originalError.status || 500).json({
+        data: null,
+        errors: errors.map((error) => customFormatErrorFn({ error, context, debug })),
+      });
     }
+
   }
 
   const viaProfitGraphql = express.Router();
   viaProfitGraphql.use(expressJSONMiddleware);
   viaProfitGraphql.use(expressUrlEncodedMiddleware);
   viaProfitGraphql.use(expressGraphqlMiddleware);
-  viaProfitGraphql.use(expressErrorMiddleware);
 
   return {
     viaProfitGraphql,

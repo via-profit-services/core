@@ -11,7 +11,14 @@ type GraphQLErrorM = GraphQLError & {
   originalError: ErrorHandler;
 }
 
-const customFormatErrorFn = (props: IProps) => {
+interface Props {
+  error: GraphQLError;
+  context: Context;
+  debug: boolean;
+}
+
+
+const customFormatErrorFn = (props: Props) => {
   const { error, context, debug } = props;
   const { logger } = context;
   const { originalError } = error as GraphQLErrorM;
@@ -27,6 +34,7 @@ const customFormatErrorFn = (props: IProps) => {
     case originalError instanceof BadRequestError:
     case originalError instanceof NotFoundError:
     case originalError instanceof ServerError:
+
       logger.server.error(originalError.message, {
         ...error, meta: originalError.metaData, stack,
       });
@@ -73,10 +81,5 @@ const customFormatErrorFn = (props: IProps) => {
   };
 };
 
-interface IProps {
-  error: GraphQLError;
-  context: Context;
-  debug: boolean;
-}
 
 export default customFormatErrorFn;
