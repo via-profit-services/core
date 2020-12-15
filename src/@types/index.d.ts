@@ -7,12 +7,11 @@
 declare module '@via-profit-services/core' {
   import { GraphQLSchema, ValidationRule } from 'graphql';
   import DataLoader from 'dataloader';
-  import { Router, Request, Response, NextFunction } from 'express';
+  import { Router, Request } from 'express';
   import http from 'http';
   import Winston from 'winston';
   import 'winston-daily-rotate-file';
   
-  export type ExpressMiddleware = (req?: Request, resp?: Response, next?: NextFunction) => any;
   export type MaybePromise<T> = Promise<T> | T;
 
   export interface Context {
@@ -294,8 +293,6 @@ declare module '@via-profit-services/core' {
   export type DirectionRange = 'asc' | 'desc';
   export type WhereAction = '=' | '<>' | '>' | '<' | '>=' | '<=' | 'in' | 'notIn' | 'like' | 'ilike' | 'is null' | 'is not null';
   
-  export const logFormatter: Winston.Logform.Format;
-  export const resolvers: any;
   export const stringToCursor: StringToCursor;
   export const cursorToString: CursorToString;
   export const makeNodeCursor: MakeNodeCursor;
@@ -309,6 +306,9 @@ declare module '@via-profit-services/core' {
   export const applyAliases: ApplyAliases;
   export const buildQueryFilter: BuildQueryFilter;
   export const typeDefs: string;
+  export const logFormatter: Winston.Logform.Format;
+  export const resolvers: any;
+  export const factory: ApplicationFactory;
 
   export const LOG_FILENAME_DEBUG: string;
   export const LOG_FILENAME_ERRORS: string;
@@ -317,7 +317,4 @@ declare module '@via-profit-services/core' {
   export const LOG_MAX_SIZE: string;
   export const LOG_MAX_FILES: string;
 
-  const applicationFactory: ApplicationFactory;
-
-  export default applicationFactory;
 }

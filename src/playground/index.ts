@@ -4,7 +4,7 @@ import cors from 'cors';
 import express from 'express';
 import { createServer } from 'http';
 
-import viaProfitServerFactory, { resolvers, typeDefs } from '../index';
+import * as core from '../index';
 
 (async () => {
   const PORT = 9005;
@@ -12,11 +12,11 @@ import viaProfitServerFactory, { resolvers, typeDefs } from '../index';
   const app = express();
   const server = createServer(app);
   const schema = makeExecutableSchema({
-    typeDefs,
-    resolvers,
+    typeDefs: core.typeDefs,
+    resolvers: core.resolvers,
   });
 
-  const { viaProfitGraphql } = await viaProfitServerFactory({
+  const { viaProfitGraphql } = await core.factory({
     server,
     schema,
     debug: true,

@@ -1,7 +1,7 @@
 {
     "name": "@via-profit-services/core",
     "support": "https://via-profit.ru",
-    "version": "0.31.6-rc.8",
+    "version": "0.31.6-rc.10",
     "description": "Via Profit Core service",
     "main": "dist/index.js",
     "engines": {
@@ -123,7 +123,8 @@
         "moment": "*",
         "moment-timezone": "*",
         "winston": "*",
-        "winston-daily-rotate-file": "*"
+        "winston-daily-rotate-file": "*",
+        "supports-color": "*"
     },
     "optionalDependencies": {
         "bufferutil": "^4.0.2",

@@ -1,6 +1,4 @@
-import DataLoader from 'dataloader';
-
-import applicationFactory from './application';
+import factory from './application';
 import logFormatter from './logger/log-formatter';
 import resolvers from './resolvers';
 import typeDefs from './schema.graphql';
@@ -13,8 +11,7 @@ export * from './utils/filters';
 export {
   resolvers,
   typeDefs,
-  DataLoader,
   logFormatter,
+  factory,
 };
 
-export default applicationFactory;
