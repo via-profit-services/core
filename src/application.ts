@@ -2,7 +2,6 @@
 import type {
   Configuration, Context, ApplicationFactory,
 } from '@via-profit-services/core';
-import DataLoader from 'dataloader';
 import express, { Request, Response } from 'express';
 import {
   GraphQLError, validateSchema, execute, specifiedRules,
@@ -45,19 +44,13 @@ const applicationFactory: ApplicationFactory = async (props) => {
 
   const { timezone, logDir, middleware, rootValue, debug } = configurtation;
   const logger = configureLogger({ logDir });
-  const coreDataloader = new DataLoader(async (ids: string[]) => ids.map((id) => ({
-    id,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  })))
 
   // combine finally context object
   const initialContext: Context = {
     timezone,
     logger,
-    dataloader: {
-      core: coreDataloader,
-    },
+    dataloader: {},
+    services: {},
   };
 
   // // json
@@ -182,7 +175,7 @@ const applicationFactory: ApplicationFactory = async (props) => {
 
       const errors: GraphQLError[] = originalError?.metaData?.graphqlErrors ?? [];
 
-      response.status(originalError.status || 500).json({
+      response.status(originalError.status ?? 500).json({
         data: null,
         errors: errors.map((error) => customFormatErrorFn({ error, context, debug })),
       });

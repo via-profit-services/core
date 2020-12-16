@@ -5,7 +5,6 @@ import express from 'express';
 import { createServer } from 'http';
 
 import * as core from '../index';
-import middleware from './middleware';
 
 (async () => {
   const PORT = 9005;
@@ -23,7 +22,6 @@ import middleware from './middleware';
     debug: true,
     enableIntrospection: true,
     logDir: LOG_DIR,
-    middleware,
   });
 
 

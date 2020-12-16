@@ -18,10 +18,15 @@ declare module '@via-profit-services/core' {
     logger: LoggersCollection;
     timezone: string;
     dataloader: DataLoaderCollection;
+    services: ServicesCollection;
+  }
+
+  export interface ServicesCollection {
+    [key: string]: unknown;
   }
 
   export interface DataLoaderCollection {
-    core: DataLoader<string, Node<unknown>>;
+    [key: string]: DataLoader<unknown, unknown>;
   }
 
   export type Logger = Winston.Logger;

@@ -26,7 +26,7 @@ const applyMiddlewares: ApplyMiddleware = async (props) => {
 
   // define validation rules and new context
   let composedValidationRules: ValidationRule[] = [];
-  let composedContext: Context = { ...context };
+  let composedContext: Context = context;
   let composedSchema: GraphQLSchema = schema;
 
   await middlewares.reduce(async (prev, middleware) => {
