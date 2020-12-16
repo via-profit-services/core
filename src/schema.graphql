@@ -6,7 +6,6 @@ type Mutation {
   info: InfoMutation!
 }
 
-
 type InfoQuery {
   developer: Developer!
 }
@@ -15,6 +14,7 @@ type Developer {
   name: String!
   url: URL!
   email: EmailAddress!
+  phone: Phone!
 }
 
 type InfoMutation {
@@ -104,6 +104,57 @@ input BetweenMoney {
   start: Money!
   end: Money!
 }
+
+type Phone {
+  """
+  Phone number (digits) without country code
+  e.g. for Russia: 9876543210
+  """
+  number: String!
+  """
+  Country code iso2
+  e.g. for Russia: RU
+  """
+  country: String!
+  """
+  Description
+  e.g. Director personal
+  """
+  description: String!
+  """
+  Any phone data
+  You can store any information here
+  """
+  metaData: JSON
+}
+
+"""
+Possible data to update phone entity
+"""
+input PhoneInput {
+  """
+  Phone number (digits) without country code
+  e.g. for Russia: 9876543210
+  """
+  number: String!
+  """
+  Country code iso2
+  e.g. for Russia: RU
+  """
+  country: String!
+  """
+  Description
+  e.g. Director personal
+  """
+  description: String!
+  """
+  Any phone data
+  You can store any information here
+  """
+  metaData: JSON
+}
+
+
 
 """
 Money type.

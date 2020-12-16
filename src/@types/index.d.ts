@@ -240,6 +240,13 @@ declare module '@via-profit-services/core' {
   export type WhereValue = string | number | boolean | null | readonly string[] | readonly number[] | undefined;
   export type WhereField = [string, WhereAction, WhereValue];
   export type Where = WhereField[];
+  
+  export interface Phone {
+    number: string;
+    country: string;
+    description: string;
+    metaData?: any;
+  } 
   /**
    * Key - is a alias name \
    * Value - is a field alias name or array of names \
