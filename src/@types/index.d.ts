@@ -247,7 +247,10 @@ declare module '@via-profit-services/core' {
     description: string;
     metaData?: any;
   } 
+
   /**
+   * @deprecated Use `ApplyAliases` type of `@via-profit-services/knex` module
+   * 
    * Key - is a alias name \
    * Value - is a field alias name or array of names \
    * Use asterisk (\*) for default alias name. \
@@ -264,20 +267,57 @@ declare module '@via-profit-services/core' {
    * Convert string to cursor base64 string
    */
   export type StringToCursor = (str: string) => string;
+
   /**
    * Convert base64 cursor to string
    */
   export type CursorToString = (str: string) => string;
+
+  /**
+   * Return cursor base64 cursor string by name and cursor payload
+   */
   export type MakeNodeCursor = (cursorName: string, cursorPayload: CursorPayload) => string;
+  
+  /**
+   * Convert string to cursor base64 string and return payload
+   */
   export type GetCursorPayload = (cursor: string) => CursorPayload;
+
+  /**
+   * Return Relay cursor bundle
+   */
   export type BuildCursorConnection = <T>(props: CursorConnectionProps<T>, cursorName?: string) => CursorConnection<T>;
+  
+  /**
+   * Wrap node to cursor object
+   */
   export type NodeToEdge = <T>(node: Node<T>, cursorName: string, cursorPayload: CursorPayload) => Edge<T>;
+  
+  /**
+   * Return array of fields of node
+   */
   export type ExtractNodeField = <T, K extends keyof Node<T>>(nodes: Node<T>[], field: K) => Node<T>[K][];
+  
+  /**
+   * Returns node IDs array
+   */
   export type ExtractNodeIds = <T>(nodes: Node<T>[]) => string[];
+
+  /**
+   * Collate rows for dataloader response
+   */
   export type CollateForDataloader = <T>(ids: string[], nodes: Node<T>[], returnUndefined?: boolean) => Node<T>[];
+
+  /**
+   * Format array of IDs to object with id key
+   */
   export type ArrayOfIdsToArrayOfObjectIds = (array: string[]) => {
       id: string;
   }[];
+
+/**
+ * @deprecated Use `ApplyAliases` type of `@via-profit-services/knex` module
+ */
   export type ApplyAliases = (whereClause: Where, aliases: TableAliases) => Where;
   export type BuildQueryFilter = <T extends InputFilter>(args: T) => OutputFilter;
   

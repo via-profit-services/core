@@ -3,6 +3,9 @@ import type { OutputFilter, OutputSearch, ApplyAliases, WhereField, BuildQueryFi
 import { DEFAULT_NODES_LIMIT } from '../constants';
 import { getCursorPayload } from './cursors';
 
+/**
+ * @deprecated Use `ApplyAliases` type of `@via-profit-services/knex` module
+ */
 export const applyAliases: ApplyAliases = (whereClause, aliases) => {
   const aliasesMap = new Map<string, string>();
   Object.entries(aliases).forEach(([tableName, field]) => {
