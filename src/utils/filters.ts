@@ -4,7 +4,7 @@ import { DEFAULT_NODES_LIMIT } from '../constants';
 import { getCursorPayload } from './cursors';
 
 /**
- * @deprecated Use `ApplyAliases` type of `@via-profit-services/knex` module
+ * @deprecated Use `ApplyAliases` function of `@via-profit-services/knex` instead
  */
 export const applyAliases: ApplyAliases = (whereClause, aliases) => {
   const aliasesMap = new Map<string, string>();

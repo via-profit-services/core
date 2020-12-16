@@ -249,7 +249,7 @@ declare module '@via-profit-services/core' {
   } 
 
   /**
-   * @deprecated Use `ApplyAliases` type of `@via-profit-services/knex` module
+   * @deprecated Use `ApplyAliases` type of `@via-profit-services/knex` instead
    * 
    * Key - is a alias name \
    * Value - is a field alias name or array of names \
@@ -263,61 +263,22 @@ declare module '@via-profit-services/core' {
     [key: string]: string | string[];
   };
   
-  /**
-   * Convert string to cursor base64 string
-   */
   export type StringToCursor = (str: string) => string;
-
-  /**
-   * Convert base64 cursor to string
-   */
   export type CursorToString = (str: string) => string;
-
-  /**
-   * Return cursor base64 cursor string by name and cursor payload
-   */
   export type MakeNodeCursor = (cursorName: string, cursorPayload: CursorPayload) => string;
-  
-  /**
-   * Convert string to cursor base64 string and return payload
-   */
   export type GetCursorPayload = (cursor: string) => CursorPayload;
-
-  /**
-   * Return Relay cursor bundle
-   */
   export type BuildCursorConnection = <T>(props: CursorConnectionProps<T>, cursorName?: string) => CursorConnection<T>;
-  
-  /**
-   * Wrap node to cursor object
-   */
   export type NodeToEdge = <T>(node: Node<T>, cursorName: string, cursorPayload: CursorPayload) => Edge<T>;
-  
-  /**
-   * Return array of fields of node
-   */
   export type ExtractNodeField = <T, K extends keyof Node<T>>(nodes: Node<T>[], field: K) => Node<T>[K][];
-  
-  /**
-   * Returns node IDs array
-   */
   export type ExtractNodeIds = <T>(nodes: Node<T>[]) => string[];
-
-  /**
-   * Collate rows for dataloader response
-   */
   export type CollateForDataloader = <T>(ids: string[], nodes: Node<T>[], returnUndefined?: boolean) => Node<T>[];
-
-  /**
-   * Format array of IDs to object with id key
-   */
   export type ArrayOfIdsToArrayOfObjectIds = (array: string[]) => {
       id: string;
   }[];
 
-/**
- * @deprecated Use `ApplyAliases` type of `@via-profit-services/knex` module
- */
+  /**
+   * @deprecated Use `ApplyAliases` type of `@via-profit-services/knex` instead
+   */
   export type ApplyAliases = (whereClause: Where, aliases: TableAliases) => Where;
   export type BuildQueryFilter = <T extends InputFilter>(args: T) => OutputFilter;
   
@@ -345,18 +306,69 @@ declare module '@via-profit-services/core' {
   export type DirectionRange = 'asc' | 'desc';
   export type WhereAction = '=' | '<>' | '>' | '<' | '>=' | '<=' | 'in' | 'notIn' | 'like' | 'ilike' | 'is null' | 'is not null';
   
+  /**
+   * Convert string to cursor base64 string
+   */
   export const stringToCursor: StringToCursor;
+
+  /**
+   * Convert base64 cursor to string
+   */
   export const cursorToString: CursorToString;
+
+  /**
+   * Return cursor base64 cursor string by name and cursor payload
+   */
   export const makeNodeCursor: MakeNodeCursor;
+
+  /**
+   * Convert string to cursor base64 string and return payload
+   */
   export const getCursorPayload: GetCursorPayload;
+
+  /**
+   * Return Relay cursor bundle
+   */
   export const buildCursorConnection: BuildCursorConnection;
+
+  /**
+   * Wrap node to cursor object
+   */
   export const nodeToEdge: NodeToEdge;
+
+  /**
+   * Return array of fields of node
+   */
   export const extractNodeField: ExtractNodeField;
+    
+  /**
+   * Returns node IDs array
+   */
   export const extractNodeIds: ExtractNodeIds;
+
+  /**
+   * Collate rows for dataloader response
+   */
   export const collateForDataloader: CollateForDataloader;
+
+  /**
+   * Format array of IDs to object with id key
+   */
   export const arrayOfIdsToArrayOfObjectIds: ArrayOfIdsToArrayOfObjectIds;
+
+  /**
+   * @deprecated Use `ApplyAliases` function of `@via-profit-services/knex` instead
+   */
   export const applyAliases: ApplyAliases;
+
+  /***
+   * Convert input filter (partial from GraphQL request) to persist filter
+   */
   export const buildQueryFilter: BuildQueryFilter;
+
+  /**
+   * Core type definitions (GraphQL SDL string)
+   */
   export const typeDefs: string;
   export const logFormatter: Winston.Logform.Format;
   export const resolvers: any;
