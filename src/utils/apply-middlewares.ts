@@ -1,4 +1,4 @@
-import type { Context, Configuration, Middleware, MaybePromise } from '@via-profit-services/core';
+import type { Context, Configuration, Middleware, MaybePromise, MiddlewareExtensions } from '@via-profit-services/core';
 import type { Request } from 'express';
 import type { ValidationRule, GraphQLSchema } from 'graphql';
 
@@ -8,6 +8,7 @@ interface ApplyMiddlewareProps {
   context: Context;
   config: Configuration;
   schema: GraphQLSchema;
+  extensions: MiddlewareExtensions;
   request: Request;
 }
 
@@ -15,19 +16,21 @@ interface ApplyMiddlewareResponse {
   context: Context;
   schema: GraphQLSchema;
   validationRules: ValidationRule[];
+  extensions: MiddlewareExtensions;
 
 }
 
 type ApplyMiddleware = (props: ApplyMiddlewareProps) => MaybePromise<ApplyMiddlewareResponse>;
 
 const applyMiddlewares: ApplyMiddleware = async (props) => {
-  const { middlewares, config, context, schema, request } = props;
+  const { middlewares, config, context, schema, request, extensions } = props;
 
 
   // define validation rules and new context
   let composedValidationRules: ValidationRule[] = [];
   let composedContext: Context = context;
   let composedSchema: GraphQLSchema = schema;
+  let composedExtensions: MiddlewareExtensions = extensions;
 
   await middlewares.reduce(async (prev, middleware) => {
     await prev;
@@ -37,6 +40,7 @@ const applyMiddlewares: ApplyMiddleware = async (props) => {
       config,
       schema: composedSchema,
       context: composedContext,
+      extensions: composedExtensions,
       request,
     });
 
@@ -55,6 +59,9 @@ const applyMiddlewares: ApplyMiddleware = async (props) => {
     // replace schema
     composedSchema = mdlwreData.schema || composedSchema;
 
+    // replace extensions
+    composedExtensions = mdlwreData.extensions || composedExtensions;
+
   }, Promise.resolve())
 
 
@@ -62,6 +69,7 @@ const applyMiddlewares: ApplyMiddleware = async (props) => {
     context: composedContext,
     validationRules: composedValidationRules,
     schema: composedSchema,
+    extensions: composedExtensions,
   }
 }
 

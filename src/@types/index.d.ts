@@ -89,16 +89,21 @@ declare module '@via-profit-services/core' {
     context: Context;
     request: Request;
     schema: GraphQLSchema;
+    extensions: MiddlewareExtensions;
   }
 
   export interface MiddlewareResponse {
     context?: Context;
     validationRule?: ValidationRule | ValidationRule[];
     schema?: GraphQLSchema;
+    extensions?: MiddlewareExtensions;
+  }
+
+  export interface MiddlewareExtensions {
+    [key: string]: any;
   }
 
   export type Middleware = (props: MiddlewareProps) => MaybePromise<MiddlewareResponse>;
-
 
   export type Configuration = Required<InitProps>;
   

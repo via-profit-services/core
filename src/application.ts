@@ -1,6 +1,6 @@
 /* eslint-disable import/max-dependencies */
 import type {
-  Configuration, Context, ApplicationFactory,
+  Configuration, Context, ApplicationFactory, MiddlewareExtensions,
 } from '@via-profit-services/core';
 import express, { Request, Response } from 'express';
 import {
@@ -69,12 +69,16 @@ const applicationFactory: ApplicationFactory = async (props) => {
     request: Request<any, any, Body>,
     response: Response,
   ) => {
-    const middlewares = composeMiddlewares(middleware, graphqlIntrospectionMiddleware);
+    const middlewares = composeMiddlewares(
+      graphqlIntrospectionMiddleware(),
+      middleware,
+    );
 
 
     let validationRules: ValidationRule[] = [];
     let context: Context = initialContext;
     let schema: GraphQLSchema = configurtation.schema;
+    let extensions: MiddlewareExtensions = {};
 
     try {
       try {
@@ -82,12 +86,14 @@ const applicationFactory: ApplicationFactory = async (props) => {
           context: initialContext,
           config: configurtation,
           schema: configurtation.schema,
+          extensions: {},
           middlewares,
           request,
         });
         validationRules = middlewaresResponse.validationRules;
         context = middlewaresResponse.context;
         schema = middlewaresResponse.schema;
+        extensions = middlewaresResponse.extensions;
 
       } catch (err) {
         throw new ServerError('GraphQL Error. Failed to load middlewares', { err });
@@ -106,7 +112,6 @@ const applicationFactory: ApplicationFactory = async (props) => {
 
       const { method, body, headers } = request;
       const { query, variables, operationName } = body;
-      const startTime = performance.now();
 
       if (!['GET', 'POST'].includes(method)) {
         throw new BadRequestError('GraphQL Error. GraphQL only supports GET and POST requests');
@@ -145,7 +150,7 @@ const applicationFactory: ApplicationFactory = async (props) => {
         }
       }
 
-      // try {
+      const startTime = performance.now();
       const { errors, data } = await execute({
         variableValues: variables,
         document: documentAST,
@@ -159,16 +164,12 @@ const applicationFactory: ApplicationFactory = async (props) => {
         throw new ServerError('GraphQL Error.', { graphqlErrors: errors });
       }
 
-      const extensions = !debug ? undefined : {
-        queryTime: {
-          value: performance.now() - startTime,
-          units: 'ms',
-        },
-      };
-
       response.status(200).json({
         data,
-        extensions,
+        extensions: {
+          ...extensions,
+          queryTime: performance.now() - startTime,
+        },
       })
 
     } catch (originalError) {
