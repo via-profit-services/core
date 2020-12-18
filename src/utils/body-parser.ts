@@ -1,8 +1,7 @@
 import type { RequestBody } from '@via-profit-services/core';
 import contentType from 'content-type';
 import { Request } from 'express';
-import rawBody from 'raw-body';
-import type { Inflate, Gunzip } from 'zlib';
+import getRawBody from 'raw-body';
 import zlib from 'zlib';
 
 import BadRequestError from '../errorHandlers/BadRequestError';
@@ -38,15 +37,7 @@ const parseBody: BodyParser = async (req) => {
   }
 
 
-  let rawBody: string;
-
-  try {
-    rawBody = await readBody(req, { charset });
-  } catch (err) {
-    throw new ServerError('Failed to read body', { err });
-  }
-  // Use the correct body parser based on Content-Type header.
-
+  const rawBody = await readBody(req, { charset });
 
   switch (type) {
     case 'application/graphql':
@@ -68,7 +59,8 @@ const parseBody: BodyParser = async (req) => {
     //   return querystring.parse(rawBody);
 
     default:
-      throw new BadRequestError(`POST body sent empty data with content-type: «${type}»`);
+      return rawBody;
+      // throw new BadRequestError(`POST body sent empty data with content-type: «${type}»`);
   }
 
 }
@@ -120,38 +112,40 @@ export const parseGraphQLParams = (props: GraphQLParamsProps): GraphQLParams => 
 
   return graphQLParams;
 }
-const readBody = async (req: Request, opts: { charset: string }): Promise<string> => {
+
+const decompressBody = (request: Request, encoding: string) => {
+  switch (encoding) {
+    case 'identity':
+      return request;
+
+    case 'deflate':
+      return request.pipe(zlib.createInflate());
+
+    case 'gzip':
+      return request.pipe(zlib.createGunzip());
+
+    default:
+      throw new ServerError(`Unsupported content-encoding "${encoding}".`);
+  }
+}
+
+
+const readBody = async (request: Request, opts: { charset: string }): Promise<string> => {
   const { charset } = opts;
   if (!charset.startsWith('utf-')) {
     throw new ServerError(`Unsupported charset "${charset.toUpperCase()}".`);
   }
-  const contentEncoding = req.headers['content-encoding'];
+  const contentEncoding = request.headers['content-encoding'];
   const encoding =
     typeof contentEncoding === 'string'
       ? contentEncoding.toLowerCase()
       : 'identity';
-  const length = encoding === 'identity' ? req.headers['content-length'] : null;
-
-  let stream: Request | Inflate | Gunzip;
-
-  // decompress stream
-  switch (encoding) {
-    case 'identity':
-        stream = req;
-      break;
-    case 'deflate':
-      stream = req.pipe(zlib.createInflate());
-      break;
-    case 'gzip':
-      stream = req.pipe(zlib.createGunzip());
-    break;
-    default:
-      throw new ServerError(`Unsupported content-encoding "${encoding}".`);
-  }
+  const length = encoding === 'identity' ? request.headers['content-length'] : null;
+  const stream = decompressBody(request, encoding);
 
   try {
 
-    const body = await rawBody(stream, {
+    const body = await getRawBody(stream, {
       encoding: charset,
       length,
     });
