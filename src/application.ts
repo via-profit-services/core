@@ -2,16 +2,17 @@
 import type {
   Configuration, Context, ApplicationFactory, MiddlewareExtensions,
 } from '@via-profit-services/core';
-import express, { Request, Response } from 'express';
+import { RequestHandler } from 'express';
 import {
   GraphQLError, validateSchema, execute, specifiedRules,
   parse, Source, getOperationAST, validate, ValidationRule, GraphQLSchema,
  } from 'graphql';
 import { performance } from 'perf_hooks';
 
+
 import {
   DEFAULT_INTROSPECTION_STATE, DEFAULT_SERVER_TIMEZONE,
-  DEFAULT_LOG_DIR, MAXIMUM_REQUEST_BODY_SIZE,
+  DEFAULT_LOG_DIR,
 } from './constants';
 import BadRequestError from './errorHandlers/BadRequestError';
 import customFormatErrorFn from './errorHandlers/customFormatErrorFn';
@@ -19,15 +20,8 @@ import ServerError from './errorHandlers/ServerError';
 import configureLogger from './logger/configure-logger';
 import graphqlIntrospectionMiddleware from './middleware/introspection';
 import applyMiddlewares from './utils/apply-middlewares';
+import bodyParser, { parseGraphQLParams } from './utils/body-parser';
 import composeMiddlewares from './utils/compose-middlewares';
-
-
-interface Body {
-  query: string;
-  variables: unknown;
-  operationName: string;
-}
-
 
 const applicationFactory: ApplicationFactory = async (props) => {
   const configurtation: Configuration = {
@@ -53,22 +47,9 @@ const applicationFactory: ApplicationFactory = async (props) => {
     services: {},
   };
 
-  // // json
-  const expressJSONMiddleware = express.json({
-    limit: MAXIMUM_REQUEST_BODY_SIZE,
-  });
 
-  // // url encoded
-  const expressUrlEncodedMiddleware = express.urlencoded({
-    extended: true,
-    limit: MAXIMUM_REQUEST_BODY_SIZE,
-  });
+  const graphQLExpress: RequestHandler = async (request, response) => {
 
-
-  const expressGraphqlMiddleware = async (
-    request: Request<any, any, Body>,
-    response: Response,
-  ) => {
     const middlewares = composeMiddlewares(
       graphqlIntrospectionMiddleware(),
       middleware,
@@ -110,23 +91,13 @@ const applicationFactory: ApplicationFactory = async (props) => {
         throw new ServerError('GraphQL Error. GraphQL schema validation error.', { graphqlErrors });
       }
 
-      const { method, body, headers } = request;
-      const { query, variables, operationName } = body;
+      const { method } = request;
+      const body = await bodyParser(request);
+      const { query, variables, operationName } = parseGraphQLParams({ body, request });
 
       if (!['GET', 'POST'].includes(method)) {
         throw new BadRequestError('GraphQL Error. GraphQL only supports GET and POST requests');
       }
-
-      if (!query) {
-        return;
-        // throw new BadRequestError('GraphQL Error. GraphQL request must provide query string');
-      }
-
-      // Skip requests without content types.
-      if (headers['content-type'] === undefined) {
-        throw new BadRequestError('GraphQL Error. Missing Content-Type header');
-      }
-
 
       const documentAST = parse(new Source(query, 'GraphQL request'));
 
@@ -184,13 +155,8 @@ const applicationFactory: ApplicationFactory = async (props) => {
 
   }
 
-  const viaProfitGraphql = express.Router();
-  viaProfitGraphql.use(expressJSONMiddleware);
-  viaProfitGraphql.use(expressUrlEncodedMiddleware);
-  viaProfitGraphql.use(expressGraphqlMiddleware);
-
   return {
-    viaProfitGraphql,
+    graphQLExpress,
   };
 }
 

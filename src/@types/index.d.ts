@@ -7,7 +7,7 @@
 declare module '@via-profit-services/core' {
   import { GraphQLSchema, ValidationRule } from 'graphql';
   import DataLoader from 'dataloader';
-  import { Router, Request } from 'express';
+  import { Request, RequestHandler } from 'express';
   import http from 'http';
   import Winston from 'winston';
   import 'winston-daily-rotate-file';
@@ -46,7 +46,7 @@ declare module '@via-profit-services/core' {
   }
   
   export type ApplicationFactory = (props: InitProps) => Promise<{
-    viaProfitGraphql: Router;
+    graphQLExpress: RequestHandler;
   }>;
 
   export interface InitProps {

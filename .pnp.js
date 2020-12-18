@@ -41,8 +41,11 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@graphql-tools/utils", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:7.1.4"],
             ["@jagi/jest-transform-graphql", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:1.0.2"],
             ["@types/bluebird", "npm:3.5.33"],
+            ["@types/busboy", "npm:0.2.3"],
+            ["@types/content-type", "npm:1.1.3"],
             ["@types/cors", "npm:2.8.8"],
             ["@types/express", "npm:4.17.9"],
+            ["@types/fs-capacitor", "npm:2.0.0"],
             ["@types/jest", "npm:24.9.1"],
             ["@types/moment", "npm:2.13.0"],
             ["@types/moment-timezone", "npm:0.5.13"],
@@ -61,7 +64,9 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@via-profit-services/eslint-config", "npm:0.1.11"],
             ["@zerollup/ts-transform-paths", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:1.7.18"],
             ["bufferutil", "npm:4.0.2"],
+            ["busboy", "npm:0.3.1"],
             ["chalk", "npm:3.0.0"],
+            ["content-type", "npm:1.0.4"],
             ["cors", "npm:2.8.5"],
             ["cross-env", "npm:6.0.3"],
             ["dataloader", "npm:2.0.0"],
@@ -79,6 +84,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint-plugin-react", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:7.21.5"],
             ["eslint-plugin-standard", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.1.0"],
             ["express", "npm:4.17.1"],
+            ["fs-capacitor", "npm:6.2.0"],
             ["graphql", "npm:15.4.0"],
             ["graphql-tag", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:2.11.0"],
             ["html-loader", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:1.3.2"],
@@ -91,6 +97,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["nodemon-webpack-plugin", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.3.2"],
             ["null-loader", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.0.1"],
             ["prettier", "npm:2.2.1"],
+            ["raw-body", "npm:2.4.1"],
             ["raw-loader", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.0.2"],
             ["rimraf", "npm:3.0.2"],
             ["shebang-loader", "npm:0.0.1"],
@@ -779,12 +786,31 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
+      ["@types/busboy", [
+        ["npm:0.2.3", {
+          "packageLocation": "./.yarn/cache/@types-busboy-npm-0.2.3-b3f65c4066-2f66c23ac8.zip/node_modules/@types/busboy/",
+          "packageDependencies": [
+            ["@types/busboy", "npm:0.2.3"],
+            ["@types/node", "npm:14.14.10"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
       ["@types/connect", [
         ["npm:3.4.33", {
           "packageLocation": "./.yarn/cache/@types-connect-npm-3.4.33-959638d9c6-6414495b59.zip/node_modules/@types/connect/",
           "packageDependencies": [
             ["@types/connect", "npm:3.4.33"],
             ["@types/node", "npm:14.14.10"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["@types/content-type", [
+        ["npm:1.1.3", {
+          "packageLocation": "./.yarn/cache/@types-content-type-npm-1.1.3-6701095761-5cb9976726.zip/node_modules/@types/content-type/",
+          "packageDependencies": [
+            ["@types/content-type", "npm:1.1.3"]
           ],
           "linkType": "HARD",
         }]
@@ -860,6 +886,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/node", "npm:14.14.10"],
             ["@types/qs", "npm:6.9.5"],
             ["@types/range-parser", "npm:1.2.3"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["@types/fs-capacitor", [
+        ["npm:2.0.0", {
+          "packageLocation": "./.yarn/cache/@types-fs-capacitor-npm-2.0.0-4f20eba973-2fed98a117.zip/node_modules/@types/fs-capacitor/",
+          "packageDependencies": [
+            ["@types/fs-capacitor", "npm:2.0.0"],
+            ["@types/node", "npm:14.14.10"]
           ],
           "linkType": "HARD",
         }]
@@ -1360,8 +1396,11 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@graphql-tools/utils", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:7.1.4"],
             ["@jagi/jest-transform-graphql", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:1.0.2"],
             ["@types/bluebird", "npm:3.5.33"],
+            ["@types/busboy", "npm:0.2.3"],
+            ["@types/content-type", "npm:1.1.3"],
             ["@types/cors", "npm:2.8.8"],
             ["@types/express", "npm:4.17.9"],
+            ["@types/fs-capacitor", "npm:2.0.0"],
             ["@types/jest", "npm:24.9.1"],
             ["@types/moment", "npm:2.13.0"],
             ["@types/moment-timezone", "npm:0.5.13"],
@@ -1380,7 +1419,9 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@via-profit-services/eslint-config", "npm:0.1.11"],
             ["@zerollup/ts-transform-paths", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:1.7.18"],
             ["bufferutil", "npm:4.0.2"],
+            ["busboy", "npm:0.3.1"],
             ["chalk", "npm:3.0.0"],
+            ["content-type", "npm:1.0.4"],
             ["cors", "npm:2.8.5"],
             ["cross-env", "npm:6.0.3"],
             ["dataloader", "npm:2.0.0"],
@@ -1398,6 +1439,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint-plugin-react", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:7.21.5"],
             ["eslint-plugin-standard", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.1.0"],
             ["express", "npm:4.17.1"],
+            ["fs-capacitor", "npm:6.2.0"],
             ["graphql", "npm:15.4.0"],
             ["graphql-tag", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:2.11.0"],
             ["html-loader", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:1.3.2"],
@@ -1410,6 +1452,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["nodemon-webpack-plugin", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.3.2"],
             ["null-loader", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.0.1"],
             ["prettier", "npm:2.2.1"],
+            ["raw-body", "npm:2.4.1"],
             ["raw-loader", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.0.2"],
             ["rimraf", "npm:3.0.2"],
             ["shebang-loader", "npm:0.0.1"],
@@ -2755,6 +2798,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
+      ["busboy", [
+        ["npm:0.3.1", {
+          "packageLocation": "./.yarn/cache/busboy-npm-0.3.1-87ec0dae5a-acc5c3d2f8.zip/node_modules/busboy/",
+          "packageDependencies": [
+            ["busboy", "npm:0.3.1"],
+            ["dicer", "npm:0.3.0"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
       ["bytes", [
         ["npm:3.0.0", {
           "packageLocation": "./.yarn/cache/bytes-npm-3.0.0-19be09472d-98d6c0ab36.zip/node_modules/bytes/",
@@ -3833,6 +3886,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/detect-node-npm-2.0.4-1d5a93916d-e7648a5a91.zip/node_modules/detect-node/",
           "packageDependencies": [
             ["detect-node", "npm:2.0.4"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["dicer", [
+        ["npm:0.3.0", {
+          "packageLocation": "./.yarn/cache/dicer-npm-0.3.0-ef4dcd1bb9-eb06a8c283.zip/node_modules/dicer/",
+          "packageDependencies": [
+            ["dicer", "npm:0.3.0"],
+            ["streamsearch", "npm:0.1.2"]
           ],
           "linkType": "HARD",
         }]
@@ -5312,6 +5375,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/fresh-npm-0.5.2-ad2bb4c0a2-2f76c8505d.zip/node_modules/fresh/",
           "packageDependencies": [
             ["fresh", "npm:0.5.2"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["fs-capacitor", [
+        ["npm:6.2.0", {
+          "packageLocation": "./.yarn/cache/fs-capacitor-npm-6.2.0-9582572fc3-015a34427d.zip/node_modules/fs-capacitor/",
+          "packageDependencies": [
+            ["fs-capacitor", "npm:6.2.0"]
           ],
           "linkType": "HARD",
         }]
@@ -9555,6 +9627,17 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["unpipe", "npm:1.0.0"]
           ],
           "linkType": "HARD",
+        }],
+        ["npm:2.4.1", {
+          "packageLocation": "./.yarn/cache/raw-body-npm-2.4.1-e6e30ccf94-dc56e010d2.zip/node_modules/raw-body/",
+          "packageDependencies": [
+            ["raw-body", "npm:2.4.1"],
+            ["bytes", "npm:3.1.0"],
+            ["http-errors", "npm:1.7.3"],
+            ["iconv-lite", "npm:0.4.24"],
+            ["unpipe", "npm:1.0.0"]
+          ],
+          "linkType": "HARD",
         }]
       ]],
       ["raw-loader", [
@@ -10759,6 +10842,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["readable-stream", "npm:2.3.7"],
             ["to-arraybuffer", "npm:1.0.1"],
             ["xtend", "npm:4.0.2"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["streamsearch", [
+        ["npm:0.1.2", {
+          "packageLocation": "./.yarn/cache/streamsearch-npm-0.1.2-813180eb1c-f72befba95.zip/node_modules/streamsearch/",
+          "packageDependencies": [
+            ["streamsearch", "npm:0.1.2"]
           ],
           "linkType": "HARD",
         }]

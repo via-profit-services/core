@@ -598,12 +598,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/busboy@npm:^0.2.3":
+  version: 0.2.3
+  resolution: "@types/busboy@npm:0.2.3"
+  dependencies:
+    "@types/node": "*"
+  checksum: 2f66c23ac87196bac7545f3e1e64d39c5d8e7ca8ce613df7b39f5a0ef336719f862ee5e4ddc6836ee350213457c6b1b381c042af1832bd96725f2c4f02324086
+  languageName: node
+  linkType: hard
+
 "@types/connect@npm:*":
   version: 3.4.33
   resolution: "@types/connect@npm:3.4.33"
   dependencies:
     "@types/node": "*"
   checksum: 6414495b5995fcb8274feb8b1f113c0685160ea7781e75c638325c6e7a0c226d0c554fa622fe3d278470358c99f68a5994fe49e1b104736f76f3fb3b509e375f
+  languageName: node
+  linkType: hard
+
+"@types/content-type@npm:^1.1.3":
+  version: 1.1.3
+  resolution: "@types/content-type@npm:1.1.3"
+  checksum: 5cb99767267d4470523baaacebacb6fdcae1b91f169d1c905da394e57a8dc46da5507672e14f9781a4614fde124fe259b3ba873b56f9338bcdbaa77be0058bc1
   languageName: node
   linkType: hard
 
@@ -670,6 +686,15 @@ __metadata:
     "@types/qs": "*"
     "@types/serve-static": "*"
   checksum: 80cd74784e9b40495b683b6b285be58bd7515f3b86923a72483fb8a6dec15ef159e651c460a215e9ad4e9620deec7345020fe33535c4eb12d81152b74b0278d0
+  languageName: node
+  linkType: hard
+
+"@types/fs-capacitor@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@types/fs-capacitor@npm:2.0.0"
+  dependencies:
+    "@types/node": "*"
+  checksum: 2fed98a117ded3af250ae87193c716f41ac8e688eeacb73107688113d15d6bf8ad384c2319e7b430a8c1444197a34c274fed7ff75dab0de49844e841a629c0b0
   languageName: node
   linkType: hard
 
@@ -1077,8 +1102,11 @@ __metadata:
     "@graphql-tools/utils": ^7.1.4
     "@jagi/jest-transform-graphql": ^1.0.2
     "@types/bluebird": ^3.5.29
+    "@types/busboy": ^0.2.3
+    "@types/content-type": ^1.1.3
     "@types/cors": ^2.8.6
     "@types/express": ^4.17.9
+    "@types/fs-capacitor": ^2.0.0
     "@types/jest": ^24.0.23
     "@types/moment": ^2.13.0
     "@types/moment-timezone": ^0.5.12
@@ -1097,7 +1125,9 @@ __metadata:
     "@via-profit-services/eslint-config": ^0.1.11
     "@zerollup/ts-transform-paths": ^1.7.11
     bufferutil: ^4.0.2
+    busboy: ^0.3.1
     chalk: ^3.0.0
+    content-type: ^1.0.4
     cors: ^2.8.5
     cross-env: ^6.0.3
     dataloader: ^2.0.0
@@ -1115,6 +1145,7 @@ __metadata:
     eslint-plugin-react: ^7.21.5
     eslint-plugin-standard: ^4.0.2
     express: ^4.17.1
+    fs-capacitor: ^6.2.0
     graphql: ^15.4.0
     graphql-tag: ^2.11.0
     html-loader: ^1.3.2
@@ -1127,6 +1158,7 @@ __metadata:
     nodemon-webpack-plugin: ^4.3.2
     null-loader: ^4.0.0
     prettier: ^2.1.2
+    raw-body: ^2.4.1
     raw-loader: ^4.0.2
     rimraf: ^3.0.0
     shebang-loader: ^0.0.1
@@ -1153,6 +1185,7 @@ __metadata:
     graphql: "*"
     moment: "*"
     moment-timezone: "*"
+    supports-color: "*"
     winston: "*"
     winston-daily-rotate-file: "*"
   dependenciesMeta:
@@ -2307,6 +2340,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"busboy@npm:^0.3.1":
+  version: 0.3.1
+  resolution: "busboy@npm:0.3.1"
+  dependencies:
+    dicer: 0.3.0
+  checksum: acc5c3d2f806c1f43a7a9a342bb4aaaa1223bac81cf3ba35ae3cc999f4e3a2e1b6db2d3895a228a862efbbc7b6fb39a7252e830bb5943e1b4362caa221c868ea
+  languageName: node
+  linkType: hard
+
 "bytes@npm:3.0.0":
   version: 3.0.0
   resolution: "bytes@npm:3.0.0"
@@ -2827,7 +2869,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"content-type@npm:~1.0.4":
+"content-type@npm:^1.0.4, content-type@npm:~1.0.4":
   version: 1.0.4
   resolution: "content-type@npm:1.0.4"
   checksum: ff6e19cbf281c23d5608723a6dc60ac97e2280bd4d21602511283112321e6c1555895e395555e367672b54a0f1585276284b7c3c8be313aca73902ac2f2609fd
@@ -3242,6 +3284,15 @@ __metadata:
   version: 2.0.4
   resolution: "detect-node@npm:2.0.4"
   checksum: e7648a5a91dd5e91838d14f0e9631f2adf0117cc271ea86d8ce394a8fbe8fc7545755c8261faaf4b1e196795a10da99e5d5f1013163ba0f6260a57b0ba29cc60
+  languageName: node
+  linkType: hard
+
+"dicer@npm:0.3.0":
+  version: 0.3.0
+  resolution: "dicer@npm:0.3.0"
+  dependencies:
+    streamsearch: 0.1.2
+  checksum: eb06a8c283287da1f0034cde3f2bafe8bbd70636d4c9b12783f36d919c88533d6d285e044197853e03c1a2ea5d68f8ebcf59d366bd873a4a91e5d370e9871ad7
   languageName: node
   linkType: hard
 
@@ -4534,6 +4585,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fs-capacitor@npm:^6.2.0":
+  version: 6.2.0
+  resolution: "fs-capacitor@npm:6.2.0"
+  checksum: 015a34427d7b83eb484d4d7514f0cfc6e6be66abc91f4da11f1171a195250b5ebb22894011b4f074cbad507b5d82486896371186158eb1ecefaa2156e7a6ff50
+  languageName: node
+  linkType: hard
+
 "fs-minipass@npm:^2.0.0":
   version: 2.1.0
   resolution: "fs-minipass@npm:2.1.0"
@@ -5094,19 +5152,7 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
-"http-errors@npm:~1.6.2":
-  version: 1.6.3
-  resolution: "http-errors@npm:1.6.3"
-  dependencies:
-    depd: ~1.1.2
-    inherits: 2.0.3
-    setprototypeof: 1.1.0
-    statuses: ">= 1.4.0 < 2"
-  checksum: 850a3bf69ffc56c5151cea4a31bdf47412b7a6af3ee3f4fc92d3c4d90f8398d8843806f0d81916b310b661eed93722272cf2d41c2cac2fd5d1d1c66d4077942c
-  languageName: node
-  linkType: hard
-
-"http-errors@npm:~1.7.2":
+"http-errors@npm:1.7.3, http-errors@npm:~1.7.2":
   version: 1.7.3
   resolution: "http-errors@npm:1.7.3"
   dependencies:
@@ -5116,6 +5162,18 @@ fsevents@~2.1.2:
     statuses: ">= 1.5.0 < 2"
     toidentifier: 1.0.0
   checksum: 563ae4a3f19c89029212922bade6ffcd0e4b7fa52e539f08c8f6941de7eaccb00bf76cb7692662192f2f0d567d4ac1f9d6a3d0ee70b166c8540cf791497f90ea
+  languageName: node
+  linkType: hard
+
+"http-errors@npm:~1.6.2":
+  version: 1.6.3
+  resolution: "http-errors@npm:1.6.3"
+  dependencies:
+    depd: ~1.1.2
+    inherits: 2.0.3
+    setprototypeof: 1.1.0
+    statuses: ">= 1.4.0 < 2"
+  checksum: 850a3bf69ffc56c5151cea4a31bdf47412b7a6af3ee3f4fc92d3c4d90f8398d8843806f0d81916b310b661eed93722272cf2d41c2cac2fd5d1d1c66d4077942c
   languageName: node
   linkType: hard
 
@@ -8372,6 +8430,18 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
+"raw-body@npm:^2.4.1":
+  version: 2.4.1
+  resolution: "raw-body@npm:2.4.1"
+  dependencies:
+    bytes: 3.1.0
+    http-errors: 1.7.3
+    iconv-lite: 0.4.24
+    unpipe: 1.0.0
+  checksum: dc56e010d276f2fc3a17c2dd071f857917cd3734f64051488c845a9878a1eb47e03a9644861f135568d8ab4c2062072700b73060956b36f3a987025bc809402f
+  languageName: node
+  linkType: hard
+
 "raw-loader@npm:^4.0.2":
   version: 4.0.2
   resolution: "raw-loader@npm:4.0.2"
@@ -9474,6 +9544,13 @@ resolve@1.1.7:
     to-arraybuffer: ^1.0.0
     xtend: ^4.0.0
   checksum: 7ef9e10567b1a49d6c05730427280ef7623a6b407df3981d5d14d30d56225c4d64857d7473ab8eca93dbcaaf897e4f4fda8b5b482cf26255e26f1a31d696c1b8
+  languageName: node
+  linkType: hard
+
+"streamsearch@npm:0.1.2":
+  version: 0.1.2
+  resolution: "streamsearch@npm:0.1.2"
+  checksum: f72befba95082d49be19cd4318112bc141f6cd7cbb201ee8079887f6f3cbcdf79c311977ce0eaa93d7d8c3e6b9727412f6177a87ced5b98d0fd4075723ad8eaf
   languageName: node
   linkType: hard
 

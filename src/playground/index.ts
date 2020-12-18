@@ -12,11 +12,11 @@ import * as core from '../index';
   const app = express();
   const server = createServer(app);
   const schema = makeExecutableSchema({
-    typeDefs: core.typeDefs,
-    resolvers: core.resolvers,
+    typeDefs: [ core.typeDefs ],
+    resolvers: [ core.resolvers ],
   });
 
-  const { viaProfitGraphql } = await core.factory({
+  const { graphQLExpress } = await core.factory({
     server,
     schema,
     debug: true,
@@ -27,7 +27,7 @@ import * as core from '../index';
 
   app.use(cors());
   app.set('trust proxy', true);
-  app.use('/graphql', viaProfitGraphql);
+  app.use('/graphql', graphQLExpress);
 
 
   server.listen(PORT, () => {
