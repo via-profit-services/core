@@ -92,14 +92,17 @@ const applicationFactory: ApplicationFactory = async (props) => {
       }
 
       const { method } = request;
+
       const body = await bodyParser(request);
-      const { query, variables, operationName } = parseGraphQLParams({ body, request });
+
+      const { query, operationName, variables } = parseGraphQLParams({ body, request });
+
 
       if (!['GET', 'POST'].includes(method)) {
         throw new BadRequestError('GraphQL Error. GraphQL only supports GET and POST requests');
       }
 
-      const documentAST = parse(new Source(query, 'GraphQL request'));
+      const documentAST = parse(new Source(query, 'GraphQL request'))
 
       // Validate AST, reporting any errors.
       const validationErrors = validate(schema, documentAST, [
@@ -145,9 +148,9 @@ const applicationFactory: ApplicationFactory = async (props) => {
 
     } catch (originalError) {
 
-      const errors: GraphQLError[] = originalError?.metaData?.graphqlErrors ?? [];
+      const errors: GraphQLError[] = originalError?.metaData?.graphqlErrors ?? [originalError];
 
-      response.status(originalError.status ?? 500).json({
+      response.status(originalError.status || 500).json({
         data: null,
         errors: errors.map((error) => customFormatErrorFn({ error, context, debug })),
       });

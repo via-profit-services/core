@@ -1,4 +1,6 @@
-import { Configuration } from 'webpack';
+import { Configuration, DefinePlugin } from 'webpack';
+
+import { version } from '../package.json';
 
 const webpackBaseConfig: Configuration = {
   target: 'node',
@@ -25,6 +27,11 @@ const webpackBaseConfig: Configuration = {
   resolve: {
     extensions: ['.ts', '.mjs', '.js', '.json', '.graphql', '.html'],
   },
+  plugins: [
+    new DefinePlugin({
+      'process.env.CORE_VERSION': JSON.stringify(version),
+    }),
+  ],
   externals: [
     /^winston(|-daily-rotate-file)$/,
     /^moment(|-timezone)$/,

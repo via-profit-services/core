@@ -1,31 +1,27 @@
+import type { RequestBody } from '@via-profit-services/core';
 import contentType from 'content-type';
 import { Request } from 'express';
 import rawBody from 'raw-body';
 import type { Inflate, Gunzip } from 'zlib';
 import zlib from 'zlib';
 
-type BodyAsObject = {
-  operationName?: unknown;
-  query?: unknown;
-  variables?: unknown;
-  [key: string]: unknown;
-};
+import BadRequestError from '../errorHandlers/BadRequestError';
+import ServerError from '../errorHandlers/ServerError';
 
-type BodyParser = (reqest: Request) => Promise<BodyAsObject>;
+type BodyParser = (reqest: Request) => Promise<RequestBody>;
 
 const JSONOBJREGEX = /^[ \t\n\r]*\{/;
 
 const parseBody: BodyParser = async (req) => {
   const { body, headers } = req;
-
   // If express has already parsed a body as a keyed object, use it.
   if (typeof body === 'object' && !(body instanceof Buffer)) {
-    return body as BodyAsObject;
+    return body as RequestBody;
   }
 
   // Skip requests without content types.
   if (headers['content-type'] === undefined) {
-    return {};
+    throw new BadRequestError('Missing content-type header');
   }
 
   const { type, parameters } = contentType.parse(req);
@@ -36,17 +32,19 @@ const parseBody: BodyParser = async (req) => {
     return { query: body };
   }
 
-  // Already parsed body we didn't recognise? Parse nothing.
-  if (body != null) {
-    return {};
-  }
-
   const charset = parameters.charset?.toLowerCase() ?? 'utf-8';
   if (!charset.startsWith('utf-')) {
-    throw Error(`Unsupported charset "${charset.toUpperCase()}".`);
+    throw new BadRequestError(`Unsupported charset "${charset.toUpperCase()}".`);
   }
 
-  const rawBody = await readBody(req, { charset });
+
+  let rawBody: string;
+
+  try {
+    rawBody = await readBody(req, { charset });
+  } catch (err) {
+    throw new ServerError('Failed to read body', { err });
+  }
   // Use the correct body parser based on Content-Type header.
 
 
@@ -64,29 +62,25 @@ const parseBody: BodyParser = async (req) => {
           // Do nothing
         }
       }
-      throw Error('POST body sent invalid JSON.');
+      throw new BadRequestError(`POST body sent invalid JSON with content-type: «${type}»`);
 
     // case 'application/x-www-form-urlencoded':
     //   return querystring.parse(rawBody);
 
     default:
-      throw Error('Invalid body. Check content-type header')
+      throw new BadRequestError(`POST body sent empty data with content-type: «${type}»`);
   }
 
-
-  // parseGraphQLParams
-  // If no Content-Type header matches, parse nothing.
-  // return {};
 }
 
 interface GraphQLParams {
-  query: string | null;
+  query: string;
   variables: {readonly [key: string]: unknown} | null;
   operationName: string | null;
 }
 
 interface GraphQLParamsProps {
-  body: BodyAsObject;
+  body: RequestBody;
   request: Request;
 }
 
@@ -95,7 +89,7 @@ export const parseGraphQLParams = (props: GraphQLParamsProps): GraphQLParams => 
   const urlData = new URLSearchParams(request.url.split('?')[1]);
 
   const graphQLParams: GraphQLParams = {
-    query: null,
+    query: '',
     variables: null,
     operationName: null,
   }
@@ -109,7 +103,7 @@ export const parseGraphQLParams = (props: GraphQLParamsProps): GraphQLParams => 
     try {
       graphQLParams.variables = JSON.parse(variables);
     } catch {
-      throw Error('Variables are invalid JSON.');
+      throw new ServerError('Variables are invalid JSON.');
     }
   }
 
@@ -129,7 +123,7 @@ export const parseGraphQLParams = (props: GraphQLParamsProps): GraphQLParams => 
 const readBody = async (req: Request, opts: { charset: string }): Promise<string> => {
   const { charset } = opts;
   if (!charset.startsWith('utf-')) {
-    throw Error(`Unsupported charset "${charset.toUpperCase()}".`);
+    throw new ServerError(`Unsupported charset "${charset.toUpperCase()}".`);
   }
   const contentEncoding = req.headers['content-encoding'];
   const encoding =
@@ -137,7 +131,7 @@ const readBody = async (req: Request, opts: { charset: string }): Promise<string
       ? contentEncoding.toLowerCase()
       : 'identity';
   const length = encoding === 'identity' ? req.headers['content-length'] : null;
-  const limit = 100 * 1024; // 100kb
+
   let stream: Request | Inflate | Gunzip;
 
   // decompress stream
@@ -152,17 +146,20 @@ const readBody = async (req: Request, opts: { charset: string }): Promise<string
       stream = req.pipe(zlib.createGunzip());
     break;
     default:
-      throw new Error(`Unsupported content-encoding "${encoding}".`);
+      throw new ServerError(`Unsupported content-encoding "${encoding}".`);
   }
 
   try {
 
-    const body = await rawBody(stream, { encoding: charset, length, limit });
+    const body = await rawBody(stream, {
+      encoding: charset,
+      length,
+    });
 
     return body;
   } catch (err) {
-    console.error(err)
-    throw new Error('Failed to parse body')
+
+    throw new ServerError('Failed to parse body', { err })
   }
 
 }

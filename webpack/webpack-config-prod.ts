@@ -4,7 +4,7 @@ import { BannerPlugin, Configuration, Compiler } from 'webpack';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import { merge } from 'webpack-merge';
 
-import packageInfo from '../package.json';
+import { repository, support } from '../package.json';
 import webpackBaseConfig from './webpack-config-base';
 
 const webpackProdConfig: Configuration = merge(webpackBaseConfig, {
@@ -26,8 +26,8 @@ const webpackProdConfig: Configuration = merge(webpackBaseConfig, {
       banner: `
 Via Profit Services / Core
 
-Repository ${packageInfo.repository.url}
-Contact    ${packageInfo.support}
+Repository ${repository.url}
+Contact    ${support}
       `,
       test: /index\.js/,
     }),

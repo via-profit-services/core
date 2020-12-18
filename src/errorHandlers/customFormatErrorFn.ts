@@ -56,7 +56,7 @@ const customFormatErrorFn = (props: Props) => {
       }
 
       if (originalError.metaData) {
-        console.log('\x1b[33m%s\x1b[0m', 'Error metadata', originalError.metaData);
+        console.log('\x1b[33m%s\x1b[0m', 'Error metaData', originalError.metaData);
       }
     }
 

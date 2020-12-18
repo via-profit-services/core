@@ -7,15 +7,9 @@ type Mutation {
 }
 
 type InfoQuery {
-  developer: Developer!
+  version: String!
 }
 
-type Developer {
-  name: String!
-  url: URL!
-  email: EmailAddress!
-  phone: Phone!
-}
 
 type InfoMutation {
   echo(str: String!): String!

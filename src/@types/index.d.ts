@@ -251,7 +251,15 @@ declare module '@via-profit-services/core' {
     country: string;
     description: string;
     metaData?: any;
-  } 
+  }
+
+  export type RequestBody = {
+    operationName?: unknown;
+    query?: unknown;
+    variables?: unknown;
+    [key: string]: unknown;
+  };
+
 
   /**
    * @deprecated Use `ApplyAliases` type of `@via-profit-services/knex` instead
@@ -385,5 +393,9 @@ declare module '@via-profit-services/core' {
   export const LOG_DATE_PATTERNT: string;
   export const LOG_MAX_SIZE: string;
   export const LOG_MAX_FILES: string;
+  export const MAXIMUM_REQUEST_BODY_SIZE: string;
+  export const DEFAULT_NODES_LIMIT: string;
+  export const DEFAULT_SERVER_TIMEZONE: string;
+  export const DEFAULT_LOG_DIR: string;
 
 }

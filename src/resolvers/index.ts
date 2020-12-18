@@ -1,6 +1,5 @@
 import { IResolvers } from '@graphql-tools/utils';
 
-import Developer from './Developer';
 import InfoMutation from './InfoMutation';
 import InfoQuery from './InfoQuery';
 import Mutation from './Mutation';
@@ -13,7 +12,6 @@ const resolvers: IResolvers = {
   Mutation,
   InfoQuery,
   InfoMutation,
-  Developer,
   Phone,
   ...scalars,
 };
