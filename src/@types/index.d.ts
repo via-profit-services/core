@@ -5,13 +5,41 @@
 
 /// <reference types="node" />
 declare module '@via-profit-services/core' {
-  import { GraphQLSchema, ValidationRule } from 'graphql';
+  import { GraphQLSchema, ValidationRule, GraphQLFieldResolver, GraphQLScalarType } from 'graphql';
   import DataLoader from 'dataloader';
   import { Request, RequestHandler } from 'express';
   import http from 'http';
   import Winston from 'winston';
   import 'winston-daily-rotate-file';
-  
+
+  type Resolvers = {
+    Query: {
+      info: GraphQLFieldResolver<unknown, Context>;
+    }
+    Mutation: {
+      info: GraphQLFieldResolver<unknown, Context>;
+    }
+    InfoQuery: {
+      version: GraphQLFieldResolver<unknown, Context>;
+    };
+    InfoMutation: {
+      echo: GraphQLFieldResolver<unknown, Context>;
+    };
+    Phone: {
+      number: GraphQLFieldResolver<unknown, Context>;
+      country: GraphQLFieldResolver<unknown, Context>;
+      description: GraphQLFieldResolver<unknown, Context>;
+      metaData: GraphQLFieldResolver<unknown, Context>;
+    },
+    Date: GraphQLScalarType;
+    Time: GraphQLScalarType;
+    DateTime: GraphQLScalarType;
+    EmailAddress: GraphQLScalarType;
+    URL: GraphQLScalarType;
+    JSON: GraphQLScalarType;
+    Money: GraphQLScalarType;
+  }
+
   export type MaybePromise<T> = Promise<T> | T;
 
   export interface Context {
@@ -68,7 +96,7 @@ declare module '@via-profit-services/core' {
        * \
        * Default: `false`
        */
-      enableIntrospection?: boolean;
+      introspection?: boolean;
       /**
        * GraphQL Schema Definition
        * @see: https://graphql.org
@@ -384,7 +412,7 @@ declare module '@via-profit-services/core' {
    */
   export const typeDefs: string;
   export const logFormatter: Winston.Logform.Format;
-  export const resolvers: any;
+  export const resolvers: Resolvers;
   export const factory: ApplicationFactory;
 
   export const LOG_FILENAME_DEBUG: string;
