@@ -1,6 +1,6 @@
 const express = require('express');
 const http = require('http');
-const Core = require('@via-profit-services/core');
+const { factory } = require('@via-profit-services/core');
 
 const schema = require('./schema');
 const port = 9005;
@@ -10,7 +10,7 @@ const port = 9005;
   const app = express();
   const server = http.createServer(app);
 
-  const { graphQLExpress } = await Core.factory({
+  const { graphQLExpress } = await factory({
     introspection: true,
     server,
     schema,
