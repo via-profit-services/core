@@ -5,15 +5,6 @@ __metadata:
   version: 4
   cacheKey: 7
 
-"@ardatan/aggregate-error@npm:0.0.6":
-  version: 0.0.6
-  resolution: "@ardatan/aggregate-error@npm:0.0.6"
-  dependencies:
-    tslib: ~2.0.1
-  checksum: c11138d0cb4bd29edc62380b34ac019c915cfa7e77dee6aa3569b58089a83ed77067129937074a06b4b4c11fa6fa2db19cc78835a89e6f59d2b7f1e7fab50f8d
-  languageName: node
-  linkType: hard
-
 "@babel/code-frame@npm:^7.0.0, @babel/code-frame@npm:^7.10.4":
   version: 7.10.4
   resolution: "@babel/code-frame@npm:7.10.4"
@@ -285,31 +276,6 @@ __metadata:
     minimatch: ^3.0.4
     strip-json-comments: ^3.1.1
   checksum: 99310cddf0f1abb2de4b5278293db6e2639445aab4e525f3c5f5b3b8ad53a59d6003a306954fb7ad15edd2f8a02b658d43418fa8b52ae2d07e074b24d991de2a
-  languageName: node
-  linkType: hard
-
-"@graphql-tools/schema@npm:^7.1.2":
-  version: 7.1.2
-  resolution: "@graphql-tools/schema@npm:7.1.2"
-  dependencies:
-    "@graphql-tools/utils": ^7.1.2
-    tslib: ~2.0.1
-  peerDependencies:
-    graphql: ^14.0.0 || ^15.0.0
-  checksum: 86b1a075fe226e9233efeddeb9229b89f166e210f2529f1f24833acc45ed9fe016ad7081fcf04d8f0489ad22d2ea3d80d0187231142db5994438808216877503
-  languageName: node
-  linkType: hard
-
-"@graphql-tools/utils@npm:^7.1.2":
-  version: 7.1.6
-  resolution: "@graphql-tools/utils@npm:7.1.6"
-  dependencies:
-    "@ardatan/aggregate-error": 0.0.6
-    camel-case: 4.1.2
-    tslib: ~2.0.1
-  peerDependencies:
-    graphql: ^14.0.0 || ^15.0.0
-  checksum: b8827f7cedb3d7b9a9f156f33bd3f525682af2d2dec39eacb2f07fcf6d3db25b002fe5d86332ff5b4decf8464c8cee3c8dbea459373b6fdb5fba4da9193c1fa8
   languageName: node
   linkType: hard
 
@@ -1029,7 +995,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@via-profit-services/core@workspace:."
   dependencies:
-    "@graphql-tools/schema": ^7.1.2
     "@types/bluebird": ^3.5.29
     "@types/content-type": ^1.1.3
     "@types/express": ^4.17.9
@@ -2187,7 +2152,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"camel-case@npm:4.1.2, camel-case@npm:^4.1.1":
+"camel-case@npm:^4.1.1":
   version: 4.1.2
   resolution: "camel-case@npm:4.1.2"
   dependencies:
@@ -9218,7 +9183,7 @@ resolve@1.1.7:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.0.3, tslib@npm:~2.0.1":
+"tslib@npm:^2.0.3":
   version: 2.0.3
   resolution: "tslib@npm:2.0.3"
   checksum: 447bfca5deaa157806c3f77eaba74d05dd0b38b014e47ce79d98b5c77ce7d91b00a687ba13ca1b5a74d35ca1098ac7a072c0a97fad06f0266612f2a03a6c8e8f

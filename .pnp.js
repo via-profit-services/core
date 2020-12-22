@@ -37,7 +37,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         [null, {
           "packageLocation": "./",
           "packageDependencies": [
-            ["@graphql-tools/schema", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:7.1.2"],
             ["@types/bluebird", "npm:3.5.33"],
             ["@types/content-type", "npm:1.1.3"],
             ["@types/express", "npm:4.17.9"],
@@ -102,16 +101,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["winston-daily-rotate-file", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.5.0"]
           ],
           "linkType": "SOFT",
-        }]
-      ]],
-      ["@ardatan/aggregate-error", [
-        ["npm:0.0.6", {
-          "packageLocation": "./.yarn/cache/@ardatan-aggregate-error-npm-0.0.6-0f1d22ed0c-c11138d0cb.zip/node_modules/@ardatan/aggregate-error/",
-          "packageDependencies": [
-            ["@ardatan/aggregate-error", "npm:0.0.6"],
-            ["tslib", "npm:2.0.3"]
-          ],
-          "linkType": "HARD",
         }]
       ]],
       ["@babel/code-frame", [
@@ -412,41 +401,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["lodash", "npm:4.17.20"],
             ["minimatch", "npm:3.0.4"],
             ["strip-json-comments", "npm:3.1.1"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["@graphql-tools/schema", [
-        ["virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:7.1.2", {
-          "packageLocation": "./.yarn/$$virtual/@graphql-tools-schema-virtual-b7d6c26e68/0/cache/@graphql-tools-schema-npm-7.1.2-f852c0ff35-86b1a075fe.zip/node_modules/@graphql-tools/schema/",
-          "packageDependencies": [
-            ["@graphql-tools/schema", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:7.1.2"],
-            ["@graphql-tools/utils", "virtual:b7d6c26e684d8ecdf8e720422983856a4a9a3e214fa9f60f09523f2ab3b9cda33063888c911837d892386c48714df30b1991f8016a4434a122c2409de2a2f929#npm:7.1.6"],
-            ["@types/graphql", null],
-            ["graphql", "npm:15.4.0"],
-            ["tslib", "npm:2.0.3"]
-          ],
-          "packagePeers": [
-            "@types/graphql",
-            "graphql"
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["@graphql-tools/utils", [
-        ["virtual:b7d6c26e684d8ecdf8e720422983856a4a9a3e214fa9f60f09523f2ab3b9cda33063888c911837d892386c48714df30b1991f8016a4434a122c2409de2a2f929#npm:7.1.6", {
-          "packageLocation": "./.yarn/$$virtual/@graphql-tools-utils-virtual-ca1e05e405/0/cache/@graphql-tools-utils-npm-7.1.6-0269cdf15e-b8827f7ced.zip/node_modules/@graphql-tools/utils/",
-          "packageDependencies": [
-            ["@graphql-tools/utils", "virtual:b7d6c26e684d8ecdf8e720422983856a4a9a3e214fa9f60f09523f2ab3b9cda33063888c911837d892386c48714df30b1991f8016a4434a122c2409de2a2f929#npm:7.1.6"],
-            ["@ardatan/aggregate-error", "npm:0.0.6"],
-            ["@types/graphql", null],
-            ["camel-case", "npm:4.1.2"],
-            ["graphql", "npm:15.4.0"],
-            ["tslib", "npm:2.0.3"]
-          ],
-          "packagePeers": [
-            "@types/graphql",
-            "graphql"
           ],
           "linkType": "HARD",
         }]
@@ -1290,7 +1244,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",
           "packageDependencies": [
             ["@via-profit-services/core", "workspace:."],
-            ["@graphql-tools/schema", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:7.1.2"],
             ["@types/bluebird", "npm:3.5.33"],
             ["@types/content-type", "npm:1.1.3"],
             ["@types/express", "npm:4.17.9"],

@@ -140,7 +140,7 @@ const applicationFactory: ApplicationFactory = async (props) => {
 
       response.status(200).json({
         data,
-        extensions: {
+        extensions: !debug ? undefined : {
           ...extensions,
           queryTime: performance.now() - startTime,
         },
