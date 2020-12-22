@@ -34,6 +34,7 @@ import * as core from '../index';
 
   // Finally start the server
   server.listen(9005, () => {
+    // eslint-disable-next-line no-console
     console.info('GraphQL server started at http://localhost:9005/graphql');
   });
 
