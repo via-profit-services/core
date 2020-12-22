@@ -65,7 +65,7 @@ import schema from './schema';
 
 ```
 
-We recommend using the [@graphql-tools](https://github.com/ardatan/graphql-tools) package to build youк schema. This helps to combine SDL and resolvers into a single executable schema. See `makeExecutableSchema` of `@graphql-tools/schema` module.
+We recommend using the [@graphql-tools](https://github.com/ardatan/graphql-tools) package to build youк schema. This helps to combine SDL and resolvers into a single executable schema. See `makeExecutableSchema` of `@graphql-tools/schema` module. For more details: [example with graphql-tools](./examples/graphql-tools/README.md)
 
 In addition to the `factory`, the Core module exports its own typeDefs and resolvers. This definitions will be declare Query and Mutation root types.
 
@@ -117,7 +117,7 @@ import customResolvers from './resolvers';
  - *timezone*. `String`. Server timezone. _Default: `UTC`_
  - *logDir*. `String` Path to directory of logs. _Default: `./log`_
  - *introspection*. `Boolean`. Allow/Disallow introspection queries. _Default: `false`_
-- *debug*. `Boolean` Displayed error stack in graphql errors response. _Default: `false`_
+- *debug*. `Boolean` Displayed error stack and extensions in graphql response. _Default: `false` for production and `true` for development mode_
 - *rootValue*. `Object` GraphQL parameter of [execute](https://graphql.org/graphql-js/execution/#execute) method.
 - *middleware* - Middleware or array of middlewares. See [Middleware](./#middleware)
 
