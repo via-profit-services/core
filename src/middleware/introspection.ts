@@ -5,7 +5,7 @@ type MiddlewareFactory = () => Middleware;
 
 const introspectionMiddlewareFactory: MiddlewareFactory = () => {
   const middleware: Middleware = ({ config, context }) => {
-    const { enableIntrospection } = config;
+    const { introspection } = config;
 
     const validationRule: ValidationRule = (validationContext) => ({
       Field: (node) => {
@@ -26,7 +26,7 @@ const introspectionMiddlewareFactory: MiddlewareFactory = () => {
     });
 
     return {
-      validationRule: !enableIntrospection
+      validationRule: !introspection
         ? validationRule
         : undefined,
     }

@@ -27,7 +27,7 @@ const applicationFactory: ApplicationFactory = async (props) => {
   const configurtation: Configuration = {
     timezone: DEFAULT_SERVER_TIMEZONE,
     middleware: [],
-    enableIntrospection: DEFAULT_INTROSPECTION_STATE,
+    introspection: DEFAULT_INTROSPECTION_STATE,
     logDir: DEFAULT_LOG_DIR,
     debug: process.env.NODE_ENV === 'development',
     rootValue: undefined,

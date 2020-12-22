@@ -1,17 +1,21 @@
-import { IResolvers } from '@graphql-tools/utils';
+import type { Resolvers } from '@via-profit-services/core';
 
-import InfoMutation from './InfoMutation';
-import InfoQuery from './InfoQuery';
-import Mutation from './Mutation';
 import Phone from './Phone';
-import Query from './Query';
 import scalars from './scalars';
 
-const resolvers: IResolvers = {
-  Query,
-  Mutation,
-  InfoQuery,
-  InfoMutation,
+const resolvers: Resolvers = {
+  Query: {
+    info: () => ({}),
+  },
+  Mutation: {
+    info: () => ({}),
+  },
+  InfoQuery: {
+    version: () => process.env.CORE_VERSION,
+  },
+  InfoMutation: {
+    echo: (_paren, args: { str: string }) => args.str,
+  },
   Phone,
   ...scalars,
 };

@@ -1,40 +1,40 @@
-import { makeExecutableSchema } from '@graphql-tools/schema';
-
-import cors from 'cors';
 import express from 'express';
-import { createServer } from 'http';
+import { GraphQLSchema, GraphQLObjectType, GraphQLNonNull, GraphQLString } from 'graphql';
+import http from 'http';
 
 import * as core from '../index';
 
 (async () => {
-  const PORT = 9005;
-  const LOG_DIR = './artifacts/log';
-  const app = express();
-  const server = createServer(app);
-  const schema = makeExecutableSchema({
-    typeDefs: [ core.typeDefs ],
-    resolvers: [ core.resolvers ],
+
+  // Define schema
+  const schema = new GraphQLSchema({
+    query: new GraphQLObjectType({
+      name: 'Query',
+      fields: () => ({
+        version: {
+          type: new GraphQLNonNull(GraphQLString),
+          resolve: () => 'v0.0.2',
+        },
+      }),
+    }),
   });
 
+  // Make the HTTP server with express and initialize the core
+  const app = express();
+  const server = http.createServer(app);
   const { graphQLExpress } = await core.factory({
+    introspection: process.env.NODE_ENV === 'development',
     server,
     schema,
-    debug: true,
-    enableIntrospection: true,
-    logDir: LOG_DIR,
   });
 
-
-  app.use(cors());
-  app.set('trust proxy', true);
+  // Apply graphQLExpress as middleware
+  // You can use any endpoint other than `/graphql`
   app.use('/graphql', graphQLExpress);
 
-
-  server.listen(PORT, () => {
-    // eslint-disable-next-line no-console
-    console.info(`GraphQL server started at http://localhost:${PORT}/graphql`);
-    // eslint-disable-next-line no-console
-    console.log(`GraphQL server started at ws://localhost:${PORT}/graphql`);
+  // Finally start the server
+  server.listen(9005, () => {
+    console.info('GraphQL server started at http://localhost:9005/graphql');
   });
 
 })();
