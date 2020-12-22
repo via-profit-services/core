@@ -15,10 +15,10 @@ declare module '@via-profit-services/core' {
   type Resolvers = {
     Query: {
       info: GraphQLFieldResolver<unknown, Context>;
-    }
+    };
     Mutation: {
       info: GraphQLFieldResolver<unknown, Context>;
-    }
+    };
     InfoQuery: {
       version: GraphQLFieldResolver<unknown, Context>;
     };
@@ -30,7 +30,7 @@ declare module '@via-profit-services/core' {
       country: GraphQLFieldResolver<unknown, Context>;
       description: GraphQLFieldResolver<unknown, Context>;
       metaData: GraphQLFieldResolver<unknown, Context>;
-    },
+    };
     Date: GraphQLScalarType;
     Time: GraphQLScalarType;
     DateTime: GraphQLScalarType;
@@ -353,22 +353,22 @@ declare module '@via-profit-services/core' {
   export const stringToCursor: StringToCursor;
 
   /**
-   * Convert base64 cursor to string
+   * Convert base64 cursor string to string
    */
   export const cursorToString: CursorToString;
 
   /**
-   * Return cursor base64 cursor string by name and cursor payload
+   * Returns cursor base64 cursor string by name and cursor payload
    */
   export const makeNodeCursor: MakeNodeCursor;
 
   /**
-   * Convert string to cursor base64 string and return payload
+   * Decode cursor base64 string and returns cursor payload
    */
   export const getCursorPayload: GetCursorPayload;
 
   /**
-   * Return Relay cursor bundle
+   * Returns Relay cursor bundle
    */
   export const buildCursorConnection: BuildCursorConnection;
 
@@ -378,7 +378,7 @@ declare module '@via-profit-services/core' {
   export const nodeToEdge: NodeToEdge;
 
   /**
-   * Return array of fields of node
+   * Returns array of fields of node
    */
   export const extractNodeField: ExtractNodeField;
     
@@ -388,7 +388,13 @@ declare module '@via-profit-services/core' {
   export const extractNodeIds: ExtractNodeIds;
 
   /**
-   * Collate rows for dataloader response
+   * Collate rows for dataloader response \
+   * \
+   * From DataLoader docs:\
+   * There are a few constraints this function must uphold:
+   *  - The Array of values must be the same length as the Array of keys.
+   *  - Each index in the Array of values must correspond to the same index in the Array of keys.
+   * @see: https://github.com/graphql/dataloader#batch-function
    */
   export const collateForDataloader: CollateForDataloader;
 
