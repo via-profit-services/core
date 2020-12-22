@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "start": "yarn node ./index.js"
+  },
+  "dependencies": {
+    "@via-profit-services/core": "file://home/dhs/Projects/@via-profit-services/core/package-0.31.6-rc.41.tgz",
+    "dataloader": "^2.0.0",
+    "express": "^4.17.1",
+    "graphql": "^15.4.0",
+    "moment": "^2.29.1",
+    "moment-timezone": "^0.5.32",
+    "winston": "^3.3.3",
+    "winston-daily-rotate-file": "^4.5.0"
+  }
+}
