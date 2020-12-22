@@ -19,17 +19,20 @@
 
 ## <a name="installation"></a> Installation
 
-At first you need to install the peer dependencies:
+At first you need to install the peer dependencies to:
 
 ```bash
-$ yarn add express graphql dataloader moment moment-timezone winston winston-daily-rotate-file
+$ yarn add \
+express \
+graphql \
+dataloader \
+moment \
+moment-timezone \
+winston \
+winston-daily-rotate-file \
+@via-profit-services/core
 ```
 
-Then install the core
-
-```bash
-$ yarn add @via-profit-services/core
-```
 
 ## <a name="getting-started"></a> Getting Started
 
