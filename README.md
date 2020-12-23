@@ -8,7 +8,20 @@
 ![NPM](https://img.shields.io/npm/l/@via-profit-services/core?color=blue)
 ![npm bundle size (scoped)](https://img.shields.io/bundlephobia/minzip/@via-profit-services/core?color=green)
 
-## <a name="dependencies"></a> Peer dependencies
+## Table of Contents
+
+ - [Dependencies](#dependencies)
+ - [Installation](#installation)
+ - [Getting Started](#getting-started)
+ - [Options](#options)
+ - [Scalars](#scalars)
+ - [Base TypeDefs](#base-typedefs)
+ - [API](#api)
+ - [logger](#Logger)
+ - [Middleware](#middleware)
+ - [Context](#context)
+
+## <a name="dependencies"></a> Dependencies (peer)
 
  - [Express](https://github.com/expressjs/express) - Node HTTP Server
  - [DataLoader](https://github.com/graphql/dataloader) - GraphQL DataLoader
