@@ -128,6 +128,7 @@ import customResolvers from './resolvers';
 
 
 ## <a name="options"></a> Options
+
  - *server* *(required)*. Instance of http.Server
  - *schema* *(required)*. GraphQL schema
  - *timezone*. `String`. Server timezone. _Default: `UTC`_
