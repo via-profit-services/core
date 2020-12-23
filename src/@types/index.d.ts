@@ -348,58 +348,186 @@ declare module '@via-profit-services/core' {
   export type WhereAction = '=' | '<>' | '>' | '<' | '>=' | '<=' | 'in' | 'notIn' | 'like' | 'ilike' | 'is null' | 'is not null';
   
   /**
-   * Convert string to cursor base64 string
+   * Just encode base64 string
+   * _Internal function. Used for GraphQL connection building_
+   * 
+   * ```ts
+   * const cursor = stringToCursor(JSON.stringify({ foo: 'bar' }));
+   * console.log(cursor); // <-- eyJmb28iOiJiYXIifQ==
+   * ```
    */
   export const stringToCursor: StringToCursor;
 
   /**
-   * Convert base64 cursor string to string
+   * Just decode base64 string
+   * _Internal function. Used for GraphQL connection building_
+   * 
+   * ```ts
+   * const data = cursorToString('eyJmb28iOiJiYXIifQ==');
+   * console.log(data); // <-- '{"foo":"bar"}'
+   * ```
    */
   export const cursorToString: CursorToString;
 
   /**
    * Returns cursor base64 cursor string by name and cursor payload
+   * 
+   * ```ts
+   * const cursor = makeNodeCursor('persons-cursor', {
+   *   offset: 0,
+   *   limit: 15,
+   *   where: [],
+   *   orderBy: [{
+   *     field: 'name',
+   *     direction: 'desc',
+   *   }],
+   * });
+   * console.log(cursor); // <-- eyJvZmZzZXQiOjAsImxpbWl0IjoxNSwid2hlcmUiOltdLCJvcmRlckJ5IjpbeyJmaWVsZCI6Im5hbWUiLCJkaXJlY3Rpb24iOiJkZXNjIn1dfS0tLXBlcnNvbnMtY3Vyc29y
+   * ```
    */
   export const makeNodeCursor: MakeNodeCursor;
 
   /**
-   * Decode cursor base64 string and returns cursor payload
+   * Convert string to cursor base64 string and return payload
+   * 
+   * ```ts
+   * const payload = getCursorPayload('eyJvZmZzZXQiOjAsImxpbWl0IjoxNSwid2hlcmUiOltdLCJvcmRlckJ5IjpbeyJmaWVsZCI6Im5hbWUiLCJkaXJlY3Rpb24iOiJkZXNjIn1dfS0tLXBlcnNvbnMtY3Vyc29y')
+   * 
+   * // {
+   * //   offset: 0,
+   * //  limit: 15,
+   * //  where: [],
+   * //  orderBy: [ { field: 'name', direction: 'desc' } ]
+   * // }
+   * 
+   * ```
    */
   export const getCursorPayload: GetCursorPayload;
 
   /**
    * Returns Relay cursor bundle
+   * 
+   * ```ts
+   * const cursorBundle = buildCursorConnection({
+   *   totalCount: 3,
+   *   offset: 0,
+   *   limit: 2,
+   *   nodes: [
+   *     { id: '1', name: 'Ivan', createdAt: new Date(), updatedAt: new Date() },
+   *     { id: '2', name: 'Stepan', createdAt: new Date(), updatedAt: new Date() },
+   *   ]
+   * }, 'persons-cursor');
+   * 
+   * // response -> {
+   * //   totalCount: 3,
+   * //   edges: [
+   * //     {
+   * //       node: { id: '1', name: 'Ivan', ... },
+   * //       cursor:  'eyJvZmZzZXQiOjEsImxpbWl0Ijoy...'
+   * //     },
+   * //     {
+   * //       node: { id: '2', name: 'Stepan', ... },
+   * //       cursor:  'eyJvZmZzZXQiOjIsImxpbWl0Ij...'
+   * //     }
+   * //   ],
+   * //   pageInfo: {
+   * //     startCursor:  'eyJvZmZzZXQiOjEsImxpbWl0Ijoy...',
+   * //     endCursor:  'eyJvZmZzZXQiOjIsImxpbWl0Ij...',
+   * //     hasPreviousPage: false,
+   * //     hasNextPage: true
+   * //   }
+   * // }
+   * ```
    */
   export const buildCursorConnection: BuildCursorConnection;
 
   /**
    * Wrap node to cursor object
+   * 
+   * ```ts
+   * const filter = {
+   *   offset: 0,
+   *   limit: 15,
+   *   where: [],
+   *   orderBy: [{
+   *     field: 'name',
+   *     direction: 'desc',
+   *   }],
+   * }
+   * 
+   * // Get persons list
+   * const persons = await service.getPersons(filter);
+   * 
+   * // Map all persons to compile the edge for each
+   * const edges = persons.map((person) => {
+   * 
+   *   // You should passed node, cursor name and filter params
+   *   return nodeToEdge(person, 'persons-cursor', filter);
+   * });
+   * console.log(edges); // <-- [{ cursor: 'XGHJGds', node: { id: '1', name: 'Ivan' } }]
+   * 
+   * ```
    */
   export const nodeToEdge: NodeToEdge;
 
   /**
-   * Returns array of fields of node
+   * Return array of fields of node
+   * 
+   * ```ts
+   * const persons = [
+   *   {id: '1', name: 'Ivan'},
+   *   {id: '2', name: 'Stepan'},
+   *   {id: '3', name: 'Petruha'},
+   * ];
+   * 
+   * const names = extractNodeField(persons, 'name');
+   * console.log(names); // <-- ['Ivan', 'Stepan', 'Petruha']
+   * ```
    */
   export const extractNodeField: ExtractNodeField;
     
   /**
    * Returns node IDs array
+   * 
+   * ```ts
+   * const ids = extractNodeField([
+   *   {id: '1', name: 'Ivan'},
+   *   {id: '2', name: 'Stepan'},
+   *   {id: '3', name: 'Petruha'},
+   * ]);
+   * 
+   * console.log(ids); // <-- ['1', '2', '3'];
+   * ```
    */
   export const extractNodeIds: ExtractNodeIds;
 
   /**
-   * Collate rows for dataloader response \
-   * \
-   * From DataLoader docs:\
+   * Collate rows for dataloader response
+   * *From DataLoader docs:*
    * There are a few constraints this function must uphold:
-   *  - The Array of values must be the same length as the Array of keys.
-   *  - Each index in the Array of values must correspond to the same index in the Array of keys.
-   * @see: https://github.com/graphql/dataloader#batch-function
+   *   - The Array of values must be the same length as the Array of keys.
+   *   - Each index in the Array of values must correspond to the same index in the Array of keys.
+   * For details [here](https://github.com/graphql/dataloader#batch-function)
+   * 
+   * ```ts
+   * const dataloader = new DataLoader(async (ids: string[]) => {
+   *   const nodes = await context.services.accounts.getUsersByIds(ids);
+   * 
+   *   return collateForDataloader(ids, nodes);
+   * });
+   * ```
    */
   export const collateForDataloader: CollateForDataloader;
 
   /**
-   * Format array of IDs to object with id key
+   * Format array of IDs to object with id key\
+   * Example:
+   * 
+   * ```ts
+   * const ids = arrayOfIdsToArrayOfObjectIds(['1', '2', '3']);
+   * 
+   * console.log(ids); // <-- [{id: '1'}, {id: '2'}, {id: '3'}]
+   * ```
    */
   export const arrayOfIdsToArrayOfObjectIds: ArrayOfIdsToArrayOfObjectIds;
 
