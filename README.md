@@ -129,14 +129,14 @@ import customResolvers from './resolvers';
 
 ## <a name="options"></a> Options
 
- - **server** *(required)*. Instance of http.Server
- - **schema** *(required)*. GraphQL schema
- - **timezone**. `String`. Server timezone. _Default: `UTC`_
- - **logDir**. `String` Path to directory of logs. _Default: `./log`_
- - **introspection**. `Boolean`. Allow/Disallow introspection queries. _Default: `false`_
- - **debug**. `Boolean` Displayed error stack and extensions in graphql response. _Default: `false` for production and `true` for development mode_
- - **rootValue**. `Object` GraphQL parameter of [execute](https://graphql.org/graphql-js/execution/#execute) method.
- - **middleware** - Middleware or array of middlewares. See [Middleware](./#middleware)
+ - **server** *(required)*. `http.Server`. Instance of http.Server
+ - **schema** *(required)* `GraphQLSchema`. GraphQL schema
+ - **timezone**. `string`. Server timezone. _Default: `UTC`_
+ - **logDir**. `string` Path to directory of logs. _Default: `./log`_
+ - **introspection**. `boolean`. Allow/Disallow introspection queries. _Default: `false`_
+ - **debug**. `boolean` Displayed error stack and extensions in graphql response. _Default: `false` for production and `true` for development mode_
+ - **rootValue**. `any` GraphQL parameter of [execute](https://graphql.org/graphql-js/execution/#execute) method.
+ - **middleware** `Middleware | Middleware[]` - Middleware or array of middlewares. See [Middleware](./#middleware)
 
 
 
