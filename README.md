@@ -129,14 +129,14 @@ import customResolvers from './resolvers';
 
 ## <a name="options"></a> Options
 
- - *server* *(required)*. Instance of http.Server
- - *schema* *(required)*. GraphQL schema
- - *timezone*. `String`. Server timezone. _Default: `UTC`_
- - *logDir*. `String` Path to directory of logs. _Default: `./log`_
- - *introspection*. `Boolean`. Allow/Disallow introspection queries. _Default: `false`_
-- *debug*. `Boolean` Displayed error stack and extensions in graphql response. _Default: `false` for production and `true` for development mode_
-- *rootValue*. `Object` GraphQL parameter of [execute](https://graphql.org/graphql-js/execution/#execute) method.
-- *middleware* - Middleware or array of middlewares. See [Middleware](./#middleware)
+ - **server** *(required)*. Instance of http.Server
+ - **schema** *(required)*. GraphQL schema
+ - **timezone**. `String`. Server timezone. _Default: `UTC`_
+ - **logDir**. `String` Path to directory of logs. _Default: `./log`_
+ - **introspection**. `Boolean`. Allow/Disallow introspection queries. _Default: `false`_
+ - **debug**. `Boolean` Displayed error stack and extensions in graphql response. _Default: `false` for production and `true` for development mode_
+ - **rootValue**. `Object` GraphQL parameter of [execute](https://graphql.org/graphql-js/execution/#execute) method.
+ - **middleware** - Middleware or array of middlewares. See [Middleware](./#middleware)
 
 
 
@@ -144,24 +144,24 @@ import customResolvers from './resolvers';
 
 The Core also adds scalar types:
 
- - *Money* - The value is stored in the smallest monetary unit (kopecks, cents, etc.). Real type - Int. E.g. For 250 USD this record returns value as 250000 (250$ * 100¢)
- - *DateTime* - Use JavaScript Date object for date/time fields.
- - *Date* - Use JavaScript Date object for date fields.
- - *Time* - Time type.
- - *URL* - A field whose value conforms to the standard URL format as specified in [RFC3986](https://www.ietf.org/rfc/rfc3986.txt).
- - *EmailAddress* - A field whose value conforms to the standard internet email address format as specified in [RFC822](https://www.w3.org/Protocols/rfc822/).
- - *JSON* - The JSON scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
- - *JSONObject* - The JSONObject scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+ - **Money** - The value is stored in the smallest monetary unit (kopecks, cents, etc.). Real type - Int. E.g. For 250 USD this record returns value as 250000 (250$ * 100¢)
+ - **DateTime** - Use JavaScript Date object for date/time fields.
+ - **Date** - Use JavaScript Date object for date fields.
+ - **Time** - Time type.
+ - **URL** - A field whose value conforms to the standard URL format as specified in [RFC3986](https://www.ietf.org/rfc/rfc3986.txt).
+ - **EmailAddress** - A field whose value conforms to the standard internet email address format as specified in [RFC822](https://www.w3.org/Protocols/rfc822/).
+ - **JSON** - The JSON scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+ - **JSONObject** - The JSONObject scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 
 
 ## <a name="base-typedefs"></a> Base TypeDefs
 
 The Core also adds GraphQL types:
- - interface *Node* - entity with required fields: `id`, `createdAt` and `updatedAt`. Used in Edges
- - type *OrderDirection* - Enum type to make the order (ASC, DESC)
- - type *PageInfo* - See [Connection spec.](https://relay.dev/graphql/connections.htm)
- - interface *Edge* - See [Connection spec.](https://relay.dev/graphql/connections.htm)
- - interface *Connection* - See [Connection spec.](https://relay.dev/graphql/connections.htm)
+ - *interface* **Node** - entity with required fields: `id`, `createdAt` and `updatedAt`. Used in Edges
+ - *type* **OrderDirection** - Enum type to make the order (ASC, DESC)
+ - *type* **PageInfo** - See [Connection spec.](https://relay.dev/graphql/connections.htm)
+ - *interface* **Edge** - See [Connection spec.](https://relay.dev/graphql/connections.htm)
+ - *interface* **Connection** - See [Connection spec.](https://relay.dev/graphql/connections.htm)
 
 
 
