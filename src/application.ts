@@ -62,24 +62,18 @@ const applicationFactory: ApplicationFactory = async (props) => {
     let extensions: MiddlewareExtensions = {};
 
     try {
-      try {
-        const middlewaresResponse = await applyMiddlewares({
-          context: initialContext,
-          config: configurtation,
-          schema: configurtation.schema,
-          extensions: {},
-          middlewares,
-          request,
-        });
-        validationRules = middlewaresResponse.validationRules;
-        context = middlewaresResponse.context;
-        schema = middlewaresResponse.schema;
-        extensions = middlewaresResponse.extensions;
-
-      } catch (err) {
-        throw new ServerError('GraphQL Error. Failed to load middlewares', { err });
-      }
-
+      const middlewaresResponse = await applyMiddlewares({
+        context: initialContext,
+        config: configurtation,
+        schema: configurtation.schema,
+        extensions: {},
+        middlewares,
+        request,
+      });
+      validationRules = middlewaresResponse.validationRules;
+      context = middlewaresResponse.context;
+      schema = middlewaresResponse.schema;
+      extensions = middlewaresResponse.extensions;
 
       if (!schema) {
         throw new ServerError('GraphQL Error. GraphQL middleware options must contain a schema', { schema });
