@@ -447,6 +447,8 @@ Middleware is a special function that allows you to expand the GraphQL **Context
 
 Middleware factory function will be called on **every GraphQL request**. Keep this in mind. When calling the function, it will be passed a set of parameters containing the current context value, the current schema, http request and more. The function may return nothing or return the modified value of one of the parameters.
 
+_Note: Middlewares order. Since each middleware mutates the context and returns it back, the presence of a property parameter in the context will depend on each of these middleware._
+
 Will be passed:
   - **config** - Parameters that were passed during core factory called.
   - **context** - The current context value returned from the previous middleware, or the default context value if no middleware has been executed before.
@@ -459,7 +461,6 @@ Possible return:
  - **schema** - You should mutated this schema value. **Not override and not merge with spread operator**.
  - **extensions** - You should mutated this schema value. **Not override and not merge with spread operator**.
  - **validationRule** - You can return GraphQL validation rule or array of validation rules. All rules that will be returned from middlewares will be concatenated and passed to GraphQL `execute` method
-
 
 _Note: Use wrapper function to make closure and cache._
 
