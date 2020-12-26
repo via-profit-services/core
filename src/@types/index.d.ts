@@ -11,6 +11,7 @@ declare module '@via-profit-services/core' {
   import http from 'http';
   import Winston from 'winston';
   import 'winston-daily-rotate-file';
+  import { EventEmitter } from 'events';
 
   type Resolvers = {
     Query: {
@@ -47,6 +48,7 @@ declare module '@via-profit-services/core' {
     timezone: string;
     dataloader: DataLoaderCollection;
     services: ServicesCollection;
+    emitter: EventEmitter;
   }
 
   export interface ServicesCollection {
@@ -559,5 +561,6 @@ declare module '@via-profit-services/core' {
   export const DEFAULT_NODES_LIMIT: string;
   export const DEFAULT_SERVER_TIMEZONE: string;
   export const DEFAULT_LOG_DIR: string;
+  export const EMITTER_EMIT_RESPONSE: string;
 
 }
