@@ -13,6 +13,13 @@ declare module '@via-profit-services/core' {
   import 'winston-daily-rotate-file';
   import { EventEmitter } from 'events';
 
+  class CoreEmitter extends EventEmitter {
+    on(event: 'emit-response-error', error: Error | unknown): this;
+    on(event: 'emit-response', callback: (
+      data: {[key: string]: any;
+    }) => void): this;
+  }
+
   type Resolvers = {
     Query: {
       info: GraphQLFieldResolver<unknown, Context>;
@@ -48,7 +55,7 @@ declare module '@via-profit-services/core' {
     timezone: string;
     dataloader: DataLoaderCollection;
     services: ServicesCollection;
-    emitter: EventEmitter;
+    emitter: CoreEmitter;
   }
 
   export interface ServicesCollection {
@@ -561,6 +568,4 @@ declare module '@via-profit-services/core' {
   export const DEFAULT_NODES_LIMIT: string;
   export const DEFAULT_SERVER_TIMEZONE: string;
   export const DEFAULT_LOG_DIR: string;
-  export const EMITTER_EMIT_RESPONSE: string;
-
 }

@@ -12,7 +12,7 @@ import { performance } from 'perf_hooks';
 
 import {
   DEFAULT_INTROSPECTION_STATE, DEFAULT_SERVER_TIMEZONE,
-  DEFAULT_LOG_DIR, EMITTER_EMIT_RESPONSE, EMITTER_EMIT_RESPONSE_ERROR,
+  DEFAULT_LOG_DIR,
 } from './constants';
 import BadRequestError from './errorHandlers/BadRequestError';
 import customFormatErrorFn from './errorHandlers/customFormatErrorFn';
@@ -90,11 +90,8 @@ const applicationFactory: ApplicationFactory = async (props) => {
       }
 
       const { method } = request;
-
       const body = await bodyParser(request);
-
       const { query, operationName, variables } = parseGraphQLParams({ body, request });
-
 
       if (!['GET', 'POST'].includes(method)) {
         throw new BadRequestError('GraphQL Error. GraphQL only supports GET and POST requests');
@@ -136,7 +133,8 @@ const applicationFactory: ApplicationFactory = async (props) => {
         throw new ServerError('GraphQL Error.', { graphqlErrors: errors });
       }
 
-      context.emitter.emit(EMITTER_EMIT_RESPONSE, data);
+
+      context.emitter.emit('emit-response', data);
       response.status(200).json({
         data,
         extensions: !debug ? undefined : {
@@ -148,7 +146,7 @@ const applicationFactory: ApplicationFactory = async (props) => {
     } catch (originalError) {
 
       const errors: GraphQLError[] = originalError?.metaData?.graphqlErrors ?? [originalError];
-      context.emitter.emit(EMITTER_EMIT_RESPONSE_ERROR, originalError);
+      context.emitter.emit('emit-response-error', originalError as Error);
 
       response.status(originalError.status || 500).json({
         data: null,
