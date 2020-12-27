@@ -13,7 +13,7 @@ declare module '@via-profit-services/core' {
   import 'winston-daily-rotate-file';
   import { EventEmitter } from 'events';
 
-  class CoreEmitter extends EventEmitter {
+  export class CoreEmitter extends EventEmitter {
     on(event: 'emit-response-error', error: Error | unknown): this;
     on(event: 'emit-response', callback: (
       data: {[key: string]: any;
@@ -50,12 +50,16 @@ declare module '@via-profit-services/core' {
 
   export type MaybePromise<T> = Promise<T> | T;
 
+  export interface EmitterCollection {
+    core: CoreEmitter;
+  }
+
   export interface Context {
     logger: LoggersCollection;
     timezone: string;
     dataloader: DataLoaderCollection;
     services: ServicesCollection;
-    emitter: CoreEmitter;
+    emitter: EmitterCollection;
   }
 
   export interface ServicesCollection {

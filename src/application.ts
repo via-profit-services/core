@@ -40,7 +40,6 @@ const applicationFactory: ApplicationFactory = async (props) => {
   const logger = configureLogger({ logDir });
 
   class CoreEmitter extends EventEmitter {}
-  const emitter = new CoreEmitter();
 
   // combine finally context object
   const initialContext: Context = {
@@ -48,7 +47,9 @@ const applicationFactory: ApplicationFactory = async (props) => {
     logger,
     dataloader: {},
     services: {},
-    emitter,
+    emitter: {
+      core: new CoreEmitter(),
+    },
   };
 
 
@@ -134,7 +135,7 @@ const applicationFactory: ApplicationFactory = async (props) => {
       }
 
 
-      context.emitter.emit('emit-response', data);
+      context.emitter.core.emit('emit-response', data);
       response.status(200).json({
         data,
         extensions: !debug ? undefined : {
@@ -146,7 +147,7 @@ const applicationFactory: ApplicationFactory = async (props) => {
     } catch (originalError) {
 
       const errors: GraphQLError[] = originalError?.metaData?.graphqlErrors ?? [originalError];
-      context.emitter.emit('emit-response-error', originalError as Error);
+      context.emitter.core.emit('emit-response-error', originalError as Error);
 
       response.status(originalError.status || 500).json({
         data: null,
