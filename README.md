@@ -546,10 +546,21 @@ Default state of GraphQL [Context](https://graphql.org/learn/execution/):
  - **logger** - Provied Winston loaders collection (See [Logger](#logger))
  - **dataloader** - Provied DataLoader loader (See [Middleware](#middleware))
  - **services** - Provied collection of any services (See [Middleware](#middleware))
+ - **emitter** - Provied Event Emitter class (See [EventEmitter](#event-emitter))
 
 You can extend default context value. See [Middleware](#middleware) section for more details.
 
 
+
+## <a name="event-emitter"></a> Event Emitter
+
+By default, the context contains the `emitter` property - [Event Emitter](https://nodejs.org/api/events.html) class with following events:
+
+ - **graphql-response** - Emitted when GraphQL response will be sent without errors
+ - **graphql-error** - Emitted when GraphQL response will be sent with errors
+
+
 ## <a name="license"></a> License
+
 The  [MIT](./LICENSE) License.
 
