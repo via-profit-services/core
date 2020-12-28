@@ -63,6 +63,7 @@ const applicationFactory: ApplicationFactory = async (props) => {
     let context: Context = initialContext;
     let schema: GraphQLSchema = configurtation.schema;
     let extensions: MiddlewareExtensions = {};
+    let startTime = 0;
 
     try {
       const middlewaresResponse = await applyMiddlewares({
@@ -118,7 +119,8 @@ const applicationFactory: ApplicationFactory = async (props) => {
         }
       }
 
-      const startTime = performance.now();
+      startTime = performance.now();
+
       const { errors, data } = await execute({
         variableValues: variables,
         document: documentAST,
@@ -150,6 +152,10 @@ const applicationFactory: ApplicationFactory = async (props) => {
       response.status(originalError.status || 500).json({
         data: null,
         errors: errors.map((error) => customFormatErrorFn({ error, context, debug })),
+        extensions: !debug ? undefined : {
+          ...extensions,
+          queryTime: performance.now() - startTime,
+        },
       });
     }
 
