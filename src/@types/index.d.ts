@@ -13,11 +13,18 @@ declare module '@via-profit-services/core' {
   import 'winston-daily-rotate-file';
   import { EventEmitter } from 'events';
 
+  type GraphQLResponse = {
+    [key: string]: any;
+  }
+
   export class CoreEmitter extends EventEmitter {
-    on(event: 'emit-response-error', error: Error | unknown): this;
-    on(event: 'emit-response', callback: (
-      data: {[key: string]: any;
-    }) => void): this;
+    on(event: 'graphql-error', error: Error | unknown): this;
+    once(event: 'graphql-error', error: Error | unknown): this;
+    off(event: 'graphql-error', error: Error | unknown): this;
+
+    on(event: 'graphql-response', callback: (data: GraphQLResponse) => void): this;
+    once(event: 'graphql-response', callback: (data: GraphQLResponse) => void): this;
+    off(event: 'graphql-response', callback: (data: GraphQLResponse) => void): this;
   }
 
   type Resolvers = {
@@ -50,16 +57,12 @@ declare module '@via-profit-services/core' {
 
   export type MaybePromise<T> = Promise<T> | T;
 
-  export interface EmitterCollection {
-    core: CoreEmitter;
-  }
-
   export interface Context {
     logger: LoggersCollection;
     timezone: string;
     dataloader: DataLoaderCollection;
     services: ServicesCollection;
-    emitter: EmitterCollection;
+    emitter: CoreEmitter;
   }
 
   export interface ServicesCollection {
