@@ -40,12 +40,7 @@ declare module '@via-profit-services/core' {
     InfoMutation: {
       echo: GraphQLFieldResolver<unknown, Context>;
     };
-    Phone: {
-      number: GraphQLFieldResolver<unknown, Context>;
-      country: GraphQLFieldResolver<unknown, Context>;
-      description: GraphQLFieldResolver<unknown, Context>;
-      metaData: GraphQLFieldResolver<unknown, Context>;
-    };
+    Phone: PhoneResolver;
     Date: GraphQLScalarType;
     Time: GraphQLScalarType;
     DateTime: GraphQLScalarType;
@@ -53,7 +48,17 @@ declare module '@via-profit-services/core' {
     URL: GraphQLScalarType;
     JSON: GraphQLScalarType;
     Money: GraphQLScalarType;
+    Void: GraphQLScalarType;
   }
+
+  export type PhoneResolver = Record<
+    | 'country'
+    | 'number'
+    | 'description'
+    | 'metaData'
+    | 'primary'
+    | 'confirmed'
+    , GraphQLFieldResolver<Phone, Context>>;
 
   export type MaybePromise<T> = Promise<T> | T;
 
@@ -294,6 +299,8 @@ declare module '@via-profit-services/core' {
     number: string;
     country: string;
     description: string;
+    primary: boolean;
+    confirmed: boolean;
     metaData?: any;
   }
 

@@ -5,6 +5,7 @@ import { JSON, JSONObject } from './JSON';
 import Money from './Money';
 import Time from './Time';
 import URL from './URL';
+import Void from './Void';
 
 const scalars = {
   Date,
@@ -15,6 +16,7 @@ const scalars = {
   URL,
   JSON,
   JSONObject,
+  Void,
 };
 
 export default scalars;

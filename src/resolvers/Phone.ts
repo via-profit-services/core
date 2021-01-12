@@ -1,19 +1,22 @@
-import { Context, Phone } from '@via-profit-services/core';
-import type { GraphQLFieldResolver } from 'graphql';
+import type { PhoneResolver, Phone } from '@via-profit-services/core';
 
-const PhoneResolver = new Proxy({
+const phoneResolver = new Proxy<PhoneResolver>({
   number: () => ({}),
   country: () => ({}),
   description: () => ({}),
+  primary: () => ({}),
+  confirmed: () => ({}),
   metaData: () => ({}),
 }, {
-  get: (_target, prop: keyof Phone) => {
-    const resolver: GraphQLFieldResolver<Phone, Context> = (parent) => {
+  get: (_target, prop: keyof PhoneResolver) => {
+    const resolver: PhoneResolver[keyof PhoneResolver] = (parent) => {
 
       const phone: Phone = {
         country: 'RU',
         number: '7',
         description: '',
+        primary: false,
+        confirmed: false,
         ...parent,
       }
 
@@ -24,4 +27,4 @@ const PhoneResolver = new Proxy({
   },
 });
 
-export default PhoneResolver;
+export default phoneResolver;
