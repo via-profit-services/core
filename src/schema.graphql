@@ -150,6 +150,14 @@ input PhoneInput {
   """
   description: String!
   """
+  Is primary phone number
+  """
+  primary: Boolean!
+  """
+  Is confirmed phone number
+  """
+  confirmed: Boolean!
+  """
   Any phone data
   You can store any information here
   """

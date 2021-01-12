@@ -152,6 +152,7 @@ The Core also adds scalar types:
  - **EmailAddress** - A field whose value conforms to the standard internet email address format as specified in [RFC822](https://www.w3.org/Protocols/rfc822/).
  - **JSON** - The JSON scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
  - **JSONObject** - The JSONObject scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+ - **Void** - Represents NULL values
 
 
 ## <a name="base-typedefs"></a> Base TypeDefs
@@ -159,9 +160,17 @@ The Core also adds scalar types:
 The Core also adds GraphQL types:
  - *interface* **Node** - entity with required fields: `id`, `createdAt` and `updatedAt`. Used in Edges
  - *type* **OrderDirection** - Enum type to make the order (ASC, DESC)
+ - *type* **Error** - entity fo display errors
  - *type* **PageInfo** - See [Connection spec.](https://relay.dev/graphql/connections.htm)
  - *interface* **Edge** - See [Connection spec.](https://relay.dev/graphql/connections.htm)
  - *interface* **Connection** - See [Connection spec.](https://relay.dev/graphql/connections.htm)
+ - *type* **Phone** - entity with fields: `number`, `country`, `description`, `primary`, `confirmed` and `metaData`.
+ - *input* **PhoneInput** - Phone input data
+ - *input* **BetweenDate** - Between `Date` query type
+ - *input* **BetweenTime** - Between `Time` query type
+ - *input* **BetweenDateTime** - Between `DateTime` query type
+ - *input* **BetweenInt** - Between `Int` query type
+ - *input* **BetweenMoney** - Between `Money` query type
 
 
 
@@ -201,6 +210,7 @@ Resolvers object contains:
  - [Scalars](#scalars) resolvers
  - Root `Query` resolvers
  - Root `Mutation` resolvers
+ - Resolver of `Phone`
  - Resolvers of `InfoQuery`
  - Resolvers of `InfoMutation`
 
