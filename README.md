@@ -66,7 +66,6 @@ import schema from './schema';
   const server = http.createServer(app);
 
   const { graphQLExpress } = await factory({
-    introspection: true,
     server,
     schema,
   });
@@ -112,7 +111,6 @@ import customResolvers from './resolvers';
   });
 
   const { graphQLExpress } = await factory({
-    introspection: true,
     server,
     schema,
   });
@@ -133,7 +131,6 @@ import customResolvers from './resolvers';
  - **schema** *(required)* `GraphQLSchema`. GraphQL schema
  - **timezone**. `string`. Server timezone. _Default: `UTC`_
  - **logDir**. `string` Path to directory of logs. _Default: `./log`_
- - **introspection**. `boolean`. Allow/Disallow introspection queries. _Default: `false`_
  - **debug**. `boolean` Displayed error stack and extensions in graphql response. _Default: `false` for production and `true` for development mode_
  - **rootValue**. `any` GraphQL parameter of [execute](https://graphql.org/graphql-js/execution/#execute) method.
  - **middleware** `Middleware | Middleware[]` - Middleware or array of middlewares. See [Middleware](./#middleware)
@@ -510,7 +507,6 @@ const customMiddlewareFactory = () => {
 }
 
 const { graphQLExpress } = await factory({
-    introspection: true,
     server,
     schema,
     middleware: [

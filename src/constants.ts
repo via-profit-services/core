@@ -1,6 +1,5 @@
 export const DEFAULT_SERVER_TIMEZONE = 'UTC';
 export const DEFAULT_LOG_DIR = './log';
-export const DEFAULT_INTROSPECTION_STATE = false;
 export const DEFAULT_NODES_LIMIT = 30;
 
 export const MAXIMUM_REQUEST_BODY_SIZE = '50mb';

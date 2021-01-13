@@ -41,7 +41,6 @@ const customResolvers = {
   });
 
   const { graphQLExpress } = await factory({
-    introspection: true,
     server,
     schema,
   });

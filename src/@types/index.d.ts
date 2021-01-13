@@ -113,12 +113,6 @@ declare module '@via-profit-services/core' {
        */
       logDir?: string;
       /**
-       * Allow introspection queries
-       * \
-       * Default: `false`
-       */
-      introspection?: boolean;
-      /**
        * GraphQL Schema Definition
        * @see: https://graphql.org
        */

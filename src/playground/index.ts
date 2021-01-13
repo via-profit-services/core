@@ -24,7 +24,6 @@ import * as core from '../index';
   const app = express();
   const server = http.createServer(app);
   const { graphQLExpress } = await core.factory({
-    introspection: process.env.NODE_ENV === 'development',
     server,
     schema,
   });

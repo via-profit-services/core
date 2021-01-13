@@ -11,14 +11,13 @@ import {
 import { performance } from 'perf_hooks';
 
 import {
-  DEFAULT_INTROSPECTION_STATE, DEFAULT_SERVER_TIMEZONE,
+  DEFAULT_SERVER_TIMEZONE,
   DEFAULT_LOG_DIR,
 } from './constants';
 import BadRequestError from './errorHandlers/BadRequestError';
 import customFormatErrorFn from './errorHandlers/customFormatErrorFn';
 import ServerError from './errorHandlers/ServerError';
 import configureLogger from './logger/configure-logger';
-import graphqlIntrospectionMiddleware from './middleware/introspection';
 import applyMiddlewares from './utils/apply-middlewares';
 import bodyParser, { parseGraphQLParams } from './utils/body-parser';
 import composeMiddlewares from './utils/compose-middlewares';
@@ -27,7 +26,6 @@ const applicationFactory: ApplicationFactory = async (props) => {
   const configurtation: Configuration = {
     timezone: DEFAULT_SERVER_TIMEZONE,
     middleware: [],
-    introspection: DEFAULT_INTROSPECTION_STATE,
     logDir: DEFAULT_LOG_DIR,
     debug: process.env.NODE_ENV === 'development',
     rootValue: undefined,
@@ -53,10 +51,7 @@ const applicationFactory: ApplicationFactory = async (props) => {
 
   const graphQLExpress: RequestHandler = async (request, response) => {
 
-    const middlewares = composeMiddlewares(
-      graphqlIntrospectionMiddleware(),
-      middleware,
-    );
+    const middlewares = composeMiddlewares(middleware);
 
 
     let validationRules: ValidationRule[] = [];

@@ -11,7 +11,6 @@ const port = 9005;
   const server = http.createServer(app);
 
   const { graphQLExpress } = await factory({
-    introspection: true,
     server,
     schema,
   });
