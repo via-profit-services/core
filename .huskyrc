@@ -1,5 +1,0 @@
-{
-  "hooks": {
-    "pre-push": "if [[ $(git rev-parse --abbrev-ref HEAD) = master ]]; then echo \"\n\n========== ERROR ============\nThis branch cannot be changed\n\n\"; exit 1; fi"
-  }
-}
