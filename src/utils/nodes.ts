@@ -1,5 +1,6 @@
 import type {
   NodeToEdge, ExtractNodeField, ExtractNodeIds, CollateForDataloader, ArrayOfIdsToArrayOfObjectIds,
+  WithKey, ExtractKeyAsObject,
 } from '@via-profit-services/core';
 
 import { makeNodeCursor } from './cursors';
@@ -43,3 +44,14 @@ export const arrayOfIdsToArrayOfObjectIds: ArrayOfIdsToArrayOfObjectIds = (array
     ? array.map((id) => ({ id }))
     : null;
 
+
+export const extractKeyAsObject: ExtractKeyAsObject = (
+  source,
+  key,
+  defaultValue,
+  ) => ({
+    [key]: source[key] || defaultValue,
+  } as WithKey<typeof key, typeof source[typeof key]>)
+
+
+  const a = extractKeyAsObject({ foo: 'bar' }, 'foo');

@@ -399,6 +399,21 @@ console.log(cursorBundle);
  */
 ```
 
+### extractKeyAsObject
+
+Creates an object containing a specific key
+
+```ts
+const source = {
+  foo: 'Foo',
+  bar: 12,
+};
+const record = extractKeyAsObject(source, 'bar');
+
+console.log(record); // <-- { bar: 12 }
+```
+
+
 
 ### LOG_FILENAME_DEBUG
 

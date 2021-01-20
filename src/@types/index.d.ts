@@ -53,6 +53,19 @@ declare module '@via-profit-services/core' {
 
   export type MaybePromise<T> = Promise<T> | T;
 
+  export type WithKey<K extends string | number | symbol, ResType> = {
+    [key in K]: ResType;
+  }
+
+  export type ExtractKeyAsObject = <T, K extends keyof T, D>(
+    source: T,
+    key: K,
+    defaultValue?: D,
+  ) => {
+    [key in K]: T[K] | D;
+  };
+
+
   export interface Context {
     logger: LoggersCollection;
     timezone: string;
@@ -542,6 +555,22 @@ declare module '@via-profit-services/core' {
    */
   export const buildQueryFilter: BuildQueryFilter;
 
+
+  /**
+   * Creates an object containing a specific key /
+   * Example:
+   * 
+   * ```ts
+   * const source = {
+   *   foo: 'Foo',
+   *   bar: 12,
+   * };
+   * const record = extractKeyAsObject(source, 'bar');
+   * 
+   * console.log(record); // <-- { bar: 12 }
+   * ```
+   */
+  export const extractKeyAsObject: ExtractKeyAsObject;
   /**
    * Core type definitions (GraphQL SDL string)
    */
