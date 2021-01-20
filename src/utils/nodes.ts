@@ -52,6 +52,3 @@ export const extractKeyAsObject: ExtractKeyAsObject = (
   ) => ({
     [key]: source[key] || defaultValue,
   } as WithKey<typeof key, typeof source[typeof key]>)
-
-
-  const a = extractKeyAsObject({ foo: 'bar' }, 'foo');
