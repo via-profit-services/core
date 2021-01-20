@@ -1,6 +1,5 @@
 import type { Resolvers } from '@via-profit-services/core';
 
-import Phone from './Phone';
 import scalars from './scalars';
 
 const resolvers: Resolvers = {
@@ -16,7 +15,6 @@ const resolvers: Resolvers = {
   InfoMutation: {
     echo: (_paren, args: { str: string }) => args.str,
   },
-  Phone,
   ...scalars,
 };
 

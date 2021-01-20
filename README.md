@@ -161,8 +161,6 @@ The Core also adds GraphQL types:
  - *type* **PageInfo** - See [Connection spec.](https://relay.dev/graphql/connections.htm)
  - *interface* **Edge** - See [Connection spec.](https://relay.dev/graphql/connections.htm)
  - *interface* **Connection** - See [Connection spec.](https://relay.dev/graphql/connections.htm)
- - *type* **Phone** - entity with fields: `number`, `country`, `description`, `primary`, `confirmed` and `metaData`.
- - *input* **PhoneInput** - Phone input data
  - *input* **BetweenDate** - Between `Date` query type
  - *input* **BetweenTime** - Between `Time` query type
  - *input* **BetweenDateTime** - Between `DateTime` query type
@@ -207,7 +205,6 @@ Resolvers object contains:
  - [Scalars](#scalars) resolvers
  - Root `Query` resolvers
  - Root `Mutation` resolvers
- - Resolver of `Phone`
  - Resolvers of `InfoQuery`
  - Resolvers of `InfoMutation`
 
