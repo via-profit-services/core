@@ -252,7 +252,7 @@ const dataloader = new DataLoader(async (ids: string[]) => {
 Returns node IDs array
 
 ```ts
-const ids = extractNodeField([
+const ids = extractNodeIds([
   {id: '1', name: 'Ivan'},
   {id: '2', name: 'Stepan'},
   {id: '3', name: 'Petruha'},
