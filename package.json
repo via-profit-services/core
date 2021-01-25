@@ -1,7 +1,7 @@
 {
     "name": "@via-profit-services/core",
     "support": "https://via-profit.ru",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Via Profit Core service",
     "main": "dist/index.js",
     "engines": {
@@ -21,12 +21,7 @@
         "build:dist": "webpack --config ./webpack/webpack-config-prod.ts",
         "start": "yarn build:dev --watch",
         "test": "jest",
-        "lint": "eslint --ext .ts ./src/ --fix .",
-        "postversion": "git push --tags",
-        "release:patch": "yarn version --patch",
-        "release:minor": "yarn version --minor",
-        "release:major": "yarn version --major",
-        "release:prerelease": "yarn version --prerelease"
+        "lint": "eslint --ext .ts ./src/ --fix ."
     },
     "repository": {
         "type": "git",
