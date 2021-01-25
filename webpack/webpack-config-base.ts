@@ -1,7 +1,6 @@
-import path from 'path';
-import { Configuration } from 'webpack';
-import ts from 'typescript';
-import tsTransformPaths from '@zerollup/ts-transform-paths';
+import { Configuration, DefinePlugin } from 'webpack';
+
+import { version } from '../package.json';
 
 const webpackBaseConfig: Configuration = {
   target: 'node',
@@ -9,35 +8,15 @@ const webpackBaseConfig: Configuration = {
     rules: [
       {
         test: /\.ts$/,
-        exclude: /node_modules/,
-        use: [
-          {
-            loader: 'ts-loader',
-            options: {
-              getCustomTransformers: (program: ts.Program) => {
-                const transformer = tsTransformPaths(program);
-
-                return {
-                  before: [transformer.before],
-                  afterDeclarations: [transformer.afterDeclarations],
-                };
-              },
-            },
-          },
-          {
-            loader: 'shebang-loader', // Fix Unexpected character '#' in #!/usr/bin/env node
-          },
-        ],
+        use: 'ts-loader',
       },
       {
-        test: /\.mjs$/, // fixes https://github.com/graphql/graphql-js/issues/1272
-        include: /node_modules/,
-        type: 'javascript/auto',
+        test: /\.graphql$/,
+        use: 'raw-loader',
       },
       {
-        test: /\.(graphql|gql)$/,
-        exclude: /node_modules/,
-        loader: 'graphql-tag/loader',
+        test: /\.html$/,
+        use: 'html-loader',
       },
     ],
   },
@@ -46,12 +25,21 @@ const webpackBaseConfig: Configuration = {
     __dirname: true,
   },
   resolve: {
-    // .mjs needed for https://github.com/graphql/graphql-js/issues/1272
-    extensions: ['.ts', '.mjs', '.js', '.json', '.gql', '.graphql'],
-    alias: {
-      '~': path.resolve(__dirname, '..', 'src'),
-    },
+    extensions: ['.ts', '.mjs', '.js', '.json', '.graphql', '.html'],
   },
+  plugins: [
+    new DefinePlugin({
+      'process.env.CORE_VERSION': JSON.stringify(version),
+    }),
+  ],
+  externals: [
+    /^winston(|-daily-rotate-file)$/,
+    /^moment(|-timezone)$/,
+    /^graphql(|-tools|\/.+)$/,
+    /^supports-color$/,
+    /^express$/,
+    /^dataloader$/,
+  ],
 };
 
 export default webpackBaseConfig;

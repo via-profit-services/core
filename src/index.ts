@@ -1,12 +1,18 @@
-import * as Express from 'express';
+import factory from './application';
+import logFormatter from './logger/log-formatter';
+import resolvers from './resolvers';
+import typeDefs from './schema.graphql';
 
-import * as schemas from './schemas';
-import AuthService from './schemas/auth/service';
-
-export * from './types';
-export * from './app';
-export * from './utils';
-export * from './logger';
-export * from './databaseManager';
+export * from './constants';
 export * from './errorHandlers';
-export { schemas, Express, AuthService };
+export * from './utils/cursors';
+export * from './utils/nodes';
+export * from './utils/filters';
+
+export {
+  resolvers,
+  typeDefs,
+  logFormatter,
+  factory,
+};
+

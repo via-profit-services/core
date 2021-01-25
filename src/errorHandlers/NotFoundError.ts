@@ -1,4 +1,4 @@
-import { ErrorHandler } from './index';
+import type { ErrorHandler } from '@via-profit-services/core';
 
 export default class NotFoundError extends Error implements ErrorHandler {
   public metaData: any;

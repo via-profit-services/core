@@ -3,3 +3,6 @@
 /build/**
 /docs/**
 /examples/**
+.yarn
+.pnp.js
+*.d.ts
