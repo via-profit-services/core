@@ -1,4 +1,4 @@
-import type { OutputFilter, OutputSearch, ApplyAliases, WhereField, BuildQueryFilter } from '@via-profit-services/core';
+import type { OutputFilter, ApplyAliases, WhereField, BuildQueryFilter, SearchMultipleFields, SearchSingleField } from '@via-profit-services/core';
 
 import { DEFAULT_NODES_LIMIT } from '../constants';
 import { getCursorPayload } from './cursors';
@@ -78,10 +78,31 @@ export const buildQueryFilter: BuildQueryFilter = (args) => {
     }
   }
 
-
-  // if search is an array of single field
   if (search && Array.isArray(search)) {
-    outputFilter.search = search as OutputSearch;
+
+    search.forEach((s: SearchMultipleFields | SearchSingleField) => {
+
+      // is is search single fiels
+      if ('field' in s) {
+        outputFilter.search = outputFilter.search || [];
+        outputFilter.search.push({
+          field: s.field,
+          query: s.query,
+        });
+      }
+
+      // is is search multiple fiels
+      if (('fields' in s) && Array.isArray(s.fields)) {
+
+        [...s.fields || []].forEach((field) => {
+          outputFilter.search = outputFilter.search || [];
+          outputFilter.search.push({
+            field,
+            query: s.query,
+          })
+        })
+      }
+    });
   }
 
   // if search is a object with simgle field
