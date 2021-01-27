@@ -257,7 +257,7 @@ declare module '@via-profit-services/core' {
     };
   }
   export type InputFilterValue = string | number | boolean | null;
-  export type InputSearch = SearchSingleField | SearchSingleField[] | SearchMultipleFields;
+  export type InputSearch = SearchSingleField | SearchSingleField[] | SearchMultipleFields | SearchMultipleFields[];
   interface SearchSingleField {
     field: string;
     query: string;
