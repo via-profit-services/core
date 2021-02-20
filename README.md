@@ -134,6 +134,8 @@ import customResolvers from './resolvers';
  - **debug**. `boolean` Displayed error stack and extensions in graphql response. _Default: `false` for production and `true` for development mode_
  - **rootValue**. `any` GraphQL parameter of [execute](https://graphql.org/graphql-js/execution/#execute) method.
  - **middleware** `Middleware | Middleware[]` - Middleware or array of middlewares. See [Middleware](./#middleware)
+ - **persistedQueriesMap** `Record`. Persisted Queries map (Object contains key: value pairs). See [Relay Persisted Queries](https://relay.dev/docs/en/persisted-queries.html). If persisted queries map is passed, the server will ignore the `query` directive in body request and read the map using the `documentId` key, unless otherwise specified (_see `persistedQueryKey` option_).
+ - **persistedQueryKey** `string`. Used only together with the `persistedQueriesMap` option. The name of the parameter that will be passed the ID of the query in the Persisted Queries map. _Default: `documentId`_
 
 
 

@@ -10,10 +10,7 @@ import {
  } from 'graphql';
 import { performance } from 'perf_hooks';
 
-import {
-  DEFAULT_SERVER_TIMEZONE,
-  DEFAULT_LOG_DIR,
-} from './constants';
+import { DEFAULT_SERVER_TIMEZONE, DEFAULT_PERSISTED_QUERY_KEY, DEFAULT_LOG_DIR } from './constants';
 import BadRequestError from './errorHandlers/BadRequestError';
 import customFormatErrorFn from './errorHandlers/customFormatErrorFn';
 import ServerError from './errorHandlers/ServerError';
@@ -29,6 +26,8 @@ const applicationFactory: ApplicationFactory = async (props) => {
     logDir: DEFAULT_LOG_DIR,
     debug: process.env.NODE_ENV === 'development',
     rootValue: undefined,
+    persistedQueriesMap: undefined,
+    persistedQueryKey: DEFAULT_PERSISTED_QUERY_KEY,
     ...props,
 
   };
@@ -85,7 +84,11 @@ const applicationFactory: ApplicationFactory = async (props) => {
 
       const { method } = request;
       const body = await bodyParser(request);
-      const { query, operationName, variables } = parseGraphQLParams({ body, request });
+      const { query, operationName, variables } = parseGraphQLParams({
+        body,
+        request,
+        config: configurtation,
+      });
 
       if (!['GET', 'POST'].includes(method)) {
         throw new BadRequestError('GraphQL Error. GraphQL only supports GET and POST requests');

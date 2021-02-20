@@ -1,4 +1,4 @@
-import type { BodyParser, RequestBody } from '@via-profit-services/core';
+import type { BodyParser, RequestBody, Configuration } from '@via-profit-services/core';
 import contentType from 'content-type';
 import { Request } from 'express';
 import getRawBody from 'raw-body';
@@ -72,10 +72,12 @@ interface GraphQLParams {
 interface GraphQLParamsProps {
   body: RequestBody;
   request: Request;
+  config: Configuration;
 }
 
 export const parseGraphQLParams = (props: GraphQLParamsProps): GraphQLParams => {
-  const { body, request } = props;
+  const { body, request, config } = props;
+  const { persistedQueriesMap, persistedQueryKey } = config;
   const urlData = new URLSearchParams(request.url.split('?')[1]);
 
   const graphQLParams: GraphQLParams = {
@@ -84,8 +86,19 @@ export const parseGraphQLParams = (props: GraphQLParamsProps): GraphQLParams => 
     operationName: null,
   }
 
+  // bind standard query
   if (typeof body.query === 'string') {
     graphQLParams.query = body.query;
+  }
+
+  // bind query by persistent map
+  if (typeof body[persistedQueryKey] === 'string') {
+    const queryKey = body[persistedQueryKey] as string;
+    const mappedQuery = persistedQueriesMap[queryKey];
+
+    if (typeof mappedQuery !== 'undefined') {
+      graphQLParams.query = mappedQuery;
+    }
   }
 
   const variables = urlData.get('variables') ?? body.variables;

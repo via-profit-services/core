@@ -1,7 +1,7 @@
+import cors from 'cors';
 import express from 'express';
 import { GraphQLSchema, GraphQLObjectType, GraphQLNonNull, GraphQLString } from 'graphql';
 import http from 'http';
-
 
 import * as core from '../index';
 
@@ -28,6 +28,7 @@ import * as core from '../index';
     schema,
   });
 
+  app.use(cors());
   // Apply graphQLExpress as middleware
   // You can use any endpoint other than `/graphql`
   app.use('/graphql', graphQLExpress);
