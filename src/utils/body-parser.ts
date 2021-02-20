@@ -1,4 +1,4 @@
-import type { RequestBody } from '@via-profit-services/core';
+import type { BodyParser, RequestBody, Configuration } from '@via-profit-services/core';
 import contentType from 'content-type';
 import { Request } from 'express';
 import getRawBody from 'raw-body';
@@ -7,11 +7,9 @@ import zlib from 'zlib';
 import BadRequestError from '../errorHandlers/BadRequestError';
 import ServerError from '../errorHandlers/ServerError';
 
-type BodyParser = (reqest: Request) => Promise<RequestBody>;
-
 const JSONOBJREGEX = /^[ \t\n\r]*\{/;
 
-const parseBody: BodyParser = async (req) => {
+const bodyParser: BodyParser = async (req) => {
   const { body, headers } = req;
   // If express has already parsed a body as a keyed object, use it.
   if (typeof body === 'object' && !(body instanceof Buffer)) {
@@ -74,10 +72,12 @@ interface GraphQLParams {
 interface GraphQLParamsProps {
   body: RequestBody;
   request: Request;
+  config: Configuration;
 }
 
 export const parseGraphQLParams = (props: GraphQLParamsProps): GraphQLParams => {
-  const { body, request } = props;
+  const { body, request, config } = props;
+  const { persistedQueriesMap, persistedQueryKey } = config;
   const urlData = new URLSearchParams(request.url.split('?')[1]);
 
   const graphQLParams: GraphQLParams = {
@@ -86,8 +86,19 @@ export const parseGraphQLParams = (props: GraphQLParamsProps): GraphQLParams => 
     operationName: null,
   }
 
+  // bind standard query
   if (typeof body.query === 'string') {
     graphQLParams.query = body.query;
+  }
+
+  // bind query by persistent map
+  if (typeof body[persistedQueryKey] === 'string') {
+    const queryKey = body[persistedQueryKey] as string;
+    const mappedQuery = persistedQueriesMap[queryKey];
+
+    if (typeof mappedQuery !== 'undefined') {
+      graphQLParams.query = mappedQuery;
+    }
   }
 
   const variables = urlData.get('variables') ?? body.variables;
@@ -159,4 +170,4 @@ const readBody = async (request: Request, opts: { charset: string }): Promise<st
 }
 
 
-export default parseBody;
+export default bodyParser;

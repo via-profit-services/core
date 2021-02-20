@@ -102,8 +102,26 @@ declare module '@via-profit-services/core' {
     graphQLExpress: RequestHandler;
   }>;
 
+  export type PersistedQueriesMap = Record<string, string>;
+
   export interface InitProps {
       server: http.Server;
+      /**
+       * Persisted Queries map (Object contains key: value pairs). \
+       * If persisted queries map is passed, the server will ignore \
+       * the query directive in body request and read the map using \
+       * the `documentId` key, unless otherwise specified (persistedQueryKey option)
+       * @see https://relay.dev/docs/en/persisted-queries.html
+       */
+      persistedQueriesMap?: PersistedQueriesMap;
+
+      /**
+       * Used only together with the `persistedQueriesMap` option.\
+       * The name of the parameter that will be passed the ID of the query in the Persisted Queries map.
+       * \
+       * Default: `documentId`
+       */
+      persistedQueryKey?: string;
       /**
        * Server timezone
        * \
@@ -299,6 +317,7 @@ declare module '@via-profit-services/core' {
     operationName?: unknown;
     query?: unknown;
     variables?: unknown;
+    documentId?: unknown;
     [key: string]: unknown;
   };
 
@@ -361,6 +380,12 @@ declare module '@via-profit-services/core' {
   export type DirectionRange = 'asc' | 'desc';
   export type WhereAction = '=' | '<>' | '>' | '<' | '>=' | '<=' | 'in' | 'notIn' | 'like' | 'ilike' | 'is null' | 'is not null';
   
+  export type BodyParser = (reqest: Request) => Promise<RequestBody>;
+
+  /**
+   * Analogue of https://www.npmjs.com/package/body-parser
+   */
+  export const bodyParser: BodyParser;
   /**
    * Just encode base64 string
    * _Internal function. Used for GraphQL connection building_
@@ -589,4 +614,5 @@ declare module '@via-profit-services/core' {
   export const DEFAULT_NODES_LIMIT: string;
   export const DEFAULT_SERVER_TIMEZONE: string;
   export const DEFAULT_LOG_DIR: string;
+  export const DEFAULT_PERSISTED_QUERY_KEY: string;
 }

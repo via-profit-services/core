@@ -2,6 +2,7 @@ import factory from './application';
 import logFormatter from './logger/log-formatter';
 import resolvers from './resolvers';
 import typeDefs from './schema.graphql';
+import bodyParser from './utils/body-parser';
 
 export * from './constants';
 export * from './errorHandlers';
@@ -14,5 +15,6 @@ export {
   typeDefs,
   logFormatter,
   factory,
+  bodyParser,
 };
 
