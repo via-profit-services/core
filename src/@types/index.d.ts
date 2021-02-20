@@ -361,6 +361,12 @@ declare module '@via-profit-services/core' {
   export type DirectionRange = 'asc' | 'desc';
   export type WhereAction = '=' | '<>' | '>' | '<' | '>=' | '<=' | 'in' | 'notIn' | 'like' | 'ilike' | 'is null' | 'is not null';
   
+  export type BodyParser = (reqest: Request) => Promise<RequestBody>;
+
+  /**
+   * Analogue of https://www.npmjs.com/package/body-parser
+   */
+  export const bodyParser: BodyParser;
   /**
    * Just encode base64 string
    * _Internal function. Used for GraphQL connection building_
