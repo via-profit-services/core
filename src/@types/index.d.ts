@@ -72,6 +72,7 @@ declare module '@via-profit-services/core' {
     dataloader: DataLoaderCollection;
     services: ServicesCollection;
     emitter: CoreEmitter;
+    request: Request;
   }
 
   export interface ServicesCollection {
