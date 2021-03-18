@@ -1,7 +1,7 @@
 {
     "name": "@via-profit-services/core",
     "support": "https://via-profit.ru",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "description": "Via Profit Core service",
     "main": "dist/index.js",
     "engines": {
@@ -17,6 +17,7 @@
         "dist": "yarn lint && yarn test && yarn build:dist",
         "analyze": "cross-env ANALYZE=true yarn build:dist",
         "debug": "cross-env DEBUG=true yarn build:dev --watch",
+        "debug-plain": "yarn node --inspect-brk=9229 ./build/index.js",
         "build:dev": "cross-env NODE_ENV=development webpack --config ./webpack/webpack-config-dev.ts",
         "build:dist": "webpack --config ./webpack/webpack-config-prod.ts",
         "start": "yarn build:dev --watch",
