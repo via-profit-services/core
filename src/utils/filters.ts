@@ -61,7 +61,7 @@ export const buildQueryFilter: BuildQueryFilter = (args) => {
   }
 
   // compile filter
-  if (typeof filter !== 'undefined') {
+  if (typeof filter !== 'undefined' && filter !== null) {
     // if filter is an array
     if (Array.isArray(filter)) {
       outputFilter.where = filter;

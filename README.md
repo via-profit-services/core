@@ -493,40 +493,30 @@ import { factory, Middleware } from '@via-profit-services/core';
 // function wrapper
 const customMiddlewareFactory = () => {
 
-  const middlewareCache: ReturnType<Middleware> = {
-    context: null,
-  }
-
   // Middleware factory which should passed to middleware props
   const middleware: Middleware = ({ context }) => {
 
-    // Check and return if it filled
-    if (middlewareCache.context) {
-      return middlewareCache;
-    }
-
-    // Inheriting the current context value
-    middlewareCache.context = context;
-
     // Inject custom propertied into context
-    middlewareCache.context.myCustomContextProp = {
-      foo: 'bar',
+    context.myCustomContextProp = context.myCustomContextProp ?? { 
+      foo: 'The Foo',
     }
 
     // Do not forget return it
-    return middlewareCache;
+    return {
+      context,
+    };
   };
 
   return middleware;
 }
 
 const { graphQLExpress } = await factory({
-    server,
-    schema,
-    middleware: [
-      customMiddlewareFactory(),
-    ],
-  });
+  server,
+  schema,
+  middleware: [
+    customMiddlewareFactory(),
+  ],
+});
 ```
 
 **Warning! Do not use spread operator while you be combine old current context and new context value. See example below:**
