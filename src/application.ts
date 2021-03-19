@@ -51,6 +51,7 @@ const applicationFactory: ApplicationFactory = async (props) => {
 
   const graphQLExpress: RequestHandler = async (request, response) => {
 
+    initialContext.request = request;
     const middlewares = composeMiddlewares(middleware);
 
     let validationRules: ValidationRule[] = [];
