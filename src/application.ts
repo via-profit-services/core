@@ -39,20 +39,19 @@ const applicationFactory: ApplicationFactory = async (props) => {
   class CoreEmitter extends EventEmitter {}
 
   // combine finally context object
-
-
-
-  const graphQLExpress: RequestHandler = async (request, response) => {
-
-    const middlewares = composeMiddlewares(middleware);
     const initialContext: Context = {
       timezone,
       logger,
       dataloader: {},
       services: {},
-      request,
+      request: null,
       emitter: new CoreEmitter(),
     };
+
+
+  const graphQLExpress: RequestHandler = async (request, response) => {
+
+    const middlewares = composeMiddlewares(middleware);
 
     let validationRules: ValidationRule[] = [];
     let context: Context = initialContext;
@@ -68,6 +67,7 @@ const applicationFactory: ApplicationFactory = async (props) => {
         middlewares,
         request,
       });
+
       validationRules = middlewaresResponse.validationRules;
       context = middlewaresResponse.context;
       schema = middlewaresResponse.schema;
