@@ -497,7 +497,7 @@ const customMiddlewareFactory = () => {
   const middleware: Middleware = ({ context }) => {
 
     // Inject custom propertied into context
-    context.myCustomContextProp = context.myCustomContextProp ?? { 
+    context.myCustomContextProp = context.myCustomContextProp { 
       foo: 'The Foo',
     }
 
@@ -523,7 +523,7 @@ const { graphQLExpress } = await factory({
 
 _Warning! This code is not valid_
 ```ts
-// ! This code is not valid
+// !!! This code is not valid
 const middleware: Middleware = ({ context }) => ({
   ...context,
   myCustomContextProp: {
@@ -537,11 +537,23 @@ Now you can use TypeScript autocompletion in the IDE, which will contain the cur
 
 ```ts
 declare module '@via-profit-services/core' {
+  import DataLoader from 'dataloader';
 
+  // extend standard Context object
   interface Context {
     myCustomContextProp: {
       foo: string;
     }
+  }
+
+  // extend standard services collection
+  interface ServicesCollection {
+    myService: MyServiceClass;
+  }
+
+  // extend dataloader collection
+  interface DataLoaderCollection {
+    myLoader: DataLoader<string, MyNodeType>;
   }
 }
 
@@ -557,6 +569,8 @@ Default state of GraphQL [Context](https://graphql.org/learn/execution/):
  - **dataloader** - Provied DataLoader loader (See [Middleware](#middleware))
  - **services** - Provied collection of any services (See [Middleware](#middleware))
  - **emitter** - Provied Event Emitter class (See [EventEmitter](#event-emitter))
+ - **request** - Provied Express server request (See [Express API](https://expressjs.com/ru/api.html#req))
+ - **schema** - Provied GraphQL current schema
 
 You can extend default context value. See [Middleware](#middleware) section for more details.
 
@@ -564,10 +578,7 @@ You can extend default context value. See [Middleware](#middleware) section for 
 
 ## <a name="event-emitter"></a> Event Emitter
 
-By default, the context contains the `emitter` property - [Event Emitter](https://nodejs.org/api/events.html) class with following events:
-
- - **graphql-response** - Emitted when GraphQL response will be sent without errors
- - **graphql-error** - Emitted when GraphQL response will be sent with errors
+By default, the context contains the `emitter` property - [Event Emitter](https://nodejs.org/api/events.html) By default this class are empty. You can extend it
 
 
 ## <a name="license"></a> License
