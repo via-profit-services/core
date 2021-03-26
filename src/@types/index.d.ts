@@ -5,7 +5,7 @@
 
 /// <reference types="node" />
 declare module '@via-profit-services/core' {
-  import { GraphQLSchema, ValidationRule, GraphQLFieldResolver, GraphQLScalarType } from 'graphql';
+  import { GraphQLSchema, ValidationRule, GraphQLFieldResolver, GraphQLScalarType, ExecutionArgs, ExecutionResult } from 'graphql';
   import DataLoader from 'dataloader';
   import { Request, RequestHandler } from 'express';
   import http from 'http';
@@ -13,19 +13,26 @@ declare module '@via-profit-services/core' {
   import 'winston-daily-rotate-file';
   import { EventEmitter } from 'events';
 
-  type GraphQLResponse = {
-    [key: string]: any;
+  interface CoreServiceProps {
+    context: Context;
   }
 
-  export class CoreEmitter extends EventEmitter {
-    on(event: 'graphql-error', error: Error | unknown): this;
-    once(event: 'graphql-error', error: Error | unknown): this;
-    off(event: 'graphql-error', error: Error | unknown): this;
-
-    on(event: 'graphql-response', callback: (data: GraphQLResponse) => void): this;
-    once(event: 'graphql-response', callback: (data: GraphQLResponse) => void): this;
-    off(event: 'graphql-response', callback: (data: GraphQLResponse) => void): this;
+  type MakeGraphQLRequestParams = {
+    query: string,
+    operationName: ExecutionArgs['operationName'],
+    variables: ExecutionArgs['variableValues'],
   }
+
+  export class CoreService {
+    props: CoreServiceProps;
+    constructor(props: CoreServiceProps);
+    makeGraphQLRequest<T = {[key: string]: any;}>(
+      params: MakeGraphQLRequestParams,
+    ): MaybePromise<ExecutionResult<T>>;
+  }
+
+
+  export class CoreEmitter extends EventEmitter {}
 
   type Resolvers = {
     Query: {
@@ -73,9 +80,11 @@ declare module '@via-profit-services/core' {
     services: ServicesCollection;
     emitter: CoreEmitter;
     request: Request;
+    schema: GraphQLSchema;
   }
 
   export interface ServicesCollection {
+    core: CoreService;
     [key: string]: unknown;
   }
 
