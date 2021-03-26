@@ -18,6 +18,7 @@ import configureLogger from './logger/configure-logger';
 import applyMiddlewares from './utils/apply-middlewares';
 import bodyParser, { parseGraphQLParams } from './utils/body-parser';
 import composeMiddlewares from './utils/compose-middlewares';
+import CoreService from './services/CoreService';
 
 const applicationFactory: ApplicationFactory = async (props) => {
   const configurtation: Configuration = {
@@ -38,39 +39,45 @@ const applicationFactory: ApplicationFactory = async (props) => {
 
   class CoreEmitter extends EventEmitter {}
 
-  // combine finally context object
+  const initialContext: Context = {
+    timezone,
+    logger,
+    dataloader: {},
+    services: {
+      core: null,
+    },
+    request: null,
+    emitter: new CoreEmitter(),
+    schema: null,
+  };
 
+  initialContext.services.core = new CoreService({ context: initialContext });
 
 
   const graphQLExpress: RequestHandler = async (request, response) => {
 
+    initialContext.request = request;
+    initialContext.schema = configurtation.schema;
     const middlewares = composeMiddlewares(middleware);
-    const initialContext: Context = {
-      timezone,
-      logger,
-      dataloader: {},
-      services: {},
-      request,
-      emitter: new CoreEmitter(),
-    };
 
     let validationRules: ValidationRule[] = [];
+    let schema: GraphQLSchema = initialContext.schema;
     let context: Context = initialContext;
-    let schema: GraphQLSchema = configurtation.schema;
     let extensions: MiddlewareExtensions = {};
 
     try {
       const middlewaresResponse = await applyMiddlewares({
         context: initialContext,
         config: configurtation,
-        schema: configurtation.schema,
+        schema: initialContext.schema,
+        request: initialContext.request,
         extensions: {},
         middlewares,
-        request,
       });
+
       validationRules = middlewaresResponse.validationRules;
-      context = middlewaresResponse.context;
       schema = middlewaresResponse.schema;
+      context = middlewaresResponse.context;
       extensions = middlewaresResponse.extensions;
 
       if (!schema) {
@@ -133,7 +140,6 @@ const applicationFactory: ApplicationFactory = async (props) => {
       }
 
 
-      context.emitter.emit('graphql-response', data);
       response.status(200).json({
         data,
         extensions: !debug ? undefined : {
@@ -145,7 +151,6 @@ const applicationFactory: ApplicationFactory = async (props) => {
     } catch (originalError) {
 
       const errors: GraphQLError[] = originalError?.metaData?.graphqlErrors ?? [originalError];
-      context.emitter.emit('graphql-error', originalError as Error);
 
       response.status(originalError.status || 500).json({
         data: null,
