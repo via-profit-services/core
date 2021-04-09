@@ -10,7 +10,7 @@ const resolvers: Resolvers = {
     info: () => ({}),
   },
   InfoQuery: {
-    version: () => process.env.CORE_VERSION,
+    coreVersion: () => process.env.CORE_VERSION,
   },
   InfoMutation: {
     echo: (_paren, args: { str: string }) => args.str,

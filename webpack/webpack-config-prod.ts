@@ -13,7 +13,8 @@ const webpackProdConfig: Configuration = merge(webpackBaseConfig, {
     schema: path.resolve(__dirname, '../src/schema.graphql'),
   },
   optimization: {
-    minimize: false,
+    // minimize: false,
+    nodeEnv: false,
   },
   output: {
     path: path.join(__dirname, '../dist/'),

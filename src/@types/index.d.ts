@@ -42,7 +42,7 @@ declare module '@via-profit-services/core' {
       info: GraphQLFieldResolver<unknown, Context>;
     };
     InfoQuery: {
-      version: GraphQLFieldResolver<unknown, Context>;
+      coreVersion: GraphQLFieldResolver<unknown, Context>;
     };
     InfoMutation: {
       echo: GraphQLFieldResolver<unknown, Context>;
