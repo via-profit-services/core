@@ -36,15 +36,15 @@ declare module '@via-profit-services/core' {
 
   type Resolvers = {
     Query: {
-      info: GraphQLFieldResolver<unknown, Context>;
+      core: GraphQLFieldResolver<unknown, Context>;
     };
     Mutation: {
-      info: GraphQLFieldResolver<unknown, Context>;
+      core: GraphQLFieldResolver<unknown, Context>;
     };
-    InfoQuery: {
-      coreVersion: GraphQLFieldResolver<unknown, Context>;
+    CoreQuery: {
+      version: GraphQLFieldResolver<unknown, Context>;
     };
-    InfoMutation: {
+    CoreMutation: {
       echo: GraphQLFieldResolver<unknown, Context>;
     };
     Date: GraphQLScalarType;

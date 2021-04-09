@@ -207,8 +207,8 @@ Resolvers object contains:
  - [Scalars](#scalars) resolvers
  - Root `Query` resolvers
  - Root `Mutation` resolvers
- - Resolvers of `InfoQuery`
- - Resolvers of `InfoMutation`
+ - Resolvers of `CoreQuery`
+ - Resolvers of `CoreMutation`
 
 ### typeDefs
 

@@ -1,17 +1,17 @@
 type Query {
-  info: InfoQuery!
+  core: CoreQuery!
 }
 
 type Mutation {
-  info: InfoMutation!
+  core: CoreMutation!
 }
 
-type InfoQuery {
-  coreVersion: String!
+type CoreQuery {
+  version: String!
 }
 
 
-type InfoMutation {
+type CoreMutation {
   echo(str: String!): String!
 }
 
