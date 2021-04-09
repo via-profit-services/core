@@ -219,8 +219,6 @@ declare module '@via-profit-services/core' {
    */
   export type Node<T> = T & {
       id: string;
-      createdAt: Date;
-      updatedAt: Date;
   };
   /**
    * GraphQL Edge type

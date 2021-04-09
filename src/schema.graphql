@@ -53,8 +53,6 @@ GraphQL Node spec. interface
 """
 interface Node {
   id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
 }
 
 """
