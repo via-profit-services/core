@@ -1,17 +1,12 @@
 type Query {
-  info: InfoQuery!
+  core: String!
 }
 
 type Mutation {
-  info: InfoMutation!
+  core: CoreMutation!
 }
 
-type InfoQuery {
-  version: String!
-}
-
-
-type InfoMutation {
+type CoreMutation {
   echo(str: String!): String!
 }
 
@@ -53,8 +48,6 @@ GraphQL Node spec. interface
 """
 interface Node {
   id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
 }
 
 """

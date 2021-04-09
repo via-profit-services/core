@@ -1,5 +1,5 @@
 
-import { Context } from '@via-profit-services/core';
+import { Context, MaybePromise } from '@via-profit-services/core';
 import {
   GraphQLSchema, GraphQLFieldResolver, GraphQLResolveInfo,
   GraphQLField, GraphQLObjectType,
@@ -19,14 +19,26 @@ type FieldResolver = (
   info: GraphQLResolveInfo,
 ) => GraphQLFieldResolver<Source, Context, Args>
 
+// export type WrapperFunction = (props: {
+//   resolver: FieldResolver;
+//   source: Source;
+//   args: Args;
+//   context: Context;
+//   info: GraphQLResolveInfo;
+// }) => MaybePromise<FieldResolver>;
 export type WrapperFunction = (props: {
   resolver: FieldResolver;
   source: Source;
   args: Args;
   context: Context;
   info: GraphQLResolveInfo;
-}) => FieldResolver;
-
+}) => MaybePromise<{
+  resolver?: FieldResolver;
+  source?: Source;
+  args?: Args;
+  context?: Context;
+  info?: GraphQLResolveInfo;
+}>;
 
 // __TypeKind, __InputValue, ...
 export const isSystemType = (fieldName: string): boolean => /^__/.test(fieldName)
@@ -62,13 +74,27 @@ const wrapField = (
   }
 
   field[SYMBOL_PROCESSED] = true;
-  field.resolve = (source, args, context, info) => wrapper({
-    resolver,
-    source,
-    args,
-    context,
-    info,
-  })
+  // field.resolve = (source, args, context, info) => wrapper({
+  //   resolver,
+  //   source,
+  //   args,
+  //   context,
+  //   info,
+  // })
+  // const wr = 
+
+
+  field.resolve = async (source, args, context, info) => {
+    // (context as any).foo = 'the foo'
+    const res = await wrapper({ resolver, source, args, context, info });
+    const mutatedSource = res.source || source;
+    const mutatedArgs = res.args || args;
+    const mutatedContext = res.context || context;
+    const mutatedInfo = res.info || info;
+    const mutatedResolver = res.resolver || resolver;
+
+    return mutatedResolver(mutatedSource, mutatedArgs, mutatedContext, mutatedInfo);
+  }
 }
 
 const visitSchema = (
@@ -91,6 +117,8 @@ const wrapResolvers = (
   wrapper: WrapperFunction,
 ) => {
   visitSchema(schema, wrapper);
+
+  return schema;
 }
 
 export default wrapResolvers;

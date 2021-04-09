@@ -14,6 +14,7 @@ const webpackProdConfig: Configuration = merge(webpackBaseConfig, {
   },
   optimization: {
     minimize: false,
+    nodeEnv: false,
   },
   output: {
     path: path.join(__dirname, '../dist/'),

@@ -1,9 +1,19 @@
+/* eslint-disable no-console */
 import cors from 'cors';
 import express from 'express';
-import { GraphQLSchema, GraphQLObjectType, GraphQLNonNull, GraphQLString } from 'graphql';
+import {
+  GraphQLSchema,
+  GraphQLObjectType,
+  GraphQLNonNull,
+  GraphQLString,
+  GraphQLID,
+  GraphQLList,
+  GraphQLInputObjectType,
+} from 'graphql';
 import http from 'http';
 
 import * as core from '../index';
+import { buildQueryFilter } from '../utils/filters';
 
 (async () => {
 
@@ -12,9 +22,27 @@ import * as core from '../index';
     query: new GraphQLObjectType({
       name: 'Query',
       fields: () => ({
-        version: {
+        test: {
           type: new GraphQLNonNull(GraphQLString),
-          resolve: () => 'v0.0.2',
+          resolve: (parent, args) => {
+            const queryFilter = buildQueryFilter(args);
+
+            console.log(queryFilter);
+
+            return 'dsds';
+          },
+          args: {
+            filter: {
+              type: new GraphQLInputObjectType({
+                name: 'InputFilter',
+                fields: {
+                  ids: {
+                    type: new GraphQLList(new GraphQLNonNull(GraphQLID)),
+                  },
+                },
+              }),
+            },
+          },
         },
       }),
     }),

@@ -36,15 +36,9 @@ declare module '@via-profit-services/core' {
 
   type Resolvers = {
     Query: {
-      info: GraphQLFieldResolver<unknown, Context>;
+      core: GraphQLFieldResolver<unknown, Context>;
     };
     Mutation: {
-      info: GraphQLFieldResolver<unknown, Context>;
-    };
-    InfoQuery: {
-      version: GraphQLFieldResolver<unknown, Context>;
-    };
-    InfoMutation: {
       echo: GraphQLFieldResolver<unknown, Context>;
     };
     Date: GraphQLScalarType;
@@ -219,8 +213,6 @@ declare module '@via-profit-services/core' {
    */
   export type Node<T> = T & {
       id: string;
-      createdAt: Date;
-      updatedAt: Date;
   };
   /**
    * GraphQL Edge type

@@ -157,7 +157,7 @@ The Core also adds scalar types:
 ## <a name="base-typedefs"></a> Base TypeDefs
 
 The Core also adds GraphQL types:
- - *interface* **Node** - entity with required fields: `id`, `createdAt` and `updatedAt`. Used in Edges
+ - *interface* **Node** - entity with required field: `id`. Used in Edges
  - *type* **OrderDirection** - Enum type to make the order (ASC, DESC)
  - *type* **Error** - entity fo display errors
  - *type* **PageInfo** - See [Connection spec.](https://relay.dev/graphql/connections.htm)
@@ -206,9 +206,9 @@ server.listen(9000);
 Resolvers object contains:
  - [Scalars](#scalars) resolvers
  - Root `Query` resolvers
+   - `core` - Returns core version
  - Root `Mutation` resolvers
- - Resolvers of `InfoQuery`
- - Resolvers of `InfoMutation`
+   - `echo` - Returns passed string
 
 ### typeDefs
 

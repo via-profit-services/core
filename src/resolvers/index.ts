@@ -4,15 +4,9 @@ import scalars from './scalars';
 
 const resolvers: Resolvers = {
   Query: {
-    info: () => ({}),
+    core: () => process.env.CORE_VERSION,
   },
   Mutation: {
-    info: () => ({}),
-  },
-  InfoQuery: {
-    version: () => process.env.CORE_VERSION,
-  },
-  InfoMutation: {
     echo: (_paren, args: { str: string }) => args.str,
   },
   ...scalars,
