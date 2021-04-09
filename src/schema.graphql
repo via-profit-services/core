@@ -1,15 +1,10 @@
 type Query {
-  core: CoreQuery!
+  core: String!
 }
 
 type Mutation {
   core: CoreMutation!
 }
-
-type CoreQuery {
-  version: String!
-}
-
 
 type CoreMutation {
   echo(str: String!): String!

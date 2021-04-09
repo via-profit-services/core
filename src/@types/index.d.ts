@@ -39,12 +39,6 @@ declare module '@via-profit-services/core' {
       core: GraphQLFieldResolver<unknown, Context>;
     };
     Mutation: {
-      core: GraphQLFieldResolver<unknown, Context>;
-    };
-    CoreQuery: {
-      version: GraphQLFieldResolver<unknown, Context>;
-    };
-    CoreMutation: {
       echo: GraphQLFieldResolver<unknown, Context>;
     };
     Date: GraphQLScalarType;
