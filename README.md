@@ -206,9 +206,9 @@ server.listen(9000);
 Resolvers object contains:
  - [Scalars](#scalars) resolvers
  - Root `Query` resolvers
+   - `core` - Returns core version
  - Root `Mutation` resolvers
- - Resolvers of `CoreQuery`
- - Resolvers of `CoreMutation`
+   - `echo` - Returns passed string
 
 ### typeDefs
 
