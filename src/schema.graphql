@@ -3,12 +3,9 @@ type Query {
 }
 
 type Mutation {
-  core: CoreMutation!
+  core(str: String!): String!
 }
 
-type CoreMutation {
-  echo(str: String!): String!
-}
 
 """
 Standart ordering options

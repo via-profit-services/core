@@ -7,7 +7,7 @@ const resolvers: Resolvers = {
     core: () => process.env.CORE_VERSION,
   },
   Mutation: {
-    echo: (_paren, args: { str: string }) => args.str,
+    core: (_paren, args) => args.str,
   },
   ...scalars,
 };
