@@ -16,6 +16,7 @@
  - [Options](#options)
  - [Scalars](#scalars)
  - [Base TypeDefs](#base-typedefs)
+ - [Connections](#connections)
  - [API](#api)
  - [logger](#Logger)
  - [Middleware](#middleware)
@@ -169,6 +170,166 @@ The Core also adds GraphQL types:
  - *input* **BetweenInt** - Between `Int` query type
  - *input* **BetweenMoney** - Between `Money` query type
 
+
+## <a name="connections"></a> Connections
+
+To implement connections, according to the GraphQL [Connection specification.](https://relay.dev/graphql/connections.htm), you can use the types and functions included in the package:
+
+In schema (SDL):
+
+**Note:** _GraphQL types `OrderDirection`, `Connection`, `PageInfo`, `Edge` and `Node` already declared in Core typedefs (see: [Base TypeDefs](#base-typedefs))_
+
+```graphql
+type Query {
+  list(
+    first: Int
+    offset: Int
+    after: String
+    orderBy: [UserOrderBy!]
+    between: UsersListBetween
+    search: [UserFilterSearch!]
+    filter: UserListFilter
+  ): UserListConnection!
+}
+
+"""
+Example of User type
+"""
+type User {
+  id: ID!
+  name: String!
+  login: String!
+  status: UserStatus!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""
+Example of user status
+"""
+enum UserStatus {
+  active
+  inactive
+}
+
+"""
+Ordering options
+"""
+input UserOrderBy {
+  field: UserOrderField!
+  direction: OrderDirection!
+}
+
+"""
+Ordering fields of UserOrderBy input
+"""
+enum UserOrderField {
+  name
+  login
+  createdAt
+  updatedAt
+}
+
+"""
+Between filter
+"""
+input UsersListBetween {
+  updatedAt: BetweenDateTime
+  createdAt: BetweenDateTime
+}
+
+"""
+User search filter
+"""
+input UserFilterSearch {
+  field: UserFilterSearchField!
+  query: String!
+}
+
+"""
+Possible fields to search users
+"""
+enum UserFilterSearchField {
+  name
+  login
+  status
+}
+
+"""
+Possible data to filter list of users
+"""
+input UserListFilter {
+  id: [ID!]
+  status: [UserStatus!]
+}
+
+"""
+Users list bundle
+"""
+type UserListConnection implements Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [UsersEdge!]!
+}
+
+"""
+User edge bundle
+"""
+type UsersEdge implements Edge {
+  node: User!
+  cursor: String!
+}
+
+```
+
+In resolvers:
+
+```ts
+import { GraphQLFieldResolver } from 'graphql';
+import { ServerError, buildCursorConnection, buildQueryFilter, CursorConnection, Context, InputFilter } from '@via-profit-services/core';
+
+type Resolvers = {
+  Query: {
+    list: GraphQLFieldResolver<unknown, Context, InputFilter>;
+  },
+};
+
+const resolvers: Resolvers = {
+  Query: {
+    list: async (_parent, args, context) => {
+      // convert input arguments to persist filter (See return value of this method)
+      // Will be return `OutputFilter` type with normalized props
+      // You can use this filter in your Model class
+      const filter = buildQueryFilter(args);
+
+      // Your model should return the data for the connection
+      // You must provide totalCount and nodes yourself
+      // limit, offset, and others can be returned
+      // in the same form as received from the buildQueryFilter method
+      // to simplify the selection from the database using filters, you
+      // can use the package https://github.com/via-profit-services/knex
+      const { totalCount, nodes, limit, offset, offset, where } = MyModelClass.getUsers(filter);
+
+      // Now you can build the conection object like this:
+      // method buildCursorConnection combine and return edges,
+      // pageInfo and totalCount values
+      const connection = buildCursorConnection({
+        totalCount,
+        nodes,
+        limit,
+        offset,
+        offset,
+        where,
+      });
+
+      return connection;
+    },
+  },
+};
+
+export default resolvers;
+
+```
 
 
 ## <a name="api"></a> API
