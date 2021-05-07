@@ -11,6 +11,7 @@
 ## Table of Contents
 
  - [Dependencies](#dependencies)
+ - [Description](#description)
  - [Installation](#installation)
  - [Getting Started](#getting-started)
  - [Options](#options)
@@ -31,9 +32,36 @@
  - [Winston](https://github.com/winstonjs/winston) - Logger
  - [Winston Daily Rotate File](https://github.com/winstonjs/winston-daily-rotate-file) - A transport for winston which logs to a rotating file
 
-## <a name="installation"></a> Installation
 
-At first you need to install the peer dependencies to:
+## <a name="installation"></a> Description
+Lightweight, flexible, standalone implementation of a [GraphQL HTTP Server Middleware](https://github.com/graphql/express-graphql) which allows you to run an Express GraphQL server, build connections with pagination (Cursored or Limit-offset type), make your own extentions, read detailed logs, use global context with structured dataloaders and module containers, use some extra GraphQL Scalar types as DateTime, Money and so on
+
+
+List of our extentions:
+##
+ - [accounts](https://github.com/via-profit-services/accounts) This package allows you to store and operate with user accounts and make user authorization. Very usefull
+ - [permissions](https://github.com/via-profit-services/permissions) Standalone and lightweight implementation of [graphql-shield](https://github.com/maticzav/graphql-shield). Beacuse we found it slow.
+ - [Knex](https://github.com/via-profit-services/knex) Adds some usefull properties into global context like DB connection instance
+ - [geography](https://github.com/via-profit-services/geography) Helps you to deal with cities, states and countries. All data included
+ - [subscriptions](https://github.com/via-profit-services/subscriptions) This package manage GrahpQL subscriptions
+ - [file-storage](https://github.com/via-profit-services/file-storage) This package helps you to manage files, perporm image transformation, cropping
+ - [vehicles](https://github.com/via-profit-services/vehicles) This package allows you to store and operate with vehicles data like model and brands. All data included
+ - [phones](https://github.com/via-profit-services/phones) This package allows you to store and operate with phone numbers
+
+ You can discover a full list of extentions in our organisation repository [via-profit-services](https://github.com/via-profit-services)
+
+We always use those package in our commercial projects like CRM systems, websites and so on. Any help with development, testing and docs would be highly appreciated.
+Our contacts:
+##
+LLC Via-Profit
+ - site: [via-profit.ru](https://via-profit.ru/)
+ - location: Russia, Yekaterinburg
+ - email: 1@e1g.ru
+
+
+## <a name="description"></a> Installation
+
+First of all you should install some peer dependencies by running:
 
 ```bash
 $ yarn add \
@@ -47,12 +75,19 @@ winston-daily-rotate-file \
 @via-profit-services/core
 ```
 
-
+And that's it. Let's write some code.
 ## <a name="getting-started"></a> Getting Started
 
-To get started, make your GraphQL schema, create an http server and apply middleware.
+To build your first project you should do some things:
+##
+  - Make your GraphQL schema
+  - Create an http server
+  - Apply middleware
 
-_Node: You can see this example as Javascript in [examples/simple](./examples/simple/README.md)_
+
+Let's make it
+
+_Note: You can see this example as Javascript in [examples/simple](./examples/simple/README.md)_
 
 ```ts
 import express from 'express';
@@ -81,9 +116,9 @@ import schema from './schema';
 
 ```
 
-We recommend using the [@graphql-tools](https://github.com/ardatan/graphql-tools) package to build youк schema. This helps to combine SDL and resolvers into a single executable schema. See `makeExecutableSchema` of `@graphql-tools/schema` module. For more details: [example with graphql-tools](./examples/graphql-tools/README.md)
+We strongly recommend using [@graphql-tools](https://github.com/ardatan/graphql-tools) package to build your schemas. This package helps to combine SDL and resolvers into a single executable schema. See `makeExecutableSchema` of `@graphql-tools/schema` module. For more details: [example with graphql-tools](./examples/graphql-tools/README.md)
 
-In addition to the `factory`, the Core module exports its own typeDefs and resolvers. This definitions will be declare Query and Mutation root types.
+Core module also exports its own typeDefs and resolvers. Those definitions would declare Query and Mutation root types.
 
 ```ts
 import express from 'express';
@@ -147,9 +182,9 @@ The Core also adds scalar types:
  - **Money** - The value is stored in the smallest monetary unit (kopecks, cents, etc.). Real type - Int. E.g. For 250 USD this record returns value as 250000 (250$ * 100¢)
  - **DateTime** - Use JavaScript Date object for date/time fields.
  - **Date** - Use JavaScript Date object for date fields.
- - **Time** - Time type.
- - **URL** - A field whose value conforms to the standard URL format as specified in [RFC3986](https://www.ietf.org/rfc/rfc3986.txt).
- - **EmailAddress** - A field whose value conforms to the standard internet email address format as specified in [RFC822](https://www.w3.org/Protocols/rfc822/).
+ - **Time** - And Time type.
+ - **URL** - A field which value conforms to the standard URL format as specified in [RFC3986](https://www.ietf.org/rfc/rfc3986.txt).
+ - **EmailAddress** - A field which value conforms to the standard internet email address format as specified in [RFC822](https://www.w3.org/Protocols/rfc822/).
  - **JSON** - The JSON scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
  - **JSONObject** - The JSONObject scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
  - **Void** - Represents NULL values
@@ -381,11 +416,11 @@ Resolvers object contains:
 
 ### buildQueryFilter
 
-Convert input filter (partial from GraphQL request) to persist filter
+Convert input filter (partial from GraphQL request) into persist filter
 
 ### arrayOfIdsToArrayOfObjectIds
 
-Format array of IDs to object with id key
+Format array of IDs into object with id key
 
 ```ts
 const ids = arrayOfIdsToArrayOfObjectIds(['1', '2', '3']);
@@ -564,7 +599,7 @@ console.log(cursorBundle);
 
 ### extractKeyAsObject
 
-Creates an object containing a specific key
+Creates an object which contains a specific key
 
 ```ts
 const source = {
@@ -625,11 +660,11 @@ const accountsQueryResolver = {
 
 ## <a name="middleware"></a> Middleware
 
-Middleware is a special function that allows you to expand the GraphQL **Context** by adding the new parameters to it, as well as performing GraphQL validation at the [ValidationRule](https://graphql.org/graphql-js/validation/). In addition, you can modify the current GraphQL scheme.
+Middleware is a special function that allows you to expand the GraphQL **Context** by adding new parameters into it, as well as performing GraphQL validation at the [ValidationRule](https://graphql.org/graphql-js/validation/). In addition, you can modify the current GraphQL scheme.
 
-Middleware factory function will be called on **every GraphQL request**. Keep this in mind. When calling the function, it will be passed a set of parameters containing the current context value, the current schema, http request and more. The function may return nothing or return the modified value of one of the parameters.
+Middleware factory function will be called on **every GraphQL request**. Keep it in mind. When calling function, it would passed a set of parameters which contains a current context value, current schema, http request and so on. The function could return nothing or return the modified value of one of the parameters.
 
-_Note: Middlewares order. Since each middleware mutates the context and returns it back, the presence of a property parameter in the context will depend on each of these middleware._
+_Note: Middlewares order. Since each middleware mutates the context and returns it back. The presence of a property parameter in the context will depend on each of these middleware._
 
 Will be passed:
   - **config** - Parameters that were passed during core factory called.
@@ -680,7 +715,7 @@ const { graphQLExpress } = await factory({
 });
 ```
 
-**Warning! Do not use spread operator while you be combine old current context and new context value. See example below:**
+**Warning! Do not use spread operator while combining old current context and new context value. See example below:**
 
 _Warning! This code is not valid_
 ```ts
@@ -694,7 +729,7 @@ const middleware: Middleware = ({ context }) => ({
 ```
 
 For TypeScript you can expand the types using the Declaration files `*.d.ts`.
-Now you can use TypeScript autocompletion in the IDE, which will contain the current Core types together with the your custom.
+Now you can use TypeScript autocompletion in the IDE, which will contain the current Core types with your custom types.
 
 ```ts
 declare module '@via-profit-services/core' {
@@ -725,13 +760,13 @@ declare module '@via-profit-services/core' {
 
 Default state of GraphQL [Context](https://graphql.org/learn/execution/):
 
- - **timezone** - Provied from initial properties (See [API](#options)) .Default: `UTC`.
- - **logger** - Provied Winston loaders collection (See [Logger](#logger))
- - **dataloader** - Provied DataLoader loader (See [Middleware](#middleware))
- - **services** - Provied collection of any services (See [Middleware](#middleware))
- - **emitter** - Provied Event Emitter class (See [EventEmitter](#event-emitter))
- - **request** - Provied Express server request (See [Express API](https://expressjs.com/ru/api.html#req))
- - **schema** - Provied GraphQL current schema
+ - **timezone** - Provied with initial properties (See [API](#options)) .Default: `UTC`.
+ - **logger** - Provied with Winston loaders collection (See [Logger](#logger))
+ - **dataloader** - Provied with DataLoader loader (See [Middleware](#middleware))
+ - **services** - Provied with collection of any services that you make (See [Middleware](#middleware))
+ - **emitter** - Provied with Event Emitter class (See [EventEmitter](#event-emitter))
+ - **request** - Provied with Express server request (See [Express API](https://expressjs.com/ru/api.html#req))
+ - **schema** - Provied with GraphQL current schema
 
 You can extend default context value. See [Middleware](#middleware) section for more details.
 
@@ -739,7 +774,7 @@ You can extend default context value. See [Middleware](#middleware) section for 
 
 ## <a name="event-emitter"></a> Event Emitter
 
-By default, the context contains the `emitter` property - [Event Emitter](https://nodejs.org/api/events.html) By default this class are empty. You can extend it
+Context contains the `emitter` property by default - [Event Emitter](https://nodejs.org/api/events.html) this class are empty by deafult. You can extend it
 
 
 ## <a name="license"></a> License
