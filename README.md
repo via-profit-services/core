@@ -33,33 +33,34 @@
  - [Winston Daily Rotate File](https://github.com/winstonjs/winston-daily-rotate-file) - A transport for winston which logs to a rotating file
 
 
-## <a name="installation"></a> Description
-Lightweight, flexible, standalone implementation of a [GraphQL HTTP Server Middleware](https://github.com/graphql/express-graphql) which allows you to run an Express GraphQL server, build connections with pagination (Cursored or Limit-offset type), make your own extentions, read detailed logs, use global context with structured dataloaders and module containers, use some extra GraphQL Scalar types as DateTime, Money and so on
+## <a name="description"></a> Description
+Lightweight, flexible, standalone implementation of a [GraphQL HTTP (express middleware)](https://github.com/graphql/express-graphql) which allows you to run an Express GraphQL server, build connections with pagination (Cursored or Limit-offset type), make your own extentions, read detailed logs, use global context with structured dataloaders and module containers, use some extra GraphQL Scalar types as DateTime, Money and so on
 
 
 List of our extentions:
-##
- - [accounts](https://github.com/via-profit-services/accounts) This package allows you to store and operate with user accounts and make user authorization. Very usefull
+
+ - [accounts](https://github.com/via-profit-services/accounts) This package allows you to store and operate with user accounts and make user authorization. Very useful
  - [permissions](https://github.com/via-profit-services/permissions) Standalone and lightweight implementation of [graphql-shield](https://github.com/maticzav/graphql-shield). Beacuse we found it slow.
- - [Knex](https://github.com/via-profit-services/knex) Adds some usefull properties into global context like DB connection instance
+ - [knex](https://github.com/via-profit-services/knex) Adds some useful properties into global context like DB connection instance
  - [geography](https://github.com/via-profit-services/geography) Helps you to deal with cities, states and countries. All data included
  - [subscriptions](https://github.com/via-profit-services/subscriptions) This package manage GrahpQL subscriptions
  - [file-storage](https://github.com/via-profit-services/file-storage) This package helps you to manage files, perporm image transformation, cropping
  - [vehicles](https://github.com/via-profit-services/vehicles) This package allows you to store and operate with vehicles data like model and brands. All data included
  - [phones](https://github.com/via-profit-services/phones) This package allows you to store and operate with phone numbers
+ - [redis](https://github.com/via-profit-services/redis) Adds some useful properties into global context like Redis connection instance
 
  You can discover a full list of extentions in our organisation repository [via-profit-services](https://github.com/via-profit-services)
 
 We always use those package in our commercial projects like CRM systems, websites and so on. Any help with development, testing and docs would be highly appreciated.
 Our contacts:
-##
+
 LLC Via-Profit
- - site: [via-profit.ru](https://via-profit.ru/)
+ - website: [via-profit.ru](https://via-profit.ru/)
  - location: Russia, Yekaterinburg
  - email: 1@e1g.ru
 
 
-## <a name="description"></a> Installation
+## <a name="installation"></a> Installation
 
 First of all you should install some peer dependencies by running:
 
@@ -208,7 +209,7 @@ The Core also adds GraphQL types:
 
 ## <a name="connections"></a> Connections
 
-To implement connections, according to the GraphQL [Connection specification.](https://relay.dev/graphql/connections.htm), you can use the types and functions included in the package:
+To implement connections, according to the GraphQL [Connection specification](https://relay.dev/graphql/connections.htm), you can use the types and functions included in the package:
 
 In schema (SDL):
 
