@@ -118,6 +118,23 @@ export const buildQueryFilter: BuildQueryFilter = (args) => {
     }));
   }
 
+  // between
+  Object.entries(outputFilter.between).forEach(([betweenField, data]) => {
+    if (data.start && data.start instanceof Date && data.end && data.end instanceof Date) {
+      const startDateTimeSum = data.start.getUTCHours()
+        + data.start.getUTCMinutes()
+        + data.start.getUTCSeconds();
+      const endDateTimeSum = data.end.getUTCHours()
+        + data.end.getUTCMinutes()
+        + data.end.getUTCSeconds();
+
+      if (endDateTimeSum === 0 && startDateTimeSum === endDateTimeSum) {
+        (outputFilter.between[betweenField].end as Date).setSeconds(59);
+        (outputFilter.between[betweenField].end as Date).setMinutes(59);
+        (outputFilter.between[betweenField].end as Date).setHours(23);
+      }
+    }
+  });
 
   return outputFilter;
 };
