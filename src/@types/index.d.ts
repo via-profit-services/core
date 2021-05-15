@@ -5,7 +5,7 @@
 
 /// <reference types="node" />
 declare module '@via-profit-services/core' {
-  import { GraphQLSchema, ValidationRule, GraphQLFieldResolver, GraphQLScalarType, ExecutionArgs, ExecutionResult } from 'graphql';
+  import { GraphQLSchema, ValidationRule, GraphQLFieldResolver, GraphQLScalarType, ExecutionArgs, ExecutionResult, GraphQLField, GraphQLObjectType, GraphQLResolveInfo } from 'graphql';
   import DataLoader from 'dataloader';
   import { Request, RequestHandler } from 'express';
   import http from 'http';
@@ -16,6 +16,8 @@ declare module '@via-profit-services/core' {
   interface CoreServiceProps {
     context: Context;
   }
+
+  type Args = Record<string, unknown>;
 
   type MakeGraphQLRequestParams = {
     query: string,
@@ -326,6 +328,35 @@ declare module '@via-profit-services/core' {
   };
 
 
+  export type MutatedField = GraphQLField<unknown, Context, Args> & Record<string, boolean>;
+  export type MutatedObjectType = GraphQLObjectType<unknown, Context> & Record<string, boolean>;
+
+  export type FieldResolver = (
+    source: unknown,
+    args: Args,
+    context: Context,
+    info: GraphQLResolveInfo,
+  ) => GraphQLFieldResolver<unknown, Context, Args>;
+
+  export type ResolversWrapperFunction = (props: {
+    resolver: FieldResolver;
+    source: unknown;
+    args: Args;
+    context: Context;
+    info: GraphQLResolveInfo;
+  }) => MaybePromise<{
+    resolver?: FieldResolver;
+    source?: unknown;
+    args?: Args;
+    context?: Context;
+    info?: GraphQLResolveInfo;
+  }>;
+
+  export type ResolversWrapper = (
+    schema: GraphQLSchema,
+    wrapper: ResolversWrapperFunction,
+  ) => GraphQLSchema;
+
   /**
    * @deprecated Use `ApplyAliases` type of `@via-profit-services/knex` instead
    * 
@@ -586,7 +617,7 @@ declare module '@via-profit-services/core' {
 
 
   /**
-   * Creates an object containing a specific key /
+   * Creates an object containing a specific key\
    * Example:
    * 
    * ```ts
@@ -600,6 +631,31 @@ declare module '@via-profit-services/core' {
    * ```
    */
   export const extractKeyAsObject: ExtractKeyAsObject;
+  
+  /**
+   * Wraps all resolvers in schema.\
+   * **Note:** The resolver function should return all the received parameters.\
+   * Example:
+   * ```ts
+   * const { graphQLExpress } = await factory({
+   *   server,
+   *   schema,
+   *   debug: process.env.DEBUG === 'true',
+   *   persistedQueriesMap,
+   *   middleware: [
+   *     ({ schema }) => ({
+   *       schema: permissions.schemaWrapper(schema, (params) => {
+   *         const { resolver, source, args, context, info } = params;
+   *         // Do something
+   * 
+   *         return params;
+   *       })
+   *     }),
+   *   ],
+   * });
+   * ```
+   */
+  export const resolversWrapper: ResolversWrapper;
   /**
    * Core type definitions (GraphQL SDL string)
    */

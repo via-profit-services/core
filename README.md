@@ -612,7 +612,30 @@ const record = extractKeyAsObject(source, 'bar');
 console.log(record); // <-- { bar: 12 }
 ```
 
+### schemaWrapper
 
+Wraps all resolvers in schema.
+
+**Note:** The resolver function should return all the received parameters.
+
+```ts
+const { graphQLExpress } = await factory({
+  server,
+  schema,
+  debug: process.env.DEBUG === 'true',
+  persistedQueriesMap,
+  middleware: [
+    ({ schema }) => ({
+      schema: permissions.schemaWrapper(schema, (params) => {
+        const { resolver, source, args, context, info } = params;
+        // Do something
+
+        return params;
+      })
+    }),
+  ],
+});
+```
 
 ### LOG_FILENAME_DEBUG
 
