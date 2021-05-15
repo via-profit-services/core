@@ -15,10 +15,10 @@ import BadRequestError from './errorHandlers/BadRequestError';
 import customFormatErrorFn from './errorHandlers/customFormatErrorFn';
 import ServerError from './errorHandlers/ServerError';
 import configureLogger from './logger/configure-logger';
+import CoreService from './services/CoreService';
 import applyMiddlewares from './utils/apply-middlewares';
 import bodyParser, { parseGraphQLParams } from './utils/body-parser';
 import composeMiddlewares from './utils/compose-middlewares';
-import CoreService from './services/CoreService';
 
 const applicationFactory: ApplicationFactory = async (props) => {
   const configurtation: Configuration = {
