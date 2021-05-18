@@ -379,7 +379,7 @@ declare module '@via-profit-services/core' {
   export type NodeToEdge = <T>(node: Node<T>, cursorName: string, cursorPayload: CursorPayload) => Edge<T>;
   export type ExtractNodeField = <T, K extends keyof Node<T>>(nodes: Node<T>[], field: K) => Node<T>[K][];
   export type ExtractNodeIds = <T>(nodes: Node<T>[]) => string[];
-  export type CollateForDataloader = <T>(ids: string[], nodes: Node<T>[], returnUndefined?: boolean) => Node<T>[];
+  export type CollateForDataloader = <T>(ids: ReadonlyArray<string>, nodes: Node<T>[], returnUndefined?: boolean) => Node<T>[];
   export type ArrayOfIdsToArrayOfObjectIds = (array: string[]) => {
       id: string;
   }[];
