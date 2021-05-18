@@ -614,7 +614,7 @@ console.log(record); // <-- { bar: 12 }
 
 ### schemaWrapper
 
-Wraps all resolvers in schema.
+Wrap types resolvers in schema. You can wrap types without resolvers - will be created noop-resolver to wrap the field.
 
 **Note:** The resolver function should return all the received parameters.
 
@@ -622,11 +622,9 @@ Wraps all resolvers in schema.
 const { graphQLExpress } = await factory({
   server,
   schema,
-  debug: process.env.DEBUG === 'true',
-  persistedQueriesMap,
   middleware: [
     ({ schema }) => ({
-      schema: permissions.schemaWrapper(schema, (params) => {
+      schema: fieldsWrapper(schema, (params) => {
         const { resolver, source, args, context, info } = params;
         // Do something
 

@@ -3,7 +3,7 @@ import logFormatter from './logger/log-formatter';
 import resolvers from './resolvers';
 import typeDefs from './schema.graphql';
 import bodyParser from './utils/body-parser';
-import resolversWrapper from './utils/resolvers-wrapper';
+import fieldsWrapper from './utils/fields-wrapper';
 
 export * from './constants';
 export * from './errorHandlers';
@@ -17,6 +17,6 @@ export {
   logFormatter,
   factory,
   bodyParser,
-  resolversWrapper,
+  fieldsWrapper,
 };
 
