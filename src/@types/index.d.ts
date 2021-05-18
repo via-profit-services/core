@@ -332,21 +332,14 @@ declare module '@via-profit-services/core' {
   export type MutatedField = GraphQLField<Source, Context, Args> & Record<string, boolean>;
   export type MutatedObjectType = GraphQLObjectType<Source, Context> & Record<string, boolean>;
 
-  export type FieldResolver = (
-    source: Source,
-    args: Args,
-    context: Context,
-    info: GraphQLResolveInfo,
-  ) => GraphQLFieldResolver<Source, Context, Args>;
-
   export type ResolversWrapperFunction = (props: {
-    resolve: FieldResolver;
+    resolve: GraphQLFieldResolver<Source, Context, Args>;
     source: Source;
     args: Args;
     context: Context;
     info: GraphQLResolveInfo;
   }) => MaybePromise<{
-    resolve?: FieldResolver;
+    resolve?: GraphQLFieldResolver<Source, Context, Args>;
     source?: Source;
     args?: Args;
     context?: Context;
