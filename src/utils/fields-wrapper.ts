@@ -1,8 +1,9 @@
 
-import type { MutatedField, MutatedObjectType, ResolversWrapper, NoopResolver } from '@via-profit-services/core';
+import type { MutatedField, MutatedObjectType, FieldsWrapper, NoopResolver } from '@via-profit-services/core';
 import { isIntrospectionType, isObjectType } from 'graphql';
 
-const resolversWrapper: ResolversWrapper = (schema, wrapperFunction) => {
+const fieldsWrapper: FieldsWrapper = (schema, wrapperFunction, options) => {
+  const { wrapWithoutResolvers } = options || {};
   const SYMBOL_PROCESSED: string = Symbol('processed') as any;
   const types = schema.getTypeMap();
   const noopResolve: NoopResolver = async (parent, _args, _context, info) => {
@@ -22,8 +23,13 @@ const resolversWrapper: ResolversWrapper = (schema, wrapperFunction) => {
     const fields = type.getFields();
 
     Object.entries(fields).forEach(([_fieldName, field]) => {
-      // check to affected field
+
+      // check to affected field and field without resolver
       if ((field as MutatedField)[SYMBOL_PROCESSED]) {
+        return;
+      }
+
+      if (typeof wrapWithoutResolvers !== 'undefined' && !wrapWithoutResolvers) {
         return;
       }
 
@@ -58,4 +64,4 @@ const resolversWrapper: ResolversWrapper = (schema, wrapperFunction) => {
   return schema;
 }
 
-export default resolversWrapper;
+export default fieldsWrapper;

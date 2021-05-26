@@ -26,7 +26,7 @@
 ## <a name="dependencies"></a> Dependencies (peer)
 
  - [Express](https://github.com/expressjs/express) - Node HTTP Server
- - [DataLoader](https://github.com/graphql/dataloader) - GraphQL DataLoader
+ - [DataLoader](https://github.com/via-profit/dataloader) - DataLoader (fork of [GraphQL Dataloader](https://github.com/graphql/dataloader))
  - [Moment](https://github.com/moment/moment) - Date library
  - [Moment Timezone](https://github.com/moment/moment-timezone) - Time zone support for Moment
  - [Winston](https://github.com/winstonjs/winston) - Logger
@@ -68,11 +68,11 @@ First of all you should install some peer dependencies by running:
 $ yarn add \
 express \
 graphql \
-dataloader \
 moment \
 moment-timezone \
 winston \
 winston-daily-rotate-file \
+@via-profit/dataloader \
 @via-profit-services/core
 ```
 
@@ -612,9 +612,9 @@ const record = extractKeyAsObject(source, 'bar');
 console.log(record); // <-- { bar: 12 }
 ```
 
-### schemaWrapper
+### fieldsWrapper
 
-Wraps all resolvers in schema.
+Wrap types resolvers in schema. You can wrap types without resolvers - will be created noop-resolver to wrap the field.
 
 **Note:** The resolver function should return all the received parameters.
 
@@ -622,11 +622,9 @@ Wraps all resolvers in schema.
 const { graphQLExpress } = await factory({
   server,
   schema,
-  debug: process.env.DEBUG === 'true',
-  persistedQueriesMap,
   middleware: [
     ({ schema }) => ({
-      schema: permissions.schemaWrapper(schema, (params) => {
+      schema: fieldsWrapper(schema, (params) => {
         const { resolver, source, args, context, info } = params;
         // Do something
 
@@ -757,7 +755,7 @@ Now you can use TypeScript autocompletion in the IDE, which will contain the cur
 
 ```ts
 declare module '@via-profit-services/core' {
-  import DataLoader from 'dataloader';
+  import DataLoader from '@via-profitdataloader';
 
   // extend standard Context object
   interface Context {
@@ -773,7 +771,7 @@ declare module '@via-profit-services/core' {
 
   // extend dataloader collection
   interface DataLoaderCollection {
-    myLoader: DataLoader<string, MyNodeType>;
+    myLoader: DataLoader<MyNodeType>;
   }
 }
 

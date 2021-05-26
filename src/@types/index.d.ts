@@ -6,7 +6,7 @@
 /// <reference types="node" />
 declare module '@via-profit-services/core' {
   import { GraphQLSchema, ValidationRule, GraphQLFieldResolver, GraphQLScalarType, ExecutionArgs, ExecutionResult, GraphQLField, GraphQLObjectType, GraphQLResolveInfo } from 'graphql';
-  import DataLoader from 'dataloader';
+  import DataLoader from '@via-profit/dataloader';
   import { Request, RequestHandler } from 'express';
   import http from 'http';
   import Winston from 'winston';
@@ -87,7 +87,7 @@ declare module '@via-profit-services/core' {
   }
 
   export interface DataLoaderCollection {
-    [key: string]: DataLoader<unknown, unknown>;
+    [key: string]: DataLoader<unknown>;
   }
 
   export type Logger = Winston.Logger;
@@ -332,21 +332,14 @@ declare module '@via-profit-services/core' {
   export type MutatedField = GraphQLField<Source, Context, Args> & Record<string, boolean>;
   export type MutatedObjectType = GraphQLObjectType<Source, Context> & Record<string, boolean>;
 
-  export type FieldResolver = (
-    source: Source,
-    args: Args,
-    context: Context,
-    info: GraphQLResolveInfo,
-  ) => GraphQLFieldResolver<Source, Context, Args>;
-
   export type ResolversWrapperFunction = (props: {
-    resolve: FieldResolver;
+    resolve: GraphQLFieldResolver<Source, Context, Args>;
     source: Source;
     args: Args;
     context: Context;
     info: GraphQLResolveInfo;
   }) => MaybePromise<{
-    resolve?: FieldResolver;
+    resolve?: GraphQLFieldResolver<Source, Context, Args>;
     source?: Source;
     args?: Args;
     context?: Context;
@@ -355,9 +348,12 @@ declare module '@via-profit-services/core' {
 
   export type NoopResolver = GraphQLFieldResolver<Source, Context, Args>;
 
-  export type ResolversWrapper = (
+  export type FieldsWrapper = (
     schema: GraphQLSchema,
     wrapper: ResolversWrapperFunction,
+    options?: {
+      wrapWithoutResolvers?: boolean;
+    },
   ) => GraphQLSchema;
 
   /**
@@ -383,7 +379,7 @@ declare module '@via-profit-services/core' {
   export type NodeToEdge = <T>(node: Node<T>, cursorName: string, cursorPayload: CursorPayload) => Edge<T>;
   export type ExtractNodeField = <T, K extends keyof Node<T>>(nodes: Node<T>[], field: K) => Node<T>[K][];
   export type ExtractNodeIds = <T>(nodes: Node<T>[]) => string[];
-  export type CollateForDataloader = <T>(ids: string[], nodes: Node<T>[], returnUndefined?: boolean) => Node<T>[];
+  export type CollateForDataloader = <T>(ids: ReadonlyArray<string>, nodes: Node<T>[], returnUndefined?: boolean) => Node<T>[];
   export type ArrayOfIdsToArrayOfObjectIds = (array: string[]) => {
       id: string;
   }[];
@@ -636,18 +632,17 @@ declare module '@via-profit-services/core' {
   export const extractKeyAsObject: ExtractKeyAsObject;
   
   /**
-   * Wraps all resolvers in schema.\
+   * Wrap types resolvers in schema.\
+   * You can wrap types without resolvers - will be created noop-resolver to wrap the field
    * **Note:** The resolver function should return all the received parameters.\
    * Example:
    * ```ts
    * const { graphQLExpress } = await factory({
    *   server,
    *   schema,
-   *   debug: process.env.DEBUG === 'true',
-   *   persistedQueriesMap,
    *   middleware: [
    *     ({ schema }) => ({
-   *       schema: permissions.schemaWrapper(schema, (params) => {
+   *       schema: fieldsWrapper(schema, (params) => {
    *         const { resolver, source, args, context, info } = params;
    *         // Do something
    * 
@@ -658,7 +653,7 @@ declare module '@via-profit-services/core' {
    * });
    * ```
    */
-  export const resolversWrapper: ResolversWrapper;
+  export const fieldsWrapper: FieldsWrapper;
   /**
    * Core type definitions (GraphQL SDL string)
    */
