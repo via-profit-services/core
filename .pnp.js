@@ -55,11 +55,11 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@typescript-eslint/eslint-plugin", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.15.1"],
             ["@typescript-eslint/parser", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.15.1"],
             ["@via-profit-services/eslint-config", "npm:0.1.11"],
+            ["@via-profit/dataloader", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:1.0.1"],
             ["bufferutil", "npm:4.0.2"],
             ["content-type", "npm:1.0.4"],
             ["cors", "npm:2.8.5"],
             ["cross-env", "npm:6.0.3"],
-            ["dataloader", "npm:2.0.0"],
             ["dotenv", "npm:8.2.0"],
             ["eslint", "npm:7.20.0"],
             ["eslint-config-prettier", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:6.15.0"],
@@ -1309,11 +1309,11 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@typescript-eslint/eslint-plugin", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.15.1"],
             ["@typescript-eslint/parser", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.15.1"],
             ["@via-profit-services/eslint-config", "npm:0.1.11"],
+            ["@via-profit/dataloader", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:1.0.1"],
             ["bufferutil", "npm:4.0.2"],
             ["content-type", "npm:1.0.4"],
             ["cors", "npm:2.8.5"],
             ["cross-env", "npm:6.0.3"],
-            ["dataloader", "npm:2.0.0"],
             ["dotenv", "npm:8.2.0"],
             ["eslint", "npm:7.20.0"],
             ["eslint-config-prettier", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:6.15.0"],
@@ -1364,6 +1364,21 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/@via-profit-services-eslint-config-npm-0.1.11-eafed11f6a-ca9055733b.zip/node_modules/@via-profit-services/eslint-config/",
           "packageDependencies": [
             ["@via-profit-services/eslint-config", "npm:0.1.11"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["@via-profit/dataloader", [
+        ["virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:1.0.1", {
+          "packageLocation": "./.yarn/$$virtual/@via-profit-dataloader-virtual-ca8530d0ea/0/cache/@via-profit-dataloader-npm-1.0.1-abf216e640-17c94f8375.zip/node_modules/@via-profit/dataloader/",
+          "packageDependencies": [
+            ["@via-profit/dataloader", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:1.0.1"],
+            ["@types/ioredis", null],
+            ["ioredis", null]
+          ],
+          "packagePeers": [
+            "@types/ioredis",
+            "ioredis"
           ],
           "linkType": "HARD",
         }]
@@ -3280,15 +3295,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["abab", "npm:2.0.5"],
             ["whatwg-mimetype", "npm:2.3.0"],
             ["whatwg-url", "npm:7.1.0"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["dataloader", [
-        ["npm:2.0.0", {
-          "packageLocation": "./.yarn/cache/dataloader-npm-2.0.0-216fa8d208-0165c2e807.zip/node_modules/dataloader/",
-          "packageDependencies": [
-            ["dataloader", "npm:2.0.0"]
           ],
           "linkType": "HARD",
         }]

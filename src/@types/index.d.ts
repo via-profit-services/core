@@ -6,7 +6,7 @@
 /// <reference types="node" />
 declare module '@via-profit-services/core' {
   import { GraphQLSchema, ValidationRule, GraphQLFieldResolver, GraphQLScalarType, ExecutionArgs, ExecutionResult, GraphQLField, GraphQLObjectType, GraphQLResolveInfo } from 'graphql';
-  import DataLoader from 'dataloader';
+  import DataLoader from '@via-profit/dataloader';
   import { Request, RequestHandler } from 'express';
   import http from 'http';
   import Winston from 'winston';
@@ -87,7 +87,7 @@ declare module '@via-profit-services/core' {
   }
 
   export interface DataLoaderCollection {
-    [key: string]: DataLoader<unknown, unknown>;
+    [key: string]: DataLoader<unknown>;
   }
 
   export type Logger = Winston.Logger;

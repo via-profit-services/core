@@ -1057,11 +1057,11 @@ __metadata:
     "@typescript-eslint/eslint-plugin": ^4.15.1
     "@typescript-eslint/parser": ^4.15.1
     "@via-profit-services/eslint-config": ^0.1.11
+    "@via-profit/dataloader": ^1.0.1
     bufferutil: ^4.0.2
     content-type: ^1.0.4
     cors: ^2.8.5
     cross-env: ^6.0.3
-    dataloader: ^2.0.0
     dotenv: ^8.2.0
     eslint: ^7.20.0
     eslint-config-prettier: ^6.15.0
@@ -1104,7 +1104,6 @@ __metadata:
     winston: ^3.3.3
     winston-daily-rotate-file: ^4.5.0
   peerDependencies:
-    dataloader: ^2.0.0
     express: ^4.17.1
     graphql: ^15.4.0
     moment: ^2.29.1
@@ -1123,6 +1122,15 @@ __metadata:
   version: 0.1.11
   resolution: "@via-profit-services/eslint-config@npm:0.1.11"
   checksum: ca9055733ba78270ab6c2ef6f276b869bb576de2700fc1a6b739845f85b07a2ea4a4e70899db0b8bab3010fec026406a2070e353b52899d6ac4199a0167adb16
+  languageName: node
+  linkType: hard
+
+"@via-profit/dataloader@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "@via-profit/dataloader@npm:1.0.1"
+  peerDependencies:
+    ioredis: ^4.27.2
+  checksum: 17c94f837586e333b37c1520accd939b26d1d7916041816979c7b473d91a569b8a0ff582509700b27e3ecc24b0ac52b1409e4418bc2b7a793842655338d14620
   languageName: node
   linkType: hard
 
@@ -2801,13 +2809,6 @@ __metadata:
     whatwg-mimetype: ^2.2.0
     whatwg-url: ^7.0.0
   checksum: 04d211e1e9f83bab75450487da34b124b32beacd1ad0df96e3a747b705c24c65579833a04a6ea30a528ea5b99d5247660408c513b38905bf855f2de585b9e91c
-  languageName: node
-  linkType: hard
-
-"dataloader@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "dataloader@npm:2.0.0"
-  checksum: 0165c2e80751d269c33d2a14b0078a4f3853cb010e2531e7aa99523aba8d0cdc922b9ad67e4c2bb9074c90e0ee0a41b6e7f5f63c40d31224a71c8a0b703f4be3
   languageName: node
   linkType: hard
 

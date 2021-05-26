@@ -57,9 +57,9 @@
         "@typescript-eslint/eslint-plugin": "^4.15.1",
         "@typescript-eslint/parser": "^4.15.1",
         "@via-profit-services/eslint-config": "^0.1.11",
+        "@via-profit/dataloader": "^1.0.1",
         "cors": "^2.8.5",
         "cross-env": "^6.0.3",
-        "dataloader": "^2.0.0",
         "dotenv": "^8.2.0",
         "eslint": "^7.20.0",
         "eslint-config-prettier": "^6.15.0",
@@ -101,7 +101,7 @@
         "winston-daily-rotate-file": "^4.5.0"
     },
     "peerDependencies": {
-        "dataloader": "^2.0.0",
+        "@via-profit/dataloader": "^1.0.1",
         "express": "^4.17.1",
         "graphql": "^15.4.0",
         "moment": "^2.29.1",
