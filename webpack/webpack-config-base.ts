@@ -38,7 +38,8 @@ const webpackBaseConfig: Configuration = {
     /^graphql(|-tools|\/.+)$/,
     /^supports-color$/,
     /^express$/,
-    /^dataloader$/,
+    /^@via-profit\/dataloader/,
+    /^@via-profit-services\/.*/,
   ],
 };
 
