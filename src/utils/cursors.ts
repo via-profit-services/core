@@ -4,6 +4,7 @@ import type {
   MakeNodeCursor,
   GetCursorPayload,
   BuildCursorConnection,
+  PageInfo,
 } from '@via-profit-services/core';
 
 import ServerError from '../errorHandlers/ServerError';
@@ -33,25 +34,30 @@ export const buildCursorConnection: BuildCursorConnection = (props, cursorName) 
 
   const edges = nodes.map((node, index) =>
     nodeToEdge(node, cursorName, {
-      offset: (offset || 0) + index + 1,
+      offset: offset + index + 1,
       limit,
       where: where || [],
       orderBy: orderBy || [],
     }),
   );
-  const startCursor = edges.length ? edges[0].cursor : undefined;
-  const endCursor = edges.length ? edges[edges.length - 1].cursor : undefined;
-  const hasPreviousPage = revert ? (offset || 0) + limit < totalCount : (offset || 0) > 0;
-  const hasNextPage = revert ? (offset || 0) > 0 : (offset || 0) + limit < totalCount;
+
+  const pageInfo: PageInfo = {
+    startCursor: edges.length ? edges[0].cursor : undefined,
+    endCursor: edges.length ? edges[edges.length - 1].cursor : undefined,
+    hasPreviousPage: offset > 0,
+    hasNextPage: offset + limit < totalCount,
+  };
+
+  if (revert) {
+    pageInfo.startCursor = edges.length ? edges[edges.length - 1].cursor : undefined;
+    pageInfo.endCursor = edges.length ? edges[0].cursor : undefined;
+    pageInfo.hasNextPage = offset > 0;
+    pageInfo.hasPreviousPage = offset + limit < totalCount;
+  }
 
   return {
     totalCount,
     edges,
-    pageInfo: {
-      startCursor,
-      endCursor,
-      hasPreviousPage,
-      hasNextPage,
-    },
+    pageInfo,
   };
 };
