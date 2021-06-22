@@ -32,6 +32,16 @@ export const applyAliases: ApplyAliases = (whereClause, aliases) => {
 };
 
 
+export const defaultOutputFilter: OutputFilter = {
+  limit: 0,
+  offset: 0,
+  orderBy: [],
+  where: [],
+  between: {},
+  revert: false,
+  search: false,
+};
+
 export const buildQueryFilter: BuildQueryFilter = (args) => {
   const {
     first, last, after, before, offset, orderBy, filter, search, between,
