@@ -8,6 +8,10 @@
 ![NPM](https://img.shields.io/npm/l/@via-profit-services/core?color=blue)
 ![npm bundle size (scoped)](https://img.shields.io/bundlephobia/minzip/@via-profit-services/core?color=green)
 
+## TODO
+
+ - [ ] - Recipes
+
 ## Table of Contents
 
  - [Dependencies](#dependencies)
@@ -414,6 +418,10 @@ Resolvers object contains:
 ### logFormatter
 
 [Winston](https://github.com/winstonjs/winston#combining-formats) Combining formats data to use in loggers
+
+### defaultOutputFilter
+
+`OutputFilter` containing the default values
 
 ### buildQueryFilter
 
