@@ -38,6 +38,7 @@ export const buildCursorConnection: BuildCursorConnection = (props, cursorName) 
       limit,
       where: where || [],
       orderBy: orderBy || [],
+      revert,
     }),
   );
 

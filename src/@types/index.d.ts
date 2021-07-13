@@ -325,6 +325,7 @@ declare module '@via-profit-services/core' {
     limit: number;
     where: Where;
     orderBy: OrderBy;
+    revert: boolean;
   }
   export type OrderBy = {
     field: string;
