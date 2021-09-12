@@ -9,7 +9,7 @@ import ServerError from './ServerError';
 
 type GraphQLErrorM = GraphQLError & {
   originalError: ErrorHandler;
-}
+};
 
 interface Props {
   error: GraphQLError;
@@ -17,31 +17,38 @@ interface Props {
   debug: boolean;
 }
 
-
 const customFormatErrorFn = (props: Props) => {
   const { error, context, debug } = props;
-  const { logger } = context;
+  const { emitter } = context;
   const { originalError } = error as GraphQLErrorM;
   const stack = error.stack.split('\n') || [];
 
   switch (true) {
     case originalError instanceof ForbiddenError:
-      logger.server.error(originalError.message, {
-        ...error, meta: originalError.metaData, stack,
+      emitter.emit('graphql-error', {
+        message: originalError.message,
+        stack,
+        error,
       });
+
       break;
 
     case originalError instanceof BadRequestError:
     case originalError instanceof NotFoundError:
     case originalError instanceof ServerError:
-
-      logger.server.error(originalError.message, {
-        ...error, meta: originalError.metaData, stack,
+      emitter.emit('graphql-error', {
+        message: originalError.message,
+        stack,
+        error,
       });
       break;
 
     default:
-      logger.server.error('Error', { ...error, stack });
+      emitter.emit('graphql-error', {
+        message: originalError.message,
+        stack,
+        error,
+      });
       break;
   }
 
@@ -80,6 +87,5 @@ const customFormatErrorFn = (props: Props) => {
     path: error.path,
   };
 };
-
 
 export default customFormatErrorFn;

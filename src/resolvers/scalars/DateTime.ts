@@ -42,9 +42,7 @@ export default new GraphQLScalarType({
 
   parseLiteral(ast) {
     if (ast.kind !== Kind.STRING && ast.kind !== Kind.INT) {
-      throw new GraphQLError(
-        `Can only parse strings & integers to dates but got a: ${ast.kind}`,
-      );
+      throw new GraphQLError(`Can only parse strings & integers to dates but got a: ${ast.kind}`);
     }
 
     const result = new Date(ast.kind === Kind.INT ? Number(ast.value) : ast.value);

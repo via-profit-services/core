@@ -23,18 +23,14 @@
  - [Base TypeDefs](#base-typedefs)
  - [Connections](#connections)
  - [API](#api)
- - [logger](#Logger)
  - [Middleware](#middleware)
  - [Context](#context)
 
 ## <a name="dependencies"></a> Dependencies (peer)
 
  - [Express](https://github.com/expressjs/express) - Node HTTP Server
- - [DataLoader](https://github.com/via-profit/dataloader) - DataLoader (fork of [GraphQL Dataloader](https://github.com/graphql/dataloader))
  - [Moment](https://github.com/moment/moment) - Date library
  - [Moment Timezone](https://github.com/moment/moment-timezone) - Time zone support for Moment
- - [Winston](https://github.com/winstonjs/winston) - Logger
- - [Winston Daily Rotate File](https://github.com/winstonjs/winston-daily-rotate-file) - A transport for winston which logs to a rotating file
 
 
 ## <a name="description"></a> Description
@@ -74,9 +70,6 @@ express \
 graphql \
 moment \
 moment-timezone \
-winston \
-winston-daily-rotate-file \
-@via-profit/dataloader \
 @via-profit-services/core
 ```
 
@@ -415,10 +408,6 @@ Resolvers object contains:
 
 `SDL` string with definitions of [Scalars](#scalars) and [Base TypeDefs](base-typedefs)
 
-### logFormatter
-
-[Winston](https://github.com/winstonjs/winston#combining-formats) Combining formats data to use in loggers
-
 ### defaultOutputFilter
 
 `OutputFilter` containing the default values
@@ -643,51 +632,6 @@ const { graphQLExpress } = await factory({
 });
 ```
 
-### LOG_FILENAME_DEBUG
-
-Contains filename of logger debug level (`debug-%DATE%.log`).
-
-### LOG_FILENAME_ERRORS
-
-Contains filename of logger error level (`errors-%DATE%.log`).
-
-### LOG_FILENAME_WARNINGS
-
-Contains filename of logger warning level (`warnings-%DATE%.log`).
-
-### LOG_DATE_PATTERNT
-
-Contains log date pattern string (`YYYY-MM-DD`).
-
-### LOG_MAX_SIZE
-
-Contains log date pattern string (`YYYY-MM-DD`).
-
-
-## <a name="Logger"></a> logger
-
-Logger - is a [Winston](https://github.com/winstonjs/winston) logger instance.
-
-Logger storage in Context only. By default context object contains *server* logger with transports:
-
-  - `warn` - File transport
-  - `error` - File transport
-  - `debug` - File transport
-
-_Example of usage in some resolver:_
-```ts
-
-const accountsQueryResolver = {
-  accountsList: async (parent, args, context) => {
-    const { logger } = context;
-
-    logger.server.debug('Some debug message');
-
-    ...
-  }
-}
-```
-
 ## <a name="middleware"></a> Middleware
 
 Middleware is a special function that allows you to expand the GraphQL **Context** by adding new parameters into it, as well as performing GraphQL validation at the [ValidationRule](https://graphql.org/graphql-js/validation/). In addition, you can modify the current GraphQL scheme.
@@ -763,8 +707,6 @@ Now you can use TypeScript autocompletion in the IDE, which will contain the cur
 
 ```ts
 declare module '@via-profit-services/core' {
-  import DataLoader from '@via-profitdataloader';
-
   // extend standard Context object
   interface Context {
     myCustomContextProp: {
@@ -777,10 +719,6 @@ declare module '@via-profit-services/core' {
     myService: MyServiceClass;
   }
 
-  // extend dataloader collection
-  interface DataLoaderCollection {
-    myLoader: DataLoader<MyNodeType>;
-  }
 }
 
 ```
@@ -791,8 +729,6 @@ declare module '@via-profit-services/core' {
 Default state of GraphQL [Context](https://graphql.org/learn/execution/):
 
  - **timezone** - Provied with initial properties (See [API](#options)) .Default: `UTC`.
- - **logger** - Provied with Winston loaders collection (See [Logger](#logger))
- - **dataloader** - Provied with DataLoader loader (See [Middleware](#middleware))
  - **services** - Provied with collection of any services that you make (See [Middleware](#middleware))
  - **emitter** - Provied with Event Emitter class (See [EventEmitter](#event-emitter))
  - **request** - Provied with Express server request (See [Express API](https://expressjs.com/ru/api.html#req))

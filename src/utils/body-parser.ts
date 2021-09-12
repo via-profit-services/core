@@ -9,7 +9,7 @@ import ServerError from '../errorHandlers/ServerError';
 
 const JSONOBJREGEX = /^[ \t\n\r]*\{/;
 
-const bodyParser: BodyParser = async (req) => {
+const bodyParser: BodyParser = async req => {
   const { body, headers } = req;
   // If express has already parsed a body as a keyed object, use it.
   if (typeof body === 'object' && !(body instanceof Buffer)) {
@@ -34,7 +34,6 @@ const bodyParser: BodyParser = async (req) => {
     throw new BadRequestError(`Unsupported charset "${charset.toUpperCase()}".`);
   }
 
-
   const rawBody = await readBody(req, { charset });
 
   switch (type) {
@@ -43,7 +42,7 @@ const bodyParser: BodyParser = async (req) => {
         query: rawBody,
       };
 
-      case 'application/json':
+    case 'application/json':
       if (JSONOBJREGEX.test(rawBody)) {
         try {
           return JSON.parse(rawBody);
@@ -58,14 +57,13 @@ const bodyParser: BodyParser = async (req) => {
 
     default:
       return rawBody;
-      // throw new BadRequestError(`POST body sent empty data with content-type: «${type}»`);
+    // throw new BadRequestError(`POST body sent empty data with content-type: «${type}»`);
   }
-
-}
+};
 
 interface GraphQLParams {
   query: string;
-  variables: {readonly [key: string]: unknown} | null;
+  variables: { readonly [key: string]: unknown } | null;
   operationName: string | null;
 }
 
@@ -84,7 +82,7 @@ export const parseGraphQLParams = (props: GraphQLParamsProps): GraphQLParams => 
     query: '',
     variables: null,
     operationName: null,
-  }
+  };
 
   // bind standard query
   if (typeof body.query === 'string') {
@@ -114,7 +112,6 @@ export const parseGraphQLParams = (props: GraphQLParamsProps): GraphQLParams => 
     graphQLParams.variables = { ...variables };
   }
 
-
   // Name of GraphQL operation to execute.
   const operationName = urlData.get('operationName') ?? body.operationName;
   if (typeof operationName === 'string') {
@@ -122,7 +119,7 @@ export const parseGraphQLParams = (props: GraphQLParamsProps): GraphQLParams => 
   }
 
   return graphQLParams;
-}
+};
 
 const decompressBody = (request: Request, encoding: string) => {
   switch (encoding) {
@@ -138,8 +135,7 @@ const decompressBody = (request: Request, encoding: string) => {
     default:
       throw new ServerError(`Unsupported content-encoding "${encoding}".`);
   }
-}
-
+};
 
 const readBody = async (request: Request, opts: { charset: string }): Promise<string> => {
   const { charset } = opts;
@@ -147,15 +143,11 @@ const readBody = async (request: Request, opts: { charset: string }): Promise<st
     throw new ServerError(`Unsupported charset "${charset.toUpperCase()}".`);
   }
   const contentEncoding = request.headers['content-encoding'];
-  const encoding =
-    typeof contentEncoding === 'string'
-      ? contentEncoding.toLowerCase()
-      : 'identity';
+  const encoding = typeof contentEncoding === 'string' ? contentEncoding.toLowerCase() : 'identity';
   const length = encoding === 'identity' ? request.headers['content-length'] : null;
   const stream = decompressBody(request, encoding);
 
   try {
-
     const body = await getRawBody(stream, {
       encoding: charset,
       length,
@@ -163,11 +155,8 @@ const readBody = async (request: Request, opts: { charset: string }): Promise<st
 
     return body;
   } catch (err) {
-
-    throw new ServerError('Failed to parse body', { err })
+    throw new ServerError('Failed to parse body', { err });
   }
-
-}
-
+};
 
 export default bodyParser;

@@ -1,5 +1,5 @@
+/* eslint-disable import/max-dependencies */
 import factory from './application';
-import logFormatter from './logger/log-formatter';
 import resolvers from './resolvers';
 import typeDefs from './schema.graphql';
 import bodyParser from './utils/body-parser';
@@ -11,12 +11,4 @@ export * from './utils/cursors';
 export * from './utils/nodes';
 export * from './utils/filters';
 
-export {
-  resolvers,
-  typeDefs,
-  logFormatter,
-  factory,
-  bodyParser,
-  fieldsWrapper,
-};
-
+export { resolvers, typeDefs, factory, bodyParser, fieldsWrapper };

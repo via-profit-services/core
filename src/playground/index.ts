@@ -11,25 +11,23 @@ import {
   GraphQLInputObjectType,
 } from 'graphql';
 import http from 'http';
+import type { Context } from '@via-profit-services/core';
 
 import * as core from '../index';
 import { buildQueryFilter } from '../utils/filters';
 
 (async () => {
-
   // Define schema
   const schema = new GraphQLSchema({
-    query: new GraphQLObjectType({
+    query: new GraphQLObjectType<unknown, Context>({
       name: 'Query',
       fields: () => ({
         test: {
-          type: new GraphQLNonNull(GraphQLString),
-          resolve: (parent, args) => {
+          type: new GraphQLNonNull(core.resolvers.JSON),
+          resolve: (_parent, args) => {
             const queryFilter = buildQueryFilter(args);
 
-            console.log(queryFilter);
-
-            return 'dsds';
+            return queryFilter;
           },
           args: {
             filter: {
@@ -66,5 +64,4 @@ import { buildQueryFilter } from '../utils/filters';
     // eslint-disable-next-line no-console
     console.info('GraphQL server started at http://localhost:9005/graphql');
   });
-
 })();

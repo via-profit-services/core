@@ -33,12 +33,10 @@ const webpackBaseConfig: Configuration = {
     }),
   ],
   externals: [
-    /^winston(|-daily-rotate-file)$/,
     /^moment(|-timezone)$/,
     /^graphql(|-tools|\/.+)$/,
     /^supports-color$/,
     /^express$/,
-    /^@via-profit\/dataloader/,
     /^@via-profit-services\/.*/,
   ],
 };

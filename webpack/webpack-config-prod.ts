@@ -34,9 +34,8 @@ Contact    ${support}
     {
       apply: (compiler: Compiler) => {
         compiler.hooks.beforeRun.tapAsync('WebpackBeforeBuild', (_, callback) => {
-
           if (fs.existsSync(path.join(__dirname, '../dist/'))) {
-            fs.rmSync(path.join(__dirname, '../dist/'), { recursive: true })
+            fs.rmSync(path.join(__dirname, '../dist/'), { recursive: true });
           }
 
           callback();
@@ -53,7 +52,6 @@ Contact    ${support}
           );
           callback();
         });
-
       },
     },
     new BundleAnalyzerPlugin({

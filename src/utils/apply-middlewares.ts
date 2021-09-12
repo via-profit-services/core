@@ -1,7 +1,12 @@
-import type { Context, Configuration, Middleware, MaybePromise, MiddlewareExtensions } from '@via-profit-services/core';
+import type {
+  Context,
+  Configuration,
+  Middleware,
+  MaybePromise,
+  MiddlewareExtensions,
+} from '@via-profit-services/core';
 import type { Request } from 'express';
 import type { ValidationRule, GraphQLSchema } from 'graphql';
-
 
 interface ApplyMiddlewareProps {
   middlewares: Middleware[];
@@ -21,9 +26,8 @@ interface ApplyMiddlewareResponse {
 
 type ApplyMiddleware = (props: ApplyMiddlewareProps) => MaybePromise<ApplyMiddlewareResponse>;
 
-const applyMiddlewares: ApplyMiddleware = async (props) => {
+const applyMiddlewares: ApplyMiddleware = async props => {
   const { middlewares, config, context, schema, extensions, request } = props;
-
 
   // define validation rules and new context
   let composedValidationRules: ValidationRule[] = [];
@@ -41,7 +45,7 @@ const applyMiddlewares: ApplyMiddleware = async (props) => {
       context: composedContext,
       extensions: composedExtensions,
       request,
-     });
+    });
 
     // append validation rules
     if (mdlwreData.validationRule) {
@@ -60,16 +64,14 @@ const applyMiddlewares: ApplyMiddleware = async (props) => {
 
     // replace extensions
     composedExtensions = mdlwreData.extensions || composedExtensions;
-
-  }, Promise.resolve())
-
+  }, Promise.resolve());
 
   return {
     context: composedContext,
     validationRules: composedValidationRules,
     schema: composedSchema,
     extensions: composedExtensions,
-  }
-}
+  };
+};
 
 export default applyMiddlewares;

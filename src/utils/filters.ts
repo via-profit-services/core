@@ -1,4 +1,11 @@
-import type { OutputFilter, ApplyAliases, WhereField, BuildQueryFilter, SearchMultipleFields, SearchSingleField } from '@via-profit-services/core';
+import type {
+  OutputFilter,
+  ApplyAliases,
+  WhereField,
+  BuildQueryFilter,
+  SearchMultipleFields,
+  SearchSingleField,
+} from '@via-profit-services/core';
 
 import { DEFAULT_NODES_LIMIT } from '../constants';
 import { getCursorPayload } from './cursors';
@@ -10,27 +17,22 @@ export const applyAliases: ApplyAliases = (whereClause, aliases) => {
   const aliasesMap = new Map<string, string>();
   Object.entries(aliases).forEach(([tableName, field]) => {
     const fieldsArray = Array.isArray(field) ? field : [field];
-    fieldsArray.forEach((fieldName) => {
+    fieldsArray.forEach(fieldName => {
       aliasesMap.set(fieldName, tableName);
     });
   });
 
-  const newWhere = whereClause.map((data) => {
+  const newWhere = whereClause.map(data => {
     const [field, action, value] = data;
     const alias = aliasesMap.get(field) || aliasesMap.get('*');
 
-    const whereField: WhereField = [
-      alias ? `${alias}.${field}` : field,
-      action,
-      value,
-    ];
+    const whereField: WhereField = [alias ? `${alias}.${field}` : field, action, value];
 
     return whereField;
   });
 
   return newWhere;
 };
-
 
 export const defaultOutputFilter: OutputFilter = {
   limit: 0,
@@ -42,11 +44,8 @@ export const defaultOutputFilter: OutputFilter = {
   search: false,
 };
 
-export const buildQueryFilter: BuildQueryFilter = (args) => {
-  const {
-    first, last, after, before, offset, orderBy, filter, search, between,
-  } = args;
-
+export const buildQueryFilter: BuildQueryFilter = args => {
+  const { first, last, after, before, offset, orderBy, filter, search, between } = args;
 
   // combine filter
   const outputFilter: OutputFilter = {
@@ -58,7 +57,6 @@ export const buildQueryFilter: BuildQueryFilter = (args) => {
     offset: Math.max(Number(offset) || 0, 0),
     between: between || {},
   };
-
 
   // if cursor was provied in after or before property
   if (after || before) {
@@ -80,18 +78,16 @@ export const buildQueryFilter: BuildQueryFilter = (args) => {
     if (!Array.isArray(filter)) {
       Object.entries(filter).forEach(([field, value]) => {
         if (Array.isArray(value)) {
-          outputFilter.where.push([ field, 'in', value ]);
+          outputFilter.where.push([field, 'in', value]);
         } else {
-          outputFilter.where.push([ field, '=', value ]);
+          outputFilter.where.push([field, '=', value]);
         }
       });
     }
   }
 
   if (search && Array.isArray(search)) {
-
     search.forEach((s: SearchMultipleFields | SearchSingleField) => {
-
       // is is search single fiels
       if ('field' in s) {
         outputFilter.search = outputFilter.search || [];
@@ -102,15 +98,14 @@ export const buildQueryFilter: BuildQueryFilter = (args) => {
       }
 
       // is is search multiple fiels
-      if (('fields' in s) && Array.isArray(s.fields)) {
-
-        [...s.fields || []].forEach((field) => {
+      if ('fields' in s && Array.isArray(s.fields)) {
+        [...(s.fields || [])].forEach(field => {
           outputFilter.search = outputFilter.search || [];
           outputFilter.search.push({
             field,
             query: s.query,
-          })
-        })
+          });
+        });
       }
     });
   }
@@ -122,7 +117,7 @@ export const buildQueryFilter: BuildQueryFilter = (args) => {
 
   // if search is object with multiple fields
   if (search && 'fields' in search && Array.isArray(search.fields)) {
-    outputFilter.search = search.fields.map((field) => ({
+    outputFilter.search = search.fields.map(field => ({
       field,
       query: search.query,
     }));
@@ -131,12 +126,10 @@ export const buildQueryFilter: BuildQueryFilter = (args) => {
   // between
   Object.entries(outputFilter.between).forEach(([betweenField, data]) => {
     if (data.start && data.start instanceof Date && data.end && data.end instanceof Date) {
-      const startDateTimeSum = data.start.getUTCHours()
-        + data.start.getUTCMinutes()
-        + data.start.getUTCSeconds();
-      const endDateTimeSum = data.end.getUTCHours()
-        + data.end.getUTCMinutes()
-        + data.end.getUTCSeconds();
+      const startDateTimeSum =
+        data.start.getUTCHours() + data.start.getUTCMinutes() + data.start.getUTCSeconds();
+      const endDateTimeSum =
+        data.end.getUTCHours() + data.end.getUTCMinutes() + data.end.getUTCSeconds();
 
       if (endDateTimeSum === 0 && startDateTimeSum === endDateTimeSum) {
         (outputFilter.between[betweenField].end as Date).setSeconds(59);
@@ -148,4 +141,3 @@ export const buildQueryFilter: BuildQueryFilter = (args) => {
 
   return outputFilter;
 };
-

@@ -1,5 +1,9 @@
-
-import type { MutatedField, MutatedObjectType, FieldsWrapper, NoopResolver } from '@via-profit-services/core';
+import type {
+  MutatedField,
+  MutatedObjectType,
+  FieldsWrapper,
+  NoopResolver,
+} from '@via-profit-services/core';
 import { isIntrospectionType, isObjectType } from 'graphql';
 
 const fieldsWrapper: FieldsWrapper = (schema, wrapperFunction, options) => {
@@ -10,12 +14,13 @@ const fieldsWrapper: FieldsWrapper = (schema, wrapperFunction, options) => {
     const { fieldName } = info;
 
     return parent ? parent[fieldName] : undefined;
-  }
+  };
 
   Object.entries(types).forEach(([_typeName, type]) => {
-    if (isIntrospectionType(type)
-    || !isObjectType(type)
-    || (type as MutatedObjectType)[SYMBOL_PROCESSED]
+    if (
+      isIntrospectionType(type) ||
+      !isObjectType(type) ||
+      (type as MutatedObjectType)[SYMBOL_PROCESSED]
     ) {
       return;
     }
@@ -23,7 +28,6 @@ const fieldsWrapper: FieldsWrapper = (schema, wrapperFunction, options) => {
     const fields = type.getFields();
 
     Object.entries(fields).forEach(([_fieldName, field]) => {
-
       // check to affected field and field without resolver
       if ((field as MutatedField)[SYMBOL_PROCESSED]) {
         return;
@@ -51,7 +55,7 @@ const fieldsWrapper: FieldsWrapper = (schema, wrapperFunction, options) => {
         const mutatedResolver = res.resolve || resolve;
 
         return mutatedResolver(mutatedSource, mutatedArgs, mutatedContext, mutatedInfo);
-      }
+      };
 
       // mark field as affected
       (field as MutatedField)[SYMBOL_PROCESSED] = true;
@@ -62,6 +66,6 @@ const fieldsWrapper: FieldsWrapper = (schema, wrapperFunction, options) => {
   });
 
   return schema;
-}
+};
 
 export default fieldsWrapper;
