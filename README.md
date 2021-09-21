@@ -319,7 +319,7 @@ In resolvers:
 
 ```ts
 import { GraphQLFieldResolver } from 'graphql';
-import { ServerError, buildCursorConnection, buildQueryFilter, CursorConnection, Context, InputFilter } from '@via-profit-services/core';
+import { buildCursorConnection, buildQueryFilter, CursorConnection, Context, InputFilter } from '@via-profit-services/core';
 
 type Resolvers = {
   Query: {

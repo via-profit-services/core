@@ -53,7 +53,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@typescript-eslint/parser", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.31.0"],
             ["@via-profit-services/eslint-config", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:0.1.17"],
             ["bufferutil", "npm:4.0.2"],
-            ["content-type", "npm:1.0.4"],
             ["cors", "npm:2.8.5"],
             ["cross-env", "npm:6.0.3"],
             ["dotenv", "npm:8.2.0"],
@@ -68,13 +67,13 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint-plugin-prettier", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.0.0"],
             ["eslint-plugin-promise", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:5.1.0"],
             ["eslint-plugin-react", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:7.25.1"],
+            ["eslint-plugin-react-hooks", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.2.0"],
             ["eslint-plugin-standard", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:5.0.0"],
             ["express", "npm:4.17.1"],
             ["graphql", "npm:15.4.0"],
             ["html-loader", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:1.3.2"],
             ["husky", "npm:4.3.0"],
             ["jest", "npm:24.9.0"],
-            ["jest-transform-graphql", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:2.1.0"],
             ["nodemon", "npm:2.0.6"],
             ["nodemon-webpack-plugin", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.3.2"],
             ["prettier", "npm:2.4.0"],
@@ -1340,7 +1339,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@typescript-eslint/parser", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.31.0"],
             ["@via-profit-services/eslint-config", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:0.1.17"],
             ["bufferutil", "npm:4.0.2"],
-            ["content-type", "npm:1.0.4"],
             ["cors", "npm:2.8.5"],
             ["cross-env", "npm:6.0.3"],
             ["dotenv", "npm:8.2.0"],
@@ -1355,13 +1353,13 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint-plugin-prettier", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.0.0"],
             ["eslint-plugin-promise", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:5.1.0"],
             ["eslint-plugin-react", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:7.25.1"],
+            ["eslint-plugin-react-hooks", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.2.0"],
             ["eslint-plugin-standard", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:5.0.0"],
             ["express", "npm:4.17.1"],
             ["graphql", "npm:15.4.0"],
             ["html-loader", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:1.3.2"],
             ["husky", "npm:4.3.0"],
             ["jest", "npm:24.9.0"],
-            ["jest-transform-graphql", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:2.1.0"],
             ["nodemon", "npm:2.0.6"],
             ["nodemon-webpack-plugin", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.3.2"],
             ["prettier", "npm:2.4.0"],
@@ -1422,7 +1420,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint-plugin-prettier", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.0.0"],
             ["eslint-plugin-promise", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:5.1.0"],
             ["eslint-plugin-react", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:7.25.1"],
-            ["eslint-plugin-react-hooks", null],
+            ["eslint-plugin-react-hooks", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.2.0"],
             ["eslint-plugin-standard", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:5.0.0"]
           ],
           "packagePeers": [
@@ -4190,6 +4188,28 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
+      ["eslint-plugin-react-hooks", [
+        ["npm:4.2.0", {
+          "packageLocation": "./.yarn/cache/eslint-plugin-react-hooks-npm-4.2.0-e09b1ea4ce-ead5c5be3d.zip/node_modules/eslint-plugin-react-hooks/",
+          "packageDependencies": [
+            ["eslint-plugin-react-hooks", "npm:4.2.0"]
+          ],
+          "linkType": "SOFT",
+        }],
+        ["virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.2.0", {
+          "packageLocation": "./.yarn/__virtual__/eslint-plugin-react-hooks-virtual-ac5dd1451c/0/cache/eslint-plugin-react-hooks-npm-4.2.0-e09b1ea4ce-ead5c5be3d.zip/node_modules/eslint-plugin-react-hooks/",
+          "packageDependencies": [
+            ["eslint-plugin-react-hooks", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.2.0"],
+            ["@types/eslint", null],
+            ["eslint", "npm:7.32.0"]
+          ],
+          "packagePeers": [
+            "@types/eslint",
+            "eslint"
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
       ["eslint-plugin-standard", [
         ["npm:5.0.0", {
           "packageLocation": "./.yarn/cache/eslint-plugin-standard-npm-5.0.0-261fbe58f0-58f1aba891.zip/node_modules/eslint-plugin-standard/",
@@ -6528,28 +6548,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["natural-compare", "npm:1.4.0"],
             ["pretty-format", "npm:24.9.0"],
             ["semver", "npm:6.3.0"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["jest-transform-graphql", [
-        ["npm:2.1.0", {
-          "packageLocation": "./.yarn/cache/jest-transform-graphql-npm-2.1.0-cf15178e7a-2701672d4a.zip/node_modules/jest-transform-graphql/",
-          "packageDependencies": [
-            ["jest-transform-graphql", "npm:2.1.0"]
-          ],
-          "linkType": "SOFT",
-        }],
-        ["virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:2.1.0", {
-          "packageLocation": "./.yarn/__virtual__/jest-transform-graphql-virtual-5cb10b2d92/0/cache/jest-transform-graphql-npm-2.1.0-cf15178e7a-2701672d4a.zip/node_modules/jest-transform-graphql/",
-          "packageDependencies": [
-            ["jest-transform-graphql", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:2.1.0"],
-            ["@types/graphql-tag", null],
-            ["graphql-tag", null]
-          ],
-          "packagePeers": [
-            "@types/graphql-tag",
-            "graphql-tag"
           ],
           "linkType": "HARD",
         }]

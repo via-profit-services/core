@@ -7,7 +7,6 @@ import type {
   PageInfo,
 } from '@via-profit-services/core';
 
-import ServerError from '../errorHandlers/ServerError';
 import { nodeToEdge } from './nodes';
 
 export const stringToCursor: StringToCursor = str =>
@@ -25,7 +24,7 @@ export const getCursorPayload: GetCursorPayload = cursor => {
 
     return JSON.parse(cursorPayload);
   } catch (err) {
-    throw new ServerError('Failed to decode cursor payload', { err });
+    throw new Error('Failed to decode cursor payload');
   }
 };
 

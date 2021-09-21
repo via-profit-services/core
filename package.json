@@ -1,7 +1,7 @@
 {
     "name": "@via-profit-services/core",
     "support": "https://via-profit.ru",
-    "version": "1.2.4",
+    "version": "2.0.0-rc.6",
     "description": "Via Profit Core service",
     "main": "dist/index.js",
     "keywords": [
@@ -17,7 +17,6 @@
         "build:dev": "cross-env NODE_ENV=development webpack --config ./webpack/webpack-config-dev.ts",
         "build:dist": "webpack --config ./webpack/webpack-config-prod.ts",
         "start": "yarn build:dev --watch",
-        "test": "jest",
         "lint": "yarn dlx eslint --ext .ts ./src/ --fix ."
     },
     "repository": {
@@ -66,13 +65,13 @@
         "eslint-plugin-prettier": "^4.0.0",
         "eslint-plugin-promise": "^5.1.0",
         "eslint-plugin-react": "^7.25.1",
+        "eslint-plugin-react-hooks": "^4.2.0",
         "eslint-plugin-standard": "^5.0.0",
         "express": "^4.17.1",
         "graphql": "^15.4.0",
         "html-loader": "^1.3.2",
         "husky": "^4.2.3",
         "jest": "^24.9.0",
-        "jest-transform-graphql": "^2.1.0",
         "nodemon": "^2.0.6",
         "nodemon-webpack-plugin": "^4.3.2",
         "prettier": "^2.4.0",
@@ -99,7 +98,6 @@
         "utf-8-validate": "^5.0.3"
     },
     "dependencies": {
-        "content-type": "^1.0.4",
         "raw-body": "^2.4.1"
     }
 }

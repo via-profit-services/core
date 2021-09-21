@@ -1060,7 +1060,6 @@ __metadata:
     "@typescript-eslint/parser": ^4.31.0
     "@via-profit-services/eslint-config": ^0.1.11
     bufferutil: ^4.0.2
-    content-type: ^1.0.4
     cors: ^2.8.5
     cross-env: ^6.0.3
     dotenv: ^8.2.0
@@ -1075,13 +1074,13 @@ __metadata:
     eslint-plugin-prettier: ^4.0.0
     eslint-plugin-promise: ^5.1.0
     eslint-plugin-react: ^7.25.1
+    eslint-plugin-react-hooks: ^4.2.0
     eslint-plugin-standard: ^5.0.0
     express: ^4.17.1
     graphql: ^15.4.0
     html-loader: ^1.3.2
     husky: ^4.2.3
     jest: ^24.9.0
-    jest-transform-graphql: ^2.1.0
     nodemon: ^2.0.6
     nodemon-webpack-plugin: ^4.3.2
     prettier: ^2.4.0
@@ -2395,7 +2394,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"content-type@npm:^1.0.4, content-type@npm:~1.0.4":
+"content-type@npm:~1.0.4":
   version: 1.0.4
   resolution: "content-type@npm:1.0.4"
   checksum: 3d93585fda985d1554eca5ebd251994327608d2e200978fdbfba21c0c679914d5faf266d17027de44b34a72c7b0745b18584ecccaa7e1fdfb6a68ac7114f12e0
@@ -3294,6 +3293,15 @@ __metadata:
   peerDependencies:
     eslint: ^7.0.0
   checksum: e62947aaea6882951a1a9f5fe3e3c7925b8dcc222338f7979bd1495ba0f0dc701820116b108be1e801f6e5156eb9a928142f29c659fd21a5d65a4be495bb327d
+  languageName: node
+  linkType: hard
+
+"eslint-plugin-react-hooks@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "eslint-plugin-react-hooks@npm:4.2.0"
+  peerDependencies:
+    eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0
+  checksum: ead5c5be3ded82a0cf295b064376adb1998a43e2262b605eecc0efc88283dec4e159ca39307fafb3d8e661dd08e5a4c8cdfed97eea78f923954f72bad6e20397
   languageName: node
   linkType: hard
 
@@ -5468,15 +5476,6 @@ fsevents@~2.1.2:
     pretty-format: ^24.9.0
     semver: ^6.2.0
   checksum: 474dc05ededdb8b39fb79801498fcd16c1a13a01b4701a27172be0ee3ebc5640e2bfb2780a9afa49bd825b19fc2be1e2ec5fc3d501afa76a5f7bc40f0120aaf3
-  languageName: node
-  linkType: hard
-
-"jest-transform-graphql@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "jest-transform-graphql@npm:2.1.0"
-  peerDependencies:
-    graphql-tag: ^2.0.0
-  checksum: 2701672d4a7f8e5ad6ac13a8092737a582c7d86be56da3b3e7775a450a661875e87e5317f61760446dbbe57aa63ef018e93cea59e042d2edcff80de74398f45a
   languageName: node
   linkType: hard
 

@@ -175,12 +175,6 @@ declare module '@via-profit-services/core' {
     context: Context;
   }
 
-  export interface ErrorHandler extends Error {
-    message: string;
-    status?: number;
-    stack?: string;
-    metaData?: any;
-  }
   /**
    * GraphQL Cursor connection
    * @see https://facebook.github.io/relay/graphql/connections.htm
@@ -407,26 +401,6 @@ declare module '@via-profit-services/core' {
   export type ApplyAliases = (whereClause: Where, aliases: TableAliases) => Where;
   export type BuildQueryFilter = <T extends InputFilter>(args: T) => OutputFilter;
 
-  export class ServerError extends Error implements ErrorHandler {
-    metaData: any;
-    status: number;
-    constructor(message: string, metaData?: any);
-  }
-  export class BadRequestError extends Error implements ErrorHandler {
-    metaData: any;
-    status: number;
-    constructor(message: string, metaData?: any);
-  }
-  export class ForbiddenError extends Error implements ErrorHandler {
-    metaData: any;
-    status: number;
-    constructor(message: string, metaData?: any);
-  }
-  export class NotFoundError extends Error implements ErrorHandler {
-    metaData: any;
-    status: number;
-    constructor(message: string, metaData?: any);
-  }
 
   export type DirectionRange = 'asc' | 'desc';
   export type WhereAction =

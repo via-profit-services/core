@@ -22,9 +22,7 @@ import {
 import { performance } from 'perf_hooks';
 
 import { DEFAULT_SERVER_TIMEZONE, DEFAULT_PERSISTED_QUERY_KEY } from './constants';
-import BadRequestError from './errorHandlers/BadRequestError';
 import customFormatErrorFn from './errorHandlers/customFormatErrorFn';
-import ServerError from './errorHandlers/ServerError';
 import CoreService from './services/CoreService';
 import applyMiddlewares from './utils/apply-middlewares';
 import bodyParser, { parseGraphQLParams } from './utils/body-parser';
@@ -83,15 +81,21 @@ const applicationFactory: ApplicationFactory = async props => {
       extensions = middlewaresResponse.extensions;
 
       if (!schema) {
-        throw new ServerError('GraphQL Error. GraphQL middleware options must contain a schema', {
-          schema,
-        });
+        throw new Error('GraphQL Error. GraphQL middleware options must contain a schema');
       }
 
       // validate request
       const graphqlErrors = validateSchema(schema);
       if (graphqlErrors.length > 0) {
-        throw new ServerError('GraphQL Error. GraphQL schema validation error.', { graphqlErrors });
+        throw new GraphQLError(
+          graphqlErrors[0].message,
+          graphqlErrors[0].nodes,
+          graphqlErrors[0].source,
+          graphqlErrors[0].positions,
+          graphqlErrors[0].path,
+          graphqlErrors[0].originalError,
+          graphqlErrors[0].extensions,
+        );
       }
 
       const { method } = request;
@@ -103,7 +107,7 @@ const applicationFactory: ApplicationFactory = async props => {
       });
 
       if (!['GET', 'POST'].includes(method)) {
-        throw new BadRequestError('GraphQL Error. GraphQL only supports GET and POST requests');
+        throw new Error('GraphQL Error. GraphQL only supports GET and POST requests');
       }
 
       const documentAST = parse(new Source(query, 'GraphQL request'));
@@ -114,9 +118,15 @@ const applicationFactory: ApplicationFactory = async props => {
         ...validationRules,
       ]);
       if (validationErrors.length > 0) {
-        throw new BadRequestError('GraphQL Error. Validation Error', {
-          graphqlErrors: validationErrors,
-        });
+        throw new GraphQLError(
+          validationErrors[0].message,
+          validationErrors[0].nodes,
+          validationErrors[0].source,
+          validationErrors[0].positions,
+          validationErrors[0].path,
+          validationErrors[0].originalError,
+          validationErrors[0].extensions,
+        );
       }
 
       // Only query operations are allowed on GET requests.
@@ -125,7 +135,7 @@ const applicationFactory: ApplicationFactory = async props => {
         const operationAST = getOperationAST(documentAST, operationName);
         if (operationAST && operationAST.operation !== 'query') {
           // Otherwise, report a 405: Method Not Allowed error.
-          throw new BadRequestError(
+          throw new Error(
             `GraphQL Error. Can only perform a ${operationAST.operation} operation from a POST request`,
           );
         }
@@ -143,7 +153,16 @@ const applicationFactory: ApplicationFactory = async props => {
       });
 
       if (errors) {
-        throw new ServerError('GraphQL Error.', { graphqlErrors: errors });
+        // GraphQLError.er
+        throw new GraphQLError(
+          errors[0].message,
+          errors[0].nodes,
+          errors[0].source,
+          errors[0].positions,
+          errors[0].path,
+          errors[0].originalError,
+          errors[0].extensions,
+        );
       }
 
       response.status(200).json({
@@ -155,10 +174,10 @@ const applicationFactory: ApplicationFactory = async props => {
               queryTime: performance.now() - startTime,
             },
       });
-    } catch (originalError) {
-      const errors: GraphQLError[] = originalError?.metaData?.graphqlErrors ?? [originalError];
+  } catch (originalError: any) {
+      const errors: GraphQLError[] = [originalError];
 
-      response.status(originalError.status || 500).json({
+      response.status(originalError.status || 200).json({
         data: null,
         errors: errors.map(error => customFormatErrorFn({ error, context, debug })),
       });
