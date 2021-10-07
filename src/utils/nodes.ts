@@ -32,8 +32,8 @@ export const extractNodeIds: ExtractNodeIds = nodes => extractNodeField(nodes, '
 /**
  * Collate rows for dataloader response
  */
-export const collateForDataloader: CollateForDataloader = (ids, nodes, returnUndefined) =>
-  ids.map(id => nodes.find(node => node.id === id) || (returnUndefined ? undefined : null));
+export const collateForDataloader: CollateForDataloader = (ids, nodes, key) =>
+  ids.map(id => nodes.find(node => node[key] === id) || null);
 
 /**
  * Format array of IDs to object with id key

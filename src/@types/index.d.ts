@@ -198,9 +198,10 @@ declare module '@via-profit-services/core' {
    * GraphQL Node type
    * @see https://facebook.github.io/relay/graphql/connections.htm#sec-Node
    */
-  export type Node<T> = T & {
-    id: string;
+  export type Node<T, K extends string = 'id'> = T & {
+    [key in K]: string;
   };
+
   /**
    * GraphQL Edge type
    * @see https://facebook.github.io/relay/graphql/connections.htm#sec-Edge-Types
@@ -384,21 +385,18 @@ declare module '@via-profit-services/core' {
     field: K,
   ) => Node<T>[K][];
 
-  export type ExtractNodeIds = <T>(nodes: Node<T>[]) => string[];
+  export type ExtractNodeIds = <T>(nodes: Node<T, 'id'>[]) => string[];
 
-  export type CollateForDataloader = <T>(
+  export type CollateForDataloader = <T, K extends string = 'id'>(
     ids: ReadonlyArray<string>,
-    nodes: Node<T>[],
-    returnUndefined?: boolean,
-  ) => Node<T>[];
+    nodes: Node<T, K>[],
+    key?: K,
+  ) => Node<T, K>[];
+
   export type ArrayOfIdsToArrayOfObjectIds = (array: string[]) => {
     id: string;
   }[];
 
-  /**
-   * @deprecated Use `ApplyAliases` type of `@via-profit-services/knex` instead
-   */
-  export type ApplyAliases = (whereClause: Where, aliases: TableAliases) => Where;
   export type BuildQueryFilter = <T extends InputFilter>(args: T) => OutputFilter;
 
 
@@ -590,7 +588,7 @@ declare module '@via-profit-services/core' {
    * For details [here](https://github.com/graphql/dataloader#batch-function)
    *
    * ```ts
-   * const dataloader = new DataLoader(async (ids: string[]) => {
+   * const dataloader = new DataLoader(async ids => {
    *   const nodes = await context.services.accounts.getUsersByIds(ids);
    *
    *   return collateForDataloader(ids, nodes);
