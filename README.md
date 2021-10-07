@@ -65,12 +65,7 @@ LLC Via-Profit
 First of all you should install some peer dependencies by running:
 
 ```bash
-$ yarn add \
-express \
-graphql \
-moment \
-moment-timezone \
-@via-profit-services/core
+$ yarn add express graphql @via-profit-services/core
 ```
 
 And that's it. Let's write some code.
@@ -436,12 +431,14 @@ There are a few constraints this function must uphold:
 For details [here](https://github.com/graphql/dataloader#batch-function)
 
 ```ts
-const dataloader = new DataLoader(async (ids: string[]) => {
+const dataloader = new DataLoader(async ids => {
   const nodes = await context.services.accounts.getUsersByIds(ids);
 
   return collateForDataloader(ids, nodes);
 });
 ```
+`collateForDataloader` takes 2 or 3 arguments. The third argument is the name of the key, which should be considered an identifier. Default - `id`.
+
 
 ### extractNodeIds
 
