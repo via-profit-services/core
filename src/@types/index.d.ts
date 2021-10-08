@@ -112,7 +112,7 @@ declare module '@via-profit-services/core' {
     /**
      * Persisted Queries map (Object contains key: value pairs). \
      * If persisted queries map is passed, the server will ignore \
-     * the query directive in body request and read the map using \
+     * the query directive in body request and read the map \
      * @see https://relay.dev/docs/en/persisted-queries.html
      */
     persistedQueriesMap?: PersistedQueriesMap;
@@ -398,7 +398,6 @@ declare module '@via-profit-services/core' {
 
   export type BuildQueryFilter = <T extends InputFilter>(args: T) => OutputFilter;
 
-
   export type DirectionRange = 'asc' | 'desc';
   export type WhereAction =
     | '='
@@ -415,6 +414,21 @@ declare module '@via-profit-services/core' {
     | 'is not null';
 
   export type BodyParser = (reqest: Request) => Promise<RequestBody>;
+
+  export type ResolverFactory<
+    Data extends Record<string, any> = any,
+    Source extends Record<string, any> = any,
+    Args extends Record<string, any> = any,
+  > = (field: keyof Data) => GraphQLFieldResolver<Source, Context, Args>;
+
+  export type FieldBuilder = <
+    Data extends Record<string, any> = any,
+    Source extends Record<string, any> = any,
+    Args extends Record<string, any> = any,
+  >(
+    fields: (keyof Data)[],
+    resolverFactory: ResolverFactory<Data, Source, Args>,
+  ) => Record<keyof Data, GraphQLFieldResolver<Source, Context, Args>>;
 
   /**
    * `OutputFilter` containing the default values
@@ -652,6 +666,42 @@ declare module '@via-profit-services/core' {
    * ```
    */
   export const fieldsWrapper: FieldsWrapper;
+
+  /**
+   * Build GraphQL field resolver.\
+   * This function takes as its first argument an array of keys\
+   * of the Type that needs to be resolved.\
+   * The second argument is the function to which the key name will be passed.\
+   * The function should return a value of the type for this key\
+   * This is useful when you need to modify  the resolver response.
+   *
+   * SDL:
+   * ```graphql
+   * type User {
+   *   id: ID!
+   *   name: String!
+   * }
+   * ```
+   *\
+   * Resolver:
+   * ```ts
+   * const User = fieldBuilder(
+   *  ['id', 'name'],
+   *  field => async (parent, args, context) => {
+   *    const user = parent;
+   *
+   *    if (field === 'name') {
+   *      // compatible
+   *      return user.name.replace(/\b\w/g, l => l.toUpperCase());
+   *    }
+   *
+   *    return user[field];
+   *  },
+   * );
+   * ```
+   */
+  export const fieldBuilder: FieldBuilder;
+
   /**
    * Core type definitions (GraphQL SDL string)
    */
