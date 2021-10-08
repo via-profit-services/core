@@ -113,7 +113,6 @@ declare module '@via-profit-services/core' {
      * Persisted Queries map (Object contains key: value pairs). \
      * If persisted queries map is passed, the server will ignore \
      * the query directive in body request and read the map using \
-     * the `documentId` key, unless otherwise specified (persistedQueryKey option)
      * @see https://relay.dev/docs/en/persisted-queries.html
      */
     persistedQueriesMap?: PersistedQueriesMap;

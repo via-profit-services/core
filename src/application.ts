@@ -174,7 +174,7 @@ const applicationFactory: ApplicationFactory = async props => {
               queryTime: performance.now() - startTime,
             },
       });
-  } catch (originalError: any) {
+    } catch (originalError: any) {
       const errors: GraphQLError[] = [originalError];
 
       response.status(originalError.status || 200).json({
