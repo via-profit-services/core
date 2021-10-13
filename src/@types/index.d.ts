@@ -259,10 +259,11 @@ declare module '@via-profit-services/core' {
     orderBy?: OrderBy;
     search?: InputSearch;
     between?: Between;
-    filter?: {
-      [key: string]: InputFilterValue | readonly string[] | readonly number[];
-    };
+    filter?: InputFilterRecord;
   }
+
+  export type InputFilterRecord = Record<string, InputFilterValue | readonly string[] | readonly number[]>;
+
   export type InputFilterValue = string | number | boolean | null;
   export type InputSearch =
     | SearchSingleField

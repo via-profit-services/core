@@ -1,7 +1,5 @@
 import type {
   OutputFilter,
-  ApplyAliases,
-  WhereField,
   BuildQueryFilter,
   SearchMultipleFields,
   SearchSingleField,
@@ -9,30 +7,6 @@ import type {
 
 import { DEFAULT_NODES_LIMIT } from '../constants';
 import { getCursorPayload } from './cursors';
-
-/**
- * @deprecated Use `ApplyAliases` function of `@via-profit-services/knex` instead
- */
-export const applyAliases: ApplyAliases = (whereClause, aliases) => {
-  const aliasesMap = new Map<string, string>();
-  Object.entries(aliases).forEach(([tableName, field]) => {
-    const fieldsArray = Array.isArray(field) ? field : [field];
-    fieldsArray.forEach(fieldName => {
-      aliasesMap.set(fieldName, tableName);
-    });
-  });
-
-  const newWhere = whereClause.map(data => {
-    const [field, action, value] = data;
-    const alias = aliasesMap.get(field) || aliasesMap.get('*');
-
-    const whereField: WhereField = [alias ? `${alias}.${field}` : field, action, value];
-
-    return whereField;
-  });
-
-  return newWhere;
-};
 
 export const defaultOutputFilter: OutputFilter = {
   limit: 0,
@@ -70,11 +44,6 @@ export const buildQueryFilter: BuildQueryFilter = args => {
 
   // compile filter
   if (typeof filter !== 'undefined' && filter !== null) {
-    // if filter is an array
-    if (Array.isArray(filter)) {
-      outputFilter.where = filter;
-    }
-
     if (!Array.isArray(filter)) {
       Object.entries(filter).forEach(([field, value]) => {
         if (Array.isArray(value)) {
