@@ -15,6 +15,7 @@ interface ApplyMiddlewareProps {
   schema: GraphQLSchema;
   extensions: MiddlewareExtensions;
   request: Request;
+  requestCounter: number;
 }
 
 interface ApplyMiddlewareResponse {
@@ -27,7 +28,7 @@ interface ApplyMiddlewareResponse {
 type ApplyMiddleware = (props: ApplyMiddlewareProps) => MaybePromise<ApplyMiddlewareResponse>;
 
 const applyMiddlewares: ApplyMiddleware = async props => {
-  const { middlewares, config, context, schema, extensions, request } = props;
+  const { middlewares, config, context, schema, extensions, request, requestCounter } = props;
 
   // define validation rules and new context
   let composedValidationRules: ValidationRule[] = [];
@@ -45,6 +46,7 @@ const applyMiddlewares: ApplyMiddleware = async props => {
       context: composedContext,
       extensions: composedExtensions,
       request,
+      requestCounter,
     });
 
     // append validation rules

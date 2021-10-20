@@ -94,7 +94,6 @@ declare module '@via-profit-services/core' {
     emitter: CoreEmitter;
     request: Request;
     schema: GraphQLSchema;
-    requestCounter: number;
   }
 
   export interface ServicesCollection {
@@ -152,6 +151,7 @@ declare module '@via-profit-services/core' {
     request: Request;
     schema: GraphQLSchema;
     extensions: MiddlewareExtensions;
+    requestCounter: number;
   }
 
   export interface MiddlewareResponse {
@@ -350,21 +350,6 @@ declare module '@via-profit-services/core' {
       wrapWithoutResolvers?: boolean;
     },
   ) => GraphQLSchema;
-
-  /**
-   * @deprecated Use `ApplyAliases` type of `@via-profit-services/knex` instead
-   *
-   * Key - is a alias name \
-   * Value - is a field alias name or array of names \
-   * Use asterisk (\*) for default alias name. \
-   * For example: {\
-   * books: ['title', 'length'],\
-   * info: ['*'],\
-   * }
-   */
-  export type TableAliases = {
-    [key: string]: string | string[];
-  };
 
   export type StringToCursor = (str: string) => string;
   export type CursorToString = (str: string) => string;

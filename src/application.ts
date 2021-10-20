@@ -51,16 +51,16 @@ const applicationFactory: ApplicationFactory = async props => {
     request: null,
     emitter: new CoreEmitter(),
     schema: null,
-    requestCounter: 0,
   };
 
   initialContext.services.core = new CoreService({ context: initialContext });
+  let requestCounter = 0;
 
   const graphQLExpress: RequestHandler = async (request, response) => {
     initialContext.request = request;
-    initialContext.requestCounter += 1;
     initialContext.schema = configurtation.schema;
     const middlewares = composeMiddlewares(middleware);
+    requestCounter += 1;
 
     let validationRules: ValidationRule[] = [];
     let schema: GraphQLSchema = initialContext.schema;
@@ -75,6 +75,7 @@ const applicationFactory: ApplicationFactory = async props => {
         request: initialContext.request,
         extensions: {},
         middlewares,
+        requestCounter,
       });
 
       validationRules = middlewaresResponse.validationRules;
