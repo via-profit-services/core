@@ -94,6 +94,7 @@ declare module '@via-profit-services/core' {
     emitter: CoreEmitter;
     request: Request;
     schema: GraphQLSchema;
+    requestCounter: number;
   }
 
   export interface ServicesCollection {

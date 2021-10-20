@@ -51,12 +51,14 @@ const applicationFactory: ApplicationFactory = async props => {
     request: null,
     emitter: new CoreEmitter(),
     schema: null,
+    requestCounter: 0,
   };
 
   initialContext.services.core = new CoreService({ context: initialContext });
 
   const graphQLExpress: RequestHandler = async (request, response) => {
     initialContext.request = request;
+    initialContext.requestCounter += 1;
     initialContext.schema = configurtation.schema;
     const middlewares = composeMiddlewares(middleware);
 
