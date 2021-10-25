@@ -20,7 +20,6 @@ const bodyParser: BodyParser = async req => {
     throw new Error('Missing content-type header');
   }
 
-
   const rawBody = await readBody(req, { charset: 'utf-8' });
 
   if (JSONOBJREGEX.test(rawBody)) {
@@ -30,6 +29,8 @@ const bodyParser: BodyParser = async req => {
       // Do nothing
     }
   }
+
+  return {};
 };
 
 interface GraphQLParams {

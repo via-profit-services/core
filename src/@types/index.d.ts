@@ -40,8 +40,7 @@ declare module '@via-profit-services/core' {
     ): MaybePromise<ExecutionResult<T>>;
   }
 
-  type GraphQLErrorEmitCallback = (data: {
-    message: string;
+  type GraphQLErrorEmitCallback = (message: string, data: {
     error: GraphQLError;
     stack: string[];
   }) => void;

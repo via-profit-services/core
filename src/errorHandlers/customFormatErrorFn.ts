@@ -15,24 +15,26 @@ const customFormatErrorFn = (props: Props) => {
   const { originalError } = error;
   const stack = error.stack.split('\n') || [];
 
-  if (debug) {
-    console.log('');
-    console.log(
-      '\x1b[31m%s\x1b[0m',
-      `Caught the ${originalError?.name ?? originalError?.name ?? error.name} «${
-        originalError?.message ?? originalError ?? error.message
-      }»`,
-    );
-    console.log('');
-    console.log('\x1b[33m%s\x1b[0m', `Call stack: ${error.stack}`);
-    console.log('');
-  }
-
-  emitter.emit('graphql-error', {
-    message: originalError?.message ?? originalError ?? error.message,
-    stack,
-    error,
-  });
+  // if (debug) {
+  //   console.log('');
+  //   console.log(
+  //     '\x1b[31m%s\x1b[0m',
+  //     `Caught the ${originalError?.name ?? originalError?.name ?? error.name} «${
+  //       originalError?.message ?? originalError ?? error.message
+  //     }»`,
+  //   );
+  //   console.log('');
+  //   console.log('\x1b[33m%s\x1b[0m', `Call stack: ${error.stack}`);
+  //   console.log('');
+  // }
+  emitter.emit(
+    'graphql-error',
+    typeof originalError?.message === 'string' ? originalError.message : error?.message,
+    {
+      stack,
+      error,
+    },
+  );
 
   return {
     message: error.message,
