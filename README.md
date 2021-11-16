@@ -4,7 +4,7 @@
 
 > Via Profit services / **Core** - [GraphQL](https://graphql.org/) server based on [Express](http://expressjs.com) framework
 
-## <a name="license"></a> License
+## Documentation [here](https://node.e1g.ru/packages/core)
 
 The  [MIT](./LICENSE) License.
 
