@@ -1,7 +1,7 @@
 {
     "name": "@via-profit-services/core",
     "support": "https://via-profit.ru",
-    "version": "2.0.0-rc.13",
+    "version": "2.0.0",
     "description": "Via Profit Core service",
     "main": "dist/index.js",
     "keywords": [
@@ -17,7 +17,7 @@
         "build:dev": "cross-env NODE_ENV=development webpack --config ./webpack/webpack-config-dev.ts",
         "build:dist": "webpack --config ./webpack/webpack-config-prod.ts",
         "start": "yarn build:dev --watch",
-        "lint": "yarn dlx eslint --ext .ts ./src/ --fix .",
+        "lint": "yarn eslint --ext .ts ./src/ --fix .",
         "package": "yarn pack -o package-%v.tgz"
     },
     "repository": {
