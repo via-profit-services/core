@@ -1,4 +1,8 @@
-import type { CoreServiceProps, CoreService as CoreServiceInterface, MakeGraphQLRequestParams } from '@via-profit-services/core';
+import type {
+  CoreServiceProps,
+  CoreService as CoreServiceInterface,
+  MakeGraphQLRequestParams,
+} from '@via-profit-services/core';
 import { execute, parse, Source, ExecutionResult } from 'graphql';
 
 class CoreService implements CoreServiceInterface {
@@ -8,12 +12,12 @@ class CoreService implements CoreServiceInterface {
     this.props = props;
   }
 
-  public async makeGraphQLRequest<T = {[key: string]: any;}>(params: MakeGraphQLRequestParams) {
+  public async makeGraphQLRequest<T = { [key: string]: any }>(params: MakeGraphQLRequestParams) {
     const { context } = this.props;
     const { schema } = context;
     const { variables, query, operationName } = params;
 
-    const documentAST = parse(new Source(query, 'GraphQL internal request'))
+    const documentAST = parse(new Source(query, 'GraphQL internal request'));
     const response = await execute({
       variableValues: variables,
       document: documentAST,

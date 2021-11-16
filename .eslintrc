@@ -1,5 +1,0 @@
-{
-  "extends": [
-    "@via-profit-services/eslint-config"
-  ]
-}

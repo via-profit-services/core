@@ -13,8 +13,8 @@ const webpackProdConfig: Configuration = merge(webpackBaseConfig, {
     schema: path.resolve(__dirname, '../src/schema.graphql'),
   },
   optimization: {
-    minimize: false,
     nodeEnv: false,
+    minimize: false,
   },
   output: {
     path: path.join(__dirname, '../dist/'),
@@ -35,9 +35,8 @@ Contact    ${support}
     {
       apply: (compiler: Compiler) => {
         compiler.hooks.beforeRun.tapAsync('WebpackBeforeBuild', (_, callback) => {
-
           if (fs.existsSync(path.join(__dirname, '../dist/'))) {
-            fs.rmdirSync(path.join(__dirname, '../dist/'), { recursive: true })
+            fs.rmSync(path.join(__dirname, '../dist/'), { recursive: true });
           }
 
           callback();
@@ -54,7 +53,6 @@ Contact    ${support}
           );
           callback();
         });
-
       },
     },
     new BundleAnalyzerPlugin({

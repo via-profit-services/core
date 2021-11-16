@@ -1,9 +1,7 @@
 /**
  * Original code here https://github.com/Urigo/graphql-scalars/blob/master/src/resolvers/JSON.ts
  */
-import {
-  Kind, GraphQLScalarType, ValueNode, ObjectValueNode,
-} from 'graphql';
+import { Kind, GraphQLScalarType, ValueNode, ObjectValueNode } from 'graphql';
 
 function identity<T>(value: T): T {
   return value;
@@ -12,9 +10,7 @@ function identity<T>(value: T): T {
 // eslint-disable-next-line @typescript-eslint/ban-types
 function ensureObject(value: any): value is object {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new TypeError(
-      `JSONObject cannot represent non-object value: ${value}`,
-    );
+    throw new TypeError(`JSONObject cannot represent non-object value: ${value}`);
   }
 
   return value;
@@ -22,7 +18,7 @@ function ensureObject(value: any): value is object {
 
 function parseObject(ast: ObjectValueNode, variables: any): any {
   const value = Object.create(null);
-  ast.fields.forEach((field) => {
+  ast.fields.forEach(field => {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     value[field.name.value] = parseLiteral(field.value, variables);
   });
@@ -41,7 +37,7 @@ function parseLiteral(ast: ValueNode, variables: any): any {
     case Kind.OBJECT:
       return parseObject(ast, variables);
     case Kind.LIST:
-      return ast.values.map((n) => parseLiteral(n, variables));
+      return ast.values.map(n => parseLiteral(n, variables));
     case Kind.NULL:
       return null;
     case Kind.VARIABLE: {
@@ -59,7 +55,7 @@ function parseLiteral(ast: ValueNode, variables: any): any {
 export const JSON = new GraphQLScalarType({
   name: 'JSON',
   description:
-        'The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).',
+    'The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).',
   serialize: identity,
   parseValue: identity,
   parseLiteral,
@@ -68,7 +64,7 @@ export const JSON = new GraphQLScalarType({
 export const JSONObject = new GraphQLScalarType({
   name: 'JSONObject',
   description:
-        'The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).',
+    'The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).',
   serialize: ensureObject,
   parseValue: ensureObject,
   parseLiteral: parseObject,

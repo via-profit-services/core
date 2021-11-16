@@ -7,9 +7,7 @@ export default new GraphQLScalarType({
 
   serialize(value) {
     if (typeof value !== 'string' && typeof value !== 'number') {
-      throw new TypeError(
-        `Value is not an instance of string or number: ${JSON.stringify(value)}`,
-      );
+      throw new TypeError(`Value is not an instance of string or number: ${JSON.stringify(value)}`);
     }
 
     return Number(value);
@@ -25,9 +23,7 @@ export default new GraphQLScalarType({
 
   parseLiteral(ast) {
     if (ast.kind !== Kind.STRING && ast.kind !== Kind.INT) {
-      throw new GraphQLError(
-        `Can only parse strings & integers to money but got a: ${ast.kind}`,
-      );
+      throw new GraphQLError(`Can only parse strings & integers to money but got a: ${ast.kind}`);
     }
 
     try {

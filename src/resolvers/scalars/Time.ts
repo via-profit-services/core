@@ -1,9 +1,7 @@
 import { Kind, GraphQLError, GraphQLScalarType } from 'graphql';
 
 /* eslint-disable no-useless-escape */
-const TIME_REGEX = new RegExp(
-  /^([0-1]?[0-9]|2[0-4]):([0-5][0-9])(:[0-5][0-9])?$/,
-);
+const TIME_REGEX = new RegExp(/^([0-1]?[0-9]|2[0-4]):([0-5][0-9])(:[0-5][0-9])?$/);
 /* eslint-enable */
 
 export default new GraphQLScalarType({
@@ -35,9 +33,7 @@ export default new GraphQLScalarType({
 
   parseLiteral(ast) {
     if (ast.kind !== Kind.STRING) {
-      throw new GraphQLError(
-        `Can only validate strings as time but got a: ${ast.kind}`,
-      );
+      throw new GraphQLError(`Can only validate strings as time but got a: ${ast.kind}`);
     }
 
     if (!TIME_REGEX.test(ast.value)) {

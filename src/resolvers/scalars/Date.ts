@@ -1,9 +1,7 @@
 import { Kind, GraphQLError, GraphQLScalarType } from 'graphql';
 
 /* eslint-disable no-useless-escape */
-const DATE_REGEX = new RegExp(
-  /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/,
-);
+const DATE_REGEX = new RegExp(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
 
 export default new GraphQLScalarType({
   name: 'Date',
@@ -13,9 +11,7 @@ export default new GraphQLScalarType({
     let v = value;
 
     if (!(v instanceof Date) && typeof v !== 'string') {
-      throw new TypeError(
-        `Value is not an instance of Date, Date string: ${JSON.stringify(v)}`,
-      );
+      throw new TypeError(`Value is not an instance of Date, Date string: ${JSON.stringify(v)}`);
     }
 
     if (typeof v === 'string') {
@@ -28,11 +24,9 @@ export default new GraphQLScalarType({
       throw new TypeError(`Value is not a valid Date: ${JSON.stringify(v)}`);
     }
 
-    return [
-      v.getFullYear(),
-      `0${(v.getMonth() + 1)}`.slice(-2),
-      `0${(v.getDate())}`.slice(-2),
-    ].join('-');
+    return [v.getFullYear(), `0${v.getMonth() + 1}`.slice(-2), `0${v.getDate()}`.slice(-2)].join(
+      '-',
+    );
   },
 
   parseValue(value) {
@@ -52,15 +46,12 @@ export default new GraphQLScalarType({
 
   parseLiteral(ast) {
     if (ast.kind !== Kind.STRING) {
-      throw new GraphQLError(
-        `Can only parse strings to dates but got a: ${ast.kind}`,
-      );
+      throw new GraphQLError(`Can only parse strings to dates but got a: ${ast.kind}`);
     }
 
     if (!DATE_REGEX.test(ast.value)) {
       throw new TypeError(`Value is not a valid date only: ${ast.value}`);
     }
-
 
     const result = new Date(ast.value);
 
