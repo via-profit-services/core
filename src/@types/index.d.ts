@@ -50,29 +50,6 @@ declare module '@via-profit-services/core' {
     once(event: 'graphql-error', callback: GraphQLErrorEmitCallback): this;
   }
 
-  type Resolvers = {
-    Query: {
-      core: GraphQLFieldResolver<unknown, Context>;
-    };
-    Mutation: {
-      core: GraphQLFieldResolver<
-        unknown,
-        Context,
-        {
-          str: string;
-        }
-      >;
-    };
-    Date: GraphQLScalarType;
-    Time: GraphQLScalarType;
-    DateTime: GraphQLScalarType;
-    EmailAddress: GraphQLScalarType;
-    URL: GraphQLScalarType;
-    JSON: GraphQLScalarType;
-    Money: GraphQLScalarType;
-    Void: GraphQLScalarType;
-  };
-
   export type MaybePromise<T> = Promise<T> | T;
 
   export type WithKey<K extends string | number | symbol, ResType> = {
@@ -687,13 +664,26 @@ declare module '@via-profit-services/core' {
    * ```
    */
   export const fieldBuilder: FieldBuilder;
-
-  /**
-   * Core type definitions (GraphQL SDL string)
-   */
-  export const typeDefs: string;
-  export const resolvers: Resolvers;
+  export const schema: GraphQLSchema;
   export const factory: ApplicationFactory;
+  export const DateType: GraphQLScalarType;
+  export const DateTimeType: GraphQLScalarType;
+  export const EmailAddressType: GraphQLScalarType;
+  export const MoneyType: GraphQLScalarType;
+  export const TimeType: GraphQLScalarType;
+  export const VoidType: GraphQLScalarType;
+  export const URLType: GraphQLScalarType;
+  export const BetweenDateType: GraphQLScalarType;
+  export const BetweenDateTimeType: GraphQLScalarType;
+  export const BetweenIntType: GraphQLScalarType;
+  export const BetweenMoneyType: GraphQLScalarType;
+  export const BetweenTimeType: GraphQLScalarType;
+  export const ConnectionType: GraphQLScalarType;
+  export const EdgeType: GraphQLScalarType;
+  export const ErrorType: GraphQLScalarType;
+  export const NodeType: GraphQLScalarType;
+  export const JSONType: GraphQLScalarType;
+  export const JSONObjectType: GraphQLScalarType;
 
   export const LOG_FILENAME_DEBUG: string;
   export const LOG_FILENAME_ERRORS: string;

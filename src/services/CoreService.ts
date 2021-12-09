@@ -12,7 +12,7 @@ class CoreService implements CoreServiceInterface {
     this.props = props;
   }
 
-  public async makeGraphQLRequest<T = { [key: string]: any }>(params: MakeGraphQLRequestParams) {
+  public async makeGraphQLRequest<T = ExecutionResult['data']>(params: MakeGraphQLRequestParams) {
     const { context } = this.props;
     const { schema } = context;
     const { variables, query, operationName } = params;
@@ -26,7 +26,7 @@ class CoreService implements CoreServiceInterface {
       operationName: operationName,
     });
 
-    return response as ExecutionResult<T>;
+    return response as any;
   }
 }
 

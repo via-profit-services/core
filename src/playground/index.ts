@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import cors from 'cors';
 import express from 'express';
+import { stitchSchemas } from '@graphql-tools/stitch';
 import {
   GraphQLSchema,
   GraphQLObjectType,
@@ -22,7 +23,7 @@ import { buildQueryFilter } from '../utils/filters';
       name: 'Query',
       fields: () => ({
         test: {
-          type: new GraphQLNonNull(core.resolvers.JSON),
+          type: new GraphQLNonNull(core.JSONType),
           resolve: (_parent, args) => {
             const queryFilter = buildQueryFilter(args);
 
@@ -50,7 +51,16 @@ import { buildQueryFilter } from '../utils/filters';
   const server = http.createServer(app);
   const { graphQLExpress } = await core.factory({
     server,
-    schema,
+    schema: stitchSchemas({
+      subschemas: [schema, core.schema],
+    }),
+    middleware: ({ context, requestCounter }) => {
+      if (requestCounter === 1) {
+        context.emitter.on('graphql-error', console.error);
+      }
+
+      return { context };
+    },
   });
 
   app.use(cors());

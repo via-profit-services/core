@@ -10,14 +10,6 @@ const webpackBaseConfig: Configuration = {
         test: /\.ts$/,
         use: 'ts-loader',
       },
-      {
-        test: /\.graphql$/,
-        use: 'raw-loader',
-      },
-      {
-        test: /\.html$/,
-        use: 'html-loader',
-      },
     ],
   },
   node: {
@@ -25,7 +17,7 @@ const webpackBaseConfig: Configuration = {
     __dirname: true,
   },
   resolve: {
-    extensions: ['.ts', '.mjs', '.js', '.json', '.graphql', '.html'],
+    extensions: ['.ts', '.js', '.json'],
   },
   plugins: [
     new DefinePlugin({
@@ -33,8 +25,8 @@ const webpackBaseConfig: Configuration = {
     }),
   ],
   externals: [
-    /^moment(|-timezone)$/,
-    /^graphql(|-tools|\/.+)$/,
+    /^graphql$/,
+    /^@graphql-tools\/.*/,
     /^supports-color$/,
     /^express$/,
     /^@via-profit-services\/.*/,
