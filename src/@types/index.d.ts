@@ -15,6 +15,8 @@ declare module '@via-profit-services/core' {
     GraphQLObjectType,
     GraphQLResolveInfo,
     GraphQLError,
+    GraphQLInputObjectType,
+    GraphQLInterfaceType,
   } from 'graphql';
   import { Request, RequestHandler } from 'express';
   import http from 'http';
@@ -666,24 +668,28 @@ declare module '@via-profit-services/core' {
   export const fieldBuilder: FieldBuilder;
   export const schema: GraphQLSchema;
   export const factory: ApplicationFactory;
-  export const DateType: GraphQLScalarType;
-  export const DateTimeType: GraphQLScalarType;
-  export const EmailAddressType: GraphQLScalarType;
-  export const MoneyType: GraphQLScalarType;
-  export const TimeType: GraphQLScalarType;
-  export const VoidType: GraphQLScalarType;
-  export const URLType: GraphQLScalarType;
-  export const BetweenDateType: GraphQLScalarType;
-  export const BetweenDateTimeType: GraphQLScalarType;
-  export const BetweenIntType: GraphQLScalarType;
-  export const BetweenMoneyType: GraphQLScalarType;
-  export const BetweenTimeType: GraphQLScalarType;
-  export const ConnectionType: GraphQLScalarType;
-  export const EdgeType: GraphQLScalarType;
-  export const ErrorType: GraphQLScalarType;
-  export const NodeType: GraphQLScalarType;
-  export const JSONType: GraphQLScalarType;
-  export const JSONObjectType: GraphQLScalarType;
+
+  export const DateScalarType: GraphQLScalarType;
+  export const DateTimeScalarType: GraphQLScalarType;
+  export const EmailAddressScalarType: GraphQLScalarType;
+  export const MoneyScalarType: GraphQLScalarType;
+  export const TimeScalarType: GraphQLScalarType;
+  export const VoidScalarType: GraphQLScalarType;
+  export const URLScalarType: GraphQLScalarType;
+  export const JSONScalarType: GraphQLScalarType;
+  export const JSONObjectScalarType: GraphQLScalarType;
+
+  export const BetweenDateInputType: GraphQLInputObjectType;
+  export const BetweenDateTimeInputType: GraphQLInterfaceType;
+  export const BetweenIntInputType: GraphQLInterfaceType;
+  export const BetweenMoneyInputType: GraphQLInterfaceType;
+  export const BetweenTimeInputType: GraphQLInterfaceType;
+
+  export const ConnectionInterfaceType: GraphQLInterfaceType;
+  export const EdgeInterfaceType: GraphQLInterfaceType;
+  export const ErrorInterfaceType: GraphQLInterfaceType;
+  export const NodeInterfaceType: GraphQLInterfaceType;
+
 
   export const LOG_FILENAME_DEBUG: string;
   export const LOG_FILENAME_ERRORS: string;

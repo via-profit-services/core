@@ -1,67 +1,75 @@
 /* eslint-disable import/max-dependencies */
 import { GraphQLSchema } from 'graphql';
 
-import { JSON as JSONType, JSONObject as JSONObjectType } from './scalars/JSON';
-import DateType from './scalars/Date';
-import DateTimeType from './scalars/DateTime';
-import EmailAddressType from './scalars/EmailAddress';
-import MoneyType from './scalars/Money';
-import TimeType from './scalars/Time';
-import VoidType from './scalars/Void';
-import URLType from './scalars/URL';
-import BetweenDateType from './inputs/BetweenDate';
-import BetweenDateTimeType from './inputs/BetweenDateTime';
-import BetweenIntType from './inputs/BetweenInt';
-import BetweenMoneyType from './inputs/BetweenMoney';
-import BetweenTimeType from './inputs/BetweenTime';
-import ConnectionType from './interfaces/Connection';
-import EdgeType from './interfaces/Edge';
-import ErrorType from './interfaces/Error';
-import NodeType from './interfaces/Node';
+import { JSON as JSONScalarType, JSONObject as JSONObjectScalarType } from './scalars/JSON';
+import DateScalarType from './scalars/Date';
+import DateTimeScalarType from './scalars/DateTime';
+import EmailAddressScalarType from './scalars/EmailAddress';
+import MoneyScalarType from './scalars/Money';
+import TimeScalarType from './scalars/Time';
+import VoidScalarType from './scalars/Void';
+import URLScalarType from './scalars/URL';
+import BetweenDateInputType from './inputs/BetweenDate';
+import BetweenDateTimeInputType from './inputs/BetweenDateTime';
+import BetweenIntInputType from './inputs/BetweenInt';
+import BetweenMoneyInputType from './inputs/BetweenMoney';
+import BetweenTimeInputType from './inputs/BetweenTime';
+import ConnectionInterfaceType from './interfaces/Connection';
+import EdgeInterfaceType from './interfaces/Edge';
+import ErrorInterfaceType from './interfaces/Error';
+import NodeInterfaceType from './interfaces/Node';
 import Query from './Query';
 
 const schema = new GraphQLSchema({
   query: Query,
   types: [
-    DateType,
-    DateTimeType,
-    EmailAddressType,
-    MoneyType,
-    TimeType,
-    VoidType,
-    URLType,
-    JSONType,
-    JSONObjectType,
-    BetweenDateType,
-    BetweenDateTimeType,
-    BetweenIntType,
-    BetweenMoneyType,
-    BetweenTimeType,
-    ConnectionType,
-    EdgeType,
-    ErrorType,
-    NodeType,
+    // scalars
+    DateScalarType,
+    DateTimeScalarType,
+    EmailAddressScalarType,
+    MoneyScalarType,
+    TimeScalarType,
+    VoidScalarType,
+    URLScalarType,
+    JSONScalarType,
+    JSONObjectScalarType,
+
+    // inputs
+    BetweenDateInputType,
+    BetweenDateTimeInputType,
+    BetweenIntInputType,
+    BetweenMoneyInputType,
+    BetweenTimeInputType,
+
+    // interfaces
+    ConnectionInterfaceType,
+    EdgeInterfaceType,
+    ErrorInterfaceType,
+    NodeInterfaceType,
   ],
 });
 
 export {
   schema,
-  DateType,
-  DateTimeType,
-  EmailAddressType,
-  MoneyType,
-  TimeType,
-  VoidType,
-  URLType,
-  BetweenDateType,
-  BetweenDateTimeType,
-  BetweenIntType,
-  BetweenMoneyType,
-  BetweenTimeType,
-  ConnectionType,
-  EdgeType,
-  ErrorType,
-  NodeType,
-  JSONType,
-  JSONObjectType,
+  // scalars
+  DateScalarType,
+  DateTimeScalarType,
+  EmailAddressScalarType,
+  MoneyScalarType,
+  TimeScalarType,
+  VoidScalarType,
+  URLScalarType,
+  JSONScalarType,
+  JSONObjectScalarType,
+  // inputs
+  BetweenDateInputType,
+  BetweenDateTimeInputType,
+  BetweenIntInputType,
+  BetweenMoneyInputType,
+  BetweenTimeInputType,
+  // interfaces
+  ConnectionInterfaceType,
+  EdgeInterfaceType,
+  ErrorInterfaceType,
+  NodeInterfaceType,
 };

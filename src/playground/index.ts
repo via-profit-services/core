@@ -23,7 +23,7 @@ import { buildQueryFilter } from '../utils/filters';
       name: 'Query',
       fields: () => ({
         test: {
-          type: new GraphQLNonNull(core.JSONType),
+          type: new GraphQLNonNull(core.JSONScalarType),
           resolve: (_parent, args) => {
             const queryFilter = buildQueryFilter(args);
 
