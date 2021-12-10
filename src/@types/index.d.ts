@@ -40,6 +40,7 @@ declare module '@via-profit-services/core' {
     makeGraphQLRequest<T = { [key: string]: any }>(
       params: MakeGraphQLRequestParams,
     ): MaybePromise<ExecutionResult<T>>;
+    getVersion(): string;
   }
 
   type GraphQLErrorEmitCallback = (message: string, data: {

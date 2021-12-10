@@ -28,6 +28,10 @@ class CoreService implements CoreServiceInterface {
 
     return response as any;
   }
+
+  public getVersion() {
+    return process.env.CORE_VERSION;
+  }
 }
 
 export default CoreService;
