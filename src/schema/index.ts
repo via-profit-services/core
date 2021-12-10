@@ -1,6 +1,4 @@
 /* eslint-disable import/max-dependencies */
-import { GraphQLSchema } from 'graphql';
-
 import { JSON as JSONScalarType, JSONObject as JSONObjectScalarType } from './scalars/JSON';
 import DateScalarType from './scalars/Date';
 import DateTimeScalarType from './scalars/DateTime';
