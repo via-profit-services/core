@@ -37,16 +37,26 @@ declare module '@via-profit-services/core' {
   export class CoreService {
     props: CoreServiceProps;
     constructor(props: CoreServiceProps);
-    makeGraphQLRequest<T = { [key: string]: any }>(
+
+    /**
+     * Send GraphQL request
+     */
+    makeGraphQLRequest<T = ExecutionResult['data']>(
       params: MakeGraphQLRequestParams,
     ): MaybePromise<ExecutionResult<T>>;
+    /**
+     * Return current module version
+     */
     getVersion(): string;
   }
 
-  type GraphQLErrorEmitCallback = (message: string, data: {
-    error: GraphQLError;
-    stack: string[];
-  }) => void;
+  type GraphQLErrorEmitCallback = (
+    message: string,
+    data: {
+      error: GraphQLError;
+      stack: string[];
+    },
+  ) => void;
 
   export class CoreEmitter extends EventEmitter {
     on(event: 'graphql-error', callback: GraphQLErrorEmitCallback): this;
@@ -242,7 +252,10 @@ declare module '@via-profit-services/core' {
     filter?: InputFilterRecord;
   }
 
-  export type InputFilterRecord = Record<string, InputFilterValue | readonly string[] | readonly number[]>;
+  export type InputFilterRecord = Record<
+    string,
+    InputFilterValue | readonly string[] | readonly number[]
+  >;
 
   export type InputFilterValue = string | number | boolean | null;
   export type InputSearch =
@@ -690,7 +703,6 @@ declare module '@via-profit-services/core' {
   export const EdgeInterfaceType: GraphQLInterfaceType;
   export const ErrorInterfaceType: GraphQLInterfaceType;
   export const NodeInterfaceType: GraphQLInterfaceType;
-
 
   export const LOG_FILENAME_DEBUG: string;
   export const LOG_FILENAME_ERRORS: string;

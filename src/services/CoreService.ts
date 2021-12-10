@@ -26,7 +26,7 @@ class CoreService implements CoreServiceInterface {
       operationName: operationName,
     });
 
-    return response as any;
+    return response as T;
   }
 
   public getVersion() {
