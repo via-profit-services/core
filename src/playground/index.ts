@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 import cors from 'cors';
 import express from 'express';
-import { stitchSchemas } from '@graphql-tools/stitch';
 import {
   GraphQLSchema,
   GraphQLObjectType,
@@ -19,6 +18,29 @@ import { buildQueryFilter } from '../utils/filters';
 (async () => {
   // Define schema
   const schema = new GraphQLSchema({
+    types: [
+      // scalars
+      core.DateScalarType,
+      core.DateTimeScalarType,
+      core.EmailAddressScalarType,
+      core.MoneyScalarType,
+      core.TimeScalarType,
+      core.VoidScalarType,
+      core.URLScalarType,
+      core.JSONScalarType,
+      core.JSONObjectScalarType,
+      // inputs
+      core.BetweenDateInputType,
+      core.BetweenDateTimeInputType,
+      core.BetweenIntInputType,
+      core.BetweenMoneyInputType,
+      core.BetweenTimeInputType,
+      // interfaces
+      core.ConnectionInterfaceType,
+      core.EdgeInterfaceType,
+      core.ErrorInterfaceType,
+      core.NodeInterfaceType,
+    ],
     query: new GraphQLObjectType<unknown, Context>({
       name: 'Query',
       fields: () => ({
@@ -51,9 +73,7 @@ import { buildQueryFilter } from '../utils/filters';
   const server = http.createServer(app);
   const { graphQLExpress } = await core.factory({
     server,
-    schema: stitchSchemas({
-      subschemas: [schema, core.schema],
-    }),
+    schema,
     middleware: ({ context, requestCounter }) => {
       if (requestCounter === 1) {
         context.emitter.on('graphql-error', console.error);
@@ -69,8 +89,8 @@ import { buildQueryFilter } from '../utils/filters';
   app.use('/graphql', graphQLExpress);
 
   // Finally start the server
-  server.listen(9005, () => {
+  server.listen(8080, () => {
     // eslint-disable-next-line no-console
-    console.info('GraphQL server started at http://localhost:9005/graphql');
+    console.info('GraphQL server started at http://localhost:8080/graphql');
   });
 })();

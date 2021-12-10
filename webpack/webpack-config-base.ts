@@ -1,6 +1,4 @@
-import { Configuration, DefinePlugin } from 'webpack';
-
-import { version } from '../package.json';
+import { Configuration } from 'webpack';
 
 const webpackBaseConfig: Configuration = {
   target: 'node',
@@ -19,11 +17,6 @@ const webpackBaseConfig: Configuration = {
   resolve: {
     extensions: ['.ts', '.js', '.json'],
   },
-  plugins: [
-    new DefinePlugin({
-      'process.env.CORE_VERSION': JSON.stringify(version),
-    }),
-  ],
   externals: [
     /^graphql$/,
     /^@graphql-tools\/.*/,

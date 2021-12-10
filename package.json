@@ -35,7 +35,6 @@
     ],
     "license": "MIT",
     "devDependencies": {
-        "@graphql-tools/stitch": "^8.4.2",
         "@types/bluebird": "^3.5.29",
         "@types/content-type": "^1.1.3",
         "@types/cors": "^2.8.10",

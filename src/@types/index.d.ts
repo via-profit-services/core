@@ -680,7 +680,6 @@ declare module '@via-profit-services/core' {
    * ```
    */
   export const fieldBuilder: FieldBuilder;
-  export const schema: GraphQLSchema;
   export const factory: ApplicationFactory;
 
   export const DateScalarType: GraphQLScalarType;
@@ -704,14 +703,6 @@ declare module '@via-profit-services/core' {
   export const ErrorInterfaceType: GraphQLInterfaceType;
   export const NodeInterfaceType: GraphQLInterfaceType;
 
-  export const LOG_FILENAME_DEBUG: string;
-  export const LOG_FILENAME_ERRORS: string;
-  export const LOG_FILENAME_WARNINGS: string;
-  export const LOG_DATE_PATTERNT: string;
-  export const LOG_MAX_SIZE: string;
-  export const LOG_MAX_FILES: string;
-  export const MAXIMUM_REQUEST_BODY_SIZE: string;
-  export const DEFAULT_NODES_LIMIT: string;
   export const DEFAULT_SERVER_TIMEZONE: string;
   export const DEFAULT_LOG_DIR: string;
   export const DEFAULT_PERSISTED_QUERY_KEY: string;

@@ -18,39 +18,8 @@ import ConnectionInterfaceType from './interfaces/Connection';
 import EdgeInterfaceType from './interfaces/Edge';
 import ErrorInterfaceType from './interfaces/Error';
 import NodeInterfaceType from './interfaces/Node';
-import Query from './Query';
-
-const schema = new GraphQLSchema({
-  query: Query,
-  types: [
-    // scalars
-    DateScalarType,
-    DateTimeScalarType,
-    EmailAddressScalarType,
-    MoneyScalarType,
-    TimeScalarType,
-    VoidScalarType,
-    URLScalarType,
-    JSONScalarType,
-    JSONObjectScalarType,
-
-    // inputs
-    BetweenDateInputType,
-    BetweenDateTimeInputType,
-    BetweenIntInputType,
-    BetweenMoneyInputType,
-    BetweenTimeInputType,
-
-    // interfaces
-    ConnectionInterfaceType,
-    EdgeInterfaceType,
-    ErrorInterfaceType,
-    NodeInterfaceType,
-  ],
-});
 
 export {
-  schema,
   // scalars
   DateScalarType,
   DateTimeScalarType,
