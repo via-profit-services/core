@@ -56,7 +56,16 @@ const applicationFactory: ApplicationFactory = async props => {
   initialContext.services.core = new CoreService({ context: initialContext });
   let requestCounter = 0;
 
-  const graphQLExpress: RequestHandler = async (request, response) => {
+  const graphQLExpress: RequestHandler = async (request, response, next) => {
+    const { method, headers } = request;
+
+    // just skip if is not a valid graphql request
+    if (headers['content-type'] === undefined || headers['content-type'] !== 'application/json') {
+      next();
+
+      return;
+    }
+
     initialContext.request = request;
     initialContext.schema = configurtation.schema;
     const middlewares = composeMiddlewares(middleware);
@@ -101,7 +110,6 @@ const applicationFactory: ApplicationFactory = async props => {
         );
       }
 
-      const { method } = request;
       const body = await bodyParser(request);
       const { query, operationName, variables } = parseGraphQLParams({
         body,
