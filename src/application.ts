@@ -4,9 +4,9 @@ import type {
   Context,
   ApplicationFactory,
   MiddlewareExtensions,
+  RequestHandler,
 } from '@via-profit-services/core';
 import { EventEmitter } from 'events';
-import { RequestHandler } from 'express';
 import {
   GraphQLError,
   validateSchema,
@@ -103,7 +103,8 @@ const applicationFactory: ApplicationFactory = async props => {
         );
       }
 
-      const body = await bodyParser(request);
+      const body = await bodyParser({ request, response, configurtation });
+
       const { query, operationName, variables } = parseGraphQLParams({
         body,
         request,
@@ -169,22 +170,28 @@ const applicationFactory: ApplicationFactory = async props => {
         );
       }
 
-      response.status(200).json({
-        data,
-        extensions: !debug
-          ? undefined
-          : {
-              ...extensions,
-              queryTime: performance.now() - startTime,
-            },
-      });
+      response.statusCode = 200;
+      response.end(
+        JSON.stringify({
+          data,
+          extensions: !debug
+            ? undefined
+            : {
+                ...extensions,
+                queryTime: performance.now() - startTime,
+              },
+        }),
+      );
     } catch (originalError: any) {
       const errors: GraphQLError[] = [originalError];
+      response.statusCode = originalError.status || 200;
 
-      response.status(originalError.status || 200).json({
-        data: null,
-        errors: errors.map(error => customFormatErrorFn({ error, context, debug })),
-      });
+      response.end(
+        JSON.stringify({
+          data: null,
+          errors: errors.map(error => customFormatErrorFn({ error, context, debug })),
+        }),
+      );
     }
   };
 

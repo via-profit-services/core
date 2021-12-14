@@ -1,5 +1,6 @@
 /* eslint-disable import/max-dependencies */
 import { JSON as JSONScalarType, JSONObject as JSONObjectScalarType } from './scalars/JSON';
+import FileUploadScalarType from './scalars/FileUpload';
 import DateScalarType from './scalars/Date';
 import DateTimeScalarType from './scalars/DateTime';
 import EmailAddressScalarType from './scalars/EmailAddress';
@@ -19,6 +20,7 @@ import NodeInterfaceType from './interfaces/Node';
 
 export {
   // scalars
+  FileUploadScalarType,
   DateScalarType,
   DateTimeScalarType,
   EmailAddressScalarType,

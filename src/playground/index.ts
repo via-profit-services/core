@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
 import cors from 'cors';
 import express from 'express';
+import fs from 'fs';
+import path from 'path';
 import {
   GraphQLSchema,
   GraphQLObjectType,
@@ -10,7 +12,7 @@ import {
   GraphQLInputObjectType,
 } from 'graphql';
 import http from 'http';
-import type { Context } from '@via-profit-services/core';
+import type { Context, UploadedFile } from '@via-profit-services/core';
 
 import * as core from '../index';
 import { buildQueryFilter } from '../utils/filters';
@@ -20,6 +22,7 @@ import { buildQueryFilter } from '../utils/filters';
   const schema = new GraphQLSchema({
     types: [
       // scalars
+      core.FileUploadScalarType,
       core.DateScalarType,
       core.DateTimeScalarType,
       core.EmailAddressScalarType,
@@ -65,6 +68,47 @@ import { buildQueryFilter } from '../utils/filters';
           },
         },
       }),
+    }),
+    mutation: new GraphQLObjectType<unknown, Context>({
+      name: 'Mutation',
+      fields: {
+        upload: {
+          type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(core.VoidScalarType))),
+          args: {
+            filesList: {
+              type: new GraphQLNonNull(
+                new GraphQLList(new GraphQLNonNull(core.FileUploadScalarType)),
+              ),
+            },
+          },
+          resolve: async (_parent, args: { filesList: UploadedFile[] }) => {
+            const { filesList } = args;
+
+            const responseData: any[] = [];
+            const filesData = await Promise.all(filesList);
+            await filesData.reduce(async (prev, file) => {
+              await prev;
+
+              const { createReadStream, mimeType } = file;
+              const readStream = createReadStream();
+              const filepath = path.resolve(__dirname, mimeType.replace('/', '.'));
+              const writeStream = fs.createWriteStream(filepath);
+
+              const writeFile = new Promise<void>(resolve => {
+                writeStream.on('close', async () => {
+                  resolve();
+                });
+
+                readStream.pipe(writeStream);
+              });
+
+              await writeFile;
+            }, Promise.resolve());
+
+            return responseData;
+          },
+        },
+      },
     }),
   });
 

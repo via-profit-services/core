@@ -36,6 +36,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",
           "packageDependencies": [
             ["@types/bluebird", "npm:3.5.33"],
+            ["@types/busboy", "npm:0.3.1"],
             ["@types/content-type", "npm:1.1.3"],
             ["@types/cors", "npm:2.8.10"],
             ["@types/express", "npm:4.17.9"],
@@ -49,6 +50,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@typescript-eslint/parser", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:5.1.0"],
             ["@via-profit-services/eslint-config", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:0.1.19"],
             ["bufferutil", "npm:4.0.5"],
+            ["busboy", "npm:0.3.1"],
             ["cors", "npm:2.8.5"],
             ["cross-env", "npm:6.0.3"],
             ["dotenv", "npm:8.2.0"],
@@ -66,6 +68,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint-plugin-react-hooks", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.2.0"],
             ["eslint-plugin-standard", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:5.0.0"],
             ["express", "npm:4.17.1"],
+            ["fs-capacitor", "npm:7.0.1"],
             ["graphql", "npm:16.0.1"],
             ["nodemon", "npm:2.0.6"],
             ["nodemon-webpack-plugin", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.3.2"],
@@ -295,6 +298,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["@types/body-parser", "npm:1.19.0"],
             ["@types/connect", "npm:3.4.33"],
+            ["@types/node", "npm:14.14.10"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["@types/busboy", [
+        ["npm:0.3.1", {
+          "packageLocation": "./.yarn/cache/@types-busboy-npm-0.3.1-0374b08514-992a8a5881.zip/node_modules/@types/busboy/",
+          "packageDependencies": [
+            ["@types/busboy", "npm:0.3.1"],
             ["@types/node", "npm:14.14.10"]
           ],
           "linkType": "HARD",
@@ -710,6 +723,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["@via-profit-services/core", "workspace:."],
             ["@types/bluebird", "npm:3.5.33"],
+            ["@types/busboy", "npm:0.3.1"],
             ["@types/content-type", "npm:1.1.3"],
             ["@types/cors", "npm:2.8.10"],
             ["@types/express", "npm:4.17.9"],
@@ -723,6 +737,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@typescript-eslint/parser", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:5.1.0"],
             ["@via-profit-services/eslint-config", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:0.1.19"],
             ["bufferutil", "npm:4.0.5"],
+            ["busboy", "npm:0.3.1"],
             ["cors", "npm:2.8.5"],
             ["cross-env", "npm:6.0.3"],
             ["dotenv", "npm:8.2.0"],
@@ -740,6 +755,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint-plugin-react-hooks", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.2.0"],
             ["eslint-plugin-standard", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:5.0.0"],
             ["express", "npm:4.17.1"],
+            ["fs-capacitor", "npm:7.0.1"],
             ["graphql", "npm:16.0.1"],
             ["nodemon", "npm:2.0.6"],
             ["nodemon-webpack-plugin", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.3.2"],
@@ -1616,6 +1632,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
+      ["busboy", [
+        ["npm:0.3.1", {
+          "packageLocation": "./.yarn/cache/busboy-npm-0.3.1-87ec0dae5a-d2bcb788c4.zip/node_modules/busboy/",
+          "packageDependencies": [
+            ["busboy", "npm:0.3.1"],
+            ["dicer", "npm:0.3.0"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
       ["bytes", [
         ["npm:3.1.0", {
           "packageLocation": "./.yarn/cache/bytes-npm-3.1.0-19c5b15405-7c3b21c5d9.zip/node_modules/bytes/",
@@ -2229,6 +2255,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/destroy-npm-1.0.4-a2203e01cb-da9ab4961d.zip/node_modules/destroy/",
           "packageDependencies": [
             ["destroy", "npm:1.0.4"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["dicer", [
+        ["npm:0.3.0", {
+          "packageLocation": "./.yarn/cache/dicer-npm-0.3.0-ef4dcd1bb9-9f61aea61f.zip/node_modules/dicer/",
+          "packageDependencies": [
+            ["dicer", "npm:0.3.0"],
+            ["streamsearch", "npm:0.1.2"]
           ],
           "linkType": "HARD",
         }]
@@ -3473,6 +3509,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/fresh-npm-0.5.2-ad2bb4c0a2-13ea8b08f9.zip/node_modules/fresh/",
           "packageDependencies": [
             ["fresh", "npm:0.5.2"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["fs-capacitor", [
+        ["npm:7.0.1", {
+          "packageLocation": "./.yarn/cache/fs-capacitor-npm-7.0.1-725ca0f65d-caee0ef4ae.zip/node_modules/fs-capacitor/",
+          "packageDependencies": [
+            ["fs-capacitor", "npm:7.0.1"]
           ],
           "linkType": "HARD",
         }]
@@ -6275,6 +6320,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/statuses-npm-1.5.0-f88f91b2e9-c469b9519d.zip/node_modules/statuses/",
           "packageDependencies": [
             ["statuses", "npm:1.5.0"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["streamsearch", [
+        ["npm:0.1.2", {
+          "packageLocation": "./.yarn/cache/streamsearch-npm-0.1.2-813180eb1c-d2db57cbfb.zip/node_modules/streamsearch/",
+          "packageDependencies": [
+            ["streamsearch", "npm:0.1.2"]
           ],
           "linkType": "HARD",
         }]

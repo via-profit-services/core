@@ -185,6 +185,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/busboy@npm:^0.3.1":
+  version: 0.3.1
+  resolution: "@types/busboy@npm:0.3.1"
+  dependencies:
+    "@types/node": "*"
+  checksum: 992a8a5881d557e2c4727acf71528d8a58a52119644ba1419c1e802238e7b88b4f8cc60611dc8cebd9a1bbfd08fac6064681a392656069867f9b3d305c62403d
+  languageName: node
+  linkType: hard
+
 "@types/connect@npm:*":
   version: 3.4.33
   resolution: "@types/connect@npm:3.4.33"
@@ -494,6 +503,7 @@ __metadata:
   resolution: "@via-profit-services/core@workspace:."
   dependencies:
     "@types/bluebird": ^3.5.29
+    "@types/busboy": ^0.3.1
     "@types/content-type": ^1.1.3
     "@types/cors": ^2.8.10
     "@types/express": ^4.17.9
@@ -507,6 +517,7 @@ __metadata:
     "@typescript-eslint/parser": 5.1.0
     "@via-profit-services/eslint-config": ^0.1.19
     bufferutil: ^4.x
+    busboy: ^0.3.1
     cors: ^2.8.5
     cross-env: ^6.0.3
     dotenv: ^8.2.0
@@ -524,6 +535,7 @@ __metadata:
     eslint-plugin-react-hooks: ^4.2.0
     eslint-plugin-standard: ^5.0.0
     express: ^4.17.1
+    fs-capacitor: ^7.0.1
     graphql: 16.0.1
     nodemon: ^2.0.6
     nodemon-webpack-plugin: ^4.3.2
@@ -1229,6 +1241,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"busboy@npm:^0.3.1":
+  version: 0.3.1
+  resolution: "busboy@npm:0.3.1"
+  dependencies:
+    dicer: 0.3.0
+  checksum: d2bcb788c4595edca4ea2168ab8bf7f9558b627ddcec2fb6bbaf0aa6a10b63da48dce35ce56936570f330c5268a3204f7037021a310a895a8b1a223568e0cc1b
+  languageName: node
+  linkType: hard
+
 "bytes@npm:3.1.0":
   version: 3.1.0
   resolution: "bytes@npm:3.1.0"
@@ -1730,6 +1751,15 @@ __metadata:
   version: 1.0.4
   resolution: "destroy@npm:1.0.4"
   checksum: da9ab4961dc61677c709da0c25ef01733042614453924d65636a7db37308fef8a24cd1e07172e61173d471ca175371295fbc984b0af5b2b4ff47cd57bd784c03
+  languageName: node
+  linkType: hard
+
+"dicer@npm:0.3.0":
+  version: 0.3.0
+  resolution: "dicer@npm:0.3.0"
+  dependencies:
+    streamsearch: 0.1.2
+  checksum: 9f61aea61fcd81457f1b43967af7e66415b7a31d393336fa05a29b221b5ba065b99e5cac46476b2da36eb7af7665bf8dad6f9500409116dc6a35ada183841598
   languageName: node
   linkType: hard
 
@@ -2711,6 +2741,13 @@ __metadata:
   version: 0.5.2
   resolution: "fresh@npm:0.5.2"
   checksum: 13ea8b08f91e669a64e3ba3a20eb79d7ca5379a81f1ff7f4310d54e2320645503cc0c78daedc93dfb6191287295f6479544a649c64d8e41a1c0fb0c221552346
+  languageName: node
+  linkType: hard
+
+"fs-capacitor@npm:^7.0.1":
+  version: 7.0.1
+  resolution: "fs-capacitor@npm:7.0.1"
+  checksum: caee0ef4aec41e786da164dce2fc259d34e3c79db28cbdf8e0529bc673d273d1e2effaf0f3592917182b89faef71ab5d519d31a41044c68b61a3263482dccea1
   languageName: node
   linkType: hard
 
@@ -5271,6 +5308,13 @@ resolve@^2.0.0-next.3:
   version: 1.5.0
   resolution: "statuses@npm:1.5.0"
   checksum: c469b9519de16a4bb19600205cffb39ee471a5f17b82589757ca7bd40a8d92ebb6ed9f98b5a540c5d302ccbc78f15dc03cc0280dd6e00df1335568a5d5758a5c
+  languageName: node
+  linkType: hard
+
+"streamsearch@npm:0.1.2":
+  version: 0.1.2
+  resolution: "streamsearch@npm:0.1.2"
+  checksum: d2db57cbfbf7947ab9c75a7b4c80a8ef8d24850cf0a1a24258bb6956c97317ce1eab7dbcbf9c5aba3e6198611af1053b02411057bbedb99bf9c64b8275248997
   languageName: node
   linkType: hard
 

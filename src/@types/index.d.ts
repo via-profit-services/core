@@ -18,9 +18,26 @@ declare module '@via-profit-services/core' {
     GraphQLInputObjectType,
     GraphQLInterfaceType,
   } from 'graphql';
-  import { Request, RequestHandler } from 'express';
   import http from 'http';
   import { EventEmitter } from 'events';
+  import { WriteStream } from 'fs-capacitor';
+  import { ReadStream } from 'fs';
+
+  export type RequestHandler = (
+    request: http.IncomingMessage,
+    response: http.ServerResponse,
+  ) => MaybePromise<void>;
+
+  export interface FilePayload {
+    filename: string;
+    mimeType: string;
+    encoding: string;
+    id: string;
+    capacitor: WriteStream;
+    createReadStream: (options?: any) => ReadStream;
+  }
+
+  export type UploadedFile = Promise<FilePayload>;
 
   interface CoreServiceProps {
     context: Context;
@@ -81,7 +98,7 @@ declare module '@via-profit-services/core' {
     timezone: string;
     services: ServicesCollection;
     emitter: CoreEmitter;
-    request: Request;
+    request: http.IncomingMessage;
     schema: GraphQLSchema;
   }
 
@@ -137,7 +154,7 @@ declare module '@via-profit-services/core' {
   export interface MiddlewareProps {
     config: Configuration;
     context: Context;
-    request: Request;
+    request: http.IncomingMessage;
     schema: GraphQLSchema;
     extensions: MiddlewareExtensions;
     requestCounter: number;
@@ -307,10 +324,9 @@ declare module '@via-profit-services/core' {
   export type Where = WhereField[];
 
   export type RequestBody = {
-    operationName?: unknown;
-    query?: unknown;
-    variables?: unknown;
-    documentId?: unknown;
+    operationName?: string;
+    query?: string;
+    variables?: Record<string, any>;
     [key: string]: unknown;
   };
 
@@ -392,7 +408,17 @@ declare module '@via-profit-services/core' {
     | 'is null'
     | 'is not null';
 
-  export type BodyParser = (reqest: Request) => Promise<RequestBody>;
+  export type BodyParser = (props: {
+    request: http.IncomingMessage;
+    response: http.ServerResponse;
+    configurtation: Configuration;
+  }) => Promise<RequestBody>;
+
+  export type MultipartParser = (props: {
+    request: http.IncomingMessage;
+    response: http.ServerResponse;
+    configurtation: Configuration;
+  }) => Promise<RequestBody>;
 
   export type ResolverFactory<
     Data extends Record<string, any> = any,
@@ -682,6 +708,7 @@ declare module '@via-profit-services/core' {
   export const fieldBuilder: FieldBuilder;
   export const factory: ApplicationFactory;
 
+  export const FileUploadScalarType: GraphQLScalarType;
   export const DateScalarType: GraphQLScalarType;
   export const DateTimeScalarType: GraphQLScalarType;
   export const EmailAddressScalarType: GraphQLScalarType;

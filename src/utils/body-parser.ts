@@ -1,26 +1,42 @@
 import type { BodyParser, RequestBody, Configuration } from '@via-profit-services/core';
-import { Request } from 'express';
 import getRawBody from 'raw-body';
 import zlib from 'zlib';
+import http from 'http';
+
+import multipartParser from './multipart-parset';
 
 const JSONOBJREGEX = /^[ \t\n\r]*\{/;
 
-const bodyParser: BodyParser = async req => {
-  const { body, headers } = req;
-  // If express has already parsed a body as a keyed object, use it.
-  if (typeof body === 'object' && !(body instanceof Buffer)) {
-    return body as RequestBody;
+const isRequestWithBody = (
+  req: http.IncomingMessage,
+): req is http.IncomingMessage & { body: any } => 'body' in req;
+
+const bodyParser: BodyParser = async ({ request, response, configurtation }) => {
+  if (isRequestWithBody(request)) {
+    // If express has already parsed a body as a keyed object, use it.
+    if (typeof request.body === 'object' && !(request.body instanceof Buffer)) {
+      return request.body as RequestBody;
+    }
   }
 
   // Skip requests without content types.
-  if (headers['content-type'] === undefined) {
-    throw new Error('Missing content-type header');
-  }
-  if (headers['content-type'] !== 'application/json') {
+  if (request.headers['content-type'] === undefined) {
     throw new Error('Missing content-type header');
   }
 
-  const rawBody = await readBody(req, { charset: 'utf-8' });
+  // check to multipart (file upload)
+  if (request.headers['content-type'].match(/^multipart\/form-data/)) {
+    // const finished = new Promise(resolve => req.on('end', resolve));
+    const rawBody = await multipartParser({ request, response, configurtation });
+
+    return rawBody;
+  }
+
+  if (request.headers['content-type'] !== 'application/json') {
+    throw new Error('Missing content-type header');
+  }
+
+  const rawBody = await readBody(request, { charset: 'utf-8' });
 
   if (JSONOBJREGEX.test(rawBody)) {
     try {
@@ -41,7 +57,7 @@ interface GraphQLParams {
 
 interface GraphQLParamsProps {
   body: RequestBody;
-  request: Request;
+  request: http.IncomingMessage;
   config: Configuration;
 }
 
@@ -93,7 +109,7 @@ export const parseGraphQLParams = (props: GraphQLParamsProps): GraphQLParams => 
   return graphQLParams;
 };
 
-const decompressBody = (request: Request, encoding: string) => {
+const decompressBody = (request: http.IncomingMessage, encoding: string) => {
   switch (encoding) {
     case 'identity':
       return request;
@@ -109,7 +125,10 @@ const decompressBody = (request: Request, encoding: string) => {
   }
 };
 
-const readBody = async (request: Request, opts: { charset: string }): Promise<string> => {
+const readBody = async (
+  request: http.IncomingMessage,
+  opts: { charset: string },
+): Promise<string> => {
   const { charset } = opts;
   if (!charset.startsWith('utf-')) {
     throw new Error(`Unsupported charset "${charset.toUpperCase()}".`);

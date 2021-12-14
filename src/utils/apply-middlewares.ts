@@ -5,7 +5,7 @@ import type {
   MaybePromise,
   MiddlewareExtensions,
 } from '@via-profit-services/core';
-import type { Request } from 'express';
+import http from 'http';
 import type { ValidationRule, GraphQLSchema } from 'graphql';
 
 interface ApplyMiddlewareProps {
@@ -14,7 +14,7 @@ interface ApplyMiddlewareProps {
   config: Configuration;
   schema: GraphQLSchema;
   extensions: MiddlewareExtensions;
-  request: Request;
+  request: http.IncomingMessage;
   requestCounter: number;
 }
 
