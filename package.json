@@ -85,9 +85,9 @@
         "webpack-merge": "^5.8.0"
     },
     "peerDependencies": {
-        "graphql": "^15.x || ^16.x",
+        "busboy": "^0.3.x",
         "fs-capacitor": "^7.x",
-        "busboy": "^0.3.x"
+        "graphql": "^15.x || ^16.x"
     },
     "optionalDependencies": {
         "bufferutil": "^4.x",
