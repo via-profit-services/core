@@ -56,15 +56,8 @@ const applicationFactory: ApplicationFactory = async props => {
   initialContext.services.core = new CoreService({ context: initialContext });
   let requestCounter = 0;
 
-  const graphQLExpress: RequestHandler = async (request, response, next) => {
-    const { method, headers } = request;
-
-    // just skip if is not a valid graphql request
-    if (headers['content-type'] === undefined || headers['content-type'] !== 'application/json') {
-      next();
-
-      return;
-    }
+  const graphQLExpress: RequestHandler = async (request, response) => {
+    const { method } = request;
 
     initialContext.request = request;
     initialContext.schema = configurtation.schema;
