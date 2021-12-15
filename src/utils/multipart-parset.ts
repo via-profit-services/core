@@ -7,7 +7,7 @@ import dotNotationSet from '../utils/set';
 
 const multipartParser: MultipartParser = ({ request, configurtation }) =>
   new Promise<RequestBody>(resolve => {
-    const { persistedQueryKey } = configurtation;
+    const { persistedQueryKey, maxFieldSize, maxFileSize, maxFiles } = configurtation;
     const { headers } = request;
 
     const parser = new Busboy({
@@ -17,7 +17,9 @@ const multipartParser: MultipartParser = ({ request, configurtation }) =>
       },
       limits: {
         fields: 2, // Only operations and map.
-        // ...limits, // FIXME: Set limits
+        fieldSize: maxFieldSize,
+        fileSize: maxFileSize,
+        files: maxFiles,
       },
     });
 
@@ -28,7 +30,7 @@ const multipartParser: MultipartParser = ({ request, configurtation }) =>
     parser.on('field', (fieldName, value, _fieldNameTruncated, valueTruncated) => {
       if (valueTruncated) {
         throw new Error(
-          `The «${fieldName}» multipart field value exceeds the ${1000000 * 64} byte size limit.`,
+          `The «${fieldName}» multipart field value exceeds the ${maxFieldSize} byte size limit.`,
         );
       }
 
@@ -85,9 +87,8 @@ const multipartParser: MultipartParser = ({ request, configurtation }) =>
           throw new Error('Invalid JSON in the «map» field');
         }
 
-        // FIXME: Set  max files limit
-        if (Object.entries(mapData).length > 30) {
-          throw new Error(`${30} max file uploads exceeded.`);
+        if (Object.entries(mapData).length > maxFiles) {
+          throw new Error(`${maxFiles} max file uploads exceeded.`);
         }
 
         Object.entries(mapData).forEach(([fieldName, paths]) => {
@@ -107,13 +108,6 @@ const multipartParser: MultipartParser = ({ request, configurtation }) =>
             }
 
             dotNotationSet(operations, pathValue, map.get(Number(fieldName)));
-
-            // operations.variables.files[fieldName] = map.get(Number(fieldName));
-            // operations.variables
-
-            // operations.variables[]
-
-            // .set(pathValue, map.get(Number(fieldName)));
           });
         });
       }
@@ -121,7 +115,6 @@ const multipartParser: MultipartParser = ({ request, configurtation }) =>
 
     // FILE PARSER
     parser.on('file', (fieldName, stream, filename, encoding, mimeType) => {
-      // console.log('File detected')
       const upload = map.get(Number(fieldName));
 
       if (!upload) {
@@ -139,7 +132,7 @@ const multipartParser: MultipartParser = ({ request, configurtation }) =>
       });
 
       stream.on('limit', () => {
-        throw new Error(`File truncated as it exceeds the ${Infinity} byte size limit.`);
+        throw new Error(`File truncated as it exceeds the ${maxFileSize} byte size limit.`);
       });
 
       stream.on('error', (_error: Error) => {

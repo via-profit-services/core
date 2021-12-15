@@ -40,7 +40,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/content-type", "npm:1.1.3"],
             ["@types/cors", "npm:2.8.10"],
             ["@types/express", "npm:4.17.9"],
-            ["@types/node", "npm:14.14.10"],
+            ["@types/node", "npm:16.11.13"],
             ["@types/nodemon", "npm:1.19.0"],
             ["@types/validator", "npm:12.0.1"],
             ["@types/webpack", "npm:5.28.0"],
@@ -455,6 +455,13 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/node", "npm:14.14.10"]
           ],
           "linkType": "HARD",
+        }],
+        ["npm:16.11.13", {
+          "packageLocation": "./.yarn/cache/@types-node-npm-16.11.13-c2e2cce406-7c9d62c024.zip/node_modules/@types/node/",
+          "packageDependencies": [
+            ["@types/node", "npm:16.11.13"]
+          ],
+          "linkType": "HARD",
         }]
       ]],
       ["@types/nodemon", [
@@ -727,7 +734,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/content-type", "npm:1.1.3"],
             ["@types/cors", "npm:2.8.10"],
             ["@types/express", "npm:4.17.9"],
-            ["@types/node", "npm:14.14.10"],
+            ["@types/node", "npm:16.11.13"],
             ["@types/nodemon", "npm:1.19.0"],
             ["@types/validator", "npm:12.0.1"],
             ["@types/webpack", "npm:5.28.0"],
@@ -6873,7 +6880,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@tsconfig/node12", "npm:1.0.9"],
             ["@tsconfig/node14", "npm:1.0.1"],
             ["@tsconfig/node16", "npm:1.0.2"],
-            ["@types/node", "npm:14.14.10"],
+            ["@types/node", "npm:16.11.13"],
             ["@types/swc__core", null],
             ["@types/swc__wasm", null],
             ["@types/typescript", null],

@@ -21,7 +21,13 @@ import {
 } from 'graphql';
 import { performance } from 'perf_hooks';
 
-import { DEFAULT_SERVER_TIMEZONE, DEFAULT_PERSISTED_QUERY_KEY } from './constants';
+import {
+  DEFAULT_SERVER_TIMEZONE,
+  DEFAULT_PERSISTED_QUERY_KEY,
+  DEFAULT_MAX_FIELD_SIZE,
+  DEFAULT_MAX_FILES,
+  DEFAULT_MAX_FILE_SIZE,
+} from './constants';
 import customFormatErrorFn from './errorHandlers/customFormatErrorFn';
 import CoreService from './services/CoreService';
 import applyMiddlewares from './utils/apply-middlewares';
@@ -36,6 +42,9 @@ const applicationFactory: ApplicationFactory = async props => {
     rootValue: undefined,
     persistedQueriesMap: undefined,
     persistedQueryKey: DEFAULT_PERSISTED_QUERY_KEY,
+    maxFieldSize: DEFAULT_MAX_FIELD_SIZE,
+    maxFileSize: DEFAULT_MAX_FILE_SIZE,
+    maxFiles: DEFAULT_MAX_FILES,
     ...props,
   };
 
@@ -56,7 +65,7 @@ const applicationFactory: ApplicationFactory = async props => {
   initialContext.services.core = new CoreService({ context: initialContext });
   let requestCounter = 0;
 
-  const graphQLExpress: RequestHandler = async (request, response) => {
+  const graphQLRequestListener: RequestHandler = async (request, response) => {
     const { method } = request;
 
     initialContext.request = request;
@@ -195,9 +204,7 @@ const applicationFactory: ApplicationFactory = async props => {
     }
   };
 
-  return {
-    graphQLExpress,
-  };
+  return graphQLRequestListener;
 };
 
 export default applicationFactory;

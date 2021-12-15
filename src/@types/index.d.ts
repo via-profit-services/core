@@ -107,9 +107,7 @@ declare module '@via-profit-services/core' {
     [key: string]: unknown;
   }
 
-  export type ApplicationFactory = (props: InitProps) => Promise<{
-    graphQLExpress: RequestHandler;
-  }>;
+  export type ApplicationFactory = (props: InitProps) => Promise<RequestHandler>;
 
   export type PersistedQueriesMap = Record<string, string>;
 
@@ -149,6 +147,9 @@ declare module '@via-profit-services/core' {
     debug?: boolean;
     rootValue?: unknown;
     middleware?: Middleware | Middleware[];
+    maxFieldSize?: number;
+    maxFileSize?: number;
+    maxFiles?: number;
   }
 
   export interface MiddlewareProps {
@@ -654,7 +655,7 @@ declare module '@via-profit-services/core' {
    * **Note:** The resolver function should return all the received parameters.\
    * Example:
    * ```ts
-   * const { graphQLExpress } = await factory({
+   * const { graphQLRequestListener } = await factory({
    *   server,
    *   schema,
    *   middleware: [
@@ -731,6 +732,8 @@ declare module '@via-profit-services/core' {
   export const NodeInterfaceType: GraphQLInterfaceType;
 
   export const DEFAULT_SERVER_TIMEZONE: string;
-  export const DEFAULT_LOG_DIR: string;
   export const DEFAULT_PERSISTED_QUERY_KEY: string;
+  export const DEFAULT_MAX_FIELD_SIZE: number;
+  export const DEFAULT_MAX_FILE_SIZE: number;
+  export const DEFAULT_MAX_FILES: number;
 }

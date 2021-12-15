@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import cors from 'cors';
+// import cors from 'cors';
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
@@ -113,9 +113,9 @@ import { buildQueryFilter } from '../utils/filters';
   });
 
   // Make the HTTP server with express and initialize the core
-  const app = express();
-  const server = http.createServer(app);
-  const { graphQLExpress } = await core.factory({
+  // const app = express();
+  const server = http.createServer();
+  const graphQLListener = await core.factory({
     server,
     schema,
     middleware: ({ context, requestCounter }) => {
@@ -127,10 +127,26 @@ import { buildQueryFilter } from '../utils/filters';
     },
   });
 
-  app.use(cors());
-  // Apply graphQLExpress as middleware
+  server.on('request', (req, res) => {
+    switch (req.url) {
+      case '/graphql':
+        res.statusCode = 200;
+
+        return graphQLListener(req, res);
+
+      default:
+        res.statusCode = 404;
+        res.setHeader('Content-Type', 'text/html');
+        res.write('<h1>404 Not found</h1>');
+        break;
+    }
+
+    return res.end();
+  });
+  // app.use(cors());
+  // Apply graphQLRequestListener as middleware
   // You can use any endpoint other than `/graphql`
-  app.use('/graphql', graphQLExpress);
+  // app.use('/graphql', graphQLRequestListener);
 
   // Finally start the server
   server.listen(8080, () => {
