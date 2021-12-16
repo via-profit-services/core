@@ -23,6 +23,56 @@ declare module '@via-profit-services/core' {
   import { WriteStream } from 'fs-capacitor';
   import { ReadStream } from 'fs';
 
+
+  export interface InitProps {
+    /**
+     * Node http server instance
+     */
+    server: http.Server;
+    /**
+     * GraphQL Schema Definition
+     * @see: https://graphql.org
+     */
+    schema: GraphQLSchema;
+    /**
+     * GraphQL endpoint url\
+     * Default: `/graphql`\
+     */
+    endpoint?: string;
+    /**
+     * Persisted Queries map (Object contains key: value pairs). \
+     * If persisted queries map is passed, the server will ignore \
+     * the query directive in body request and read the map \
+     * @see https://relay.dev/docs/en/persisted-queries.html
+     */
+    persistedQueriesMap?: PersistedQueriesMap;
+
+    /**
+     * Used only together with the `persistedQueriesMap` option.\
+     * The name of the parameter that will be passed the ID of the query in the Persisted Queries map.
+     * \
+     * Default: `documentId`
+     */
+    persistedQueryKey?: string;
+    /**
+     * Server timezone
+     * \
+     * Default: `UTC`
+     */
+    timezone?: string;
+    /**
+     * Debug mode \
+     * \
+     * Default: `false`
+     */
+    debug?: boolean;
+    rootValue?: unknown;
+    middleware?: Middleware | Middleware[];
+    maxFieldSize?: number;
+    maxFileSize?: number;
+    maxFiles?: number;
+  }
+
   export type RequestHandler = (
     request: http.IncomingMessage,
     response: http.ServerResponse,
@@ -110,47 +160,6 @@ declare module '@via-profit-services/core' {
   export type ApplicationFactory = (props: InitProps) => Promise<RequestHandler>;
 
   export type PersistedQueriesMap = Record<string, string>;
-
-  export interface InitProps {
-    server: http.Server;
-    /**
-     * Persisted Queries map (Object contains key: value pairs). \
-     * If persisted queries map is passed, the server will ignore \
-     * the query directive in body request and read the map \
-     * @see https://relay.dev/docs/en/persisted-queries.html
-     */
-    persistedQueriesMap?: PersistedQueriesMap;
-
-    /**
-     * Used only together with the `persistedQueriesMap` option.\
-     * The name of the parameter that will be passed the ID of the query in the Persisted Queries map.
-     * \
-     * Default: `documentId`
-     */
-    persistedQueryKey?: string;
-    /**
-     * Server timezone
-     * \
-     * Default: `UTC`
-     */
-    timezone?: string;
-    /**
-     * GraphQL Schema Definition
-     * @see: https://graphql.org
-     */
-    schema: GraphQLSchema;
-    /**
-     * Debug mode \
-     * \
-     * Default: `false`
-     */
-    debug?: boolean;
-    rootValue?: unknown;
-    middleware?: Middleware | Middleware[];
-    maxFieldSize?: number;
-    maxFileSize?: number;
-    maxFiles?: number;
-  }
 
   export interface MiddlewareProps {
     config: Configuration;
@@ -721,10 +730,10 @@ declare module '@via-profit-services/core' {
   export const JSONObjectScalarType: GraphQLScalarType;
 
   export const BetweenDateInputType: GraphQLInputObjectType;
-  export const BetweenDateTimeInputType: GraphQLInterfaceType;
-  export const BetweenIntInputType: GraphQLInterfaceType;
-  export const BetweenMoneyInputType: GraphQLInterfaceType;
-  export const BetweenTimeInputType: GraphQLInterfaceType;
+  export const BetweenDateTimeInputType: GraphQLInputObjectType;
+  export const BetweenIntInputType: GraphQLInputObjectType;
+  export const BetweenMoneyInputType: GraphQLInputObjectType;
+  export const BetweenTimeInputType: GraphQLInputObjectType;
 
   export const ConnectionInterfaceType: GraphQLInterfaceType;
   export const EdgeInterfaceType: GraphQLInterfaceType;

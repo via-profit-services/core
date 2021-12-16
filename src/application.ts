@@ -27,6 +27,7 @@ import {
   DEFAULT_MAX_FIELD_SIZE,
   DEFAULT_MAX_FILES,
   DEFAULT_MAX_FILE_SIZE,
+  DEFAULT_ENDPOINT,
 } from './constants';
 import customFormatErrorFn from './errorHandlers/customFormatErrorFn';
 import CoreService from './services/CoreService';
@@ -45,6 +46,7 @@ const applicationFactory: ApplicationFactory = async props => {
     maxFieldSize: DEFAULT_MAX_FIELD_SIZE,
     maxFileSize: DEFAULT_MAX_FILE_SIZE,
     maxFiles: DEFAULT_MAX_FILES,
+    endpoint: DEFAULT_ENDPOINT,
     ...props,
   };
 
@@ -68,7 +70,11 @@ const applicationFactory: ApplicationFactory = async props => {
   const graphQLRequestListener: RequestHandler = async (request, response) => {
     const { method } = request;
 
+    Object.defineProperty(request, 'context', {
+      get: () => initialContext,
+    });
     initialContext.request = request;
+    // initialContext.request.getContext = () => initialContext;
     initialContext.schema = configurtation.schema;
     const middlewares = composeMiddlewares(middleware);
     requestCounter += 1;
@@ -89,6 +95,10 @@ const applicationFactory: ApplicationFactory = async props => {
         requestCounter,
       });
 
+      if (request.url !== configurtation.endpoint) {
+        return;
+      }
+
       validationRules = middlewaresResponse.validationRules;
       schema = middlewaresResponse.schema;
       context = middlewaresResponse.context;
@@ -96,6 +106,10 @@ const applicationFactory: ApplicationFactory = async props => {
 
       if (!schema) {
         throw new Error('GraphQL Error. GraphQL middleware options must contain a schema');
+      }
+
+      if (!['GET', 'POST'].includes(method)) {
+        throw new Error('GraphQL Error. GraphQL only supports GET and POST requests');
       }
 
       // validate request
@@ -119,10 +133,6 @@ const applicationFactory: ApplicationFactory = async props => {
         request,
         config: configurtation,
       });
-
-      if (!['GET', 'POST'].includes(method)) {
-        throw new Error('GraphQL Error. GraphQL only supports GET and POST requests');
-      }
 
       const documentAST = parse(new Source(query, 'GraphQL request'));
 
