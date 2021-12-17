@@ -11,13 +11,7 @@ const isRequestWithBody = (
   req: http.IncomingMessage,
 ): req is http.IncomingMessage & { body: any } => 'body' in req;
 
-const bodyParser: BodyParser = async ({ request, response, configurtation }) => {
-  if (isRequestWithBody(request)) {
-    // If express has already parsed a body as a keyed object, use it.
-    if (typeof request.body === 'object' && !(request.body instanceof Buffer)) {
-      return request.body as RequestBody;
-    }
-  }
+const bodyParser: BodyParser = async ({ request, response, config }) => {
 
   // Skip requests without content types.
   if (request.headers['content-type'] === undefined) {
@@ -27,7 +21,7 @@ const bodyParser: BodyParser = async ({ request, response, configurtation }) => 
   // check to multipart (file upload)
   if (request.headers['content-type'].match(/^multipart\/form-data/)) {
     // const finished = new Promise(resolve => req.on('end', resolve));
-    const rawBody = await multipartParser({ request, response, configurtation });
+    const rawBody = await multipartParser({ request, response, config });
 
     return rawBody;
   }

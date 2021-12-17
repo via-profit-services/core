@@ -6,7 +6,7 @@
 declare module '@via-profit-services/core' {
   import {
     GraphQLSchema,
-    ValidationRule,
+    GraphQLError,
     GraphQLFieldResolver,
     GraphQLScalarType,
     ExecutionArgs,
@@ -14,77 +14,74 @@ declare module '@via-profit-services/core' {
     GraphQLField,
     GraphQLObjectType,
     GraphQLResolveInfo,
-    GraphQLError,
     GraphQLInputObjectType,
     GraphQLInterfaceType,
+    GraphQLErrorExtensions,
   } from 'graphql';
   import http from 'http';
   import { EventEmitter } from 'events';
-  import { WriteStream } from 'fs-capacitor';
+  import { WriteStream, ReadStreamOptions } from 'fs-capacitor';
   import { ReadStream } from 'fs';
-
+  import { RequestHandler as ExpressJSRequestHandler } from 'express';
 
   export interface InitProps {
-    /**
-     * Node http server instance
-     */
-    server: http.Server;
     /**
      * GraphQL Schema Definition
      * @see: https://graphql.org
      */
-    schema: GraphQLSchema;
-    /**
-     * GraphQL endpoint url\
-     * Default: `/graphql`\
-     */
-    endpoint?: string;
+    readonly schema: GraphQLSchema;
     /**
      * Persisted Queries map (Object contains key: value pairs). \
      * If persisted queries map is passed, the server will ignore \
      * the query directive in body request and read the map \
      * @see https://relay.dev/docs/en/persisted-queries.html
      */
-    persistedQueriesMap?: PersistedQueriesMap;
-
+    readonly persistedQueriesMap?: PersistedQueriesMap;
     /**
      * Used only together with the `persistedQueriesMap` option.\
      * The name of the parameter that will be passed the ID of the query in the Persisted Queries map.
      * \
      * Default: `documentId`
      */
-    persistedQueryKey?: string;
+    readonly persistedQueryKey?: string;
     /**
      * Server timezone
      * \
      * Default: `UTC`
      */
-    timezone?: string;
+    readonly timezone?: string;
     /**
      * Debug mode \
      * \
      * Default: `false`
      */
-    debug?: boolean;
-    rootValue?: unknown;
-    middleware?: Middleware | Middleware[];
-    maxFieldSize?: number;
-    maxFileSize?: number;
-    maxFiles?: number;
+    readonly debug?: boolean;
+    readonly rootValue?: unknown;
+    readonly middleware?: Middleware | Middleware[];
+    readonly maxFieldSize?: number;
+    readonly maxFileSize?: number;
+    readonly maxFiles?: number;
   }
 
-  export type RequestHandler = (
-    request: http.IncomingMessage,
-    response: http.ServerResponse,
-  ) => MaybePromise<void>;
+  /**
+   * Create Express JS middleware
+   * ```js
+   * const app = express();
+   * const graphqlExpress = await GraphQLExpressFactory({ schema });
+   *
+   * app.use(graphqlExpress);
+   * app.listen();
+   * ```
+   */
+  export type GraphQLExpressFactory = (props: InitProps) => Promise<GraphQLExpress>;
+  export type GraphQLExpress = ExpressJSRequestHandler;
 
   export interface FilePayload {
-    filename: string;
-    mimeType: string;
-    encoding: string;
-    id: string;
-    capacitor: WriteStream;
-    createReadStream: (options?: any) => ReadStream;
+    readonly filename: string;
+    readonly mimeType: string;
+    readonly encoding: string;
+    readonly capacitor: WriteStream;
+    readonly createReadStream: (options?: ReadStreamOptions) => ReadStream;
   }
 
   export type UploadedFile = Promise<FilePayload>;
@@ -92,8 +89,6 @@ declare module '@via-profit-services/core' {
   interface CoreServiceProps {
     context: Context;
   }
-
-  type Args = Record<string, unknown>;
 
   type MakeGraphQLRequestParams = {
     query: string;
@@ -117,17 +112,32 @@ declare module '@via-profit-services/core' {
     getVersion(): string;
   }
 
-  type GraphQLErrorEmitCallback = (
-    message: string,
-    data: {
-      error: GraphQLError;
-      stack: string[];
-    },
-  ) => void;
+  /**
+   * Execute each middleware
+   */
+  export type ApplyMiddlewares = (props: {
+    middlewares: Middleware[];
+    request: http.IncomingMessage;
+    stats: CoreStats;
+    schema: GraphQLSchema;
+    context: Context;
+    extensions: GraphQLErrorExtensions;
+    config: Configuration;
+  }) => Promise<void>;
+
+  type GraphQLErrorEmitListener = (error: Error) => void;
 
   export class CoreEmitter extends EventEmitter {
-    on(event: 'graphql-error', callback: GraphQLErrorEmitCallback): this;
-    once(event: 'graphql-error', callback: GraphQLErrorEmitCallback): this;
+    on(event: 'graphql-error', listener: GraphQLErrorEmitListener): this;
+    once(event: 'graphql-error', listener: GraphQLErrorEmitListener): this;
+    addListener(event: 'graphql-error', listener: GraphQLErrorEmitListener): this;
+    removeListener(event: 'graphql-error', listener: GraphQLErrorEmitListener): this;
+    prependListener(event: 'graphql-error', listener: GraphQLErrorEmitListener): this;
+    prependOnceListener(event: 'graphql-error', listener: GraphQLErrorEmitListener): this;
+    emit(event: 'graphql-error', ...args: Parameters<GraphQLErrorEmitListener>): boolean;
+    removeAllListeners(event: 'graphql-error'): this;
+    listeners(event: 'graphql-error'): Function[];
+    listenerCount(event: 'graphql-error'): number;
   }
 
   export type MaybePromise<T> = Promise<T> | T;
@@ -145,51 +155,48 @@ declare module '@via-profit-services/core' {
   };
 
   export interface Context {
-    timezone: string;
-    services: ServicesCollection;
-    emitter: CoreEmitter;
+    readonly timezone: string;
+    readonly services: ServicesCollection;
+    readonly emitter: CoreEmitter;
     request: http.IncomingMessage;
     schema: GraphQLSchema;
   }
+
+  export type CoreStats = {
+    requestCounter: number;
+    readonly startupTime: Date;
+  };
 
   export interface ServicesCollection {
     core: CoreService;
     [key: string]: unknown;
   }
 
-  export type ApplicationFactory = (props: InitProps) => Promise<RequestHandler>;
+  export type HTTPListender = (
+    request: http.IncomingMessage,
+    response: http.ServerResponse,
+  ) => MaybePromise<void>;
+
+  export type ApplicationFactory = (props: InitProps) => Promise<HTTPListender>;
 
   export type PersistedQueriesMap = Record<string, string>;
 
   export interface MiddlewareProps {
-    config: Configuration;
+    readonly config: Configuration;
+    readonly stats: CoreStats;
     context: Context;
     request: http.IncomingMessage;
     schema: GraphQLSchema;
     extensions: MiddlewareExtensions;
-    requestCounter: number;
-  }
-
-  export interface MiddlewareResponse {
-    context?: Context;
-    validationRule?: ValidationRule | ValidationRule[];
-    schema?: GraphQLSchema;
-    extensions?: MiddlewareExtensions;
   }
 
   export interface MiddlewareExtensions {
     [key: string]: any;
   }
 
-  export type Middleware = (props: MiddlewareProps) => MaybePromise<MiddlewareResponse>;
+  export type Middleware = (props: MiddlewareProps) => MaybePromise<void>;
 
   export type Configuration = Required<InitProps>;
-
-  export interface SubServerConfig {
-    schema: GraphQLSchema;
-    server: http.Server;
-    context: Context;
-  }
 
   /**
    * GraphQL Cursor connection
@@ -342,6 +349,7 @@ declare module '@via-profit-services/core' {
 
   export type Source = any;
 
+  type Args = Record<string, unknown>;
   export type MutatedField = GraphQLField<Source, Context, Args> & Record<string, boolean>;
   export type MutatedObjectType = GraphQLObjectType<Source, Context> & Record<string, boolean>;
 
@@ -421,13 +429,13 @@ declare module '@via-profit-services/core' {
   export type BodyParser = (props: {
     request: http.IncomingMessage;
     response: http.ServerResponse;
-    configurtation: Configuration;
+    config: Configuration;
   }) => Promise<RequestBody>;
 
   export type MultipartParser = (props: {
     request: http.IncomingMessage;
     response: http.ServerResponse;
-    configurtation: Configuration;
+    config: Configuration;
   }) => Promise<RequestBody>;
 
   export type ResolverFactory<
@@ -664,8 +672,7 @@ declare module '@via-profit-services/core' {
    * **Note:** The resolver function should return all the received parameters.\
    * Example:
    * ```ts
-   * const { graphQLRequestListener } = await factory({
-   *   server,
+   * const { httpListener } = await factory({
    *   schema,
    *   middleware: [
    *     ({ schema }) => ({
@@ -716,7 +723,14 @@ declare module '@via-profit-services/core' {
    * ```
    */
   export const fieldBuilder: FieldBuilder;
-  export const factory: ApplicationFactory;
+  export const graphqlHTTPFactory: ApplicationFactory;
+  export const graphqlExpressFactory: GraphQLExpressFactory;
+
+  export class ServerError extends Error {
+    readonly graphqlErrors: ReadonlyArray<GraphQLError>;
+    readonly errorType: string;
+    constructor(graphqlErrors: ReadonlyArray<GraphQLError>, errorType: string);
+  }
 
   export const FileUploadScalarType: GraphQLScalarType;
   export const DateScalarType: GraphQLScalarType;

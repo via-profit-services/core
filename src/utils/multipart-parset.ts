@@ -1,13 +1,13 @@
 import type { RequestBody, MultipartParser } from '@via-profit-services/core';
-import { WriteStream } from 'fs-capacitor';
+import { WriteStream, ReadStreamOptions } from 'fs-capacitor';
 import Busboy from 'busboy';
 
 import FileUploadInstance from './FileUploadInstance';
 import dotNotationSet from '../utils/set';
 
-const multipartParser: MultipartParser = ({ request, configurtation }) =>
+const multipartParser: MultipartParser = ({ request, config }) =>
   new Promise<RequestBody>(resolve => {
-    const { persistedQueryKey, maxFieldSize, maxFileSize, maxFiles } = configurtation;
+    const { persistedQueryKey, maxFieldSize, maxFileSize, maxFiles } = config;
     const { headers } = request;
 
     const parser = new Busboy({
@@ -146,9 +146,7 @@ const multipartParser: MultipartParser = ({ request, configurtation }) =>
         mimeType,
         encoding,
         capacitor,
-        // id: uuidv4(),
-        // FIXME: Resolve types
-        createReadStream: (options?: any) => capacitor.createReadStream(options) as any,
+        createReadStream: (opt?: ReadStreamOptions) => capacitor.createReadStream(opt),
       };
 
       Object.defineProperty(file, 'capacitor', { value: capacitor });
@@ -163,7 +161,6 @@ const multipartParser: MultipartParser = ({ request, configurtation }) =>
 
     // FINISH PARSER
     parser.once('finish', () => {
-      // console.log('finished')
       request.unpipe(parser);
       request.resume();
 

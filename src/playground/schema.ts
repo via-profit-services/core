@@ -6,6 +6,7 @@ import {
   GraphQLID,
   GraphQLList,
   GraphQLInputObjectType,
+  GraphQLInt,
 } from 'graphql';
 import path from 'path';
 import fs from 'fs';
@@ -66,13 +67,13 @@ const schema = new GraphQLSchema({
           return queryFilter;
         },
         args: {
+          first: { type: GraphQLInt },
+          last: { type: GraphQLInt },
           filter: {
             type: new GraphQLInputObjectType({
               name: 'InputFilter',
               fields: {
-                ids: {
-                  type: new GraphQLList(new GraphQLNonNull(GraphQLID)),
-                },
+                ids: { type: new GraphQLList(new GraphQLNonNull(GraphQLID)) },
               },
             }),
           },
@@ -95,12 +96,12 @@ const schema = new GraphQLSchema({
 
           const responseData: any[] = [];
           const filesData = await Promise.all(filesList);
-          await filesData.reduce(async (prev, file, index) => {
+          await filesData.reduce(async (prev, file) => {
             await prev;
 
             const { createReadStream, mimeType } = file;
             const readStream = createReadStream();
-            const filepath = path.resolve(__dirname, `${index}-` + mimeType.replace('/', '.'));
+            const filepath = path.resolve(__dirname, `${Date.now()}-` + mimeType.replace('/', '.'));
             const writeStream = fs.createWriteStream(filepath);
 
             const writeFile = new Promise<void>(resolve => {
