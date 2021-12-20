@@ -1,5 +1,5 @@
 import type { RequestBody, MultipartParser } from '@via-profit-services/core';
-import Busboy from 'busboy';
+import busboy from 'busboy';
 
 import { WriteStream, ReadStreamOptions } from '../fs-capacitor';
 import FileUploadInstance from './FileUploadInstance';
@@ -10,7 +10,7 @@ const multipartParser: MultipartParser = ({ request, config }) =>
     const { persistedQueryKey, maxFieldSize, maxFileSize, maxFiles } = config;
     const { headers } = request;
 
-    const parser = new Busboy({
+    const parser = busboy({
       headers: {
         'content-type': 'multipart/form-data',
         ...headers,
@@ -114,7 +114,8 @@ const multipartParser: MultipartParser = ({ request, config }) =>
     });
 
     // FILE PARSER
-    parser.on('file', (fieldName, stream, filename, encoding, mimeType) => {
+    parser.on('file', (fieldName, stream, info) => {
+      const { mimeType, encoding, filename } = info as any;
       const upload = map.get(Number(fieldName));
 
       if (!upload) {
