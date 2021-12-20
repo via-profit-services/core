@@ -9,7 +9,6 @@ import type {
 } from '@via-profit-services/core';
 import { EventEmitter } from 'events';
 import {
-  GraphQLError,
   validateSchema,
   execute,
   specifiedRules,
@@ -19,7 +18,6 @@ import {
   validate,
   ValidationRule,
   GraphQLErrorExtensions,
-  GraphQLFormattedError,
 } from 'graphql';
 import { performance } from 'perf_hooks';
 
@@ -36,7 +34,6 @@ import composeMiddlewares from './utils/compose-middlewares';
 import applyMiddlewares from './utils/apply-middlewares';
 import formatErrors from './utils/format-errors';
 import ServerError from './server-error';
-
 
 const applicationFactory: ApplicationFactory = async props => {
   const config: Configuration = {
@@ -80,7 +77,7 @@ const applicationFactory: ApplicationFactory = async props => {
   // Core middleware must be a first of this array
   const middlewares = composeMiddlewares(coreMiddleware, middleware);
   const extensions: GraphQLErrorExtensions = {};
-  const validationRules: ValidationRule[] = [];
+  const validationRule: ValidationRule[] = [];
 
   const httpListener: HTTPListender = async (request, response) => {
     const { method } = request;
@@ -103,6 +100,7 @@ const applicationFactory: ApplicationFactory = async props => {
         schema,
         stats,
         extensions,
+        validationRule,
       });
 
       // validate request
@@ -122,7 +120,7 @@ const applicationFactory: ApplicationFactory = async props => {
       const documentAST = parse(new Source(query, 'GraphQL request'));
       const validationErrors = validate(schema, documentAST, [
         ...specifiedRules,
-        ...validationRules,
+        ...validationRule,
       ]);
       if (validationErrors.length > 0) {
         throw new ServerError(validationErrors, 'validation-field');
@@ -165,7 +163,6 @@ const applicationFactory: ApplicationFactory = async props => {
         }),
       );
     } catch (err: unknown) {
-
       response.statusCode = 200;
       response.setHeader('Content-Type', 'application/json');
 

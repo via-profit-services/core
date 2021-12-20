@@ -15,11 +15,8 @@ export * from './utils/filters';
 export {
   graphqlHTTPFactory,
   graphqlExpressFactory,
-
   bodyParser,
-
   fieldsWrapper,
   fieldBuilder,
-
   ServerError,
 };

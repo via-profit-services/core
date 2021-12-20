@@ -17,6 +17,7 @@ declare module '@via-profit-services/core' {
     GraphQLInputObjectType,
     GraphQLInterfaceType,
     GraphQLErrorExtensions,
+    ValidationRule,
   } from 'graphql';
   import http from 'http';
   import { EventEmitter } from 'events';
@@ -123,6 +124,7 @@ declare module '@via-profit-services/core' {
     context: Context;
     extensions: GraphQLErrorExtensions;
     config: Configuration;
+    validationRule: ValidationRule[];
   }) => Promise<void>;
 
   type GraphQLErrorEmitListener = (error: Error) => void;
@@ -185,6 +187,7 @@ declare module '@via-profit-services/core' {
     readonly config: Configuration;
     readonly stats: CoreStats;
     context: Context;
+    validationRule: ValidationRule[];
     request: http.IncomingMessage;
     schema: GraphQLSchema;
     extensions: MiddlewareExtensions;
