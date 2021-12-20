@@ -68,7 +68,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint-plugin-react-hooks", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.2.0"],
             ["eslint-plugin-standard", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:5.0.0"],
             ["express", "npm:4.17.1"],
-            ["fs-capacitor", "npm:7.0.1"],
             ["graphql", "npm:16.0.1"],
             ["nodemon", "npm:2.0.6"],
             ["nodemon-webpack-plugin", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.3.2"],
@@ -763,7 +762,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint-plugin-react-hooks", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.2.0"],
             ["eslint-plugin-standard", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:5.0.0"],
             ["express", "npm:4.17.1"],
-            ["fs-capacitor", "npm:7.0.1"],
             ["graphql", "npm:16.0.1"],
             ["nodemon", "npm:2.0.6"],
             ["nodemon-webpack-plugin", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:4.3.2"],
@@ -3536,15 +3534,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/fresh-npm-0.5.2-ad2bb4c0a2-13ea8b08f9.zip/node_modules/fresh/",
           "packageDependencies": [
             ["fresh", "npm:0.5.2"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["fs-capacitor", [
-        ["npm:7.0.1", {
-          "packageLocation": "./.yarn/cache/fs-capacitor-npm-7.0.1-725ca0f65d-caee0ef4ae.zip/node_modules/fs-capacitor/",
-          "packageDependencies": [
-            ["fs-capacitor", "npm:7.0.1"]
           ],
           "linkType": "HARD",
         }]

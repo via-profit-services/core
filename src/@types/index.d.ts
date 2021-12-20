@@ -21,9 +21,15 @@ declare module '@via-profit-services/core' {
   } from 'graphql';
   import http from 'http';
   import { EventEmitter } from 'events';
-  import { WriteStream, ReadStreamOptions } from 'fs-capacitor';
-  import { ReadStream } from 'fs';
+  import { ReadStream, WriteStream } from 'fs';
   import { RequestHandler as ExpressJSRequestHandler } from 'express';
+  import { ReadableOptions } from 'stream';
+
+  export interface ReadStreamOptions {
+    highWaterMark?: ReadableOptions['highWaterMark'];
+    encoding?: ReadableOptions['encoding'];
+  }
+
 
   export interface InitProps {
     /**

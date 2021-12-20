@@ -542,7 +542,6 @@ __metadata:
     eslint-plugin-react-hooks: ^4.2.0
     eslint-plugin-standard: ^5.0.0
     express: ^4.17.1
-    fs-capacitor: ^7.0.1
     graphql: 16.0.1
     nodemon: ^2.0.6
     nodemon-webpack-plugin: ^4.3.2
@@ -563,7 +562,6 @@ __metadata:
     webpack-merge: ^5.8.0
   peerDependencies:
     busboy: ^0.3.x
-    fs-capacitor: ^7.x
     graphql: ^15.x || ^16.x
   dependenciesMeta:
     bufferutil:
@@ -2764,13 +2762,6 @@ __metadata:
   version: 0.5.2
   resolution: "fresh@npm:0.5.2"
   checksum: 13ea8b08f91e669a64e3ba3a20eb79d7ca5379a81f1ff7f4310d54e2320645503cc0c78daedc93dfb6191287295f6479544a649c64d8e41a1c0fb0c221552346
-  languageName: node
-  linkType: hard
-
-"fs-capacitor@npm:^7.0.1":
-  version: 7.0.1
-  resolution: "fs-capacitor@npm:7.0.1"
-  checksum: caee0ef4aec41e786da164dce2fc259d34e3c79db28cbdf8e0529bc673d273d1e2effaf0f3592917182b89faef71ab5d519d31a41044c68b61a3263482dccea1
   languageName: node
   linkType: hard
 

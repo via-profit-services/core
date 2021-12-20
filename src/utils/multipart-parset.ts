@@ -1,7 +1,7 @@
 import type { RequestBody, MultipartParser } from '@via-profit-services/core';
-import { WriteStream, ReadStreamOptions } from 'fs-capacitor';
 import Busboy from 'busboy';
 
+import { WriteStream, ReadStreamOptions } from '../fs-capacitor';
 import FileUploadInstance from './FileUploadInstance';
 import dotNotationSet from '../utils/set';
 

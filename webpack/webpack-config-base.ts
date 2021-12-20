@@ -32,7 +32,7 @@ const webpackBaseConfig: Configuration = {
     ],
   },
   resolve: {
-    extensions: ['.ts', '.js', '.json'],
+    extensions: ['.ts', '.js'],
   },
   externals: [
     'graphql',
