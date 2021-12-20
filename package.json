@@ -85,7 +85,7 @@
     },
     "peerDependencies": {
         "busboy": "^0.3.x",
-        "graphql": "^15.x || ^16.x"
+        "graphql": "^16.x"
     },
     "optionalDependencies": {
         "bufferutil": "^4.x",

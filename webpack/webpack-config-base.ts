@@ -34,14 +34,7 @@ const webpackBaseConfig: Configuration = {
   resolve: {
     extensions: ['.ts', '.js'],
   },
-  externals: [
-    'graphql',
-    'busboy',
-    'fs-capacitor',
-    'supports-color',
-    'express',
-    '@via-profit-services/core',
-  ],
+  externals: ['graphql', 'busboy', 'supports-color', 'express', '@via-profit-services/core'],
 };
 
 export default webpackBaseConfig;

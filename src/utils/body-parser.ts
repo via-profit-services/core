@@ -7,12 +7,11 @@ import multipartParser from './multipart-parset';
 
 const JSONOBJREGEX = /^[ \t\n\r]*\{/;
 
-const isRequestWithBody = (
-  req: http.IncomingMessage,
-): req is http.IncomingMessage & { body: any } => 'body' in req;
+// const isRequestWithBody = (
+//   req: http.IncomingMessage,
+// ): req is http.IncomingMessage & { body: any } => 'body' in req;
 
 const bodyParser: BodyParser = async ({ request, response, config }) => {
-
   // Skip requests without content types.
   if (request.headers['content-type'] === undefined) {
     throw new Error('Missing content-type header');
