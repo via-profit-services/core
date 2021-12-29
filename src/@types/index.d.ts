@@ -408,12 +408,6 @@ declare module '@via-profit-services/core' {
 
   export type ExtractNodeIds = <T>(nodes: Node<T, 'id'>[]) => string[];
 
-  export type CollateForDataloader = <T, K extends string = 'id'>(
-    ids: ReadonlyArray<string>,
-    nodes: Node<T, K>[],
-    key?: K,
-  ) => Node<T, K>[];
-
   export type ArrayOfIdsToArrayOfObjectIds = (array: string[]) => {
     id: string;
   }[];
@@ -623,24 +617,6 @@ declare module '@via-profit-services/core' {
    * ```
    */
   export const extractNodeIds: ExtractNodeIds;
-
-  /**
-   * Collate rows for dataloader response
-   * *From DataLoader docs:*
-   * There are a few constraints this function must uphold:
-   *   - The Array of values must be the same length as the Array of keys.
-   *   - Each index in the Array of values must correspond to the same index in the Array of keys.
-   * For details [here](https://github.com/graphql/dataloader#batch-function)
-   *
-   * ```ts
-   * const dataloader = new DataLoader(async ids => {
-   *   const nodes = await context.services.accounts.getUsersByIds(ids);
-   *
-   *   return collateForDataloader(ids, nodes);
-   * });
-   * ```
-   */
-  export const collateForDataloader: CollateForDataloader;
 
   /**
    * Format array of IDs to object with id key\
