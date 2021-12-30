@@ -85,7 +85,7 @@ const schema = new GraphQLSchema({
     name: 'Mutation',
     fields: {
       upload: {
-        type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(VoidScalarType))),
+        type: VoidScalarType,
         args: {
           filesList: {
             type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(FileUploadScalarType))),
@@ -94,7 +94,7 @@ const schema = new GraphQLSchema({
         resolve: async (_parent, args: { filesList: UploadedFile[] }) => {
           const { filesList } = args;
 
-          const responseData: any[] = [];
+          // const responseData: any[] = [];
           const filesData = await Promise.all(filesList);
           await filesData.reduce(async (prev, file) => {
             await prev;
@@ -115,7 +115,7 @@ const schema = new GraphQLSchema({
             await writeFile;
           }, Promise.resolve());
 
-          return responseData;
+          // return responseData;
         },
       },
     },

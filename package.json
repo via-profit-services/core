@@ -1,7 +1,7 @@
 {
     "name": "@via-profit-services/core",
     "support": "https://via-profit.ru",
-    "version": "2.2.0-rc.13",
+    "version": "2.2.0-rc.18",
     "description": "Via Profit Core service",
     "main": "dist/index.js",
     "keywords": [
@@ -48,7 +48,7 @@
         "@typescript-eslint/eslint-plugin": "5.1.0",
         "@typescript-eslint/parser": "5.1.0",
         "@via-profit-services/eslint-config": "^0.1.19",
-        "busboy": "^1.0.0",
+        "busboy": "^0.3.1",
         "cors": "^2.8.5",
         "cross-env": "^6.0.3",
         "dotenv": "^8.2.0",
@@ -84,7 +84,7 @@
         "webpack-merge": "^5.8.0"
     },
     "peerDependencies": {
-        "busboy": "^1.x",
+        "busboy": "^0.3.1",
         "graphql": "^16.x"
     },
     "optionalDependencies": {

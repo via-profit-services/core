@@ -3,7 +3,7 @@ import busboy from 'busboy';
 
 import { WriteStream, ReadStreamOptions } from '../fs-capacitor';
 import FileUploadInstance from './FileUploadInstance';
-import dotNotationSet from '../utils/set';
+import dotNotationSet from './set';
 
 const multipartParser: MultipartParser = ({ request, config }) =>
   new Promise<RequestBody>(resolve => {
@@ -114,8 +114,8 @@ const multipartParser: MultipartParser = ({ request, config }) =>
     });
 
     // FILE PARSER
-    parser.on('file', (fieldName, stream, info) => {
-      const { mimeType, encoding, filename } = info as any;
+    parser.on('file', (fieldName, stream, filename, encoding, mimeType) => {
+      // const { mimeType, encoding, filename } = info as any;
       const upload = map.get(Number(fieldName));
 
       if (!upload) {

@@ -3,7 +3,7 @@ import http from 'node:http';
 import type { BodyParser, RequestBody, Configuration } from '@via-profit-services/core';
 import getRawBody from 'raw-body';
 
-import multipartParser from './multipart-parset';
+import multipartParser from './multipart-parser';
 
 const JSONOBJREGEX = /^[ \t\n\r]*\{/;
 

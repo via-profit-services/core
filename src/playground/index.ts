@@ -20,6 +20,7 @@ import graphiql from './graphiql';
    */
   const express = Express();
   const graphqlExpress = await GraphQLExpressFactory({
+    debug: true,
     schema,
     middleware,
   });
