@@ -1,5 +1,5 @@
+import path from 'node:path';
 import NodemonPlugin from 'nodemon-webpack-plugin';
-import path from 'path';
 import { Configuration, WebpackPluginInstance } from 'webpack';
 import { merge } from 'webpack-merge';
 

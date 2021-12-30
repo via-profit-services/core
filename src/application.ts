@@ -1,4 +1,6 @@
 /* eslint-disable import/max-dependencies */
+import { EventEmitter } from 'node:events';
+import { performance } from 'node:perf_hooks';
 import type {
   Configuration,
   Context,
@@ -7,7 +9,6 @@ import type {
   CoreStats,
   Middleware,
 } from '@via-profit-services/core';
-import { EventEmitter } from 'events';
 import {
   validateSchema,
   execute,
@@ -19,7 +20,6 @@ import {
   ValidationRule,
   GraphQLErrorExtensions,
 } from 'graphql';
-import { performance } from 'perf_hooks';
 
 import {
   DEFAULT_SERVER_TIMEZONE,

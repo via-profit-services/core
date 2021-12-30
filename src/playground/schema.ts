@@ -1,3 +1,5 @@
+import path from 'node:path';
+import fs from 'node:fs';
 import type { Context, UploadedFile } from '@via-profit-services/core';
 import {
   GraphQLSchema,
@@ -8,8 +10,6 @@ import {
   GraphQLInputObjectType,
   GraphQLInt,
 } from 'graphql';
-import path from 'path';
-import fs from 'fs';
 
 import {
   buildQueryFilter,

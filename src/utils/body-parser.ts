@@ -1,7 +1,7 @@
+import zlib from 'node:zlib';
+import http from 'node:http';
 import type { BodyParser, RequestBody, Configuration } from '@via-profit-services/core';
 import getRawBody from 'raw-body';
-import zlib from 'zlib';
-import http from 'http';
 
 import multipartParser from './multipart-parset';
 

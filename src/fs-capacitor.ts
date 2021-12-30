@@ -21,12 +21,12 @@
  * SOFTWARE.
  */
 
-import { randomBytes } from 'crypto';
-import { read, open, closeSync, unlinkSync, write, close, unlink } from 'fs';
-import { tmpdir } from 'os';
-import { join } from 'path';
-import { Readable, ReadableOptions, Writable, WritableOptions } from 'stream';
-import { EventEmitter } from 'events';
+import { randomBytes } from 'node:crypto';
+import { read, open, closeSync, unlinkSync, write, close, unlink } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { Readable, ReadableOptions, Writable, WritableOptions } from 'node:stream';
+import { EventEmitter } from 'node:events';
 
 export class ReadAfterDestroyedError extends Error {}
 export class ReadAfterReleasedError extends Error {}
