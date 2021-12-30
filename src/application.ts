@@ -147,7 +147,6 @@ const applicationFactory: ApplicationFactory = async props => {
       });
 
       if (errors) {
-        console.log(errors);
         throw new ServerError(errors, 'execute');
       }
 
