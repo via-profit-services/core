@@ -1,11 +1,14 @@
-import { GraphQLFormattedError } from 'graphql';
+import { GraphQLFormattedError, GraphQLError } from 'graphql';
 import ServerError from '../server-error';
 
 const formatErrors = (error: unknown, debug?: boolean): GraphQLFormattedError[] => {
   const errors: GraphQLFormattedError[] = [];
 
   if (error instanceof ServerError && Array.isArray(error.graphqlErrors)) {
-    const { graphqlErrors, errorType } = error;
+    const { graphqlErrors, errorType } = error as {
+      graphqlErrors: readonly GraphQLError[];
+      errorType: string;
+    };
     graphqlErrors.forEach(graphqlError => {
       errors.push({
         ...graphqlError.toJSON(),
