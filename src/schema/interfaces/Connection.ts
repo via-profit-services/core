@@ -1,6 +1,6 @@
 import { GraphQLInt, GraphQLInterfaceType, GraphQLNonNull, GraphQLList } from 'graphql';
 
-import PageInfo from '../PageInfo';
+import PageInfo from '../types/PageInfo';
 import Edge from './Edge';
 
 const Connection = new GraphQLInterfaceType({

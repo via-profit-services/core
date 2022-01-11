@@ -739,6 +739,9 @@ declare module '@via-profit-services/core' {
   export const ErrorInterfaceType: GraphQLInterfaceType;
   export const NodeInterfaceType: GraphQLInterfaceType;
 
+  export const OrderDirectionType: GraphQLObjectType;
+  export const PageInfoType: GraphQLObjectType;
+
   export const DEFAULT_SERVER_TIMEZONE: string;
   export const DEFAULT_PERSISTED_QUERY_KEY: string;
   export const DEFAULT_MAX_FIELD_SIZE: number;

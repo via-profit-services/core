@@ -17,8 +17,13 @@ import ConnectionInterfaceType from './interfaces/Connection';
 import EdgeInterfaceType from './interfaces/Edge';
 import ErrorInterfaceType from './interfaces/Error';
 import NodeInterfaceType from './interfaces/Node';
+import OrderDirectionType from './types/OrderDirection';
+import PageInfoType from './types/PageInfo';
 
 export {
+  //types
+  OrderDirectionType,
+  PageInfoType,
   // scalars
   FileUploadScalarType,
   DateScalarType,
