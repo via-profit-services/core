@@ -15,6 +15,8 @@ declare module '@via-profit-services/core' {
     GraphQLObjectType,
     GraphQLResolveInfo,
     GraphQLError,
+    GraphQLInputObjectType,
+    GraphQLInterfaceType,
   } from 'graphql';
   import { Request, RequestHandler } from 'express';
   import http from 'http';
@@ -728,8 +730,32 @@ declare module '@via-profit-services/core' {
   /**
    * Core type definitions (GraphQL SDL string)
    */
-  export const typeDefs: string;
-  export const resolvers: Resolvers;
+
+  export const FileUploadScalarType: GraphQLScalarType;
+  export const DateScalarType: GraphQLScalarType;
+  export const DateTimeScalarType: GraphQLScalarType;
+  export const EmailAddressScalarType: GraphQLScalarType;
+  export const MoneyScalarType: GraphQLScalarType;
+  export const TimeScalarType: GraphQLScalarType;
+  export const VoidScalarType: GraphQLScalarType;
+  export const URLScalarType: GraphQLScalarType;
+  export const JSONScalarType: GraphQLScalarType;
+  export const JSONObjectScalarType: GraphQLScalarType;
+
+  export const BetweenDateInputType: GraphQLInputObjectType;
+  export const BetweenDateTimeInputType: GraphQLInputObjectType;
+  export const BetweenIntInputType: GraphQLInputObjectType;
+  export const BetweenMoneyInputType: GraphQLInputObjectType;
+  export const BetweenTimeInputType: GraphQLInputObjectType;
+
+  export const ConnectionInterfaceType: GraphQLInterfaceType;
+  export const EdgeInterfaceType: GraphQLInterfaceType;
+  export const ErrorInterfaceType: GraphQLInterfaceType;
+  export const NodeInterfaceType: GraphQLInterfaceType;
+
+  export const OrderDirectionType: GraphQLObjectType;
+  export const PageInfoType: GraphQLObjectType;
+
   export const logFormatter: Winston.Logform.Format;
   export const factory: ApplicationFactory;
 
