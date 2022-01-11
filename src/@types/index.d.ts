@@ -142,6 +142,7 @@ declare module '@via-profit-services/core' {
      * Default: `false`
      */
     debug?: boolean;
+    logDir?: string;
     rootValue?: unknown;
     middleware?: Middleware | Middleware[];
   }

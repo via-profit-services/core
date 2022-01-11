@@ -5,7 +5,6 @@ import {
   GraphQLSchema,
   GraphQLObjectType,
   GraphQLNonNull,
-  GraphQLString,
   GraphQLID,
   GraphQLList,
   GraphQLInputObjectType,
