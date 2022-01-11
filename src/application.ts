@@ -8,7 +8,6 @@ import type {
 import { EventEmitter } from 'events';
 import { RequestHandler } from 'express';
 import {
-  GraphQLError,
   validateSchema,
   execute,
   specifiedRules,
@@ -22,8 +21,6 @@ import {
 import { performance } from 'perf_hooks';
 
 import { DEFAULT_SERVER_TIMEZONE, DEFAULT_PERSISTED_QUERY_KEY, DEFAULT_LOG_DIR } from './constants';
-import BadRequestError from './errorHandlers/BadRequestError';
-import customFormatErrorFn from './errorHandlers/customFormatErrorFn';
 import configureLogger from './logger/configure-logger';
 import CoreService from './services/CoreService';
 import applyMiddlewares from './utils/apply-middlewares';
@@ -51,12 +48,15 @@ const applicationFactory: ApplicationFactory = async props => {
 
   const initialContext: Context = {
     timezone,
+    logger,
+    dataloader: {},
     services: {
       core: null,
     },
     request: null,
     emitter: new CoreEmitter(),
     schema: null,
+    requestCounter: 0,
   };
 
   initialContext.services.core = new CoreService({ context: initialContext });
@@ -64,6 +64,7 @@ const applicationFactory: ApplicationFactory = async props => {
   const graphQLExpress: RequestHandler = async (request, response) => {
     initialContext.request = request;
     initialContext.schema = configurtation.schema;
+    initialContext.requestCounter += 1;
     const middlewares = composeMiddlewares(middleware);
     const startTime = performance.now();
 

@@ -19,6 +19,9 @@ declare module '@via-profit-services/core' {
   import { Request, RequestHandler } from 'express';
   import http from 'http';
   import { EventEmitter } from 'events';
+  import Winston from 'winston';
+  import 'winston-daily-rotate-file';
+  import DataLoader from '@via-profit-services/dataloader';
 
   interface CoreServiceProps {
     context: Context;
@@ -90,15 +93,38 @@ declare module '@via-profit-services/core' {
 
   export interface Context {
     timezone: string;
+    logger: LoggersCollection;
+    dataloader: DataLoaderCollection;
     services: ServicesCollection;
     emitter: CoreEmitter;
     request: Request;
     schema: GraphQLSchema;
+    requestCounter: number;
   }
 
   export interface ServicesCollection {
     core: CoreService;
     [key: string]: unknown;
+  }
+
+  export interface DataLoaderCollection {
+    [key: string]: DataLoader<unknown>;
+  }
+
+  export type Logger = Winston.Logger;
+  export interface LoggersCollection {
+    /**
+     * Server logger \
+     *\
+     * Transports:
+     *  - `warn` - File transport
+     *  - `error` - File transport
+     *  - `debug` - File transport
+     */
+    server: Logger;
+  }
+  export interface LoggersConfig {
+    logDir: string;
   }
 
   export type ApplicationFactory = (props: InitProps) => Promise<{
@@ -449,13 +475,13 @@ declare module '@via-profit-services/core' {
   export type ResolverFactory<
     Data extends Record<string, any> = any,
     Source extends Record<string, any> = any,
-    Args extends Record<string, any> = any
+    Args extends Record<string, any> = any,
   > = (field: keyof Data) => GraphQLFieldResolver<Source, Context, Args>;
 
   export type FieldBuilder = <
     Data extends Record<string, any> = any,
     Source extends Record<string, any> = any,
-    Args extends Record<string, any> = any
+    Args extends Record<string, any> = any,
   >(
     fields: (keyof Data)[],
     resolverFactory: ResolverFactory<Data, Source, Args>,
@@ -704,6 +730,7 @@ declare module '@via-profit-services/core' {
    */
   export const typeDefs: string;
   export const resolvers: Resolvers;
+  export const logFormatter: Winston.Logform.Format;
   export const factory: ApplicationFactory;
 
   export const LOG_FILENAME_DEBUG: string;
