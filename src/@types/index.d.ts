@@ -467,6 +467,23 @@ declare module '@via-profit-services/core' {
 
   export type BodyParser = (reqest: Request) => Promise<RequestBody>;
 
+  export type ResolverFactory<
+    Data extends Record<string, any> = any,
+    Source extends Record<string, any> = any,
+    Args extends Record<string, any> = any
+  > = (field: keyof Data) => GraphQLFieldResolver<Source, Context, Args>;
+
+  export type FieldBuilder = <
+    Data extends Record<string, any> = any,
+    Source extends Record<string, any> = any,
+    Args extends Record<string, any> = any
+  >(
+    fields: (keyof Data)[],
+    resolverFactory: ResolverFactory<Data, Source, Args>,
+  ) => Record<keyof Data, GraphQLFieldResolver<Source, Context, Args>>;
+
+  export const fieldBuilder: FieldBuilder;
+
   /**
    * `OutputFilter` containing the default values
    */

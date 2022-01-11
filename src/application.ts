@@ -1,26 +1,38 @@
 /* eslint-disable import/max-dependencies */
 import type {
-  Configuration, Context, ApplicationFactory, MiddlewareExtensions,
+  Configuration,
+  Context,
+  ApplicationFactory,
+  MiddlewareExtensions,
 } from '@via-profit-services/core';
 import { EventEmitter } from 'events';
 import { RequestHandler } from 'express';
 import {
-  GraphQLError, validateSchema, execute, specifiedRules,
-  parse, Source, getOperationAST, validate, ValidationRule, GraphQLSchema,
- } from 'graphql';
+  GraphQLError,
+  validateSchema,
+  execute,
+  specifiedRules,
+  parse,
+  Source,
+  getOperationAST,
+  validate,
+  ValidationRule,
+  GraphQLSchema,
+} from 'graphql';
 import { performance } from 'perf_hooks';
 
 import { DEFAULT_SERVER_TIMEZONE, DEFAULT_PERSISTED_QUERY_KEY, DEFAULT_LOG_DIR } from './constants';
 import BadRequestError from './errorHandlers/BadRequestError';
 import customFormatErrorFn from './errorHandlers/customFormatErrorFn';
-import ServerError from './errorHandlers/ServerError';
 import configureLogger from './logger/configure-logger';
 import CoreService from './services/CoreService';
 import applyMiddlewares from './utils/apply-middlewares';
 import bodyParser, { parseGraphQLParams } from './utils/body-parser';
 import composeMiddlewares from './utils/compose-middlewares';
+import formatErrors from './utils/format-errors';
+import ServerError from './server-error';
 
-const applicationFactory: ApplicationFactory = async (props) => {
+const applicationFactory: ApplicationFactory = async props => {
   const configurtation: Configuration = {
     timezone: DEFAULT_SERVER_TIMEZONE,
     middleware: [],
@@ -30,9 +42,7 @@ const applicationFactory: ApplicationFactory = async (props) => {
     persistedQueriesMap: undefined,
     persistedQueryKey: DEFAULT_PERSISTED_QUERY_KEY,
     ...props,
-
   };
-
 
   const { timezone, logDir, middleware, rootValue, debug } = configurtation;
   const logger = configureLogger({ logDir });
@@ -53,12 +63,11 @@ const applicationFactory: ApplicationFactory = async (props) => {
 
   initialContext.services.core = new CoreService({ context: initialContext });
 
-
   const graphQLExpress: RequestHandler = async (request, response) => {
-
     initialContext.request = request;
     initialContext.schema = configurtation.schema;
     const middlewares = composeMiddlewares(middleware);
+    const startTime = performance.now();
 
     let validationRules: ValidationRule[] = [];
     let schema: GraphQLSchema = initialContext.schema;
@@ -81,13 +90,13 @@ const applicationFactory: ApplicationFactory = async (props) => {
       extensions = middlewaresResponse.extensions;
 
       if (!schema) {
-        throw new ServerError('GraphQL Error. GraphQL middleware options must contain a schema', { schema });
+        throw new Error('GraphQL Error. GraphQL middleware options must contain a schema');
       }
 
       // validate request
       const graphqlErrors = validateSchema(schema);
       if (graphqlErrors.length > 0) {
-        throw new ServerError('GraphQL Error. GraphQL schema validation error.', { graphqlErrors });
+        throw new ServerError(graphqlErrors, 'validate-schema');
       }
 
       const { method } = request;
@@ -99,10 +108,10 @@ const applicationFactory: ApplicationFactory = async (props) => {
       });
 
       if (!['GET', 'POST'].includes(method)) {
-        throw new BadRequestError('GraphQL Error. GraphQL only supports GET and POST requests');
+        throw new Error('GraphQL Error. GraphQL only supports GET and POST requests');
       }
 
-      const documentAST = parse(new Source(query, 'GraphQL request'))
+      const documentAST = parse(new Source(query, 'GraphQL request'));
 
       // Validate AST, reporting any errors.
       const validationErrors = validate(schema, documentAST, [
@@ -110,9 +119,8 @@ const applicationFactory: ApplicationFactory = async (props) => {
         ...validationRules,
       ]);
       if (validationErrors.length > 0) {
-        throw new BadRequestError('GraphQL Error. Validation Error', { graphqlErrors: validationErrors })
+        throw new ServerError(validationErrors, 'validation-field');
       }
-
 
       // Only query operations are allowed on GET requests.
       if (method === 'GET') {
@@ -120,11 +128,11 @@ const applicationFactory: ApplicationFactory = async (props) => {
         const operationAST = getOperationAST(documentAST, operationName);
         if (operationAST && operationAST.operation !== 'query') {
           // Otherwise, report a 405: Method Not Allowed error.
-          throw new BadRequestError(`GraphQL Error. Can only perform a ${operationAST.operation} operation from a POST request`);
+          throw new Error(
+            `GraphQL Error. Can only perform a ${operationAST.operation} operation from a POST request`,
+          );
         }
       }
-
-      const startTime = performance.now();
 
       const { errors, data } = await execute({
         variableValues: variables,
@@ -136,33 +144,32 @@ const applicationFactory: ApplicationFactory = async (props) => {
       });
 
       if (errors) {
-        throw new ServerError('GraphQL Error.', { graphqlErrors: errors });
+        throw new ServerError(errors, 'execute');
       }
-
 
       response.status(200).json({
         data,
-        extensions: !debug ? undefined : {
+        extensions: {
           ...extensions,
           queryTime: performance.now() - startTime,
         },
-      })
-
-    } catch (originalError) {
-
-      const errors: GraphQLError[] = originalError?.metaData?.graphqlErrors ?? [originalError];
-
-      response.status(originalError.status || 500).json({
-        data: null,
-        errors: errors.map((error) => customFormatErrorFn({ error, context, debug })),
       });
+    } catch (err: unknown) {
+      response.end(
+        JSON.stringify({
+          errors: formatErrors(err, debug),
+          extensions: {
+            ...extensions,
+            queryTime: performance.now() - startTime,
+          },
+        }),
+      );
     }
-
-  }
+  };
 
   return {
     graphQLExpress,
   };
-}
+};
 
 export default applicationFactory;
