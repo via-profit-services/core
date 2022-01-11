@@ -12,4 +12,4 @@ export * from './utils/cursors';
 export * from './utils/nodes';
 export * from './utils/filters';
 
-export { resolvers, typeDefs, factory, bodyParser, fieldsWrapper, fieldBuilder };
+export { resolvers, typeDefs, logFormatter, factory, bodyParser, fieldsWrapper, fieldBuilder };

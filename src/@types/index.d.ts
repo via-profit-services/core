@@ -449,84 +449,20 @@ declare module '@via-profit-services/core' {
   export type ResolverFactory<
     Data extends Record<string, any> = any,
     Source extends Record<string, any> = any,
-    Args extends Record<string, any> = any,
+    Args extends Record<string, any> = any
   > = (field: keyof Data) => GraphQLFieldResolver<Source, Context, Args>;
 
   export type FieldBuilder = <
     Data extends Record<string, any> = any,
     Source extends Record<string, any> = any,
-    Args extends Record<string, any> = any,
+    Args extends Record<string, any> = any
   >(
     fields: (keyof Data)[],
     resolverFactory: ResolverFactory<Data, Source, Args>,
   ) => Record<keyof Data, GraphQLFieldResolver<Source, Context, Args>>;
 
-  /**
-   * Build GraphQL field resolver. This function takes as its first argument an array of keys of the Type that needs to be resolved. The second argument is the function to which the key name will be passed. The function should return a value of the type for this key.
-   * This is useful when you need to modify  the resolver response.
-   * 
-   * Suppose you need to modify name of the user before response, but you can'n do this in `Query->user` resolver for some reason.
-   * 
-   * Arguments:
-   *  **required** - An array of keys of the Type that needs to be resolved
-   *  **required** - A function to be called with the argument containing:
-   *    - `field` - Resolver field name. The function should return a value of the type for this key
-   * 
-   * Returns:
-   *  - An object where each key is a graphql resolver
-   *  
-   * 
-   * Schema:
-   * 
-   * ```graphql
-   * type Query {
-   *   user(id: ID!): User
-   * }
-   * 
-   * type User {
-   *   id: ID!
-   *   firstname: String!
-   *   lastname: String!
-   *   email: String!
-   * }
-   * ```
-   * 
-   * Then In this case, the resolver will look like this (not usage `fieldBuilder`):
-   * 
-   * ```js
-   * const resolvers = {
-   *   Query: {
-   *     user: async (_, args) => UserModel.getUser(args.id),
-   *   },
-   *   user: {
-   *     id: ({ id }) => id,
-   *     email: ({ email }) => email,
-   *     firstname: ({ id, firstname }) => id === 'e16329cd' ? firstname.toUpperCase() : firstname,
-   *     lastname: ({ id, lastname }) => id === 'e16329cd' ? lastname.toUpperCase() : lastname,
-   *   },
-   * };
-   * ```
-   * If you use `fieldBuilder`:
-   * 
-   * ```js
-   * const resolvers = {
-   *   Query: {
-   *     user: async (_, args) => UserModel.getUser(args.id),
-   *   },
-   *   user: fieldBuilder(
-   *     ['id', 'firstname', 'lastname', 'email'],
-   *     field => (parent, args, context) => {
-   *       if (parent.id === 'e16329cd' && ['firstname', 'lastname'].includes(field)) {
-   *         return parent[field].toUpperCase();
-   *       }
-   * 
-   *       return parent[field];
-   *     },
-   *   ),
-   * };
-   * ```
-   */
   export const fieldBuilder: FieldBuilder;
+
   /**
    * `OutputFilter` containing the default values
    */

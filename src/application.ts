@@ -1,5 +1,5 @@
 /* eslint-disable import/max-dependencies */
-import {
+import type {
   Configuration,
   Context,
   ApplicationFactory,
@@ -8,6 +8,7 @@ import {
 import { EventEmitter } from 'events';
 import { RequestHandler } from 'express';
 import {
+  GraphQLError,
   validateSchema,
   execute,
   specifiedRules,
@@ -21,6 +22,9 @@ import {
 import { performance } from 'perf_hooks';
 
 import { DEFAULT_SERVER_TIMEZONE, DEFAULT_PERSISTED_QUERY_KEY, DEFAULT_LOG_DIR } from './constants';
+import BadRequestError from './errorHandlers/BadRequestError';
+import customFormatErrorFn from './errorHandlers/customFormatErrorFn';
+import configureLogger from './logger/configure-logger';
 import CoreService from './services/CoreService';
 import applyMiddlewares from './utils/apply-middlewares';
 import bodyParser, { parseGraphQLParams } from './utils/body-parser';
@@ -40,7 +44,8 @@ const applicationFactory: ApplicationFactory = async props => {
     ...props,
   };
 
-  const { timezone, middleware, rootValue, debug } = configurtation;
+  const { timezone, logDir, middleware, rootValue, debug } = configurtation;
+  const logger = configureLogger({ logDir });
 
   class CoreEmitter extends EventEmitter {}
 
@@ -112,9 +117,7 @@ const applicationFactory: ApplicationFactory = async props => {
         ...validationRules,
       ]);
       if (validationErrors.length > 0) {
-        if (validationErrors.length > 0) {
-          throw new ServerError(validationErrors, 'validation-field');
-        }
+        throw new ServerError(validationErrors, 'validation-field');
       }
 
       // Only query operations are allowed on GET requests.
@@ -124,7 +127,7 @@ const applicationFactory: ApplicationFactory = async props => {
         if (operationAST && operationAST.operation !== 'query') {
           // Otherwise, report a 405: Method Not Allowed error.
           throw new Error(
-            `Can only perform a ${operationAST.operation} operation from a POST request`,
+            `GraphQL Error. Can only perform a ${operationAST.operation} operation from a POST request`,
           );
         }
       }
@@ -149,10 +152,7 @@ const applicationFactory: ApplicationFactory = async props => {
           queryTime: performance.now() - startTime,
         },
       });
-    } catch (err) {
-      response.statusCode = 200;
-      response.setHeader('Content-Type', 'application/json');
-
+    } catch (err: unknown) {
       response.end(
         JSON.stringify({
           errors: formatErrors(err, debug),
