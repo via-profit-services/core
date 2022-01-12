@@ -18,6 +18,7 @@ declare module '@via-profit-services/core' {
     GraphQLInterfaceType,
     GraphQLErrorExtensions,
     ValidationRule,
+    GraphQLEnumType,
   } from 'graphql';
   import http from 'http';
   import { EventEmitter } from 'events';
@@ -739,7 +740,7 @@ declare module '@via-profit-services/core' {
   export const ErrorInterfaceType: GraphQLInterfaceType;
   export const NodeInterfaceType: GraphQLInterfaceType;
 
-  export const OrderDirectionType: GraphQLObjectType;
+  export const OrderDirectionType: GraphQLEnumType;
   export const PageInfoType: GraphQLObjectType;
 
   export const DEFAULT_SERVER_TIMEZONE: string;
