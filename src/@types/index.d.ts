@@ -17,6 +17,7 @@ declare module '@via-profit-services/core' {
     GraphQLError,
     GraphQLInputObjectType,
     GraphQLInterfaceType,
+    GraphQLEnumType,
   } from 'graphql';
   import { Request, RequestHandler } from 'express';
   import http from 'http';
@@ -753,7 +754,7 @@ declare module '@via-profit-services/core' {
   export const ErrorInterfaceType: GraphQLInterfaceType;
   export const NodeInterfaceType: GraphQLInterfaceType;
 
-  export const OrderDirectionType: GraphQLObjectType;
+  export const OrderDirectionType: GraphQLEnumType;
   export const PageInfoType: GraphQLObjectType;
 
   export const logFormatter: Winston.Logform.Format;
