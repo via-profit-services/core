@@ -4,7 +4,7 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-    {
+      {
       "name": "Attach to debugger",
       "type": "node",
       "request": "attach",
@@ -21,56 +21,8 @@
       "sourceMapPathOverrides": {
         "webpack://@via-profit-services/core/./*": "${workspaceRoot}/*"
       },
-      "trace": "verbose"
-    },
-    {
-      "type": "node",
-      "name": "vscode-jest-tests",
-      "request": "launch",
-      "args": [
-        "--runInBand"
-      ],
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "disableOptimisticBPs": true,
-      "program": "${workspaceFolder}/node_modules/jest/bin/jest"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Launch Current file",
-      "program": "${file}",
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Jest All",
-      "program": "${workspaceFolder}/node_modules/.bin/jest",
-      "args": ["--runInBand"],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "disableOptimisticBPs": true,
-      "windows": {
-        "program": "${workspaceFolder}/node_modules/jest/bin/jest",
-      }
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Jest Current File",
-      "program": "${workspaceFolder}/node_modules/.bin/jest",
-      "args": [
-        "${fileBasenameNoExtension}",
-        "--config",
-        "jest.config.js"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "disableOptimisticBPs": true,
-      "windows": {
-        "program": "${workspaceFolder}/node_modules/jest/bin/jest",
-      }
+      "trace": true,
+      "cwd": "${workspaceFolder}"
     }
   ]
 }

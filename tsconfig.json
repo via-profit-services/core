@@ -13,11 +13,10 @@
     "rootDir": "./src",
     "sourceMap": true,
     "target": "es6",
-    "types": ["node"]
+    "types": ["node", "jest"]
   },
   "exclude": [
     "src/**/*.spec.ts",
-    "src/**/*.test.ts",
     "./dist"
   ],
   "include": [

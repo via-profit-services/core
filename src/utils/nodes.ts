@@ -2,7 +2,6 @@ import type {
   NodeToEdge,
   ExtractNodeField,
   ExtractNodeIds,
-  CollateForDataloader,
   ArrayOfIdsToArrayOfObjectIds,
   WithKey,
   ExtractKeyAsObject,
@@ -28,12 +27,6 @@ export const extractNodeField: ExtractNodeField = (nodes, field) =>
  * Returns node IDs array
  */
 export const extractNodeIds: ExtractNodeIds = nodes => extractNodeField(nodes, 'id');
-
-/**
- * Collate rows for dataloader response
- */
-export const collateForDataloader: CollateForDataloader = (ids, nodes, key) =>
-  ids.map(id => nodes.find(node => node[key] === id) || null);
 
 /**
  * Format array of IDs to object with id key

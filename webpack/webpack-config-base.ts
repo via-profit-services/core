@@ -1,6 +1,4 @@
-import { Configuration, DefinePlugin } from 'webpack';
-
-import { version } from '../package.json';
+import { Configuration } from 'webpack';
 
 const webpackBaseConfig: Configuration = {
   target: 'node',
@@ -10,35 +8,12 @@ const webpackBaseConfig: Configuration = {
         test: /\.ts$/,
         use: 'ts-loader',
       },
-      {
-        test: /\.graphql$/,
-        use: 'raw-loader',
-      },
-      {
-        test: /\.html$/,
-        use: 'html-loader',
-      },
     ],
   },
-  node: {
-    __filename: true,
-    __dirname: true,
-  },
   resolve: {
-    extensions: ['.ts', '.mjs', '.js', '.json', '.graphql', '.html'],
+    extensions: ['.ts', '.js'],
   },
-  plugins: [
-    new DefinePlugin({
-      'process.env.CORE_VERSION': JSON.stringify(version),
-    }),
-  ],
-  externals: [
-    /^moment(|-timezone)$/,
-    /^graphql(|-tools|\/.+)$/,
-    /^supports-color$/,
-    /^express$/,
-    /^@via-profit-services\/.*/,
-  ],
+  externals: ['graphql', 'busboy', 'supports-color', 'express', '@via-profit-services/core'],
 };
 
 export default webpackBaseConfig;
