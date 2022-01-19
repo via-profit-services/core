@@ -11,6 +11,7 @@ const DEFAULT_GRAPHQL_ENDPOINT = '/graphql';
  */
 interface IncomingMessage<T extends Record<string, any>> extends http.IncomingMessage {
   data: T;
+  errors: Array<Record<string, any>>;
 }
 
 /**
@@ -133,9 +134,10 @@ const configTest: ConfigTest = options => {
         socket.on('data', chunk => buffers.push(chunk));
         socket.on('end', () => {
           const response = Buffer.concat(buffers).toString();
-          const { data } = JSON.parse(response);
+          const { data, errors } = JSON.parse(response);
 
           (socket as any).data = data;
+          (socket as any).errors = errors;
           resolve(socket as any);
         });
       });
