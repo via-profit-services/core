@@ -27,7 +27,7 @@ const multipartParser: MultipartParser = ({ request, config }) =>
     const operations: RequestBody = {};
 
     // FIELD PARSER
-    parser.on('field', (fieldName, value, _fieldNameTruncated, valueTruncated) => {
+    parser.on('field', (fieldName, value, { valueTruncated }) => {
       if (valueTruncated) {
         throw new Error(
           `The «${fieldName}» multipart field value exceeds the ${maxFieldSize} byte size limit.`,
@@ -114,8 +114,7 @@ const multipartParser: MultipartParser = ({ request, config }) =>
     });
 
     // FILE PARSER
-    parser.on('file', (fieldName, stream, filename, encoding, mimeType) => {
-      // const { mimeType, encoding, filename } = info as any;
+    parser.on('file', (fieldName, stream, { filename, mimeType, encoding }) => {
       const upload = map.get(Number(fieldName));
 
       if (!upload) {
@@ -177,7 +176,7 @@ const multipartParser: MultipartParser = ({ request, config }) =>
     });
 
     parser.once('error', (err: any) => {
-      throw new Error(`Unknown error ${err}`);
+      throw new Error(err);
     });
 
     request.pipe(parser);

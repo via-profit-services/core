@@ -6,6 +6,7 @@ import {
   GraphQLObjectType,
   GraphQLNonNull,
   GraphQLID,
+  GraphQLString,
   GraphQLList,
   GraphQLInputObjectType,
   GraphQLInt,
@@ -84,8 +85,21 @@ const schema = new GraphQLSchema({
   mutation: new GraphQLObjectType<unknown, Context>({
     name: 'Mutation',
     fields: {
-      upload: {
-        type: VoidScalarType,
+      uploadFiles: {
+        type: new GraphQLNonNull(
+          new GraphQLList(
+            new GraphQLNonNull(
+              new GraphQLObjectType({
+                name: 'UploadedFilePayload',
+                fields: {
+                  location: { type: new GraphQLNonNull(GraphQLString) },
+                  mimeType: { type: new GraphQLNonNull(GraphQLString) },
+                  size: { type: new GraphQLNonNull(GraphQLInt) },
+                },
+              }),
+            ),
+          ),
+        ),
         args: {
           filesList: {
             type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(FileUploadScalarType))),
@@ -94,18 +108,30 @@ const schema = new GraphQLSchema({
         resolve: async (_parent, args: { filesList: UploadedFile[] }) => {
           const { filesList } = args;
 
-          // const responseData: any[] = [];
+          const response: { location: string; mimeType: string; size: number }[] = [];
           const filesData = await Promise.all(filesList);
           await filesData.reduce(async (prev, file) => {
             await prev;
 
             const { createReadStream, mimeType } = file;
             const readStream = createReadStream();
-            const filepath = path.resolve(__dirname, `${Date.now()}-` + mimeType.replace('/', '.'));
-            const writeStream = fs.createWriteStream(filepath);
+            const location = path.resolve(
+              __dirname,
+              `../.files/${Date.now()}-` + mimeType.replace('/', '.'),
+            );
+            fs.mkdirSync(path.dirname(location), {
+              recursive: true,
+            });
 
+            const writeStream = fs.createWriteStream(location);
             const writeFile = new Promise<void>(resolve => {
               writeStream.on('close', async () => {
+                const { size } = fs.statSync(location);
+                response.push({
+                  location,
+                  size,
+                  mimeType,
+                });
                 resolve();
               });
 
@@ -115,7 +141,7 @@ const schema = new GraphQLSchema({
             await writeFile;
           }, Promise.resolve());
 
-          // return responseData;
+          return response;
         },
       },
     },

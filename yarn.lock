@@ -858,12 +858,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/busboy@npm:^0.3.1":
-  version: 0.3.1
-  resolution: "@types/busboy@npm:0.3.1"
+"@types/busboy@npm:^1.3.0":
+  version: 1.3.0
+  resolution: "@types/busboy@npm:1.3.0"
   dependencies:
     "@types/node": "*"
-  checksum: 992a8a5881d557e2c4727acf71528d8a58a52119644ba1419c1e802238e7b88b4f8cc60611dc8cebd9a1bbfd08fac6064681a392656069867f9b3d305c62403d
+  checksum: 6438cf56ab1f957017a408b6e375265ee18be181449bf5227736508b2b673c6fa6a2f843beed2cd95e697f15b7c2020673cba2cd2fa0f1fd198598e630b79657
   languageName: node
   linkType: hard
 
@@ -1258,7 +1258,7 @@ __metadata:
   dependencies:
     "@jest/types": ^27.4.2
     "@types/bluebird": ^3.5.29
-    "@types/busboy": ^0.3.1
+    "@types/busboy": ^1.3.0
     "@types/content-type": ^1.1.3
     "@types/cors": ^2.8.10
     "@types/express": ^4.17.13
@@ -1273,7 +1273,7 @@ __metadata:
     "@typescript-eslint/parser": 5.1.0
     "@via-profit-services/eslint-config": ^0.1.19
     bufferutil: ^4.x
-    busboy: ^0.3.1
+    busboy: ^1.4.0
     cors: ^2.8.5
     cross-env: ^6.0.3
     dotenv: ^8.2.0
@@ -1311,7 +1311,7 @@ __metadata:
     webpack-cli: ^4.9.1
     webpack-merge: ^5.8.0
   peerDependencies:
-    busboy: ^0.3.1
+    busboy: ^1.4.0
     graphql: ^16.x
   dependenciesMeta:
     bufferutil:
@@ -2197,12 +2197,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"busboy@npm:^0.3.1":
-  version: 0.3.1
-  resolution: "busboy@npm:0.3.1"
+"busboy@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "busboy@npm:1.4.0"
   dependencies:
-    dicer: 0.3.0
-  checksum: d2bcb788c4595edca4ea2168ab8bf7f9558b627ddcec2fb6bbaf0aa6a10b63da48dce35ce56936570f330c5268a3204f7037021a310a895a8b1a223568e0cc1b
+    streamsearch: ^1.1.0
+  checksum: 1970853fd390f62df0db15d44ee8c0fbb3bca84e0c3083531f955e31dbc3ec9e77faa4d5a47d520ff5ec7a79596af9b957741383b0cd4d9513b71f8524096442
   languageName: node
   linkType: hard
 
@@ -2831,15 +2831,6 @@ __metadata:
   version: 3.1.0
   resolution: "detect-newline@npm:3.1.0"
   checksum: ae6cd429c41ad01b164c59ea36f264a2c479598e61cba7c99da24175a7ab80ddf066420f2bec9a1c57a6bead411b4655ff15ad7d281c000a89791f48cbe939e7
-  languageName: node
-  linkType: hard
-
-"dicer@npm:0.3.0":
-  version: 0.3.0
-  resolution: "dicer@npm:0.3.0"
-  dependencies:
-    streamsearch: 0.1.2
-  checksum: 9f61aea61fcd81457f1b43967af7e66415b7a31d393336fa05a29b221b5ba065b99e5cac46476b2da36eb7af7665bf8dad6f9500409116dc6a35ada183841598
   languageName: node
   linkType: hard
 
@@ -7422,10 +7413,10 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"streamsearch@npm:0.1.2":
-  version: 0.1.2
-  resolution: "streamsearch@npm:0.1.2"
-  checksum: d2db57cbfbf7947ab9c75a7b4c80a8ef8d24850cf0a1a24258bb6956c97317ce1eab7dbcbf9c5aba3e6198611af1053b02411057bbedb99bf9c64b8275248997
+"streamsearch@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "streamsearch@npm:1.1.0"
+  checksum: 1cce16cea8405d7a233d32ca5e00a00169cc0e19fbc02aa839959985f267335d435c07f96e5e0edd0eadc6d39c98d5435fb5bbbdefc62c41834eadc5622ad942
   languageName: node
   linkType: hard
 
