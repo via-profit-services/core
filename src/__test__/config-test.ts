@@ -20,9 +20,8 @@ interface IncomingMessage<T extends Record<string, any>> extends http.IncomingMe
  * Default options via `method`, `path`, `port` and `headers` already passed
  */
 interface RequestOptions extends http.RequestOptions {
-  query?: string;
-  mutation?: string;
-  variables?: Record<string, any>;
+  body: string | Buffer;
+  headers?: http.OutgoingHttpHeaders;
 }
 
 /**
@@ -68,7 +67,7 @@ type ConfigTestOptions = {
 type ConfigTest = (options: ConfigTestOptions) => {
   startServer: StartServer;
   stopServer: StopServer;
-  graphqlRequest: GraphQLRequest;
+  request: GraphQLRequest;
 };
 
 const configTest: ConfigTest = options => {
@@ -115,18 +114,14 @@ const configTest: ConfigTest = options => {
       });
     });
 
-  const graphqlRequest: GraphQLRequest = async params =>
+  const request: GraphQLRequest = async params =>
     new Promise(resolve => {
-      const { query, mutation, variables, ...requestOptions } = params;
+      const { body, headers } = params;
       const options: http.RequestOptions = {
         method: 'POST',
         path: endpoint,
         port,
-        headers: {
-          'Content-Type': 'application/json',
-          ...requestOptions.headers,
-        },
-        ...requestOptions,
+        headers,
       };
 
       const request = http.request(options, socket => {
@@ -142,17 +137,11 @@ const configTest: ConfigTest = options => {
         });
       });
 
-      request.write(
-        JSON.stringify({
-          query,
-          mutation,
-          variables,
-        }),
-      );
+      request.write(body);
       request.end();
     });
 
-  return { server, startServer, stopServer, graphqlRequest };
+  return { server, startServer, stopServer, request };
 };
 
 export default configTest;
