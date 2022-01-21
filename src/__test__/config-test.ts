@@ -82,24 +82,23 @@ const configTest: ConfigTest = options => {
 
   const startServer = async () =>
     new Promise<void>(resolve => {
-      graphqlHTTPFactory({ schema }).then(graphqlHTTP => {
-        server.on('request', async (req, res) => {
-          switch (req.url) {
-            case endpoint:
-              graphqlHTTP(req, res);
-              break;
+      const graphqlHTTP = graphqlHTTPFactory({ schema });
+      server.on('request', async (req, res) => {
+        switch (req.url) {
+          case endpoint:
+            graphqlHTTP(req, res);
+            break;
 
-            default:
-              res.statusCode = 404;
-              res.setHeader('Content-Type', 'text/html');
-              res.end('Page not found');
-              break;
-          }
-        });
+          default:
+            res.statusCode = 404;
+            res.setHeader('Content-Type', 'text/html');
+            res.end('Page not found');
+            break;
+        }
+      });
 
-        server.listen(port, () => {
-          resolve();
-        });
+      server.listen(port, () => {
+        resolve();
       });
     });
 
