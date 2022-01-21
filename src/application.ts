@@ -35,7 +35,7 @@ import applyMiddlewares from './utils/apply-middlewares';
 import formatErrors from './utils/format-errors';
 import ServerError from './server-error';
 
-const applicationFactory: ApplicationFactory = async props => {
+const applicationFactory: ApplicationFactory = props => {
   const config: Configuration = {
     timezone: DEFAULT_SERVER_TIMEZONE,
     middleware: [],

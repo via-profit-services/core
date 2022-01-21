@@ -1,11 +1,9 @@
 /* eslint-disable no-console */
-import http from 'http';
-import Express from 'express';
+import http from 'node:http';
 
 import { graphqlHTTPFactory } from '../index';
 import schema from './schema';
 import middleware from './middleware';
-import GraphQLExpressFactory from '../middlewares/graphql-express';
 import graphiql from './graphiql';
 
 (async () => {
@@ -15,26 +13,7 @@ import graphiql from './graphiql';
     endpoint: '/graphql',
   });
 
-  /**
-   * Express JS
-   */
-  const express = Express();
-  const graphqlExpress = await GraphQLExpressFactory({
-    debug: true,
-    schema,
-    middleware,
-  });
-
-  express.use('/graphql', graphqlExpress);
-  express.use(graphiqlApp);
-  express.listen(8081, () =>
-    console.info('GraphQL Express server started at http://localhost:8081/graphql'),
-  );
-
-  /**
-   * Vanilla Node JS
-   */
-  const graphqlHTTP = await graphqlHTTPFactory({
+  const graphqlHTTP = graphqlHTTPFactory({
     schema,
     middleware,
   });

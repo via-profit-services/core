@@ -23,7 +23,6 @@ declare module '@via-profit-services/core' {
   import http from 'http';
   import { EventEmitter } from 'events';
   import { ReadStream, WriteStream } from 'fs';
-  import { RequestHandler as ExpressJSRequestHandler } from 'express';
   import { ReadableOptions } from 'stream';
 
   export interface ReadStreamOptions {
@@ -70,19 +69,6 @@ declare module '@via-profit-services/core' {
     readonly maxFileSize?: number;
     readonly maxFiles?: number;
   }
-
-  /**
-   * Create Express JS middleware
-   * ```js
-   * const app = express();
-   * const graphqlExpress = await GraphQLExpressFactory({ schema });
-   *
-   * app.use(graphqlExpress);
-   * app.listen();
-   * ```
-   */
-  export type GraphQLExpressFactory = (props: InitProps) => Promise<GraphQLExpress>;
-  export type GraphQLExpress = ExpressJSRequestHandler;
 
   export interface FilePayload {
     readonly filename: string;
@@ -186,7 +172,7 @@ declare module '@via-profit-services/core' {
     response: http.ServerResponse,
   ) => MaybePromise<void>;
 
-  export type ApplicationFactory = (props: InitProps) => Promise<HTTPListender>;
+  export type ApplicationFactory = (props: InitProps) => HTTPListender;
 
   export type PersistedQueriesMap = Record<string, string>;
 
@@ -710,7 +696,6 @@ declare module '@via-profit-services/core' {
    */
   export const fieldBuilder: FieldBuilder;
   export const graphqlHTTPFactory: ApplicationFactory;
-  export const graphqlExpressFactory: GraphQLExpressFactory;
 
   export class ServerError extends Error {
     readonly graphqlErrors: ReadonlyArray<GraphQLError>;
