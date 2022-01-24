@@ -18,7 +18,7 @@ FILENAME="file-to-upload.jpeg"
 
 
 curl --request POST \
-  --url http://localhost:8081/graphql \
+  --url http://localhost:8080/graphql \
   --form 'operations={ "query": "mutation UploadFiles($filesList: [FileUpload!]!) {uploadFiles(filesList: $filesList) {location mimeType}}", "variables":{"filesList":[null]}, "operationName": "UploadFiles" }' \
-  --form 'map={"0":["variables.filesList.0"]}' \
+  --form 'map={["variables.filesList.0"]}' \
   --form 0=@$CURRENTDIR/$FILENAME

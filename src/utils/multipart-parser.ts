@@ -6,7 +6,7 @@ import FileUploadInstance from './FileUploadInstance';
 import dotNotationSet from './set';
 
 const multipartParser: MultipartParser = ({ request, config }) =>
-  new Promise<RequestBody>(resolve => {
+  new Promise<RequestBody>((resolve, reject) => {
     const { persistedQueryKey, maxFieldSize, maxFileSize, maxFiles } = config;
     const { headers } = request;
 
@@ -29,9 +29,11 @@ const multipartParser: MultipartParser = ({ request, config }) =>
     // FIELD PARSER
     parser.on('field', (fieldName, value, { valueTruncated }) => {
       if (valueTruncated) {
-        throw new Error(
+        reject(
           `The «${fieldName}» multipart field value exceeds the ${maxFieldSize} byte size limit.`,
         );
+
+        return;
       }
 
       if (fieldName === 'operations') {
@@ -40,12 +42,16 @@ const multipartParser: MultipartParser = ({ request, config }) =>
         try {
           parsed = JSON.parse(value);
         } catch (err) {
-          throw new Error('Invalid JSON in the «operations» multipart field');
+          reject('Invalid JSON in the «operations» multipart field');
+
+          return;
         }
 
         // operations must be an object
         if (typeof parsed !== 'object') {
-          throw new Error(`«operations» multipart field must be an object. Got ${typeof parsed}`);
+          reject(`«operations» multipart field must be an object. Got ${typeof parsed}`);
+
+          return;
         }
 
         const { query, variables, operationName } = parsed;
@@ -54,18 +60,22 @@ const multipartParser: MultipartParser = ({ request, config }) =>
         if (typeof query === 'string') {
           operations.query = query;
         } else {
-          throw new Error(
+          reject(
             `«operations.query» multipart field must be a string. Got ${typeof operations.query}`,
           );
+
+          return;
         }
 
         // variables must be an object
         if (typeof variables === 'object') {
           operations.variables = variables;
         } else {
-          throw new Error(
+          reject(
             `«operations.variables» multipart field must be an object. Got ${typeof operations.variables}`,
           );
+
+          return;
         }
 
         if (typeof operationName === 'string') {
@@ -84,27 +94,31 @@ const multipartParser: MultipartParser = ({ request, config }) =>
         try {
           mapData = JSON.parse(value);
         } catch (error) {
-          throw new Error('Invalid JSON in the «map» field');
+          reject('Invalid JSON in the «map» field');
+
+          return;
         }
 
         if (Object.entries(mapData).length > maxFiles) {
-          throw new Error(`${maxFiles} max file uploads exceeded.`);
+          reject(`${maxFiles} max file uploads exceeded.`);
         }
 
         Object.entries(mapData).forEach(([fieldName, paths]) => {
           if (!Array.isArray(paths)) {
-            throw new Error(
-              `Invalid type for the «map» multipart field entry key «${fieldName}» array.`,
-            );
+            reject(`Invalid type for the «map» multipart field entry key «${fieldName}» array.`);
+
+            return;
           }
 
           map.set(Number(fieldName), new FileUploadInstance());
 
           paths.forEach((pathValue, pathIndex) => {
             if (typeof pathValue !== 'string') {
-              throw new Error(
+              reject(
                 `Invalid type for the «map» multipart field entry key «${fieldName}» array index «${pathIndex}» value`,
               );
+
+              return;
             }
 
             dotNotationSet(operations, pathValue, map.get(Number(fieldName)));
@@ -118,11 +132,15 @@ const multipartParser: MultipartParser = ({ request, config }) =>
       const upload = map.get(Number(fieldName));
 
       if (!upload) {
-        throw new Error(`File from field «${fieldName}» are not registered in map field`);
+        reject(`File from field «${fieldName}» are not registered in map field`);
+
+        return;
       }
 
       if (!upload?.resolve) {
-        throw new Error(`File from field «${fieldName}» are not registered in map field`);
+        reject(`File from field «${fieldName}» are not registered in map field`);
+
+        return;
       }
 
       const capacitor = new WriteStream();
@@ -132,7 +150,9 @@ const multipartParser: MultipartParser = ({ request, config }) =>
       });
 
       stream.on('limit', () => {
-        throw new Error(`File truncated as it exceeds the ${maxFileSize} byte size limit.`);
+        reject(`File truncated as it exceeds the ${maxFileSize} byte size limit.`);
+
+        return;
       });
 
       stream.on('error', (_error: Error) => {
@@ -156,7 +176,9 @@ const multipartParser: MultipartParser = ({ request, config }) =>
 
     // FILES LIMIT PARSER
     parser.once('filesLimit', () => {
-      throw new Error(`${Infinity} max file uploads exceeded.`);
+      reject(`${Infinity} max file uploads exceeded.`);
+
+      return;
     });
 
     // FINISH PARSER
@@ -165,18 +187,22 @@ const multipartParser: MultipartParser = ({ request, config }) =>
       request.resume();
 
       if (operations === null) {
-        throw new Error('Missing multipart field «operations»');
+        reject('Missing multipart field «operations»');
+
+        return;
       }
 
       if (!map.size) {
-        throw new Error('Missing multipart field «map»');
+        reject('Missing multipart field «map»');
+
+        return;
       }
 
       resolve(operations);
     });
 
     parser.once('error', (err: any) => {
-      throw new Error(err);
+      reject(err);
     });
 
     request.pipe(parser);
