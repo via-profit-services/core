@@ -284,7 +284,7 @@ declare module '@via-profit-services/core' {
 
   export type InputFilterRecord = Record<
     string,
-    InputFilterValue | readonly string[] | readonly number[]
+    InputFilterValue | readonly string[] | readonly number[] | readonly boolean[]
   >;
 
   export type InputFilterValue = string | number | boolean | null;
@@ -332,6 +332,7 @@ declare module '@via-profit-services/core' {
     | null
     | readonly string[]
     | readonly number[]
+    | readonly boolean[]
     | undefined;
   export type WhereField = [string, WhereAction, WhereValue];
   export type Where = WhereField[];
