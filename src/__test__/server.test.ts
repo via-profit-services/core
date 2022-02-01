@@ -29,6 +29,7 @@ describe('Graphql server', () => {
         const { data, errors } = JSON.parse(response);
 
         expect(socket.statusCode).toBe(200);
+        expect(socket.headers['content-type']).toBe('application/json');
         expect(errors).toBeUndefined();
         expect(data.getFourAsString).toBe('four');
         expect(data.getFourAsNumber).toBe(4);
@@ -44,7 +45,7 @@ describe('Graphql server', () => {
     const request = http.request(
       {
         port,
-        pathname: endpoint,
+        path: endpoint,
         hostname: 'localhost',
         method: 'POST',
         headers: {
@@ -59,6 +60,7 @@ describe('Graphql server', () => {
           const { data, errors } = JSON.parse(response);
 
           expect(socket.statusCode).toBe(200);
+          expect(socket.headers['content-type']).toBe('application/json');
           expect(errors).toBeUndefined();
           expect(data.getFourAsString).toBe('four');
           expect(data.getFourAsNumber).toBe(4);
@@ -86,6 +88,7 @@ describe('Graphql server', () => {
         const { data, errors } = JSON.parse(response);
 
         expect(socket.statusCode).toBe(200);
+        expect(socket.headers['content-type']).toBe('application/json');
         expect(data).toBeUndefined();
         expect(errors).toEqual(
           expect.arrayContaining([
@@ -114,7 +117,7 @@ describe('Graphql server', () => {
     const request = http.request(
       {
         port,
-        pathname: endpoint,
+        path: endpoint,
         hostname: 'localhost',
         method: 'POST',
       },
@@ -126,6 +129,7 @@ describe('Graphql server', () => {
           const { data, errors } = JSON.parse(response);
 
           expect(socket.statusCode).toBe(200);
+          expect(socket.headers['content-type']).toBe('application/json');
           expect(data).toBeUndefined();
           expect(errors).toEqual(
             expect.arrayContaining([
@@ -152,7 +156,7 @@ describe('Graphql server', () => {
     const request = http.request(
       {
         port,
-        pathname: endpoint,
+        path: endpoint,
         hostname: 'localhost',
         method: 'OPTIONS',
       },
@@ -162,6 +166,7 @@ describe('Graphql server', () => {
         socket.on('end', () => {
           const response = Buffer.concat(buffers).toString();
           expect(socket.statusCode).toBe(200);
+          expect(socket.headers['content-type']).toBeUndefined();
           expect(response).toBe('');
 
           done();
@@ -181,7 +186,7 @@ describe('Graphql server', () => {
     const request = http.request(
       {
         port,
-        pathname: endpoint,
+        path: endpoint,
         hostname: 'localhost',
         method: 'POST',
         headers: {
@@ -195,6 +200,7 @@ describe('Graphql server', () => {
           const response = Buffer.concat(buffers).toString();
           const { errors, data } = JSON.parse(response);
           expect(socket.statusCode).toBe(200);
+          expect(socket.headers['content-type']).toBe('application/json');
           expect(errors).toBeUndefined();
           expect(data).toEqual(
             expect.objectContaining({
@@ -261,7 +267,7 @@ describe('Graphql server', () => {
     const request = http.request(
       {
         port,
-        pathname: endpoint,
+        path: endpoint,
         hostname: 'localhost',
         method: 'POST',
         headers: {
@@ -276,6 +282,7 @@ describe('Graphql server', () => {
           const { data, errors } = JSON.parse(response);
 
           expect(socket.statusCode).toBe(200);
+          expect(socket.headers['content-type']).toBe('application/json');
           expect(errors).toBeUndefined();
           expect(data.uploadFiles[0].mimeType).toBe('image/jpeg');
 
