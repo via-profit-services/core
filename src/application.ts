@@ -87,8 +87,8 @@ const applicationFactory: ApplicationFactory = props => {
     stats.requestCounter += 1;
 
     try {
-      if (!['GET', 'POST'].includes(method)) {
-        throw new Error('GraphQL only supports GET and POST requests');
+      if (!['GET', 'POST', 'OPTIONS'].includes(method)) {
+        throw new Error('GraphQL only supports GET, POST and OPTIONS requests');
       }
 
       // execute each middleware
