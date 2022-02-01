@@ -19,6 +19,7 @@ import {
   validate,
   ValidationRule,
   GraphQLErrorExtensions,
+  GraphQLError,
 } from 'graphql';
 
 import {
@@ -91,6 +92,13 @@ const applicationFactory: ApplicationFactory = props => {
         throw new Error('GraphQL only supports GET, POST and OPTIONS requests');
       }
 
+      if (!['GET', 'POST'].includes(method)) {
+        response.statusCode = 200;
+        response.end();
+
+        return;
+      }
+
       // execute each middleware
       await applyMiddlewares({
         request,
@@ -117,7 +125,15 @@ const applicationFactory: ApplicationFactory = props => {
         config,
       });
 
+      if (typeof query !== 'string' || query === '') {
+        throw new ServerError(
+          [new GraphQLError('Failed to parse «query» param')],
+          'validation-request',
+        );
+      }
+
       const documentAST = parse(new Source(query, 'GraphQL request'));
+
       const validationErrors = validate(schema, documentAST, [
         ...specifiedRules,
         ...validationRule,
