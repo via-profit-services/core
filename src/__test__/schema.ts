@@ -40,8 +40,15 @@ const Query = new GraphQLObjectType({
 });
 
 const Mutation = new GraphQLObjectType({
-  name: 'Mutaation',
+  name: 'Mutation',
   fields: {
+    echo: {
+      type: new GraphQLNonNull(GraphQLString),
+      args: {
+        str: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      resolve: (_parent, args: { str: string }) => args.str,
+    },
     uploadFiles: {
       type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UploadedFilePayload))),
       args: {

@@ -3,27 +3,6 @@ import type { GraphQLSchema } from 'graphql';
 
 import { graphqlHTTPFactory } from '../index';
 
-const DEFAULT_TEST_PORT = 8080;
-const DEFAULT_GRAPHQL_ENDPOINT = '/graphql';
-
-/**
- * http.IncomingMessage with parsed GraphQL response
- */
-interface IncomingMessage<T extends Record<string, any>> extends http.IncomingMessage {
-  data: T;
-  errors: Array<Record<string, any>>;
-}
-
-/**
- * HTTP options\
- * Your options will be assigned with defaults options\
- * Default options via `method`, `path`, `port` and `headers` already passed
- */
-interface RequestOptions extends http.RequestOptions {
-  body: string | Buffer;
-  headers?: http.OutgoingHttpHeaders;
-}
-
 /**
  * Start the GraphQL server\
  * Call this promise before tests start\
@@ -48,17 +27,10 @@ type StartServer = () => Promise<void>;
  */
 type StopServer = () => Promise<void>;
 
-/**
- * Prepare and send request to GraphQl server.\
- */
-type GraphQLRequest = <T = Record<string, any>>(
-  options: RequestOptions,
-) => Promise<IncomingMessage<T>>;
-
 type ConfigTestOptions = {
   schema: GraphQLSchema;
-  port?: number;
-  endpoint?: string;
+  port: number;
+  endpoint: string;
 };
 
 /**
@@ -67,25 +39,21 @@ type ConfigTestOptions = {
 type ConfigTest = (options: ConfigTestOptions) => {
   startServer: StartServer;
   stopServer: StopServer;
-  request: GraphQLRequest;
 };
 
 const configTest: ConfigTest = options => {
   const server = http.createServer();
-  const config: Required<ConfigTestOptions> = {
-    port: DEFAULT_TEST_PORT,
-    endpoint: DEFAULT_GRAPHQL_ENDPOINT,
-    ...options,
-  };
-
-  const { schema, port, endpoint } = config;
+  const { schema, port, endpoint } = options;
 
   const startServer = async () =>
     new Promise<void>(resolve => {
       const graphqlHTTP = graphqlHTTPFactory({ schema });
       server.on('request', async (req, res) => {
-        switch (req.url) {
-          case endpoint:
+        switch (true) {
+          // case req.url.replace(/?.*/, '') === endpoint:
+          //   graphqlHTTP(req, res);
+          //   break;
+          case req.url !== '':
             graphqlHTTP(req, res);
             break;
 
@@ -97,7 +65,7 @@ const configTest: ConfigTest = options => {
         }
       });
 
-      server.listen(port, () => {
+      server.listen(port, 'localhost', () => {
         resolve();
       });
     });
@@ -113,34 +81,7 @@ const configTest: ConfigTest = options => {
       });
     });
 
-  const request: GraphQLRequest = async params =>
-    new Promise(resolve => {
-      const { body, headers } = params;
-      const options: http.RequestOptions = {
-        method: 'POST',
-        path: endpoint,
-        port,
-        headers,
-      };
-
-      const request = http.request(options, socket => {
-        const buffers: Buffer[] = [];
-        socket.on('data', chunk => buffers.push(chunk));
-        socket.on('end', () => {
-          const response = Buffer.concat(buffers).toString();
-          const { data, errors } = JSON.parse(response);
-
-          (socket as any).data = data;
-          (socket as any).errors = errors;
-          resolve(socket as any);
-        });
-      });
-
-      request.write(body);
-      request.end();
-    });
-
-  return { server, startServer, stopServer, request };
+  return { server, startServer, stopServer };
 };
 
 export default configTest;

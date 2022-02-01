@@ -1,10 +1,14 @@
 import path from 'node:path';
 import fs from 'node:fs';
+import http from 'node:http';
+import { URL } from 'node:url';
 
 import configTest from './config-test';
 import schema from './schema';
 
-const { startServer, stopServer, request } = configTest({ schema });
+const port = 8080;
+const endpoint = '/graphql';
+const { startServer, stopServer } = configTest({ schema, port, endpoint });
 
 beforeAll(async () => {
   await startServer();
@@ -15,93 +19,200 @@ afterAll(async () => {
 });
 
 describe('Graphql server', () => {
-  // Check to response not contain errors field
-  // Check to response contain data field
-  // Check to response contain expected data
-  test('GraphQL valid response must be valid', done => {
-    const expectedData = {
-      getFourAsString: 'four',
-      getFourAsNumber: 4,
-    };
+  test('GET request with query key params should be passed successfully', done => {
+    const url = new URL('http://localhost:8080/graphql?query={getFourAsString, getFourAsNumber}');
+    const request = http.request(url, socket => {
+      const buffers: Buffer[] = [];
+      socket.on('data', chunk => buffers.push(chunk));
+      socket.on('end', () => {
+        const response = Buffer.concat(buffers).toString();
+        const { data, errors } = JSON.parse(response);
 
-    request<typeof expectedData>({
-      body: JSON.stringify({
+        expect(socket.statusCode).toBe(200);
+        expect(errors).toBeUndefined();
+        expect(data.getFourAsString).toBe('four');
+        expect(data.getFourAsNumber).toBe(4);
+
+        done();
+      });
+    });
+
+    request.end();
+  });
+
+  test('POST request with Content-Type headers should be passed successfully', done => {
+    const request = http.request(
+      {
+        port,
+        pathname: endpoint,
+        hostname: 'localhost',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+      socket => {
+        const buffers: Buffer[] = [];
+        socket.on('data', chunk => buffers.push(chunk));
+        socket.on('end', () => {
+          const response = Buffer.concat(buffers).toString();
+          const { data, errors } = JSON.parse(response);
+
+          expect(socket.statusCode).toBe(200);
+          expect(errors).toBeUndefined();
+          expect(data.getFourAsString).toBe('four');
+          expect(data.getFourAsNumber).toBe(4);
+
+          done();
+        });
+      },
+    );
+    request.write(
+      JSON.stringify({
         query: 'query {getFourAsString, getFourAsNumber}',
         variables: {},
       }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }).then(response => {
-      expect(response.statusCode).toBe(200);
-      expect(response.headers).toEqual(
-        expect.objectContaining({
-          'content-type': 'application/json',
-        }),
-      );
-      expect(typeof response.errors).toBe('undefined');
-      expect(response.data).toEqual(expect.objectContaining(expectedData));
-      done();
-    });
-  });
-  // Deliberately false request
-  // Check response contain errors
-  test('Should return errors for non-nullable field Query.getFiveWithError', done => {
-    const expectedData = [
-      {
-        message: 'Cannot return null for non-nullable field Query.getFiveWithError.',
-        path: ['getFiveWithError'],
-      },
-    ];
-    request<typeof expectedData>({
-      body: JSON.stringify({
-        query: 'query {getFiveWithError}',
-        variables: {},
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }).then(response => {
-      expect(response.statusCode).toBe(200);
-      expect(response.headers).toEqual(
-        expect.objectContaining({
-          'content-type': 'application/json',
-        }),
-      );
-      expect(typeof response.data).toBe('undefined');
-      expect(response.errors).toBeInstanceOf(Object);
-      expect(response.errors[0].path).toEqual(expectedData[0].path);
-      expect(response.errors[0].message).toEqual(expectedData[0].message);
-      done();
-    });
+    );
+    request.end();
   });
 
-  test('Should return errors as cannot query field "nonDefined"', done => {
-    const expectedData = [
-      {
-        message: 'Cannot query field "notDefined" on type "Query".',
-      },
-    ];
-    request<typeof expectedData>({
-      body: JSON.stringify({
-        query: 'query {notDefined}',
+  test('GET request with wrong query string params should be broken', done => {
+    const url = new URL('http://localhost:8080/graphql?quEry={getFourAsString, getFourAsNumber}');
+    const request = http.request(url, socket => {
+      const buffers: Buffer[] = [];
+      socket.on('data', chunk => buffers.push(chunk));
+      socket.on('end', () => {
+        const response = Buffer.concat(buffers).toString();
+        const { data, errors } = JSON.parse(response);
+
+        expect(socket.statusCode).toBe(200);
+        expect(data).toBeUndefined();
+        expect(errors).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              message: 'Failed to parse «query» param',
+              extensions: expect.objectContaining({
+                errorType: 'validation-request',
+              }),
+            }),
+          ]),
+        );
+
+        done();
+      });
+    });
+    request.write(
+      JSON.stringify({
+        query: 'query {getFourAsString, getFourAsNumber}',
         variables: {},
       }),
-      headers: {
-        'Content-Type': 'application/json',
+    );
+    request.end();
+  });
+
+  test('POST request without Content-Type headers should be braking', done => {
+    const request = http.request(
+      {
+        port,
+        pathname: endpoint,
+        hostname: 'localhost',
+        method: 'POST',
       },
-    }).then(response => {
-      expect(response.statusCode).toBe(200);
-      expect(response.headers).toEqual(
-        expect.objectContaining({
-          'content-type': 'application/json',
-        }),
-      );
-      expect(typeof response.data).toBe('undefined');
-      expect(response.errors).toBeInstanceOf(Object);
-      expect(response.errors[0].message).toEqual(expectedData[0].message);
-      done();
-    });
+      socket => {
+        const buffers: Buffer[] = [];
+        socket.on('data', chunk => buffers.push(chunk));
+        socket.on('end', () => {
+          const response = Buffer.concat(buffers).toString();
+          const { data, errors } = JSON.parse(response);
+
+          expect(socket.statusCode).toBe(200);
+          expect(data).toBeUndefined();
+          expect(errors).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                message: 'Missing Content-Type header',
+              }),
+            ]),
+          );
+
+          done();
+        });
+      },
+    );
+    request.write(
+      JSON.stringify({
+        query: 'query {getFourAsString, getFourAsNumber}',
+        variables: {},
+      }),
+    );
+    request.end();
+  });
+
+  test('POST request with OPTIONAL method should be skipped', done => {
+    const request = http.request(
+      {
+        port,
+        pathname: endpoint,
+        hostname: 'localhost',
+        method: 'OPTIONS',
+      },
+      socket => {
+        const buffers: Buffer[] = [];
+        socket.on('data', chunk => buffers.push(chunk));
+        socket.on('end', () => {
+          const response = Buffer.concat(buffers).toString();
+          expect(socket.statusCode).toBe(200);
+          expect(response).toBe('');
+
+          done();
+        });
+      },
+    );
+    request.write(
+      JSON.stringify({
+        query: 'query {getFourAsString, getFourAsNumber}',
+        variables: {},
+      }),
+    );
+    request.end();
+  });
+
+  test('Echo mutation should returns passed string', done => {
+    const request = http.request(
+      {
+        port,
+        pathname: endpoint,
+        hostname: 'localhost',
+        method: 'POST',
+        headers: {
+          'Content-type': 'application/json',
+        },
+      },
+      socket => {
+        const buffers: Buffer[] = [];
+        socket.on('data', chunk => buffers.push(chunk));
+        socket.on('end', () => {
+          const response = Buffer.concat(buffers).toString();
+          const { errors, data } = JSON.parse(response);
+          expect(socket.statusCode).toBe(200);
+          expect(errors).toBeUndefined();
+          expect(data).toEqual(
+            expect.objectContaining({
+              echo: 'Hello',
+            }),
+          );
+
+          done();
+        });
+      },
+    );
+    request.write(
+      JSON.stringify({
+        query: 'mutation {echo(str: "Hello")}',
+        variables: {},
+      }),
+    );
+    request.end();
   });
 
   test('Upload file', done => {
@@ -147,14 +258,32 @@ describe('Graphql server', () => {
     ];
 
     const body = Buffer.concat(buffers);
-    request({
-      body,
-      headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },
-    }).then((response: any) => {
-      expect(response.statusCode).toBe(200);
-      expect(response.data.uploadFiles[0].mimeType).toBe('image/jpeg');
+    const request = http.request(
+      {
+        port,
+        pathname: endpoint,
+        hostname: 'localhost',
+        method: 'POST',
+        headers: {
+          'Content-Type': `multipart/form-data; boundary=${boundary}`,
+        },
+      },
+      socket => {
+        const buffers: Buffer[] = [];
+        socket.on('data', chunk => buffers.push(chunk));
+        socket.on('end', () => {
+          const response = Buffer.concat(buffers).toString();
+          const { data, errors } = JSON.parse(response);
 
-      done();
-    });
+          expect(socket.statusCode).toBe(200);
+          expect(errors).toBeUndefined();
+          expect(data.uploadFiles[0].mimeType).toBe('image/jpeg');
+
+          done();
+        });
+      },
+    );
+    request.write(body);
+    request.end();
   });
 });
