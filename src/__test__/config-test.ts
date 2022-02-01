@@ -43,16 +43,13 @@ type ConfigTest = (options: ConfigTestOptions) => {
 
 const configTest: ConfigTest = options => {
   const server = http.createServer();
-  const { schema, port, endpoint } = options;
+  const { schema, port } = options;
 
   const startServer = async () =>
     new Promise<void>(resolve => {
       const graphqlHTTP = graphqlHTTPFactory({ schema });
       server.on('request', async (req, res) => {
         switch (true) {
-          // case req.url.replace(/?.*/, '') === endpoint:
-          //   graphqlHTTP(req, res);
-          //   break;
           case req.url !== '':
             graphqlHTTP(req, res);
             break;
