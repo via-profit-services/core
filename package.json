@@ -1,7 +1,7 @@
 {
     "name": "@via-profit-services/core",
     "support": "https://via-profit.ru",
-    "version": "2.2.0-rc.30",
+    "version": "2.2.0-rc.31",
     "description": "Via Profit Core service",
     "main": "dist/index.js",
     "keywords": [
@@ -67,7 +67,7 @@
         "eslint-plugin-react": "^7.25.1",
         "eslint-plugin-react-hooks": "^4.2.0",
         "eslint-plugin-standard": "^5.0.0",
-        "graphql": "16.0.1",
+        "graphql": "^16.3.0",
         "jest": "^27.4.5",
         "nodemon": "^2.0.6",
         "nodemon-webpack-plugin": "^4.3.2",
