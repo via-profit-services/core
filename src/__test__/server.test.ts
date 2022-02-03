@@ -95,7 +95,7 @@ describe('Graphql server', () => {
             expect.objectContaining({
               message: 'Failed to parse «query» param',
               extensions: expect.objectContaining({
-                errorType: 'validation-request',
+                errorType: 'graphql-error-validate-request',
               }),
             }),
           ]),
