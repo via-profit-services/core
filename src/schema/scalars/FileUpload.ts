@@ -11,13 +11,13 @@ const FileUpload = new GraphQLScalarType({
       return value.promise;
     }
 
-    throw new GraphQLError('Upload value invalid');
+    throw new GraphQLError('Upload value invalid', {});
   },
   parseLiteral(ast) {
-    throw new GraphQLError('Upload literal unsupported', ast);
+    throw new GraphQLError('Upload literal unsupported', { nodes: [ast] });
   },
   serialize() {
-    throw new GraphQLError('Upload serialization unsupported');
+    throw new GraphQLError('Upload serialization unsupported', {});
   },
 });
 

@@ -33,7 +33,7 @@ export default new GraphQLScalarType({
 
   parseLiteral(ast) {
     if (ast.kind !== Kind.STRING) {
-      throw new GraphQLError(`Can only validate strings as time but got a: ${ast.kind}`);
+      throw new GraphQLError(`Can only validate strings as time but got a: ${ast.kind}`, {});
     }
 
     if (!TIME_REGEX.test(ast.value)) {

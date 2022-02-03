@@ -26,7 +26,10 @@ e.g. For 250 USD this record returns value as 250000 (250$ * 100¢)
 
   parseLiteral(ast) {
     if (ast.kind !== Kind.STRING && ast.kind !== Kind.INT) {
-      throw new GraphQLError(`Can only parse strings & integers to money but got a: ${ast.kind}`);
+      throw new GraphQLError(
+        `Can only parse strings & integers to money but got a: ${ast.kind}`,
+        {},
+      );
     }
 
     try {
@@ -34,7 +37,7 @@ e.g. For 250 USD this record returns value as 250000 (250$ * 100¢)
 
       return result;
     } catch (err) {
-      throw new GraphQLError(`Value is not a valid Money: ${ast.value}`);
+      throw new GraphQLError(`Value is not a valid Money: ${ast.value}`, {});
     }
   },
 });

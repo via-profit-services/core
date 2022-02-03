@@ -89,7 +89,10 @@ const applicationFactory: ApplicationFactory = props => {
 
     try {
       if (!['GET', 'POST', 'OPTIONS'].includes(method)) {
-        throw new Error('GraphQL only supports GET, POST and OPTIONS requests');
+        throw new ServerError(
+          [new GraphQLError('GraphQL only supports GET, POST and OPTIONS requests', {})],
+          'graphql-error-execute',
+        );
       }
 
       if (!['GET', 'POST'].includes(method)) {
@@ -115,7 +118,7 @@ const applicationFactory: ApplicationFactory = props => {
       const graphqlErrors = validateSchema(schema);
       graphqlErrors;
       if (graphqlErrors.length > 0) {
-        throw new ServerError(graphqlErrors, 'validate-schema');
+        throw new ServerError(graphqlErrors, 'graphql-error-validate-schema');
       }
 
       const body = await bodyParser({ request, response, config });
@@ -127,8 +130,8 @@ const applicationFactory: ApplicationFactory = props => {
 
       if (typeof query !== 'string' || query === '') {
         throw new ServerError(
-          [new GraphQLError('Failed to parse «query» param')],
-          'validation-request',
+          [new GraphQLError('Failed to parse «query» param', {})],
+          'graphql-error-validate-request',
         );
       }
 
@@ -139,7 +142,7 @@ const applicationFactory: ApplicationFactory = props => {
         ...validationRule,
       ]);
       if (validationErrors.length > 0) {
-        throw new ServerError(validationErrors, 'validation-field');
+        throw new ServerError(validationErrors, 'graphql-error-validate-field');
       }
 
       // Only query operations are allowed on GET requests.
@@ -147,8 +150,14 @@ const applicationFactory: ApplicationFactory = props => {
         // Determine if this GET request will perform a non-query.
         const operationAST = getOperationAST(documentAST, operationName);
         if (operationAST && operationAST.operation !== 'query') {
-          throw new Error(
-            `Can only perform a ${operationAST.operation} operation from a POST request`,
+          throw new ServerError(
+            [
+              new GraphQLError(
+                `Can only perform a ${operationAST.operation} operation from a POST request`,
+                {},
+              ),
+            ],
+            'graphql-error-execute',
           );
         }
       }
@@ -163,7 +172,7 @@ const applicationFactory: ApplicationFactory = props => {
       });
 
       if (errors) {
-        throw new ServerError(errors, 'execute');
+        throw new ServerError(errors, 'graphql-error-execute');
       }
 
       response.statusCode = 200;
@@ -178,13 +187,17 @@ const applicationFactory: ApplicationFactory = props => {
           },
         }),
       );
-    } catch (err: unknown) {
+    } catch (error: unknown) {
       response.statusCode = 200;
       response.setHeader('Content-Type', 'application/json');
 
       response.end(
         JSON.stringify({
-          errors: formatErrors(err, debug),
+          errors: formatErrors({
+            error,
+            debug,
+            context,
+          }),
           extensions: {
             ...extensions,
             ...stats,
