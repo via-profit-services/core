@@ -17,6 +17,7 @@ declare module '@via-profit-services/core' {
     GraphQLInputObjectType,
     GraphQLInterfaceType,
     GraphQLErrorExtensions,
+    GraphQLFormattedError,
     ValidationRule,
     GraphQLEnumType,
   } from 'graphql';
@@ -275,7 +276,18 @@ declare module '@via-profit-services/core' {
   export type HTTPListender = (
     request: http.IncomingMessage,
     response: http.ServerResponse,
-  ) => MaybePromise<void>;
+  ) => MaybePromise<GraphqlResponse>;
+
+  export type GraphqlResponse = {
+    data?: Record<string, any> | null;
+    errors?: readonly GraphQLFormattedError[] | null;
+    extensions?: GraphQLExtensions;
+  };
+
+  export type GraphQLExtensions = {
+    stats: CoreStats;
+    queryTime: number;
+  };
 
   export type ApplicationFactory = (props: InitProps) => HTTPListender;
 

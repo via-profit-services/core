@@ -4,10 +4,12 @@ import { performance } from 'node:perf_hooks';
 import type {
   Configuration,
   Context,
+  GraphQLExtensions,
   ApplicationFactory,
   HTTPListender,
   CoreStats,
   Middleware,
+  GraphqlResponse,
 } from '@via-profit-services/core';
 import {
   validateSchema,
@@ -18,7 +20,6 @@ import {
   getOperationAST,
   validate,
   ValidationRule,
-  GraphQLErrorExtensions,
   GraphQLError,
 } from 'graphql';
 
@@ -77,7 +78,13 @@ const applicationFactory: ApplicationFactory = props => {
   // compose middlewares to single array of middlewares
   // Core middleware must be a first of this array
   const middlewares = composeMiddlewares(coreMiddleware, middleware);
-  const extensions: GraphQLErrorExtensions = {};
+  const extensions: GraphQLExtensions = {
+    queryTime: 0,
+    stats: {
+      requestCounter: 0,
+      startupTime: new Date(),
+    },
+  };
   const validationRule: ValidationRule[] = [];
 
   const httpListener: HTTPListender = async (request, response) => {
@@ -95,12 +102,12 @@ const applicationFactory: ApplicationFactory = props => {
         );
       }
 
-      if (!['GET', 'POST'].includes(method)) {
-        response.statusCode = 200;
-        response.end();
+      // if (!['GET', 'POST'].includes(method)) {
+      //   response.statusCode = 200;
+      //   response.end();
 
-        return;
-      }
+      //   return;
+      // }
 
       // execute each middleware
       await applyMiddlewares({
@@ -175,36 +182,31 @@ const applicationFactory: ApplicationFactory = props => {
         throw new ServerError(errors, 'graphql-error-execute');
       }
 
-      response.statusCode = 200;
-      response.setHeader('Content-Type', 'application/json');
-      response.end(
-        JSON.stringify({
-          data,
-          extensions: {
-            ...extensions,
-            ...stats,
-            queryTime: performance.now() - startTime,
-          },
-        }),
-      );
-    } catch (error: unknown) {
-      response.statusCode = 200;
-      response.setHeader('Content-Type', 'application/json');
+      const r: GraphqlResponse = {
+        data,
+        extensions: {
+          ...extensions,
+          ...stats,
+          queryTime: performance.now() - startTime,
+        },
+      };
 
-      response.end(
-        JSON.stringify({
-          errors: formatErrors({
-            error,
-            debug,
-            context,
-          }),
-          extensions: {
-            ...extensions,
-            ...stats,
-            queryTime: performance.now() - startTime,
-          },
+      return r;
+    } catch (error: unknown) {
+      const r: GraphqlResponse = {
+        errors: formatErrors({
+          error,
+          debug,
+          context,
         }),
-      );
+        extensions: {
+          ...extensions,
+          ...stats,
+          queryTime: performance.now() - startTime,
+        },
+      };
+
+      return r;
     }
   };
 
