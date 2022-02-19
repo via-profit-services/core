@@ -53,7 +53,7 @@ Contact    ${support}
     new BundleAnalyzerPlugin({
       analyzerMode: process.env.ANALYZE ? 'server' : 'disabled',
       openAnalyzer: true,
-    }),
+    }) as any,
   ],
 });
 
