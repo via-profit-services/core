@@ -318,7 +318,6 @@ declare module '@via-profit-services/core' {
   export interface CursorConnection<T> {
     edges: Edge<T>[];
     pageInfo: PageInfo;
-    totalCount: number;
   }
   /**
    * GraphQL PageInfo
@@ -347,21 +346,29 @@ declare module '@via-profit-services/core' {
     cursor: string;
   }
   export interface ListResponse<T> {
-    totalCount: number;
+    /**
+     * @deprecated No longer supported
+     */
+    totalCount?: number;
+    /**
+     * @deprecated No longer supported
+     */
+    revert?: boolean;
     offset: number;
     limit: number;
     nodes: Node<T>[];
     orderBy: OrderBy;
     where: Where;
-    revert: boolean;
   }
   export interface CursorConnectionProps<T> {
-    totalCount: number;
-    limit: number;
     nodes: Node<T>[];
+    totalCount?: number;
+    limit?: number;
     offset?: number;
     orderBy?: OrderBy;
     where?: Where;
+    search?: OutputSearch;
+    between?: Between;
     revert?: boolean;
   }
   export interface BetweenDate {
@@ -427,16 +434,16 @@ declare module '@via-profit-services/core' {
     offset: number;
     orderBy: OrderBy;
     where: Where;
-    revert: boolean;
     search: OutputSearch | false;
     between: Between;
+    revert: boolean;
   }
   export interface CursorPayload {
     offset: number;
-    limit: number;
     where: Where;
+    between: Between;
     orderBy: OrderBy;
-    revert: boolean;
+    search: OutputSearch;
   }
   export type OrderBy = {
     field: string;
