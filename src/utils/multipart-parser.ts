@@ -4,10 +4,11 @@ import busboy from 'busboy';
 import { WriteStream, ReadStreamOptions } from '../fs-capacitor';
 import FileUploadInstance from './FileUploadInstance';
 import dotNotationSet from './set';
+import { DEFAULT_PERSISTED_QUERY_KEY } from '../constants';
 
 const multipartParser: MultipartParser = ({ request, config }) =>
   new Promise<RequestBody>((resolve, reject) => {
-    const { persistedQueryKey, maxFieldSize, maxFileSize, maxFiles } = config;
+    const { persistedQueryKey, persistedQueriesMap, maxFieldSize, maxFileSize, maxFiles } = config;
     const { headers } = request;
 
     const parser = busboy({
@@ -56,35 +57,45 @@ const multipartParser: MultipartParser = ({ request, config }) =>
 
         const { query, variables, operationName } = parsed;
 
-        // query must be a string
-        if (typeof query === 'string') {
-          operations.query = query;
-        } else {
-          reject(
-            `«operations.query» multipart field must be a string. Got ${typeof operations.query}`,
-          );
-
-          return;
-        }
-
         // variables must be an object
         if (typeof variables === 'object') {
           operations.variables = variables;
-        } else {
-          reject(
-            `«operations.variables» multipart field must be an object. Got ${typeof operations.variables}`,
-          );
-
-          return;
         }
 
         if (typeof operationName === 'string') {
           operations.operationName = operationName;
         }
 
-        // documentId field
-        if (typeof parsed[persistedQueryKey] === 'string') {
-          operations[persistedQueryKey] = parsed[persistedQueryKey];
+        if (typeof query === 'string') {
+          operations.query = query;
+        }
+
+        // persisted query
+        if (
+          typeof parsed[persistedQueryKey] === 'string' &&
+          persistedQueriesMap[parsed[persistedQueryKey]]
+        ) {
+          operations.query = persistedQueriesMap[parsed[persistedQueryKey]];
+        }
+
+        // query must be a string
+        if (typeof operations.query !== 'string') {
+          reject(
+            [
+              `«operations.query» multipart field must be a string. Got ${typeof operations.query}.`,
+              `if you use PersistedQuery, then the request must contain a key, for example, «${DEFAULT_PERSISTED_QUERY_KEY}» containing the ID of the request stored on the server`,
+            ].join('\n'),
+          );
+
+          return;
+        }
+
+        if (typeof operations.variables !== 'object') {
+          reject(
+            `«operations.variables» multipart field must be an object. Got ${typeof operations.variables}`,
+          );
+
+          return;
         }
       }
 
@@ -101,6 +112,8 @@ const multipartParser: MultipartParser = ({ request, config }) =>
 
         if (Object.entries(mapData).length > maxFiles) {
           reject(`${maxFiles} max file uploads exceeded.`);
+
+          return;
         }
 
         Object.entries(mapData).forEach(([fieldName, paths]) => {

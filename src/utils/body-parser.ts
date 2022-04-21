@@ -17,10 +17,11 @@ const bodyParser: BodyParser = async ({ request, response, config }) => {
 
   // check to multipart (file upload)
   if (headers['content-type']?.match(/^multipart\/form-data/)) {
-    // const finished = new Promise(resolve => req.on('end', resolve));
-    const rawBody = await multipartParser({ request, response, config });
-
-    return rawBody;
+    try {
+      return await multipartParser({ request, response, config });
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 
   const rawBody = await readBody(request, { charset: 'utf-8' });

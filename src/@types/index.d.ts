@@ -462,9 +462,9 @@ declare module '@via-profit-services/core' {
   export type Where = WhereField[];
 
   export type RequestBody = {
-    operationName?: string;
-    query?: string;
-    variables?: Record<string, any>;
+    operationName?: unknown;
+    query?: unknown;
+    variables?: Record<string, unknown>;
     [key: string]: unknown;
   };
 

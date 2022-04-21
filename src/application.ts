@@ -102,13 +102,6 @@ const applicationFactory: ApplicationFactory = props => {
         );
       }
 
-      // if (!['GET', 'POST'].includes(method)) {
-      //   response.statusCode = 200;
-      //   response.end();
-
-      //   return;
-      // }
-
       // execute each middleware
       await applyMiddlewares({
         request,
