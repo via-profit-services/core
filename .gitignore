@@ -18,6 +18,8 @@
 # jwt keys
 /keys
 
+/.files
+
 dump.rdb
 /package.tgz
 /package-*.tgz

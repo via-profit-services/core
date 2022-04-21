@@ -13,7 +13,7 @@ export default new GraphQLScalarType({
 
   parseLiteral(ast) {
     if (ast.kind !== Kind.STRING) {
-      throw new GraphQLError(`Can only validate strings as URLs but got a: ${ast.kind}`);
+      throw new GraphQLError(`Can only validate strings as URLs but got a: ${ast.kind}`, {});
     }
 
     return new URL(ast.value.toString());

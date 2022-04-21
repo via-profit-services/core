@@ -3,9 +3,9 @@ import type {
   BuildQueryFilter,
   SearchMultipleFields,
   SearchSingleField,
+  Where,
 } from '@via-profit-services/core';
 
-import { DEFAULT_NODES_LIMIT } from '../constants';
 import { getCursorPayload } from './cursors';
 
 export const defaultOutputFilter: OutputFilter = {
@@ -21,41 +21,77 @@ export const defaultOutputFilter: OutputFilter = {
 export const buildQueryFilter: BuildQueryFilter = args => {
   const { first, last, after, before, offset, orderBy, filter, search, between } = args;
 
+  // transform filter to where clause
+  const where: Where = [];
+
+  if (filter) {
+    Object.entries(filter).forEach(([field, value]) => {
+      if (Array.isArray(value)) {
+        where.push([field, 'in', value]);
+      } else {
+        where.push([field, '=', value]);
+      }
+    });
+  }
+
   // combine filter
   const outputFilter: OutputFilter = {
-    limit: Math.max(Number(first || last) || DEFAULT_NODES_LIMIT, 0),
-    orderBy: orderBy || [],
-    revert: !!last,
+    limit: 0,
+    offset: 0,
+    orderBy: [],
     where: [],
     search: false,
-    offset: Math.max(Number(offset) || 0, 0),
-    between: between || {},
+    between: {},
+    revert: false,
   };
 
-  // if cursor was provied in after or before property
-  if (after || before) {
-    const cursorPayload = getCursorPayload(after || before);
-
-    return {
-      ...outputFilter,
-      ...cursorPayload,
-    };
+  // If passed the «first» argument, but not passed cursor
+  // we must combine all passed arguments as is
+  if (typeof first === 'number' && (typeof after === 'undefined' || after === null)) {
+    outputFilter.offset = offset || 0;
+    outputFilter.limit = first;
+    outputFilter.where = where || [];
+    outputFilter.orderBy = orderBy || [];
+    outputFilter.between = between || {};
+    outputFilter.revert = false;
   }
 
-  // compile filter
-  if (typeof filter !== 'undefined' && filter !== null) {
-    if (!Array.isArray(filter)) {
-      Object.entries(filter).forEach(([field, value]) => {
-        if (Array.isArray(value)) {
-          outputFilter.where.push([field, 'in', value]);
-        } else {
-          outputFilter.where.push([field, '=', value]);
-        }
-      });
-    }
+  // If passed the «first» argument with cursor
+  // we must parse the cursor and merge arguments
+  if (typeof first === 'number' && typeof after === 'string') {
+    const cursorPayload = getCursorPayload(after);
+    outputFilter.offset = cursorPayload.offset;
+    outputFilter.limit = first;
+    outputFilter.where = cursorPayload.where;
+    outputFilter.orderBy = cursorPayload.orderBy;
+    outputFilter.between = cursorPayload.between;
+    outputFilter.revert = false;
   }
 
-  if (search && Array.isArray(search)) {
+  // If passed the «last» argument, but not passed cursor
+  // we must combine all passed arguments as is
+  if (typeof last === 'number' && (typeof before === 'undefined' || before === null)) {
+    outputFilter.offset = Math.max((offset || 0) - last, 0);
+    outputFilter.limit = Math.min(last - 1, 0);
+    outputFilter.where = where || [];
+    outputFilter.orderBy = orderBy || [];
+    outputFilter.between = between || {};
+    outputFilter.revert = true;
+  }
+
+  // If passed the «last» argument with cursor
+  // we must parse the cursor and merge arguments
+  if (typeof last === 'number' && typeof before === 'string') {
+    const cursorPayload = getCursorPayload(before);
+    outputFilter.offset = Math.max(cursorPayload.offset - last, 0);
+    outputFilter.limit = Math.min(last - 1, 0);
+    outputFilter.where = cursorPayload.where;
+    outputFilter.orderBy = cursorPayload.orderBy;
+    outputFilter.between = cursorPayload.between;
+    outputFilter.revert = true;
+  }
+
+  if (Array.isArray(search)) {
     search.forEach((s: SearchMultipleFields | SearchSingleField) => {
       // is is search single fiels
       if ('field' in s) {

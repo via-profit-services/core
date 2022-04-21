@@ -29,15 +29,15 @@ export const getCursorPayload: GetCursorPayload = cursor => {
 };
 
 export const buildCursorConnection: BuildCursorConnection = (props, cursorName) => {
-  const { nodes, totalCount, offset, limit, where, revert, orderBy } = props;
+  const { nodes, totalCount, offset, limit, where, revert, orderBy, between, search } = props;
 
   const edges = nodes.map((node, index) =>
     nodeToEdge(node, cursorName, {
       offset: offset + index + 1,
-      limit,
       where: where || [],
       orderBy: orderBy || [],
-      revert,
+      search,
+      between,
     }),
   );
 
@@ -56,7 +56,6 @@ export const buildCursorConnection: BuildCursorConnection = (props, cursorName) 
   }
 
   return {
-    totalCount,
     edges,
     pageInfo,
   };

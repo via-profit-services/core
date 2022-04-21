@@ -1,16 +1,25 @@
+import type { Context, ServerErrorType } from '@via-profit-services/core';
 import { GraphQLFormattedError, GraphQLError } from 'graphql';
 import ServerError from '../server-error';
 
-const formatErrors = (error: unknown, debug?: boolean): GraphQLFormattedError[] => {
-  const errors: GraphQLFormattedError[] = [];
+type FormatErrors = (props: {
+  error: unknown;
+  debug?: boolean;
+  context: Context;
+}) => readonly GraphQLFormattedError[];
+
+const formatErrors: FormatErrors = ({ error, debug, context }) => {
+  const errorsList: GraphQLFormattedError[] = [];
+  const { emitter } = context;
 
   if (error instanceof ServerError && Array.isArray(error.graphqlErrors)) {
     const { graphqlErrors, errorType } = error as {
       graphqlErrors: readonly GraphQLError[];
-      errorType: string;
+      errorType: ServerErrorType;
     };
+
     graphqlErrors.forEach(graphqlError => {
-      errors.push({
+      errorsList.push({
         ...graphqlError.toJSON(),
         extensions: {
           errorType,
@@ -18,7 +27,24 @@ const formatErrors = (error: unknown, debug?: boolean): GraphQLFormattedError[] 
       });
     });
 
-    return errors;
+    switch (errorType) {
+      case 'graphql-error-execute':
+        emitter.emit('graphql-error-execute', graphqlErrors);
+        break;
+      case 'graphql-error-validate-field':
+        emitter.emit('graphql-error-validate-field', graphqlErrors);
+        break;
+      case 'graphql-error-validate-request':
+        emitter.emit('graphql-error-validate-request', graphqlErrors);
+        break;
+      case 'graphql-error-validate-schema':
+        emitter.emit('graphql-error-validate-schema', graphqlErrors);
+        break;
+      default:
+        break;
+    }
+
+    return errorsList;
   }
 
   if (error instanceof Error) {
@@ -27,15 +53,17 @@ const formatErrors = (error: unknown, debug?: boolean): GraphQLFormattedError[] 
       extensions.stacktrace = error.stack.split('\n') || [];
     }
 
-    errors.push({
+    errorsList.push({
       message: error.message,
       extensions: Object.entries(extensions).length ? extensions : undefined,
     });
 
-    return errors;
+    emitter.emit('graphql-error-execute', [new GraphQLError(error.message, {})]);
+
+    return errorsList;
   }
 
-  return errors;
+  return errorsList;
 };
 
 export default formatErrors;

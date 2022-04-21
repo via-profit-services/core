@@ -4,10 +4,12 @@ import { performance } from 'node:perf_hooks';
 import type {
   Configuration,
   Context,
+  GraphQLExtensions,
   ApplicationFactory,
   HTTPListender,
   CoreStats,
   Middleware,
+  GraphqlResponse,
 } from '@via-profit-services/core';
 import {
   validateSchema,
@@ -18,7 +20,7 @@ import {
   getOperationAST,
   validate,
   ValidationRule,
-  GraphQLErrorExtensions,
+  GraphQLError,
 } from 'graphql';
 
 import {
@@ -35,7 +37,7 @@ import applyMiddlewares from './utils/apply-middlewares';
 import formatErrors from './utils/format-errors';
 import ServerError from './server-error';
 
-const applicationFactory: ApplicationFactory = async props => {
+const applicationFactory: ApplicationFactory = props => {
   const config: Configuration = {
     timezone: DEFAULT_SERVER_TIMEZONE,
     middleware: [],
@@ -76,7 +78,13 @@ const applicationFactory: ApplicationFactory = async props => {
   // compose middlewares to single array of middlewares
   // Core middleware must be a first of this array
   const middlewares = composeMiddlewares(coreMiddleware, middleware);
-  const extensions: GraphQLErrorExtensions = {};
+  const extensions: GraphQLExtensions = {
+    queryTime: 0,
+    stats: {
+      requestCounter: 0,
+      startupTime: new Date(),
+    },
+  };
   const validationRule: ValidationRule[] = [];
 
   const httpListener: HTTPListender = async (request, response) => {
@@ -87,8 +95,11 @@ const applicationFactory: ApplicationFactory = async props => {
     stats.requestCounter += 1;
 
     try {
-      if (!['GET', 'POST'].includes(method)) {
-        throw new Error('GraphQL only supports GET and POST requests');
+      if (!['GET', 'POST', 'OPTIONS'].includes(method)) {
+        throw new ServerError(
+          [new GraphQLError('GraphQL only supports GET, POST and OPTIONS requests', {})],
+          'graphql-error-execute',
+        );
       }
 
       // execute each middleware
@@ -107,7 +118,7 @@ const applicationFactory: ApplicationFactory = async props => {
       const graphqlErrors = validateSchema(schema);
       graphqlErrors;
       if (graphqlErrors.length > 0) {
-        throw new ServerError(graphqlErrors, 'validate-schema');
+        throw new ServerError(graphqlErrors, 'graphql-error-validate-schema');
       }
 
       const body = await bodyParser({ request, response, config });
@@ -117,13 +128,21 @@ const applicationFactory: ApplicationFactory = async props => {
         config,
       });
 
+      if (typeof query !== 'string' || query === '') {
+        throw new ServerError(
+          [new GraphQLError('Failed to parse «query» param', {})],
+          'graphql-error-validate-request',
+        );
+      }
+
       const documentAST = parse(new Source(query, 'GraphQL request'));
+
       const validationErrors = validate(schema, documentAST, [
         ...specifiedRules,
         ...validationRule,
       ]);
       if (validationErrors.length > 0) {
-        throw new ServerError(validationErrors, 'validation-field');
+        throw new ServerError(validationErrors, 'graphql-error-validate-field');
       }
 
       // Only query operations are allowed on GET requests.
@@ -131,8 +150,14 @@ const applicationFactory: ApplicationFactory = async props => {
         // Determine if this GET request will perform a non-query.
         const operationAST = getOperationAST(documentAST, operationName);
         if (operationAST && operationAST.operation !== 'query') {
-          throw new Error(
-            `Can only perform a ${operationAST.operation} operation from a POST request`,
+          throw new ServerError(
+            [
+              new GraphQLError(
+                `Can only perform a ${operationAST.operation} operation from a POST request`,
+                {},
+              ),
+            ],
+            'graphql-error-execute',
           );
         }
       }
@@ -147,35 +172,34 @@ const applicationFactory: ApplicationFactory = async props => {
       });
 
       if (errors) {
-        throw new ServerError(errors, 'execute');
+        throw new ServerError(errors, 'graphql-error-execute');
       }
 
-      response.statusCode = 200;
-      response.setHeader('Content-Type', 'application/json');
-      response.end(
-        JSON.stringify({
-          data,
-          extensions: {
-            ...extensions,
-            ...stats,
-            queryTime: performance.now() - startTime,
-          },
-        }),
-      );
-    } catch (err: unknown) {
-      response.statusCode = 200;
-      response.setHeader('Content-Type', 'application/json');
+      const r: GraphqlResponse = {
+        data,
+        extensions: {
+          ...extensions,
+          ...stats,
+          queryTime: performance.now() - startTime,
+        },
+      };
 
-      response.end(
-        JSON.stringify({
-          errors: formatErrors(err, debug),
-          extensions: {
-            ...extensions,
-            ...stats,
-            queryTime: performance.now() - startTime,
-          },
+      return r;
+    } catch (error: unknown) {
+      const r: GraphqlResponse = {
+        errors: formatErrors({
+          error,
+          debug,
+          context,
         }),
-      );
+        extensions: {
+          ...extensions,
+          ...stats,
+          queryTime: performance.now() - startTime,
+        },
+      };
+
+      return r;
     }
   };
 

@@ -1,5 +1,5 @@
 import { makeNodeCursor, getCursorPayload, buildCursorConnection } from '../utils/cursors';
-import type { CursorPayload } from '@via-profit-services/core';
+import { buildQueryFilter, CursorPayload, nodeToEdge } from '@via-profit-services/core';
 
 import books from './books';
 
@@ -7,8 +7,8 @@ describe('Cursors', () => {
   test('makeNodeCursor -> getCursorPayload', () => {
     const cursorPayload: CursorPayload = {
       offset: 10,
-      limit: 50,
-      revert: false,
+      between: {},
+      search: null,
       where: [['category', '=', 'Test']],
       orderBy: [
         {
@@ -37,7 +37,6 @@ describe('Cursors', () => {
       'books',
     );
 
-    expect(connection.totalCount).toBe(books.length);
     expect(connection.pageInfo.hasPreviousPage).toBe(true);
     expect(connection.pageInfo.hasNextPage).toBe(true);
   });
@@ -56,7 +55,6 @@ describe('Cursors', () => {
       'books',
     );
 
-    expect(connection.totalCount).toBe(books.length);
     expect(connection.pageInfo.hasPreviousPage).toBe(false);
     expect(connection.pageInfo.hasNextPage).toBe(true);
   });
@@ -75,27 +73,74 @@ describe('Cursors', () => {
       'books',
     );
 
-    expect(connection.totalCount).toBe(books.length);
     expect(connection.pageInfo.hasPreviousPage).toBe(true);
     expect(connection.pageInfo.hasNextPage).toBe(false);
   });
 
-  test('Pagination test-3', () => {
-    const offset = 4;
-    const limit = 3;
+  // test('Pagination test-3', () => {
+  //   const cursor = makeNodeCursor('test-3', {
+  //     offset: 4,
+  //     where: [],
+  //     between: {},
+  //     orderBy: [],
+  //   });
 
-    const connection = buildCursorConnection(
-      {
-        offset,
-        limit,
-        totalCount: books.length,
-        nodes: [...books].splice(offset, limit),
-      },
-      'books',
-    );
-    expect(connection.edges[0].cursor).toBe(connection.pageInfo.startCursor);
-    expect(connection.edges[connection.edges.length - 1].cursor).toBe(
-      connection.pageInfo.endCursor,
-    );
-  });
+  //   const filter = buildQueryFilter({
+  //     first: 10,
+  //     after: cursor,
+  //   });
+
+  //   expect(filter).toBe({
+  //     limit: 10,
+  //     offset: 4,
+  //     orderBy: [],
+  //     where: [],
+  //     search: false,
+  //     between: {},
+  //     revert: false,
+  //   });
+  // });
+
+  // test('Pagination test-4', () => {
+  //   const cursor = makeNodeCursor('test-4', {
+  //     offset: 30,
+  //     where: [],
+  //     between: {},
+  //     orderBy: [],
+  //   });
+
+  //   const filter = buildQueryFilter({
+  //     last: 10,
+  //     before: cursor,
+  //   });
+
+  //   expect(filter).toBe({
+  //     limit: 10,
+  //     offset: 20,
+  //     orderBy: [],
+  //     where: [],
+  //     search: false,
+  //     between: {},
+  //     revert: false,
+  //   });
+  // });
+
+  // test('Pagination test-5', () => {
+  //   const offset = 4;
+  //   const limit = 3;
+
+  //   const connection = buildCursorConnection(
+  //     {
+  //       offset,
+  //       limit,
+  //       totalCount: books.length,
+  //       nodes: [...books].splice(offset, limit),
+  //     },
+  //     'books',
+  //   );
+  //   expect(connection.edges[0].cursor).toBe(connection.pageInfo.startCursor);
+  //   expect(connection.edges[connection.edges.length - 1].cursor).toBe(
+  //     connection.pageInfo.endCursor,
+  //   );
+  // });
 });

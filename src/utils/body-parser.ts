@@ -7,26 +7,21 @@ import multipartParser from './multipart-parser';
 
 const JSONOBJREGEX = /^[ \t\n\r]*\{/;
 
-// const isRequestWithBody = (
-//   req: http.IncomingMessage,
-// ): req is http.IncomingMessage & { body: any } => 'body' in req;
-
 const bodyParser: BodyParser = async ({ request, response, config }) => {
+  const { method, headers } = request;
+
   // Skip requests without content types.
-  if (request.headers['content-type'] === undefined) {
-    throw new Error('Missing content-type header');
+  if (method === 'POST' && typeof headers['content-type'] === 'undefined') {
+    throw new Error('Missing Content-Type header');
   }
 
   // check to multipart (file upload)
-  if (request.headers['content-type'].match(/^multipart\/form-data/)) {
-    // const finished = new Promise(resolve => req.on('end', resolve));
-    const rawBody = await multipartParser({ request, response, config });
-
-    return rawBody;
-  }
-
-  if (request.headers['content-type'] !== 'application/json') {
-    throw new Error('Missing content-type header');
+  if (headers['content-type']?.match(/^multipart\/form-data/)) {
+    try {
+      return await multipartParser({ request, response, config });
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 
   const rawBody = await readBody(request, { charset: 'utf-8' });
@@ -65,19 +60,20 @@ export const parseGraphQLParams = (props: GraphQLParamsProps): GraphQLParams => 
     operationName: null,
   };
 
-  // bind standard query
-  if (typeof body.query === 'string') {
-    graphQLParams.query = body.query;
-  }
-
-  // bind query by persistent map
-  if (typeof body[persistedQueryKey] === 'string') {
-    const queryKey = body[persistedQueryKey] as string;
-    const mappedQuery = persistedQueriesMap[queryKey];
+  // if persistedQueryKey exits (in query string or body) then
+  // try to get query by persisted queries
+  if (urlData.get(persistedQueryKey) || typeof body[persistedQueryKey] === 'string') {
+    const queryKey = urlData.get(persistedQueryKey) || body[persistedQueryKey];
+    const mappedQuery = persistedQueriesMap[queryKey as string];
 
     if (typeof mappedQuery !== 'undefined') {
       graphQLParams.query = mappedQuery;
     }
+
+    // if persistedQueryKey not exist
+    // then try to get query from query string or bofy
+  } else {
+    graphQLParams.query = urlData.get('query') ?? String(body.query || '');
   }
 
   const variables = urlData.get('variables') ?? body.variables;

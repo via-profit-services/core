@@ -66,7 +66,7 @@ export default new GraphQLScalarType({
 
   parseLiteral(ast) {
     if (ast.kind !== Kind.STRING) {
-      throw new GraphQLError(`Can only parse strings to dates but got a: ${ast.kind}`);
+      throw new GraphQLError(`Can only parse strings to dates but got a: ${ast.kind}`, {});
     }
 
     if (!DATE_REGEX.test(ast.value)) {
@@ -77,7 +77,7 @@ export default new GraphQLScalarType({
 
     // eslint-disable-next-line no-restricted-globals
     if (Number.isNaN(result.getTime())) {
-      throw new GraphQLError(`Value is not a valid Date: ${ast.value}`);
+      throw new GraphQLError(`Value is not a valid Date: ${ast.value}`, {});
     }
 
     return result;
