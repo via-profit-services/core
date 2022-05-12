@@ -434,11 +434,17 @@ declare module '@via-profit-services/core' {
   export type ApplyAliases = (whereClause: Where, aliases: TableAliases) => Where;
   export type BuildQueryFilter = <T extends InputFilter>(args: T) => OutputFilter;
 
-  export class ServerError extends Error implements ErrorHandler {
-    metaData: any;
-    status: number;
-    constructor(message: string, metaData?: any);
-  }
+export type ServerErrorType =
+  | 'graphql-error-execute'
+  | 'graphql-error-validate-field'
+  | 'graphql-error-validate-request'
+  | 'graphql-error-validate-schema';
+
+export class ServerError extends Error {
+  readonly graphqlErrors: readonly GraphQLError[];
+  readonly errorType: ServerErrorType;
+  constructor(graphqlErrors: readonly GraphQLError[], errorType: ServerErrorType);
+}
   export class BadRequestError extends Error implements ErrorHandler {
     metaData: any;
     status: number;

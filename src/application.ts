@@ -16,6 +16,7 @@ import {
   getOperationAST,
   validate,
   ValidationRule,
+  GraphQLError,
   GraphQLSchema,
 } from 'graphql';
 import { performance } from 'perf_hooks';
@@ -95,7 +96,7 @@ const applicationFactory: ApplicationFactory = async props => {
       // validate request
       const graphqlErrors = validateSchema(schema);
       if (graphqlErrors.length > 0) {
-        throw new ServerError(graphqlErrors, 'validate-schema');
+        throw new ServerError(graphqlErrors, 'graphql-error-validate-schema');
       }
 
       const { method } = request;
@@ -106,8 +107,11 @@ const applicationFactory: ApplicationFactory = async props => {
         config: configurtation,
       });
 
-      if (!['GET', 'POST'].includes(method)) {
-        throw new Error('GraphQL Error. GraphQL only supports GET and POST requests');
+      if (typeof query !== 'string' || query === '') {
+        throw new ServerError(
+          [new GraphQLError('Failed to parse «query» param')],
+          'graphql-error-validate-request',
+        );
       }
 
       const documentAST = parse(new Source(query, 'GraphQL request'));
@@ -118,17 +122,20 @@ const applicationFactory: ApplicationFactory = async props => {
         ...validationRules,
       ]);
       if (validationErrors.length > 0) {
-        throw new ServerError(validationErrors, 'validation-field');
+        throw new ServerError(validationErrors, 'graphql-error-validate-field');
       }
-
       // Only query operations are allowed on GET requests.
       if (method === 'GET') {
         // Determine if this GET request will perform a non-query.
         const operationAST = getOperationAST(documentAST, operationName);
         if (operationAST && operationAST.operation !== 'query') {
-          // Otherwise, report a 405: Method Not Allowed error.
-          throw new Error(
-            `GraphQL Error. Can only perform a ${operationAST.operation} operation from a POST request`,
+          throw new ServerError(
+            [
+              new GraphQLError(
+                `Can only perform a ${operationAST.operation} operation from a POST request`,
+              ),
+            ],
+            'graphql-error-execute',
           );
         }
       }
@@ -143,7 +150,7 @@ const applicationFactory: ApplicationFactory = async props => {
       });
 
       if (errors) {
-        throw new ServerError(errors, 'execute');
+        throw new ServerError(errors, 'graphql-error-execute');
       }
 
       response.status(200).json({
