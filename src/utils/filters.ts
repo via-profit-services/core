@@ -77,10 +77,12 @@ export const buildQueryFilter: BuildQueryFilter = args => {
 
     if (!Array.isArray(filter)) {
       Object.entries(filter).forEach(([field, value]) => {
-        if (Array.isArray(value)) {
-          outputFilter.where.push([field, 'in', value]);
-        } else {
-          outputFilter.where.push([field, '=', value]);
+        if (typeof value !== 'undefined' && value !== null) {
+          if (Array.isArray(value)) {
+            outputFilter.where.push([field, 'in', value]);
+          } else {
+            outputFilter.where.push([field, '=', value]);
+          }
         }
       });
     }
