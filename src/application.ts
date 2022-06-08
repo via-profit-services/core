@@ -130,7 +130,13 @@ const applicationFactory: ApplicationFactory = props => {
 
       if (typeof query !== 'string' || query === '') {
         throw new ServerError(
-          [new GraphQLError('Failed to parse «query» param', {})],
+          [
+            new GraphQLError(
+              `Failed to parse Graphql query. The received request is empty. Got «${String(
+                query,
+              )}»`,
+            ),
+          ],
           'graphql-error-validate-request',
         );
       }
