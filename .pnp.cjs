@@ -73,7 +73,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint-plugin-react", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:7.28.0"],
             ["eslint-plugin-standard", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:5.0.0"],
             ["express", "npm:4.17.2"],
-            ["graphql", "npm:15.8.0"],
+            ["graphql", "npm:16.6.0"],
             ["html-loader", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:1.3.2"],
             ["husky", "npm:4.3.8"],
             ["jest", "npm:24.9.0"],
@@ -1450,7 +1450,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint-plugin-react", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:7.28.0"],
             ["eslint-plugin-standard", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:5.0.0"],
             ["express", "npm:4.17.2"],
-            ["graphql", "npm:15.8.0"],
+            ["graphql", "npm:16.6.0"],
             ["html-loader", "virtual:361b95238518a14447fe13adbc3b48d50ee1a6f290d5297df29eea4cf23f53927b37d59752b25c09474084249b66bd6ff456db0af89b1a5ee63738cc07d23ed0#npm:1.3.2"],
             ["husky", "npm:4.3.8"],
             ["jest", "npm:24.9.0"],
@@ -5371,10 +5371,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["graphql", [
-        ["npm:15.8.0", {
-          "packageLocation": "./.yarn/cache/graphql-npm-15.8.0-0156c66b65-423325271d.zip/node_modules/graphql/",
+        ["npm:16.6.0", {
+          "packageLocation": "./.yarn/cache/graphql-npm-16.6.0-301c470966-bf1d9e3c19.zip/node_modules/graphql/",
           "packageDependencies": [
-            ["graphql", "npm:15.8.0"]
+            ["graphql", "npm:16.6.0"]
           ],
           "linkType": "HARD",
         }]

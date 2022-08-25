@@ -2,8 +2,11 @@ import { Kind, GraphQLError, GraphQLScalarType } from 'graphql';
 
 export default new GraphQLScalarType({
   name: 'Money',
-
-  description: 'The value is stored in the smallest monetary unit.',
+  description: `Money type.
+The value is stored in the smallest monetary unit (kopecks, cents, etc.)
+Real type - Int
+e.g. For 250 USD this record returns value as 250000 (250$ * 100¢)
+`,
 
   serialize(value) {
     if (typeof value !== 'string' && typeof value !== 'number') {
@@ -18,12 +21,15 @@ export default new GraphQLScalarType({
       throw new TypeError(`Value is not a valid Integer: ${value}`);
     }
 
-    return parseInt(value, 10);
+    return parseInt(String(value), 10);
   },
 
   parseLiteral(ast) {
     if (ast.kind !== Kind.STRING && ast.kind !== Kind.INT) {
-      throw new GraphQLError(`Can only parse strings & integers to money but got a: ${ast.kind}`);
+      throw new GraphQLError(
+        `Can only parse strings & integers to money but got a: ${ast.kind}`,
+        {},
+      );
     }
 
     try {
@@ -31,7 +37,7 @@ export default new GraphQLScalarType({
 
       return result;
     } catch (err) {
-      throw new GraphQLError(`Value is not a valid Money: ${ast.value}`);
+      throw new GraphQLError(`Value is not a valid Money: ${ast.value}`, {});
     }
   },
 });

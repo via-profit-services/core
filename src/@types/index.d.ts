@@ -15,6 +15,7 @@ declare module '@via-profit-services/core' {
     GraphQLObjectType,
     GraphQLResolveInfo,
     GraphQLError,
+    GraphQLFormattedError,
   } from 'graphql';
   import { Request, RequestHandler } from 'express';
   import http from 'http';
@@ -433,18 +434,27 @@ declare module '@via-profit-services/core' {
    */
   export type ApplyAliases = (whereClause: Where, aliases: TableAliases) => Where;
   export type BuildQueryFilter = <T extends InputFilter>(args: T) => OutputFilter;
+  export type GraphqlResponse = {
+    data?: Record<string, any> | null;
+    errors?: readonly GraphQLFormattedError[] | null;
+    extensions?: GraphQLExtensions;
+  };
+  export type GraphQLExtensions = {
+    queryTime: number;
+  };
 
-export type ServerErrorType =
-  | 'graphql-error-execute'
-  | 'graphql-error-validate-field'
-  | 'graphql-error-validate-request'
-  | 'graphql-error-validate-schema';
+  export type ServerErrorType =
+    | 'graphql-error-execute'
+    | 'graphql-error-validate-field'
+    | 'graphql-error-validate-request'
+    | 'graphql-error-validate-schema';
 
-export class ServerError extends Error {
-  readonly graphqlErrors: readonly GraphQLError[];
-  readonly errorType: ServerErrorType;
-  constructor(graphqlErrors: readonly GraphQLError[], errorType: ServerErrorType);
-}
+  export class ServerError extends Error {
+    readonly graphqlErrors: readonly GraphQLError[];
+    readonly errorType: ServerErrorType;
+    constructor(graphqlErrors: readonly GraphQLError[], errorType: ServerErrorType);
+  }
+
   export class BadRequestError extends Error implements ErrorHandler {
     metaData: any;
     status: number;

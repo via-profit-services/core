@@ -4,6 +4,7 @@ import type {
   Context,
   ApplicationFactory,
   MiddlewareExtensions,
+  GraphqlResponse,
 } from '@via-profit-services/core';
 import { EventEmitter } from 'events';
 import { RequestHandler } from 'express';
@@ -74,6 +75,13 @@ const applicationFactory: ApplicationFactory = async props => {
     let context: Context = initialContext;
     let extensions: MiddlewareExtensions = {};
 
+    if (!['GET', 'POST', 'OPTIONS'].includes(request.method)) {
+      throw new ServerError(
+        [new GraphQLError('GraphQL only supports GET, POST and OPTIONS requests', {})],
+        'graphql-error-execute',
+      );
+    }
+
     try {
       const middlewaresResponse = await applyMiddlewares({
         context: initialContext,
@@ -90,7 +98,10 @@ const applicationFactory: ApplicationFactory = async props => {
       extensions = middlewaresResponse.extensions;
 
       if (!schema) {
-        throw new Error('GraphQL Error. GraphQL middleware options must contain a schema');
+        throw new ServerError(
+          [new GraphQLError('GraphQL middleware options must contain a schema', {})],
+          'graphql-error-validate-schema',
+        );
       }
 
       // validate request
@@ -166,16 +177,20 @@ const applicationFactory: ApplicationFactory = async props => {
           queryTime: performance.now() - startTime,
         },
       });
-    } catch (err: unknown) {
-      response.end(
-        JSON.stringify({
-          errors: formatErrors(err, debug),
-          extensions: {
-            ...extensions,
-            queryTime: performance.now() - startTime,
-          },
+    } catch (error: unknown) {
+      const r: GraphqlResponse = {
+        errors: formatErrors({
+          error,
+          debug,
+          context,
         }),
-      );
+        extensions: {
+          ...extensions,
+          queryTime: performance.now() - startTime,
+        },
+      };
+
+      response.end(JSON.stringify(r));
     }
   };
 

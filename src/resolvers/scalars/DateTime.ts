@@ -5,34 +5,47 @@ export default new GraphQLScalarType({
   description: 'Analogue of Date object',
 
   serialize(value) {
-    let v = value;
-
-    if (!(v instanceof Date) && typeof v !== 'string' && typeof v !== 'number') {
+    if (!(value instanceof Date) && typeof value !== 'string' && typeof value !== 'number') {
       throw new TypeError(
-        `Value is not an instance of Date, Date string or number: ${JSON.stringify(v)}`,
+        `Value is not an instance of Date, Date string or number: ${JSON.stringify(value)}`,
       );
     }
 
-    if (typeof v === 'string') {
-      v = new Date();
+    if (typeof value === 'string') {
+      const date = new Date();
+      date.setTime(Date.parse(value));
+      if (Number.isNaN(date.getTime())) {
+        throw new TypeError(`Value is not a valid Date: ${JSON.stringify(date)}`);
+      }
 
-      v.setTime(Date.parse(value));
-    } else if (typeof v === 'number') {
-      v = new Date(v);
+      return date.toJSON();
     }
 
-    // eslint-disable-next-line no-restricted-globals
-    if (Number.isNaN(v.getTime())) {
-      throw new TypeError(`Value is not a valid Date: ${JSON.stringify(v)}`);
+    if (typeof value === 'number') {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) {
+        throw new TypeError(`Value is not a valid Date: ${JSON.stringify(date)}`);
+      }
+
+      return date.toJSON();
     }
 
-    return v.toJSON();
+    if (Number.isNaN(value.getTime())) {
+      throw new TypeError(`Value is not a valid Date: ${JSON.stringify(value)}`);
+    }
+
+    return value.toJSON();
   },
 
   parseValue(value) {
+    if (!(value instanceof Date) && typeof value !== 'string' && typeof value !== 'number') {
+      throw new TypeError(
+        `Value is not an instance of Date, Date string or number: ${JSON.stringify(value)}`,
+      );
+    }
+
     const date = new Date(value);
 
-    // eslint-disable-next-line no-restricted-globals
     if (Number.isNaN(date.getTime())) {
       throw new TypeError(`Value is not a valid Date: ${value}`);
     }
@@ -42,14 +55,17 @@ export default new GraphQLScalarType({
 
   parseLiteral(ast) {
     if (ast.kind !== Kind.STRING && ast.kind !== Kind.INT) {
-      throw new GraphQLError(`Can only parse strings & integers to dates but got a: ${ast.kind}`);
+      throw new GraphQLError(
+        `Can only parse strings & integers to dates but got a: ${ast.kind}`,
+        {},
+      );
     }
 
     const result = new Date(ast.kind === Kind.INT ? Number(ast.value) : ast.value);
 
     // eslint-disable-next-line no-restricted-globals
     if (Number.isNaN(result.getTime())) {
-      throw new GraphQLError(`Value is not a valid Date: ${ast.value}`);
+      throw new GraphQLError(`Value is not a valid Date: ${ast.value}`, {});
     }
 
     return result;
