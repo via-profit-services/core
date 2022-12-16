@@ -1,4 +1,3 @@
-/* eslint-disable import/max-dependencies */
 import { EventEmitter } from 'node:events';
 import { performance } from 'node:perf_hooks';
 import type {
@@ -6,7 +5,7 @@ import type {
   Context,
   GraphQLExtensions,
   ApplicationFactory,
-  HTTPListender,
+  HTTPListener,
   CoreStats,
   Middleware,
   GraphqlResponse,
@@ -80,14 +79,12 @@ const applicationFactory: ApplicationFactory = props => {
   const middlewares = composeMiddlewares(coreMiddleware, middleware);
   const extensions: GraphQLExtensions = {
     queryTime: 0,
-    stats: {
-      requestCounter: 0,
-      startupTime: new Date(),
-    },
+    requestCounter: 0,
+    startupTime: new Date(),
   };
   const validationRule: ValidationRule[] = [];
 
-  const httpListener: HTTPListender = async (request, response) => {
+  const httpListener: HTTPListener = async (request, response) => {
     const { method } = request;
     const startTime = performance.now();
 
