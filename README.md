@@ -12,15 +12,21 @@ The [MIT](./LICENSE) License.
 
 ```ts
 import http from 'node:http';
+import { Readable } from 'node:stream';
 import { graphqlHTTPFactory } from '@via-profit-services/core';
 import schema from './my-schema';
 
+// Create the simple NodeJS HTTP server
 const server = http.createServer();
+
+// Create The graphqlHTTP listener
 const graphqlHTTP = graphqlHTTPFactory({
   schema,
 });
 
+// Now you can use graphqlHTTP in your http request
 server.on('request', async (req, res) => {
+  // Allow only POST/GET request on `/graphql`
   if (['POST', 'GET'].includes(req.method) && req.url.match(/^\/graphql/)) {
     const { data, errors, extensions } = await graphqlHTTP(req, res);
     const response = JSON.stringify({ data, errors, extensions });
@@ -31,5 +37,9 @@ server.on('request', async (req, res) => {
 
     stream.pipe(res);
   }
+});
+
+server.listen(8080, 'localhost', () => {
+  console.debug('started at http://localhost:8080/graphql')
 });
 ```

@@ -1,4 +1,3 @@
-/* eslint-disable import/max-dependencies */
 import graphqlHTTPFactory from './application';
 import ServerError from './server-error';
 import bodyParser from './utils/body-parser';

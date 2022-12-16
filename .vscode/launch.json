@@ -10,7 +10,6 @@
       "request": "launch",
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "disableOptimisticBPs": true,
       "cwd": "${workspaceRoot}/build",
       "runtimeExecutable": "yarn",
       "sourceMapPathOverrides": {
@@ -26,21 +25,19 @@
       "name": "Attach to debugger",
       "type": "node",
       "request": "attach",
-      "stopOnEntry": false,
-      "protocol": "inspector",
       "port": 9229,
       "sourceMaps": true,
       "restart": true,
-      "outFiles": [
-        "${workspaceRoot}/build/index.js"
-      ],
       "localRoot": "${workspaceRoot}/src/playground/index.ts",
       "remoteRoot": "${workspaceRoot}/build/index.js",
+      "cwd": "${workspaceRoot}",
       "sourceMapPathOverrides": {
-        "webpack://@via-profit-services/core/./*": "${workspaceRoot}/*"
+        "webpack://@via-profit-services/core/./src/*": "${workspaceRoot}/src/*"
       },
-      "trace": true,
-      "cwd": "${workspaceFolder}"
+      "outFiles": [
+        "${workspaceFolder}/**/*.js",
+        "!**/node_modules/**"
+      ],
     }
   ]
 }
