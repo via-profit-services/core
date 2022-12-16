@@ -18,9 +18,7 @@ const webpackDevConfig: Configuration = merge(webpackBaseConfig, {
   devtool: 'source-map',
   plugins: [
     new NodemonPlugin({
-      exec: process.env.DEBUG
-        ? 'yarn node --inspect=9229 ./build/index.js'
-        : 'yarn node ./build/index.js',
+      exec: 'node --inspect=9229 ./build/index.js',
       watch: ['./build'],
     }) as WebpackPluginInstance,
   ],
