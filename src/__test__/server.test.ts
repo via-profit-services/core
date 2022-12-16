@@ -20,7 +20,9 @@ afterAll(async () => {
 
 describe('Graphql server', () => {
   test('GET request with query key params should be passed successfully', done => {
-    const url = new URL('http://localhost:8080/graphql?query={getFourAsString, getFourAsNumber}');
+    const url = new URL(
+      `http://localhost:8080/graphql?query=query TestSuccessQuery {getFourAsString getFourAsNumber}`,
+    );
     const request = http.request(url, socket => {
       const buffers: Buffer[] = [];
       socket.on('data', chunk => buffers.push(chunk));
@@ -93,7 +95,6 @@ describe('Graphql server', () => {
         expect(errors).toEqual(
           expect.arrayContaining([
             expect.objectContaining({
-              message: 'Failed to parse «query» param',
               extensions: expect.objectContaining({
                 errorType: 'graphql-error-validate-request',
               }),
