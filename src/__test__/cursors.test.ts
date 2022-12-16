@@ -1,5 +1,5 @@
 import { makeNodeCursor, getCursorPayload, buildCursorConnection } from '../utils/cursors';
-import { buildQueryFilter, CursorPayload, nodeToEdge } from '@via-profit-services/core';
+import { CursorPayload } from '@via-profit-services/core';
 
 import books from './books';
 

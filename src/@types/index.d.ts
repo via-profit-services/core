@@ -273,7 +273,7 @@ declare module '@via-profit-services/core' {
     [key: string]: unknown;
   }
 
-  export type HTTPListender = (
+  export type HTTPListener = (
     request: http.IncomingMessage,
     response: http.ServerResponse,
   ) => MaybePromise<GraphqlResponse>;
@@ -284,12 +284,14 @@ declare module '@via-profit-services/core' {
     extensions?: GraphQLExtensions;
   };
 
-  export type GraphQLExtensions = {
-    stats: CoreStats;
+  export type GraphQLExtensions = CoreStats & {
+    // stats: CoreStats;
     queryTime: number;
+    requestCounter: number;
+    readonly startupTime: Date;
   };
 
-  export type ApplicationFactory = (props: InitProps) => HTTPListender;
+  export type ApplicationFactory = (props: InitProps) => HTTPListener;
 
   export type PersistedQueriesMap = Record<string, string>;
 
