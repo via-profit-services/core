@@ -9,7 +9,7 @@
         "via-profit"
     ],
     "scripts": {
-        "dist": "lint && test && build:dist",
+        "dist": "npm run lint && npm run test && npm run build:dist",
         "analyze": "cross-env ANALYZE=true npm run build:dist",
         "build:dev": "cross-env NODE_ENV=development webpack --config ./webpack/webpack-config-dev.ts --watch",
         "build:dist": "webpack --config ./webpack/webpack-config-prod.ts",
