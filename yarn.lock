@@ -1162,7 +1162,7 @@ __metadata:
   peerDependencies:
     "@via-profit-services/dataloader": ^2.0.1
     express: ^4.17.1
-    graphql: ^15.4.0
+    graphql: ^16.6.0
     moment: ^2.29.1
     moment-timezone: ^0.5.32
     winston: ^3.3.3

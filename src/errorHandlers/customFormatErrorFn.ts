@@ -21,34 +21,27 @@ const customFormatErrorFn = (props: Props) => {
   const { error, context, debug } = props;
   const { emitter } = context;
   const { originalError } = error as GraphQLErrorM;
-  const stack = error.stack.split('\n') || [];
 
   switch (true) {
     case originalError instanceof ForbiddenError:
-      emitter.emit('graphql-error', {
-        message: originalError.message,
-        stack,
-        error,
-      });
+      emitter.emit('graphql-error-validate-schema', [
+        new GraphQLError(originalError.message, { originalError }),
+      ]);
 
       break;
 
     case originalError instanceof BadRequestError:
     case originalError instanceof NotFoundError:
     case originalError instanceof ServerError:
-      emitter.emit('graphql-error', {
-        message: originalError.message,
-        stack,
-        error,
-      });
+      emitter.emit('graphql-error-validate-schema', [
+        new GraphQLError(originalError.message, { originalError }),
+      ]);
       break;
 
     default:
-      emitter.emit('graphql-error', {
-        message: originalError.message,
-        stack,
-        error,
-      });
+      emitter.emit('graphql-error-validate-schema', [
+        new GraphQLError(originalError.message, { originalError }),
+      ]);
       break;
   }
 
