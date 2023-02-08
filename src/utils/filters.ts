@@ -127,7 +127,7 @@ export const buildQueryFilter: BuildQueryFilter = args => {
 
   // between
   Object.entries(outputFilter.between).forEach(([betweenField, data]) => {
-    if (data.start && data.start instanceof Date && data.end && data.end instanceof Date) {
+    if (data && data.start && data.start instanceof Date && data.end && data.end instanceof Date) {
       const startDateTimeSum =
         data.start.getUTCHours() + data.start.getUTCMinutes() + data.start.getUTCSeconds();
       const endDateTimeSum =
