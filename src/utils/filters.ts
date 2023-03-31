@@ -126,7 +126,7 @@ export const buildQueryFilter: BuildQueryFilter = args => {
   }
 
   // between
-  Object.entries(outputFilter.between).forEach(([betweenField, data]) => {
+  Object.entries(between || {}).forEach(([betweenField, data]) => {
     if (data && data.start && data.start instanceof Date && data.end && data.end instanceof Date) {
       const startDateTimeSum =
         data.start.getUTCHours() + data.start.getUTCMinutes() + data.start.getUTCSeconds();
@@ -138,6 +138,17 @@ export const buildQueryFilter: BuildQueryFilter = args => {
         (outputFilter.between[betweenField].end as Date).setMinutes(59);
         (outputFilter.between[betweenField].end as Date).setHours(23);
       }
+    }
+
+    if (
+      data &&
+      typeof data.start !== 'undefined' &&
+      data.start !== null &&
+      typeof data.end !== 'undefined' &&
+      data.end !== null &&
+      typeof data.start === typeof data.end
+    ) {
+      outputFilter.between[betweenField] = data;
     }
   });
 
