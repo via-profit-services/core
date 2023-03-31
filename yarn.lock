@@ -2796,13 +2796,6 @@
   dependencies:
     "flat-cache" "^3.0.4"
 
-"file-stream-rotator@^0.6.1":
-  "integrity" "sha512-u+dBid4PvZw17PmDeRcNOtCP9CCK/9lRN2w+r1xIS7yOL9JFrIBKTvrYsxT4P0pGtThYTn++QS5ChHaUov3+zQ=="
-  "resolved" "https://registry.npmjs.org/file-stream-rotator/-/file-stream-rotator-0.6.1.tgz"
-  "version" "0.6.1"
-  dependencies:
-    "moment" "^2.29.1"
-
 "fill-range@^4.0.0":
   "integrity" "sha512-VcpLTWqWDiTerugjj8e3+esbg+skS3M9e54UuR3iCeIDMXCLTsAH8hTSzDQU/X6/6t3eYkOKoZSef2PlU6U1XQ=="
   "resolved" "https://registry.npmjs.org/fill-range/-/fill-range-4.0.0.tgz"
@@ -4715,11 +4708,6 @@
     "copy-descriptor" "^0.1.0"
     "define-property" "^0.2.5"
     "kind-of" "^3.0.3"
-
-"object-hash@^2.0.1":
-  "integrity" "sha512-gScRMn0bS5fH+IuwyIFgnh9zBdo4DV+6GhygmWM9HyNJSgS0hScp1f5vjtm7oIIOiT9trXrShAkLFSc2IqKNgw=="
-  "resolved" "https://registry.npmjs.org/object-hash/-/object-hash-2.2.0.tgz"
-  "version" "2.2.0"
 
 "object-inspect@^1.12.2", "object-inspect@^1.9.0":
   "integrity" "sha512-z+cPxW0QGUp0mcqcsgQyLVRDoXFQbXOwBaqyF7VIgI4TWNQsDHrBpUQslRmIfAoYWdYzs6UlKJtB2XJpTaNSpQ=="
@@ -6713,17 +6701,7 @@
   "resolved" "https://registry.npmjs.org/wildcard/-/wildcard-2.0.0.tgz"
   "version" "2.0.0"
 
-"winston-daily-rotate-file@^4.5.0":
-  "integrity" "sha512-7LGPiYGBPNyGHLn9z33i96zx/bd71pjBn9tqQzO3I4Tayv94WPmBNwKC7CO1wPHdP9uvu+Md/1nr6VSH9h0iaA=="
-  "resolved" "https://registry.npmjs.org/winston-daily-rotate-file/-/winston-daily-rotate-file-4.7.1.tgz"
-  "version" "4.7.1"
-  dependencies:
-    "file-stream-rotator" "^0.6.1"
-    "object-hash" "^2.0.1"
-    "triple-beam" "^1.3.0"
-    "winston-transport" "^4.4.0"
-
-"winston-transport@^4.4.0", "winston-transport@^4.5.0":
+"winston-transport@^4.5.0":
   "integrity" "sha512-YpZzcUzBedhlTAfJg6vJDlyEai/IFMIVcaEZZyl3UXIl4gmqRpU7AE89AHLkbzLUsv0NVmw7ts+iztqKxxPW1Q=="
   "resolved" "https://registry.npmjs.org/winston-transport/-/winston-transport-4.5.0.tgz"
   "version" "4.5.0"
@@ -6732,7 +6710,7 @@
     "readable-stream" "^3.6.0"
     "triple-beam" "^1.3.0"
 
-"winston@*", "winston@^3", "winston@^3.3.3":
+"winston@*":
   "integrity" "sha512-MsE1gRx1m5jdTTO9Ld/vND4krP2To+lgDoMEHGGa4HIlAUyXJtfc7CxQcGXVyz2IBpw5hbFkj2b/AtUdQwyRew=="
   "resolved" "https://registry.npmjs.org/winston/-/winston-3.8.2.tgz"
   "version" "3.8.2"

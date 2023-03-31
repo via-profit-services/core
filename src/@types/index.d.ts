@@ -20,8 +20,6 @@ declare module '@via-profit-services/core' {
   import { Request, RequestHandler } from 'express';
   import http from 'http';
   import { EventEmitter } from 'events';
-  import Winston from 'winston';
-  import 'winston-daily-rotate-file';
 
   interface CoreServiceProps {
     context: Context;
@@ -209,7 +207,6 @@ declare module '@via-profit-services/core' {
 
   export interface Context {
     timezone: string;
-    logger: LoggersCollection;
     services: ServicesCollection;
     emitter: CoreEmitter;
     request: Request;
@@ -220,22 +217,6 @@ declare module '@via-profit-services/core' {
   export interface ServicesCollection {
     core: CoreService;
     [key: string]: unknown;
-  }
-
-  export type Logger = Winston.Logger;
-  export interface LoggersCollection {
-    /**
-     * Server logger \
-     *\
-     * Transports:
-     *  - `warn` - File transport
-     *  - `error` - File transport
-     *  - `debug` - File transport
-     */
-    server: Logger;
-  }
-  export interface LoggersConfig {
-    logDir: string;
   }
 
   export type ApplicationFactory = (props: InitProps) => Promise<{
@@ -279,7 +260,6 @@ declare module '@via-profit-services/core' {
      * Default: `false`
      */
     debug?: boolean;
-    logDir?: string;
     rootValue?: unknown;
     middleware?: Middleware | Middleware[];
   }
@@ -856,18 +836,10 @@ declare module '@via-profit-services/core' {
    */
   export const typeDefs: string;
   export const resolvers: Resolvers;
-  export const logFormatter: Winston.Logform.Format;
   export const factory: ApplicationFactory;
 
-  export const LOG_FILENAME_DEBUG: string;
-  export const LOG_FILENAME_ERRORS: string;
-  export const LOG_FILENAME_WARNINGS: string;
-  export const LOG_DATE_PATTERNT: string;
-  export const LOG_MAX_SIZE: string;
-  export const LOG_MAX_FILES: string;
   export const MAXIMUM_REQUEST_BODY_SIZE: string;
   export const DEFAULT_NODES_LIMIT: string;
   export const DEFAULT_SERVER_TIMEZONE: string;
-  export const DEFAULT_LOG_DIR: string;
   export const DEFAULT_PERSISTED_QUERY_KEY: string;
 }

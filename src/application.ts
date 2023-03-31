@@ -22,8 +22,7 @@ import {
 } from 'graphql';
 import { performance } from 'perf_hooks';
 
-import { DEFAULT_SERVER_TIMEZONE, DEFAULT_PERSISTED_QUERY_KEY, DEFAULT_LOG_DIR } from './constants';
-import configureLogger from './logger/configure-logger';
+import { DEFAULT_SERVER_TIMEZONE, DEFAULT_PERSISTED_QUERY_KEY } from './constants';
 import CoreService from './services/CoreService';
 import applyMiddlewares from './utils/apply-middlewares';
 import bodyParser, { parseGraphQLParams } from './utils/body-parser';
@@ -34,7 +33,6 @@ import ServerError from './server-error';
 const applicationFactory: ApplicationFactory = async props => {
   const configurtation: Configuration = {
     timezone: DEFAULT_SERVER_TIMEZONE,
-    logDir: DEFAULT_LOG_DIR,
     middleware: [],
     debug: process.env.NODE_ENV === 'development',
     rootValue: undefined,
@@ -43,14 +41,12 @@ const applicationFactory: ApplicationFactory = async props => {
     ...props,
   };
 
-  const { timezone, logDir, middleware, rootValue, debug } = configurtation;
-  const logger = configureLogger({ logDir });
+  const { timezone, middleware, rootValue, debug } = configurtation;
 
   class CoreEmitter extends EventEmitter {}
 
   const initialContext: Context = {
     timezone,
-    logger,
     services: {
       core: null,
     },
