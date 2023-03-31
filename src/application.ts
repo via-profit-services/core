@@ -20,7 +20,7 @@ import {
   GraphQLError,
   GraphQLSchema,
 } from 'graphql';
-import { performance } from 'perf_hooks';
+import { performance } from 'node:perf_hooks';
 
 import { DEFAULT_SERVER_TIMEZONE, DEFAULT_PERSISTED_QUERY_KEY } from './constants';
 import CoreService from './services/CoreService';

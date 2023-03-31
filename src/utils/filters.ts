@@ -55,7 +55,7 @@ export const buildQueryFilter: BuildQueryFilter = args => {
     where: [],
     search: false,
     offset: Math.max(Number(offset) || 0, 0),
-    between: between || {},
+    between: {},
   };
 
   // if cursor was provied in after or before property
