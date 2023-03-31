@@ -22,7 +22,6 @@ declare module '@via-profit-services/core' {
   import { EventEmitter } from 'events';
   import Winston from 'winston';
   import 'winston-daily-rotate-file';
-  import DataLoader from '@via-profit-services/dataloader';
 
   interface CoreServiceProps {
     context: Context;
@@ -211,7 +210,6 @@ declare module '@via-profit-services/core' {
   export interface Context {
     timezone: string;
     logger: LoggersCollection;
-    dataloader: DataLoaderCollection;
     services: ServicesCollection;
     emitter: CoreEmitter;
     request: Request;
@@ -222,10 +220,6 @@ declare module '@via-profit-services/core' {
   export interface ServicesCollection {
     core: CoreService;
     [key: string]: unknown;
-  }
-
-  export interface DataLoaderCollection {
-    [key: string]: DataLoader<unknown>;
   }
 
   export type Logger = Winston.Logger;

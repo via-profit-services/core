@@ -51,7 +51,6 @@ const applicationFactory: ApplicationFactory = async props => {
   const initialContext: Context = {
     timezone,
     logger,
-    dataloader: {},
     services: {
       core: null,
     },
