@@ -5,23 +5,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "node",
-      "name": "vscode-jest-tests",
-      "request": "launch",
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "cwd": "${workspaceRoot}/build",
-      "runtimeExecutable": "yarn",
-      "sourceMapPathOverrides": {
-        "webpack://@via-profit-services/core/./*": "${workspaceRoot}/*"
-      },
-      "args": [
-        "test",
-        "--runInBand",
-        "--watchAll=false"
-      ]
-    },
-    {
       "name": "Attach to debugger",
       "type": "node",
       "request": "attach",
@@ -34,10 +17,7 @@
       "sourceMapPathOverrides": {
         "webpack://@via-profit-services/core/./src/*": "${workspaceRoot}/src/*"
       },
-      "outFiles": [
-        "${workspaceFolder}/**/*.js",
-        "!**/node_modules/**"
-      ],
+      "outFiles": ["${workspaceFolder}/**/*.js", "!**/node_modules/**"]
     }
   ]
 }
