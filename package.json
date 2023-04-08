@@ -78,11 +78,11 @@
         "webpack-merge": "^5.8.0"
     },
     "peerDependencies": {
-        "busboy": "^1.6.0",
-        "graphql": "^16.6.x"
+        "busboy": "^1.6",
+        "graphql": "^16"
     },
     "dependencies": {
-        "raw-body": "^2.5.1"
+        "raw-body": "^2.5.2"
     },
     "packageManager": "yarn@3.2.4"
 }
