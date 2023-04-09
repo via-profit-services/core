@@ -8,6 +8,9 @@ import type {
 
 import { getCursorPayload } from './cursors';
 
+/**
+ * @deprecated Since version 2.4. Will be deleted in version 3.0
+ */
 export const defaultOutputFilter: OutputFilter = {
   limit: 0,
   offset: 0,
@@ -18,6 +21,9 @@ export const defaultOutputFilter: OutputFilter = {
   search: false,
 };
 
+/**
+ * @deprecated Since version 2.4. Will be deleted in version 3.0.
+ */
 export const buildQueryFilter: BuildQueryFilter = args => {
   const { first, last, after, before, offset, orderBy, filter, search, between } = args;
 
@@ -129,8 +135,8 @@ export const buildQueryFilter: BuildQueryFilter = args => {
   }
 
   // between
-  Object.entries(outputFilter.between).forEach(([betweenField, data]) => {
-    if (data.start && data.start instanceof Date && data.end && data.end instanceof Date) {
+  Object.entries(between || {}).forEach(([betweenField, data]) => {
+    if (data && data.start && data.start instanceof Date && data.end && data.end instanceof Date) {
       const startDateTimeSum =
         data.start.getUTCHours() + data.start.getUTCMinutes() + data.start.getUTCSeconds();
       const endDateTimeSum =
@@ -141,6 +147,17 @@ export const buildQueryFilter: BuildQueryFilter = args => {
         (outputFilter.between[betweenField].end as Date).setMinutes(59);
         (outputFilter.between[betweenField].end as Date).setHours(23);
       }
+    }
+
+    if (
+      data &&
+      typeof data.start !== 'undefined' &&
+      data.start !== null &&
+      typeof data.end !== 'undefined' &&
+      data.end !== null &&
+      typeof data.start === typeof data.end
+    ) {
+      outputFilter.between[betweenField] = data;
     }
   });
 

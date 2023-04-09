@@ -2,9 +2,9 @@
 
 ![via-profit-services-cover](https://github.com/via-profit-services/core/raw/master/assets/via-profit-services-cover.png)
 
-> Via Profit services / **Core** - [GraphQL](https://graphql.org/) server based on [Express](http://expressjs.com) framework
+> Via Profit services / **Core** - [GraphQL](https://graphql.org/) server
 
-Lightweight, flexible, standalone implementation of a [GraphQL HTTP (express middleware)](https://github.com/graphql/express-graphql) which allows you to run an Express GraphQL server, build connections with pagination (Cursored or Limit-offset type), make your own extentions, read detailed logs, use global context with structured dataloaders and module containers, use some extra GraphQL Scalar types as DateTime, Money and so on
+GraphQL server listener
 
 ## Features
 

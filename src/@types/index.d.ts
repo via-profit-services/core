@@ -53,6 +53,7 @@ declare module '@via-profit-services/core' {
     readonly persistedQueryKey?: string;
     /**
      * Server timezone
+     * @deprecated Since version 2.4. Will be deleted in version 3.0. Use the middlewares to store the time zone in the context object
      * \
      * Default: `UTC`
      */
@@ -63,19 +64,148 @@ declare module '@via-profit-services/core' {
      * Default: `false`
      */
     readonly debug?: boolean;
+
+    /**
+     * This value will be passed to  method execute of the graphql package as is
+     */
     readonly rootValue?: unknown;
+
+    /**
+     * Middleware function or array of middlewares
+     */
     readonly middleware?: Middleware | Middleware[];
+
+    /**
+     * Max field value size for busboy (in bytes)
+     */
     readonly maxFieldSize?: number;
+
+    /**
+     * For multipart forms, the max file size for busboy (in bytes)
+     */
     readonly maxFileSize?: number;
+
+    /**
+     * For multipart forms, the max number of file fields for busboy
+     */
     readonly maxFiles?: number;
   }
 
   export interface FilePayload {
+    /**
+     * Name of the uploaded file
+     */
     readonly filename: string;
+
+    /**
+     * Mime type of the uploaded file
+     */
     readonly mimeType: string;
+
+    /**
+     * Encoding of the uploaded file
+     */
     readonly encoding: string;
-    readonly capacitor: WriteStream;
+
+    /**
+     * Function to read uploaded file\
+     * Example:
+     *
+     * ```ts
+     * import path from 'node:path';
+     * import fs from 'node:fs';
+     * import {
+     *   GraphQLNonNull,
+     *   GraphQLList,
+     *   GraphQLObjectType,
+     *   GraphQLString,
+     *   GraphQLInt,
+     * } from 'graphql';
+     * import {
+     *   UploadedFile,
+     *   FileUploadScalarType,
+     * } from '@via-profit-services/core';
+     *
+     * const Mutation = new GraphQLObjectType({
+     *   name: 'Mutation',
+     *   fields: {
+     *     uploadFiles: {
+     *       description: 'Upload files and get their location, mimeType and size',
+     *       type: new GraphQLNonNull(
+     *         new GraphQLList(
+     *           new GraphQLNonNull(
+     *             new GraphQLObjectType({
+     *               name: 'UploadedFilePayload',
+     *               fields: {
+     *                 location: { type: new GraphQLNonNull(GraphQLString) },
+     *                 mimeType: { type: new GraphQLNonNull(GraphQLString) },
+     *                 size: { type: new GraphQLNonNull(GraphQLInt) },
+     *               },
+     *             }),
+     *           ),
+     *         ),
+     *       ),
+     *       args: {
+     *         files: {
+     *           type: new GraphQLNonNull(
+     *             new GraphQLList(
+     *               new GraphQLNonNull(
+     *                 // This is where the FileUploadScalarType scalar is used
+     *                 FileUploadScalarType,
+     *               ),
+     *             ),
+     *           ),
+     *         },
+     *       },
+     *       resolve: async (_parent, args: { files: UploadedFile[] }) => {
+     *         const { files } = args;
+     *
+     *         // Just response data array
+     *         const response: {
+     *           location: string;
+     *           mimeType: string;
+     *         }[] = [];
+     *
+     *         // Don't forget call this promise
+     *         // Uploading files is an asynchronous operation
+     *         const filesData = await Promise.all(files);
+     *
+     *         // Now you can read the files
+     *         await filesData.reduce(async (prev, file) => {
+     *           await prev;
+     *
+     *           const readStream = file.createReadStream();
+     *           const fileExt = file.mimeType.replace(/\//, '');
+     *           const filename = `${Date.now()}.${fileExt}`;
+     *           const location = path.resolve(__dirname, `./files/${filename}`);
+     *
+     *           fs.mkdirSync(path.dirname(location), { recursive: true });
+     *           const writeStream = fs.createWriteStream(location);
+     *
+     *           const writeFile = new Promise<void>(resolve => {
+     *             writeStream.on('close', async () => {
+     *               response.push({
+     *                 location,
+     *                 mimeType: file.mimeType,
+     *               });
+     *               resolve();
+     *             });
+     *
+     *             readStream.pipe(writeStream);
+     *           });
+     *
+     *           await writeFile;
+     *         }, Promise.resolve());
+     *
+     *         return response;
+     *       },
+     *     },
+     *   },
+     * });
+     * ```
+     */
     readonly createReadStream: (options?: ReadStreamOptions) => ReadStream;
+    readonly capacitor: WriteStream;
   }
 
   export type UploadedFile = Promise<FilePayload>;
@@ -95,11 +225,12 @@ declare module '@via-profit-services/core' {
     constructor(props: CoreServiceProps);
 
     /**
-     * Send GraphQL request
+     * Send GraphQL request Send to yourself
      */
     makeGraphQLRequest<T = ExecutionResult['data']>(
       params: MakeGraphQLRequestParams,
     ): MaybePromise<ExecutionResult<T>>;
+
     /**
      * Return current module version
      */
@@ -347,6 +478,8 @@ declare module '@via-profit-services/core' {
     node: Node<T>;
     cursor: string;
   }
+
+  // TODO: Remove since v3
   export interface ListResponse<T> {
     /**
      * @deprecated No longer supported
@@ -362,6 +495,8 @@ declare module '@via-profit-services/core' {
     orderBy: OrderBy;
     where: Where;
   }
+
+  // TODO: Remove since v3
   export interface CursorConnectionProps<T> {
     nodes: Node<T>[];
     totalCount?: number;
@@ -396,6 +531,8 @@ declare module '@via-profit-services/core' {
   export interface Between {
     [key: string]: BetweenDate | BetweenTime | BetweenDateTime | BetweenInt | BetweenMoney;
   }
+
+  // TODO: Remove since v3
   export interface InputFilter {
     first?: number;
     offset?: number;
@@ -408,21 +545,29 @@ declare module '@via-profit-services/core' {
     filter?: InputFilterRecord;
   }
 
+  // TODO: Remove since v3
   export type InputFilterRecord = Record<
     string,
     InputFilterValue | readonly string[] | readonly number[] | readonly boolean[]
   >;
 
+  // TODO: Remove since v3
   export type InputFilterValue = string | number | boolean | null;
+
+  // TODO: Remove since v3
   export type InputSearch =
     | SearchSingleField
     | SearchSingleField[]
     | SearchMultipleFields
     | SearchMultipleFields[];
+
+    // TODO: Remove since v3
   interface SearchSingleField {
     field: string;
     query: string;
   }
+
+  // TODO: Remove since v3
   interface SearchMultipleFields {
     fields: string[];
     query: string;
@@ -431,6 +576,8 @@ declare module '@via-profit-services/core' {
     field: string;
     query: string;
   }[];
+
+  // TODO: Remove since v3
   export interface OutputFilter {
     limit: number;
     offset: number;
@@ -440,6 +587,8 @@ declare module '@via-profit-services/core' {
     between: Between;
     revert: boolean;
   }
+
+  // TODO: Remove since v3
   export interface CursorPayload {
     offset: number;
     where: Where;
@@ -451,6 +600,8 @@ declare module '@via-profit-services/core' {
     field: string;
     direction: DirectionRange;
   }[];
+
+  // TODO: Remove since v3
   export type WhereValue =
     | string
     | number
@@ -460,7 +611,11 @@ declare module '@via-profit-services/core' {
     | readonly number[]
     | readonly boolean[]
     | undefined;
+
+    // TODO: Remove since v3
   export type WhereField = [string, WhereAction, WhereValue];
+
+  // TODO: Remove since v3
   export type Where = WhereField[];
 
   export type RequestBody = {
@@ -500,35 +655,51 @@ declare module '@via-profit-services/core' {
     },
   ) => GraphQLSchema;
 
+  // TODO: Remove since v3
   export type StringToCursor = (str: string) => string;
+
+  // TODO: Remove since v3
   export type CursorToString = (str: string) => string;
+
+  // TODO: Remove since v3
   export type MakeNodeCursor = (cursorName: string, cursorPayload: CursorPayload) => string;
+
+  // TODO: Remove since v3
   export type GetCursorPayload = (cursor: string) => CursorPayload;
+
+  // TODO: Remove since v3
   export type BuildCursorConnection = <T>(
     props: CursorConnectionProps<T>,
     cursorName?: string,
   ) => CursorConnection<T>;
 
+  // TODO: Remove since v3
   export type NodeToEdge = <T>(
     node: Node<T>,
     cursorName: string,
     cursorPayload: CursorPayload,
   ) => Edge<T>;
 
+  // TODO: Remove since v3
   export type ExtractNodeField = <T, K extends keyof Node<T>>(
     nodes: Node<T>[],
     field: K,
   ) => Node<T>[K][];
 
+  // TODO: Remove since v3
   export type ExtractNodeIds = <T>(nodes: Node<T, 'id'>[]) => string[];
 
+  // TODO: Remove since version 3
   export type ArrayOfIdsToArrayOfObjectIds = (array: string[]) => {
     id: string;
   }[];
 
+  // TODO: Remove since version 3
   export type BuildQueryFilter = <T extends InputFilter>(args: T) => OutputFilter;
 
   export type DirectionRange = 'asc' | 'desc';
+
+  // TODO: Remove since v3
   export type WhereAction =
     | '='
     | '<>'
@@ -561,6 +732,7 @@ declare module '@via-profit-services/core' {
     Args extends Record<string, any> = any,
   > = (field: keyof Data) => GraphQLFieldResolver<Source, Context, Args>;
 
+  // TODO: Remove since v3
   export type FieldBuilder = <
     Data extends Record<string, any> = any,
     Source extends Record<string, any> = any,
@@ -572,8 +744,10 @@ declare module '@via-profit-services/core' {
 
   /**
    * `OutputFilter` containing the default values
+   * @deprecated Since version 2.4. Will be deleted in version 3.0
    */
   export const defaultOutputFilter: OutputFilter;
+
   /**
    * Analogue of https://www.npmjs.com/package/body-parser
    */
@@ -586,6 +760,7 @@ declare module '@via-profit-services/core' {
    * const cursor = stringToCursor(JSON.stringify({ foo: 'bar' }));
    * console.log(cursor); // <-- eyJmb28iOiJiYXIifQ==
    * ```
+   * @deprecated Since version 2.4. Will be deleted in version 3.0
    */
   export const stringToCursor: StringToCursor;
 
@@ -597,6 +772,8 @@ declare module '@via-profit-services/core' {
    * const data = cursorToString('eyJmb28iOiJiYXIifQ==');
    * console.log(data); // <-- '{"foo":"bar"}'
    * ```
+   * 
+   * @deprecated Since version 2.4. Will be deleted in version 3.0
    */
   export const cursorToString: CursorToString;
 
@@ -615,6 +792,7 @@ declare module '@via-profit-services/core' {
    * });
    * console.log(cursor); // <-- eyJvZmZzZXQiOjAsImxpbWl0IjoxNSwid2hlcmUiOltdLCJvcmRlckJ5IjpbeyJmaWVsZCI6Im5hbWUiLCJkaXJlY3Rpb24iOiJkZXNjIn1dfS0tLXBlcnNvbnMtY3Vyc29y
    * ```
+   * @deprecated Since version 2.4. Will be deleted in version 3.0
    */
   export const makeNodeCursor: MakeNodeCursor;
 
@@ -630,7 +808,7 @@ declare module '@via-profit-services/core' {
    * //  where: [],
    * //  orderBy: [ { field: 'name', direction: 'desc' } ]
    * // }
-   *
+   *@deprecated Since version 2.4. Will be deleted in version 3.0
    * ```
    */
   export const getCursorPayload: GetCursorPayload;
@@ -668,6 +846,7 @@ declare module '@via-profit-services/core' {
    * //     hasNextPage: true
    * //   }
    * // }
+   * @deprecated Since version 2.4. Will be deleted in version 3.0
    * ```
    */
   export const buildCursorConnection: BuildCursorConnection;
@@ -698,12 +877,13 @@ declare module '@via-profit-services/core' {
    * console.log(edges); // <-- [{ cursor: 'XGHJGds', node: { id: '1', name: 'Ivan' } }]
    *
    * ```
+   * @deprecated Since version 2.4. Will be deleted in version 3.0
    */
   export const nodeToEdge: NodeToEdge;
 
   /**
    * Return array of fields of node
-   *
+  *
    * ```ts
    * const persons = [
    *   {id: '1', name: 'Ivan'},
@@ -713,6 +893,8 @@ declare module '@via-profit-services/core' {
    *
    * const names = extractNodeField(persons, 'name');
    * console.log(names); // <-- ['Ivan', 'Stepan', 'Petruha']
+   * 
+   * @deprecated Since version 2.4. Will be deleted in version 3.0.
    * ```
    */
   export const extractNodeField: ExtractNodeField;
@@ -728,6 +910,8 @@ declare module '@via-profit-services/core' {
    * ]);
    *
    * console.log(ids); // <-- ['1', '2', '3'];
+   * @deprecated Since version 2.4. Will be deleted in version 3.0.
+   *
    * ```
    */
   export const extractNodeIds: ExtractNodeIds;
@@ -740,12 +924,15 @@ declare module '@via-profit-services/core' {
    * const ids = arrayOfIdsToArrayOfObjectIds(['1', '2', '3']);
    *
    * console.log(ids); // <-- [{id: '1'}, {id: '2'}, {id: '3'}]
+   * @deprecated Since version 2.4. Will be deleted in version 3.0.
+   *
    * ```
    */
   export const arrayOfIdsToArrayOfObjectIds: ArrayOfIdsToArrayOfObjectIds;
 
-  /***
+  /**
    * Convert input filter (partial from GraphQL request) to persist filter
+   * @deprecated Since version 2.4. Will be deleted in version 3.0. Use your own way of validating the transmitted values
    */
   export const buildQueryFilter: BuildQueryFilter;
 
@@ -762,6 +949,7 @@ declare module '@via-profit-services/core' {
    *
    * console.log(record); // <-- { bar: 12 }
    * ```
+   * @deprecated Since version 2.4. Will be deleted in version 3.0
    */
   export const extractKeyAsObject: ExtractKeyAsObject;
 
@@ -820,8 +1008,10 @@ declare module '@via-profit-services/core' {
    *  },
    * );
    * ```
+   * @deprecated Since version 2.4. Will be deleted in version 3.0
    */
   export const fieldBuilder: FieldBuilder;
+
   export const graphqlHTTPFactory: ApplicationFactory;
 
   export type ServerErrorType =
@@ -861,7 +1051,11 @@ declare module '@via-profit-services/core' {
   export const OrderDirectionType: GraphQLEnumType;
   export const PageInfoType: GraphQLObjectType;
 
+  /**
+   * @deprecated Since version 2.4. Will be deleted in version 3.0.
+   */
   export const DEFAULT_SERVER_TIMEZONE: string;
+
   export const DEFAULT_PERSISTED_QUERY_KEY: string;
   export const DEFAULT_MAX_FIELD_SIZE: number;
   export const DEFAULT_MAX_FILE_SIZE: number;
