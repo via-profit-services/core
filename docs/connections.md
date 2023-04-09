@@ -16,8 +16,6 @@ Suppose we need to create an api that can return a list of users. We also need t
 
 If you want to use pagination by cursors, then the sequence of actions should be as follows: First you apply some sort of selection filter, sorting, and anything else. You can specify how many elements you want to get, but you can't pass cursors (**after** or **before**) in the first request. When you get the first selection result, you will get access to the cursors. To move back and forth through the pages, you have to pass only two parameters: the cursor (**after** or **before**) and the number of results (**first** or **last**). The thing is that cursor-based pagination assumes that when you move through pages, you cannot change their order and total number. That is why all filters and sorting are applied once at the first request.
 
-<!-- ![Connection request architecture](https://github.com/via-profit-services/website/raw/standalone/1.0/assets/images/request-connection.png) -->
-
 According to the graphQL paradigm, first we have to declare the scheme:
 
 SDL will be:
@@ -68,6 +66,7 @@ type UserEdge implements Edge {
   cursor: String!
 }
 ```
+
 When you create your own scheme, according to the `SLD` proposed above, you will need to create such types as: **OrderDirection**, **Connection**, **PageInfo**, **Edge**, **Node**, etc. You can use the ready-made graphql scalar types available in the Core (see: [Scalars](./scalars.md)).
 
 As you can see, the field `list` of type `Query` has the following set of arguments:
@@ -78,7 +77,9 @@ As you can see, the field `list` of type `Query` has the following set of argume
  - **before** - pagination argument as per GraphQl specification
  - **status** - user criteria by status
 
-Now you can create a schema:
+Now you can create a schema.
+
+At first we make a `User` type. To create a connection, we must use not just the `User` type, but the type that is implemented from the `Node` interface. To do this, Core has a ready-made interface that can be specified to our `User` type. The **Node** interface is an interface that prescribes to have a required field **id** with the type `GraphQLID`. See code below:
 
 ```ts
 import {
@@ -86,17 +87,9 @@ import {
   GraphQLString,
   GraphQLNonNull,
   GraphQLID,
-  GraphQLInt,
-  GraphQLList,
-  GraphQLSchema,
   GraphQLEnumType,
 } from "graphql";
-import {
-  EdgeInterfaceType,
-  NodeInterfaceType,
-  PageInfoType,
-} from "@via-profit-services/core";
-import knex from 'knex';
+import { NodeInterfaceType } from "@via-profit-services/core";
 
 const UserStatus = new GraphQLEnumType({
   name: "UserStatus",
@@ -108,7 +101,7 @@ const UserStatus = new GraphQLEnumType({
 
 const User = new GraphQLObjectType({
   name: "User",
-  interfaces: [NodeInterfaceType],
+  interfaces: [NodeInterfaceType], // implements by interface Node
   fields: {
     id: { type: new GraphQLNonNull(GraphQLID) },
     name: { type: new GraphQLNonNull(GraphQLString) },
@@ -116,39 +109,66 @@ const User = new GraphQLObjectType({
   },
 });
 
+```
+
+Before creating a connection type directly, we first need to create an Edge type. The Edge type must also be implemented from a certain Edge interface, which prescribes having two required fields: the `cursor` and the `node`. To do this, Core has a ready-made interface that can be specified to our `UserEdge` type:
+
+```ts
+import { GraphQLObjectType, GraphQLString, GraphQLNonNull} from "graphql";
+import { EdgeInterfaceType } from "@via-profit-services/core";
+
 const UserEdge = new GraphQLObjectType({
   name: "UserEdge",
-  interfaces: [EdgeInterfaceType],
+  interfaces: [EdgeInterfaceType], // implements by interface Edge
   fields: () => ({
     cursor: { type: new GraphQLNonNull(GraphQLString) },
-    node: {
-      type: new GraphQLNonNull(User),
-    },
+    node: { type: new GraphQLNonNull(User) }, // The User type was created in the previous step
   }),
 });
 
+```
+
+Now we can start creating the `Connection` type. This type should also be implemented from the interface. In this case it is the interface `Connection`. This interface prescribes us two required fields: `pageInfo` and `edges`. The edges field is an array of `Edge`. And for the `pageInfo` field type, we can use a ready-made type from Core.
+
+```ts
+import {
+  GraphQLObjectType,
+  GraphQLNonNull,
+  GraphQLInt,
+  GraphQLList,
+} from "graphql";
+import {
+  PageInfoType,
+  ConnectionInterfaceType,
+} from "@via-profit-services/core";
+
 const UsersConnection = new GraphQLObjectType({
   name: "UsersConnection",
+  interfaces: [ConnectionInterfaceType], // implements by interface Connection
   fields: () => ({
     totalCount: { type: new GraphQLNonNull(GraphQLInt) },
     pageInfo: { type: new GraphQLNonNull(PageInfoType) },
     edges: {
       type: new GraphQLNonNull(
         new GraphQLList(
-          // ..
-          new GraphQLNonNull(UserEdge)
+          new GraphQLNonNull(UserEdge) // The UserEdge type was created in the previous step
         )
       ),
     },
   }),
 });
 
+```
+
+Now the most difficult thing remains - it is necessary to combine all this into a single scheme and create a resolver. We will create a schema with a single `users` field that will accept some arguments and return us a list of users in the connection format. Let the `users` field accept arguments that allow you to select a certain number of users with the ability to filter the list by the status of flatterers
+
+```ts
 const Schema = new GraphQLSchema({
   query: new GraphQLObjectType({
-    name: "Query",
+    name: "Query", // Required GraphQL field
     fields: () => ({
       users: {
-        type: new GraphQLNonNull(UsersConnection),
+        type: new GraphQLNonNull(UsersConnection), // Return the connection type
         args: {
           first: { type: GraphQLInt },
           last: { type: GraphQLInt },
