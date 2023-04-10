@@ -23,8 +23,7 @@ The baseline state of the context contains:
 
  - `emitter` - [CoreEmitter](#core-event-emitter);
  - `services` - [ServicesCollection](#services-collection);
- - `timezone` - Server timezone;
- - `request` - Express JS request object (See [Express req](https://expressjs.com/en/4x/api.html#req) for more details);
+ - `request` - [HTTP incomming](https://nodejs.org/api/http.html#class-httpincomingmessage) request object;
  - `schema` - GraphQLSchema. (See [Graphql-js](https://graphql.org/graphql-js/type/#graphqlschema) for more details);
 
 

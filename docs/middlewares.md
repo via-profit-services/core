@@ -5,7 +5,7 @@
 - [Overview](#overview)
 - [Example](#example)
 - [Typescript](#typescript)
-- [requestCounter property](#requestcounter-property)
+- [RequestCounter property](#requestcounter-property)
 
 ## Overview
 
