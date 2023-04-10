@@ -31,9 +31,6 @@ type Query {
   ): UsersConnection!
 }
 
-"""
-Example of User type
-"""
 type User implements Node {
   id: ID!
   name: String!
@@ -42,25 +39,16 @@ type User implements Node {
   updatedAt: DateTime!
 }
 
-"""
-Example of user status
-"""
 enum UserStatus {
   ALLOWED
   FORBIDDEN
 }
 
-"""
-Users list bundle
-"""
 type UsersConnection implements Connection {
   pageInfo: PageInfo!
   edges: [UserEdge!]!
 }
 
-"""
-User edge bundle
-"""
 type UserEdge implements Edge {
   node: User!
   cursor: String!
