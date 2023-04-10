@@ -23,12 +23,6 @@ Will be passed:
   - **request** - HTTP request (`Express.Request`)
   - **requestCounter** - HTTP request counter
 
-Possible return:
- - **context** - You should mutated this context value. **Not override and not merge with spread operator**.
- - **schema** - You should mutated this schema value. **Not override and not merge with spread operator**.
- - **extensions** - You should mutated this schema value. **Not override and not merge with spread operator**.
- - **validationRule** - You can return GraphQL validation rule or array of validation rules. All rules that will be returned from middlewares will be concatenated and passed to GraphQL `execute` method
-
 ## Example
 
 To create your simple middleware you can see this example:
@@ -36,17 +30,13 @@ To create your simple middleware you can see this example:
 _index.js_
 
 ```js
-const { graphQLExpress } = await factory({
+const { graphqlHTTP } = graphqlHTTPFactory({
   server,
   schema,
   middleware: [
     (props) => {
       const { context } = props;
       context.myCustomProperty = "myCustomValue";
-
-      return {
-        context
-      };
     }
   ]
 });
@@ -89,41 +79,12 @@ Output will be:
   }
 }
 ```
-
-[![Edit @via-profit-services-core-node-middleware](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/via-profit-services-core-node-middleware-9g3we?fontsize=14&hidenavigation=1&theme=dark)
-
-
-
-
-**Warning! Do not use spread operator while combining old current context and new context value. See example below:**
-
-_Warning! This code is not valid_
-
-```js
-// !!! This code is not valid
-const { graphQLExpress } = await factory({
-  server,
-  schema,
-  middleware: [
-    (props) => {
-      const { context } = props;
-
-      return {
-        ...context,
-        myCustomProperty: 'myCustomValue',
-      };
-    }
-  ]
-});
-// !!! This code is not valid
-```
-
 ## requestCounter property
 
 What might you need a counter for?. `requestCounter` - is simply a counter that indicates the number of requests that have arrived at your server. You can use it for logging or for example to subscribe `EventEmitter` listeners:
 
 ```js
-const { graphQLExpress } = await core.factory({
+const { graphqlHTTP } = graphqlHTTPFactory({
   server,
   schema,
   middleware: [
@@ -131,10 +92,7 @@ const { graphQLExpress } = await core.factory({
       if (requestCounter === 1) {
         context.emitter.on("graphql-error", msg => console.error(msg));
       }
-
-      return { context };
     },
-    knexMiddleware
   ]
 });
 ```
@@ -161,18 +119,6 @@ declare module "@via-profit-services/core" {
 }
 ```
 
-_index.ts_
-
-```ts
-/// <reference path="./index.d.ts" />
-
-// Other code lines
-```
-
-[![Edit via-profit-services-core-typescript-middleware](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/via-profit-services-core-typescript-middleware-bz1nr?fontsize=14&hidenavigation=1&theme=dark)
-
-
-
 ### Create middleware
 
 _middleware.ts_
@@ -183,10 +129,6 @@ import { Middleware } from '@via-profit-services/core';
 const myMiddleware: Middleware = ({ context }) => {
 
   // some code
-  
-  return {
-    context,
-  }
 }
 
 export default myMiddleware;
