@@ -11,6 +11,7 @@ GraphQL server listener
  - [GraphQL server](./getting-started.md#basic-graphql-server)
  - [Scalar types](./typedefs.md#scalars)
  - [Context](./context.md)
+ - [File uploads](./file-uploads.md)
  - [Cursor pagination](./connections.md)
 
 ## License
