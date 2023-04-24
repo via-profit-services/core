@@ -9,7 +9,7 @@ GraphQL server listener
 ## Features
 
  - [GraphQL server](./getting-started.md#basic-graphql-server)
- - [Scalar types](./typedefs.md#scalars)
+ - [Scalar types](./scalars)
  - [Context](./context.md)
  - [File uploads](./file-uploads.md)
  - [Cursor pagination](./connections.md)
