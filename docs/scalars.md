@@ -19,6 +19,7 @@
     - [PageInfo](#pageinfo)
     - [OrderDirection](#orderdirection)
     - Error
+    - BigInt
     - BetweenDate
     - BetweenTime
     - BetweenDateTime

@@ -5,7 +5,7 @@
 - [Overview](#overview)
 - [Example](#example)
 - [Typescript](#typescript)
-- [requestCounter property](#requestcounter-property)
+- [RequestCounter property](#requestcounter-property)
 
 ## Overview
 
@@ -34,7 +34,7 @@ To create your simple middleware you can see this example:
 _index.js_
 
 ```js
-const graphqlHYYP = graphqlHTTPFactory({
+const graphqlHTTP = graphqlHTTPFactory({
   schema,
   middleware: [
     props => {
@@ -82,7 +82,6 @@ Output will be:
   }
 }
 ```
-
 ## requestCounter property
 
 What might you need a counter for?. `requestCounter` - is simply a counter that indicates the number of requests that have arrived at your server. You can use it for logging or for example to subscribe `EventEmitter` listeners:
