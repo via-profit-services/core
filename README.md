@@ -4,7 +4,7 @@
 
 > Via Profit services / **Core** - [GraphQL](https://graphql.org/) server
 
-## Documentation [here](https://node.e1g.ru/packages/core)
+## Documentation [here](./docs/introduction.md)
 
 The [MIT](./LICENSE) License.
 
