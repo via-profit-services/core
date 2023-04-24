@@ -2,6 +2,16 @@
 
 ## Table of contents
  - [Scalars](#scalars)
+    - [Money](#money)
+    - [DateTime](#datetime)
+    - [Date](#date)
+    - [Time](#time)
+    - [URL](#url)
+    - [EmailAddress](#emailaddress)
+    - [JSON](#json)
+    - [JSONObject](#jsonobject)
+    - [FileUpload](#fileupload)
+    - [Void](#void)
  - [Types](#types)
     - [Node](#node)
     - [Edge](#edge)
@@ -19,15 +29,46 @@
 
 ## Scalars
 
- - **Money** - The value is stored in the smallest monetary unit (kopecks, cents, etc.). Real type - Int. E.g. For 250 USD this record returns value as 250000 (250$ * 100¢)
- - **DateTime** - Use JavaScript Date object for date/time fields.
- - **Date** - Use JavaScript Date object for date fields.
- - **Time** - And Time type.
- - **URL** - A field which value conforms to the standard URL format as specified in [RFC3986](https://www.ietf.org/rfc/rfc3986.txt).
- - **EmailAddress** - A field which value conforms to the standard internet email address format as specified in [RFC822](https://www.w3.org/Protocols/rfc822/).
- - **JSON** - The JSON scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
- - **JSONObject** - The JSONObject scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
- - **Void** - Represents NULL values
+### Money
+
+**Money** - The value is stored in the smallest monetary unit (kopecks, cents, etc.). Real type - Int. E.g. For 250 USD this record returns value as 250000 (250$ * 100¢)
+ 
+### DateTime
+
+**DateTime** - Use JavaScript Date object for date/time fields.
+
+### Date
+
+**Date** - Use JavaScript Date object for date fields.
+
+### Time
+
+**Time** - And Time type.
+
+### URL
+
+**URL** - A field which value conforms to the standard URL format as specified in [RFC3986](https://www.ietf.org/rfc/rfc3986.txt).
+
+### EmailAddress
+
+**EmailAddress** - A field which value conforms to the standard internet email address format as specified in [RFC822](https://www.w3.org/Protocols/rfc822/).
+
+### JSON
+
+**JSON** - The JSON scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+
+
+### JSONObject
+
+**JSONObject** - The JSONObject scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+
+### Void
+
+**Void** - Represents NULL values
+
+### FileUpload
+
+**FileUpload** - The scalar as specified GraphQL multipart request [specification](https://github.com/jaydenseric/graphql-multipart-request-spec#graphql-multipart-request-specification)
 
 _Examples of usage:_
 
@@ -114,16 +155,13 @@ The `PageInfo` **type** is used to declare [connections](#connections). (see [Co
 
 _How to connect Core typeDefs using [@graphql-tools](https://github.com/ardatan/graphql-tools):_
 ```js
-import * as core from "@via-profit-services/core";
+import { GraphQLSchema } from 'graphql';
+import { PageInfoType } from "@via-profit-services/core";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 
-const schema = makeExecutableSchema({
-  typeDefs: [
-    core.typeDefs,
-  ],
-  resolvers: [
-    core.resolvers,
-  ]
+const Schema = new GraphQLSchema({
+  type: [PageInfoType],
+  ...
 });
 ```
 
@@ -153,157 +191,4 @@ enum UserOrderField {
   name
   age
 }
-```
-
-
-### Full source listing of types
-
-The Core module exports the typeDefs schema as follows:
-
-```graphql
-type Query {
-  core: String!
-}
-
-type Mutation {
-  core(str: String!): String!
-}
-
-
-"""
-Standart ordering options
-"""
-enum OrderDirection {
-  ASC
-  DESC
-}
-
-"""
-Error handle interface
-"""
-interface Error {
-  """
-  Error name. Can be short error message
-  """
-  name: String!
-
-  """
-  Error detail message string
-  """
-  msg: String
-}
-
-"""
-Information about pagination in a connection.
-"""
-type PageInfo {
-  hasPreviousPage: Boolean!
-  hasNextPage: Boolean!
-  startCursor: String
-  endCursor: String
-}
-
-"""
-GraphQL Node spec. interface
-"""
-interface Node {
-  id: ID!
-}
-
-"""
-GraphQL Edge spec. interface
-"""
-interface Edge {
-  node: Node!
-  cursor: String!
-}
-
-"""
-GraphQL Connection spec. interface
-"""
-interface Connection {
-  totalCount: Int!
-  pageInfo: PageInfo!
-  edges: [Edge]!
-}
-
-input BetweenDate {
-  start: Date!
-  end: Date!
-}
-
-input BetweenTime {
-  start: Time!
-  end: Time!
-}
-
-input BetweenDateTime {
-  start: DateTime!
-  end: DateTime!
-}
-
-input BetweenInt {
-  start: Int!
-  end: Int!
-}
-
-input BetweenMoney {
-  start: Money!
-  end: Money!
-}
-
-"""
-Money type.
-The value is stored in the smallest monetary unit (kopecks, cents, etc.)
-Real type - Int
-e.g. For 250 USD this record returns value as 250000 (250$ * 100¢)
-"""
-scalar Money
-
-"""
-DateTime type.
-Use JavaScript Date object for date/time fields
-
-"""
-scalar DateTime
-"""
-Date type.
-Use JavaScript Date object for date fields
-"""
-scalar Date
-
-"""
-Time type.
-"""
-scalar Time
-
-"""
-URL type.
-A field whose value conforms to the standard URL format
-as specified in RFC3986: https://www.ietf.org/rfc/rfc3986.txt.
-"""
-scalar URL
-
-"""
-Email address type.
-A field whose value conforms to the standard internet
-email address format as specified in RFC822: https://www.w3.org/Protocols/rfc822/.
-"""
-scalar EmailAddress
-
-"""
-The JSON scalar type represents JSON values as specified
-by ECMA-404: http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf.
-"""
-scalar JSON
-"""
-The JSONObject scalar type represents JSON objects as specified by
-ECMA-404: http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf.
-"""
-scalar JSONObject
-
-"""
-Represents NULL values
-"""
-scalar Void
 ```

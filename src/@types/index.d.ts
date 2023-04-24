@@ -387,10 +387,29 @@ declare module '@via-profit-services/core' {
   };
 
   export interface Context {
+    /**
+     * @deprecated Since version 2.4. Will be deleted in version 3.0.
+     */
     readonly timezone: string;
+
+    /**
+     * The property services is used to store various services in context
+     */
     readonly services: ServicesCollection;
+
+    /**
+     * This is a simple [Node Emitter class](https://nodejs.org/api/events.html#class-eventemitter)
+     */
     readonly emitter: CoreEmitter;
+
+    /**
+     * Incomming HTTP request
+     */
     request: http.IncomingMessage;
+
+    /**
+     * Graphql schema
+     */
     schema: GraphQLSchema;
   }
 
@@ -561,7 +580,7 @@ declare module '@via-profit-services/core' {
     | SearchMultipleFields
     | SearchMultipleFields[];
 
-    // TODO: Remove since v3
+  // TODO: Remove since v3
   interface SearchSingleField {
     field: string;
     query: string;
@@ -612,7 +631,7 @@ declare module '@via-profit-services/core' {
     | readonly boolean[]
     | undefined;
 
-    // TODO: Remove since v3
+  // TODO: Remove since v3
   export type WhereField = [string, WhereAction, WhereValue];
 
   // TODO: Remove since v3
@@ -772,7 +791,7 @@ declare module '@via-profit-services/core' {
    * const data = cursorToString('eyJmb28iOiJiYXIifQ==');
    * console.log(data); // <-- '{"foo":"bar"}'
    * ```
-   * 
+   *
    * @deprecated Since version 2.4. Will be deleted in version 3.0
    */
   export const cursorToString: CursorToString;
@@ -883,7 +902,7 @@ declare module '@via-profit-services/core' {
 
   /**
    * Return array of fields of node
-  *
+   *
    * ```ts
    * const persons = [
    *   {id: '1', name: 'Ivan'},
@@ -893,7 +912,7 @@ declare module '@via-profit-services/core' {
    *
    * const names = extractNodeField(persons, 'name');
    * console.log(names); // <-- ['Ivan', 'Stepan', 'Petruha']
-   * 
+   *
    * @deprecated Since version 2.4. Will be deleted in version 3.0.
    * ```
    */

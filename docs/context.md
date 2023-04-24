@@ -9,7 +9,7 @@
 
 ## Overview
 
-`Context` - A value which is provided to every resolver and holds important contextual information like the currently logged in user, or access to a database ([graphql.org][https://graphql.org/learn/execution/#root-fields-resolvers]).
+`Context` - A value which is provided to every resolver and holds important contextual information like the currently logged in user, or access to a database ([graphql.org](https://graphql.org/learn/execution/#root-fields-resolvers)).
 
 According to the graphql spec, each resolver receives the following set of arguments:
 
@@ -23,8 +23,7 @@ The baseline state of the context contains:
 
  - `emitter` - [CoreEmitter](#core-event-emitter);
  - `services` - [ServicesCollection](#services-collection);
- - `timezone` - Server timezone;
- - `request` - Express JS request object (See [Express req](https://expressjs.com/en/4x/api.html#req) for more details);
+ - `request` - HTTP request object (See [NodeJs Docs](https://nodejs.org/api/http.html#class-httpincomingmessage) for more details);
  - `schema` - GraphQLSchema. (See [Graphql-js](https://graphql.org/graphql-js/type/#graphqlschema) for more details);
 
 
@@ -32,7 +31,11 @@ The baseline state of the context contains:
 
 The core event emitter is contained in the `Context` object. This is a simple [Node Emitter class](https://nodejs.org/api/events.html#class-eventemitter). By default, Core emitter implements the following events:
 
- - `graphql-error` - Called when a Graphql runtime error occurs.
+ - `graphql-error-execute` - Called when a Graphql runtime error occurs
+ - `graphql-error-validate-field` - Called when a Graphql request validation failure
+ - `graphql-error-validate-request` - Called when a Graphql request by http `get` paramenters is invalid
+ - `graphql-error-validate-schema` - Called when a Graphql schema validation failure
+
 
 To add your own events go to the [middlewares](./middlewares.md)
 
@@ -66,17 +69,6 @@ declare module "@via-profit-services/core" {
   }
 }
 ```
-
-_index.ts_
-
-```ts
-/// <reference path="./index.d.ts" />
-
-// Other code lines
-```
-
-[![Edit via-profit-services-core-typescript-extends-context](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/via-profit-services-core-typescript-extends-context-51i51?fontsize=14&hidenavigation=1&theme=dark)
-
 
 ## Extends Context
 
