@@ -1,4 +1,4 @@
-## Context
+# Context object of @via-profit-services/core
 
 ## Table of contents
 
@@ -63,9 +63,14 @@ declare module "@via-profit-services/core" {
     public getValues(): string[];
   }
 
-  // extend standard ServicesCollection
+  // extend a standard ServicesCollection
   interface ServicesCollection {
     myService: MyService;
+  }
+
+  // extend a base Context object
+  interface Context {
+    myValue: number;
   }
 }
 ```

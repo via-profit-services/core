@@ -19,10 +19,16 @@ const formatErrors: FormatErrors = ({ error, debug, context }) => {
     };
 
     graphqlErrors.forEach(graphqlError => {
+      const stacktrace =
+        debug && typeof graphqlError.stack === 'string'
+          ? graphqlError.stack.split('\n')
+          : undefined;
+
       errorsList.push({
         ...graphqlError.toJSON(),
         extensions: {
           errorType,
+          stacktrace,
         },
       });
     });

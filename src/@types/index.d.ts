@@ -1039,7 +1039,7 @@ declare module '@via-profit-services/core' {
     | 'graphql-error-validate-request'
     | 'graphql-error-validate-schema';
 
-  export class ServerError extends Error {
+  class ServerError extends Error {
     readonly graphqlErrors: readonly GraphQLError[];
     readonly errorType: ServerErrorType;
     constructor(graphqlErrors: readonly GraphQLError[], errorType: ServerErrorType);

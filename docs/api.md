@@ -1,40 +1,40 @@
-## API
+# API of @via-profit-services/core
 
 ## Table of contents
 
- - [graphqlHTTPFactory](#graphqlHTTPFactory)
- - [makeGraphQLRequest](#makeGraphQLRequest)
-
+- [graphqlHTTPFactory](#graphqlHTTPFactory)
+- [makeGraphQLRequest](#makeGraphQLRequest)
 
 ### graphqlHTTPFactory
 
-```js
-const http = require('node:http');
-const { GraphQLSchema, GraphQLObjectType, GraphQLNonNull, GraphQLString } = require('graphql');
-const { graphqlHTTPFactory } = require('@via-profit-services/core');
-/**
- * Simple GraphQL schema
- *
- * SDL of this schema:
- * ```graphql
- * type Query {
- *   version: String!
- * }
- * ```
- */
+Function to init the the core.
+
+**Retuns**
+
+An HTTP request listener for NodeJs server
+
+
+**Parameters**
+
+- `debug` - If is `true`, then graphql response will be contains an `extensions` data object. While error, the extensions object will be contains the `stacktrace` array of errors.
+
+```ts
+import http from 'node:http';
+import { GraphQLSchema, GraphQLObjectType, GraphQLNonNull, GraphQLString } from 'graphql';
+import { graphqlHTTPFactory } from '@via-profit-services/core';
+
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
     fields: () => ({
-      version: {
+      sayHello: {
         type: new GraphQLNonNull(GraphQLString),
-        description: 'Application version',
-        resolve: () => 'v2.0.x',
+        description: 'Hello string',
+        resolve: () => 'Hello',
       },
     }),
   }),
 });
-
 
 (async () => {
   const port = 8080;
@@ -73,7 +73,6 @@ const schema = new GraphQLSchema({
   });
 })();
 ```
-
 
 ### makeGraphQLRequest
 

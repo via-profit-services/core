@@ -1,4 +1,4 @@
-## Middlewares
+# Middlewares in @via-profit-services/core
 
 ## Table of contents
 
@@ -31,30 +31,18 @@ Will be passed:
 
 To create your simple middleware you can see this example:
 
-_index.js_
+```ts
+import http from 'node:http';
+import core from '@via-profit-services/core';
+import { GraphQLSchema, GraphQLObjectType, GraphQLNonNull, GraphQLString } from 'graphql';
 
-```js
-const graphqlHTTP = graphqlHTTPFactory({
-  schema,
-  middleware: [
-    props => {
-      const { context } = props;
-      context.myCustomProperty = 'myCustomValue';
-    },
-  ],
-});
-```
-
-_schema.js_
-
-```js
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
     fields: () => ({
       getPropFromContext: {
         type: new GraphQLNonNull(GraphQLString),
-        resolve: (parent, args, context) => {
+        resolve: (_parent, _args, context) => {
           const { myCustomProperty } = context;
 
           return `context.myCustomProperty is «${myCustomProperty}»`;
@@ -63,6 +51,27 @@ const schema = new GraphQLSchema({
     }),
   }),
 });
+
+const graphqlHTTP = core.graphqlHTTPFactory({
+  schema,
+  middleware: [
+    props => {
+      const { context } = props;
+      context.myCustomProperty = 'myCustomValue';
+    },
+  ],
+});
+
+const server = http.createServer();
+server.on('request', async (req, res) => {
+  const response = await graphqlHTTP(req, res);
+
+  res.statusCode = 200;
+  res.setHeader('content-type', 'application/json');
+  res.end(JSON.stringify(response));
+});
+
+server.listen(8080, 'localhost');
 ```
 
 Now you can make request:
@@ -82,23 +91,67 @@ Output will be:
   }
 }
 ```
+
 ## requestCounter property
 
 What might you need a counter for?. `requestCounter` - is simply a counter that indicates the number of requests that have arrived at your server. You can use it for logging or for example to subscribe `EventEmitter` listeners:
 
 ```js
-const { graphqlHTTPFactory } = require('@via-profit-services/core');
+import http from "node:http";
+import core from "@via-profit-services/core";
+import {
+  GraphQLSchema,
+  GraphQLObjectType,
+  GraphQLNonNull,
+  GraphQLString,
+} from "graphql";
 
-const graphqlHTTP = graphqlHTTPFactory({
+const schema = new GraphQLSchema({
+  query: new GraphQLObjectType({
+    name: "Query",
+    fields: () => ({
+      sayHello: {
+        type: new GraphQLNonNull(GraphQLString),
+        resolve: () => {
+          throw new Error("Any error");
+        },
+      },
+    }),
+  }),
+});
+
+const graphqlHTTP = core.graphqlHTTPFactory({
   schema,
   middleware: [
-    ({ context, stats }) => {
-      if (state.requestCounter === 1) {
-        context.emitter.on('graphql-error-execute', msg => console.error(msg));
+    (props) => {
+      const { context, stats } = props;
+      if (stats.requestCounter === 1) {
+        context.emitter.on("graphql-error-execute", (graphqlErrors) => {
+
+          console.debug("Holy shit. An error accured");
+          console.debug("---------------------------");
+
+          graphqlErrors.forEach((graphqlError) => {
+            console.debug(graphqlError.toString());
+            console.debug(graphqlError.stack)
+          });
+        });
       }
     },
   ],
 });
+
+const server = http.createServer();
+server.on("request", async (req, res) => {
+  const response = await graphqlHTTP(req, res);
+
+  res.statusCode = 200;
+  res.setHeader("content-type", "application/json");
+  res.end(JSON.stringify(response));
+});
+
+server.listen(8080, "localhost");
+
 ```
 
 In this example, we are subscribing to the `graphql-error-execute` listener. It is very important to do this once, otherwise, we will subscribe to messages every time a new http request is received.

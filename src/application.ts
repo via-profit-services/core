@@ -180,11 +180,13 @@ const applicationFactory: ApplicationFactory = props => {
 
       const r: GraphqlResponse = {
         data,
-        extensions: {
-          ...extensions,
-          ...stats,
-          queryTime: performance.now() - startTime,
-        },
+        extensions: debug
+          ? {
+              ...extensions,
+              ...stats,
+              queryTime: performance.now() - startTime,
+            }
+          : undefined,
       };
 
       return r;

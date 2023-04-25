@@ -1,4 +1,4 @@
-## Connections and cursor pagination
+# Connections and cursor pagination in @via-profit-services/core
 
 The core contains a set of types, methods and resolvers that will facilitate the creation and handling of connections as described in the [specification](https://relay.dev/graphql/connections.htm). Contains helpers for implementing cursor pagination and legacy pagination by offset/limit.
 
@@ -157,7 +157,7 @@ For convenience, we will divide the writing of the code into several parts, but 
 ```ts
 const Schema = new GraphQLSchema({
   query: new GraphQLObjectType({
-    name: "Query", // Required GraphQL field
+    name: "Query", // Required field
     fields: () => ({
       users: {
         type: new GraphQLNonNull(UsersConnection), // Return the connection type
@@ -228,7 +228,7 @@ According to the arguments passed, we must returns a connection that will contai
 ```ts
 const Schema = new GraphQLSchema({
   query: new GraphQLObjectType({
-    name: "Query", // Required GraphQL field
+    name: "Query", // Required field
     fields: () => ({
       users: {
         type: new GraphQLNonNull(UsersConnection), // Return the connection type
@@ -300,7 +300,7 @@ Now we can make a direct selection from the database. For example, we will use t
 ```ts
 const Schema = new GraphQLSchema({
   query: new GraphQLObjectType({
-    name: "Query", // Required GraphQL field
+    name: "Query", // Required field
     fields: () => ({
       users: {
         type: new GraphQLNonNull(UsersConnection),

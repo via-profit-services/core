@@ -1,4 +1,4 @@
-## GraphQL types and scalars
+# GraphQL types and scalars of @via-profit-services/core
 
 ## Table of contents
  - [Scalars](#scalars)
