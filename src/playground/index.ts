@@ -47,6 +47,6 @@ server.on('request', async (req, res) => {
     stream.pipe(res);
   }
 });
-server.listen(8080, 'localhost', () => {
-  console.debug('started at http://localhost:8080/graphql');
+server.listen(8081, 'localhost', () => {
+  console.debug('started at http://localhost:8081/graphql');
 });

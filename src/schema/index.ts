@@ -8,6 +8,7 @@ import MoneyScalarType from './scalars/Money';
 import TimeScalarType from './scalars/Time';
 import VoidScalarType from './scalars/Void';
 import URLScalarType from './scalars/URL';
+import BigIntScalarType from './scalars/BigInt';
 import BetweenDateInputType from './inputs/BetweenDate';
 import BetweenDateTimeInputType from './inputs/BetweenDateTime';
 import BetweenIntInputType from './inputs/BetweenInt';
@@ -33,6 +34,7 @@ export {
   TimeScalarType,
   VoidScalarType,
   URLScalarType,
+  BigIntScalarType,
   JSONScalarType,
   JSONObjectScalarType,
   // inputs
