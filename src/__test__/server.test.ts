@@ -81,7 +81,9 @@ describe('Graphql server', () => {
   });
 
   test('GET request with wrong query string params should be broken', done => {
-    const url = new URL('http://localhost:8080/graphql?quEry={getFourAsString, getFourAsNumber}');
+    const url = new URL(
+      `http://localhost:${port}/graphql?quEry={getFourAsString, getFourAsNumber}`,
+    );
     const request = http.request(url, socket => {
       const buffers: Buffer[] = [];
       socket.on('data', chunk => buffers.push(chunk));
