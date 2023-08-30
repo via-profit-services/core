@@ -57,7 +57,7 @@ type UserEdge implements Edge {
 }
 ```
 
-When you create your own scheme, according to the `SLD` proposed above, you will need to create such types as: **OrderDirection**, **Connection**, **PageInfo**, **Edge**, **Node**, etc. You can use the ready-made graphql scalar types available in the Core (see: [Scalars](./scalars.md)).
+When you create your own scheme, according to the `SDL` proposed above, you will need to create such types as: **OrderDirection**, **Connection**, **PageInfo**, **Edge**, **Node**, etc. You can use the ready-made graphql scalar types available in the Core (see: [Scalars](./scalars.md)).
 
 As you can see, the field `users` of type `Query` has the following set of arguments:
 
@@ -357,7 +357,7 @@ const Schema = new GraphQLSchema({
             ).toString('base64'),
           }));
 
-          // We form the Page Info object
+          // Building the PageInfo object
           const pageInfo = {
             hasPreviousPage: edges.length ? response[0].prev !== null : false,
             hasNextPage: edges.length ? response[response.length - 1].next !== null : false,
