@@ -1049,6 +1049,34 @@ declare module '@via-profit-services/core' {
   export const DateScalarType: GraphQLScalarType;
   export const DateTimeScalarType: GraphQLScalarType;
   export const EmailAddressScalarType: GraphQLScalarType;
+
+  /**
+   * The value is stored in the smallest monetary
+   * unit (kopecks, cents, etc.). Real type - Int. E.g.
+   * For 250 USD this record returns value as 250000 (250$ * 100¢)\
+   * \
+   * It is assumed that you will store the value of this type in its smallest value All calculations in the same way.
+   * \
+   * Usage example:
+   * ```ts
+   * import { GraphQLObjectType, GraphQLNonNull, GraphQLID } from 'graphql';
+   * import { Context, MoneyScalarType } from '@via-profit-services/core';
+   * 
+   * const Ticket = new GraphQLObjectType<unknown, Context>({
+   *   name: 'Ticket',
+   *   fields: {
+   *     price: {
+   *       type: new GraphQLNonNull(MoneyScalarType),
+   *     },
+   *     id: {
+   *       type: new GraphQLNonNull(GraphQLID),
+   *     },
+   *   },
+   * });
+   * 
+   * export default Ticket;
+   * ```
+   */
   export const MoneyScalarType: GraphQLScalarType;
   export const TimeScalarType: GraphQLScalarType;
   export const VoidScalarType: GraphQLScalarType;
@@ -1062,12 +1090,215 @@ declare module '@via-profit-services/core' {
   export const BetweenMoneyInputType: GraphQLInputObjectType;
   export const BetweenTimeInputType: GraphQLInputObjectType;
 
+
+  /**
+   * GraphQL Connection spec. interface\
+   * \
+   * Interface implements the SDL:
+   * ```graphql
+   * interface Connection {
+   *   pageInfo: PageInfo!
+   *   edges: [Edge!]!
+   * }
+   * ```
+   * \
+   * Usage example:
+   * ```ts
+   * import { GraphQLList, GraphQLNonNull, GraphQLObjectType } from 'graphql';
+   * import { PageInfoType, ConnectionInterfaceType } from '@via-profit-services/core';
+   * 
+   * import MyEdge from './MyEdge';
+   * 
+   * const MyConnection = new GraphQLObjectType({
+   *   name: 'MyConnection',
+   *   interfaces: [ConnectionInterfaceType],
+   *   fields: () => ({
+   *     pageInfo: { type: new GraphQLNonNull(PageInfoType) },
+   *     edges: {
+   *       type: new GraphQLNonNull(
+   *         new GraphQLList(
+   *           new GraphQLNonNull(MyEdge)
+   *         )
+   *       )
+   *     },
+   *   }),
+   * });
+   * 
+   * export default MyConnection;
+   * ```
+   */
   export const ConnectionInterfaceType: GraphQLInterfaceType;
+
+  /**
+   * GraphQL Edge spec. interface\
+   * According to the specification, the Edge must contain
+   * at least an `cursor` field with the type of `String!`
+   * and the `node` field with type of your Node
+   * \
+   * Interface implements the SDL:
+   * ```graphql
+   * interface Edge {
+   *   node: SomeNode!
+   *   cursor: String!
+   * }
+   * ```
+   * \
+   * Usage example:
+   * ```ts
+   * import { GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql';
+   * import { EdgeInterfaceType } from '@via-profit-services/core';
+   * 
+   * import MyNode from './MyNode';
+   * 
+   * const MyEdge = new GraphQLObjectType({
+   *   name: 'MyEdge',
+   *   interfaces: [EdgeInterfaceType],
+   *   fields: () => ({
+   *     cursor: { type: new GraphQLNonNull(GraphQLString) },
+   *     node: { type: new GraphQLNonNull(MyNode) },
+   *   }),
+   * });
+   * 
+   * export default MyEdge;
+   * ```
+   */
   export const EdgeInterfaceType: GraphQLInterfaceType;
+
+  /**
+   * GraphQL Error interface\
+   * \
+   * Interface implements the SDL:
+   * ```graphql
+   * interface Error {
+   *   name: String!
+   *   msg: String!
+   * }
+   * ```
+   * \
+   * Usage example:
+   * ```ts
+   * import { GraphQLObjectType, GraphQLNonNull, GraphQLString } from 'graphql';
+   * import { ErrorInterfaceType } from '@via-profit-services/core';
+   * 
+   * const MyError = new GraphQLObjectType({
+   *   name: 'MyError',
+   *   interfaces: () => [ErrorInterfaceType],
+   *   fields: {
+   *     name: { type: new GraphQLNonNull(GraphQLString) },
+   *     msg: { type: new GraphQLNonNull(GraphQLString) },
+   *   },
+   * });
+   * 
+   * export default MyError;
+   * ```
+   */
   export const ErrorInterfaceType: GraphQLInterfaceType;
+
+
+  /**
+   * GraphQL Node spec. interface\
+   * According to the specification, the Node must contain at least an `id` field with the `ID!` type\
+   * \
+   * Interface implements the SDL:
+   * ```graphql
+   * interface Node {
+   *   id: String!
+   * }
+   * ```
+   * \
+   * Usage example:
+   * ```ts
+   * import { GraphQLID, GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql';
+   * import { Context, DateTimeScalarType, NodeInterfaceType } from '@via-profit-services/core';
+   * 
+   * const MyNode = new GraphQLObjectType<unknown, Context>({
+   *   name: 'MyNode',
+   *   interfaces: () => [NodeInterfaceType],
+   *   fields: () => ({
+   *     id: { type: new GraphQLNonNull(GraphQLID) },
+   *     name: { type: new GraphQLNonNull(GraphQLString) },
+   *   }),
+   * });
+   * 
+   * export default MyNode;
+   * ```
+   */
   export const NodeInterfaceType: GraphQLInterfaceType;
 
+  /**
+   * GraphQL type for the data ordering\
+   * \
+   * Interface implements the SDL:
+   * ```graphql
+   * enum OrderDirection {
+   *   """Sort the query results in a top to bottom style (e.g.: A->Z)"""
+   *   ASC
+   * 
+   *   """Sort the query results in a bottom to top style (e.g.: Z->A)"""
+   *   DESC
+   * }
+   * ```
+   * \
+   * Usage example:
+   * ```ts
+   * import { GraphQLInputObjectType, GraphQLEnumType, GraphQLNonNull } from 'graphql';
+   * import { OrderDirectionType } from '@via-profit-services/core';
+   * 
+   * const MyOrderBy = new GraphQLInputObjectType({
+   *   name: 'MyOrderBy',
+   *   fields: () => ({
+   *     direction: { type: new GraphQLNonNull(OrderDirectionType) },
+   *     field: {
+   *       type: new GraphQLNonNull(
+   *         new GraphQLEnumType({
+   *           name: 'BlockOrderField',
+   *           values: {
+   *             NAME: { value: 'name' },
+   *             TYPE: { value: 'type' },
+   *           },
+   *         }),
+   *       ),
+   *     },
+   *   }),
+   * });
+   * 
+   * export default MyOrderBy;
+   * ```
+  */
   export const OrderDirectionType: GraphQLEnumType;
+
+  /**
+   * GraphQL PageInfo spec. type\
+   * \
+   * Interface implements the SDL:
+   * ```graphql
+   * type PageInfo {
+   *   hasPreviousPage: Boolean!
+   *   hasNextPage: Boolean!
+   *   startCursor: String
+   *   endCursor: String
+   * }
+   * ```
+   * \
+   * Usage example:
+   * ```ts
+   * import { GraphQLList, GraphQLNonNull, GraphQLObjectType } from 'graphql';
+   * import { PageInfoType, ConnectionInterfaceType } from '@via-profit-services/core';
+   * 
+   * import MyEdge from './MyEdge';
+   * 
+   * const MyConnection = new GraphQLObjectType({
+   *   name: 'MyConnection',
+   *   interfaces: [ConnectionInterfaceType],
+   *   fields: () => ({
+   *     pageInfo: { type: new GraphQLNonNull(PageInfoType) },
+   *     edges: { type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(MyEdge))) },
+   *   }),
+   * });
+   * 
+   * export default MyConnection;
+   * ```
+   */
   export const PageInfoType: GraphQLObjectType;
 
   /**

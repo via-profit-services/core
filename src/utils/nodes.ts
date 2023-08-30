@@ -44,4 +44,4 @@ export const arrayOfIdsToArrayOfObjectIds: ArrayOfIdsToArrayOfObjectIds = array 
 export const extractKeyAsObject: ExtractKeyAsObject = (source, key, defaultValue) =>
   ({
     [key]: source[key] || defaultValue,
-  } as WithKey<typeof key, (typeof source)[typeof key]>);
+  }) as WithKey<typeof key, (typeof source)[typeof key]>;
