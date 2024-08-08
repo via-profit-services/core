@@ -16,3 +16,4 @@
 /package.tgz
 /package-*.tgz
 /artifacts
+/eslint.config.mjs
