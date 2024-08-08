@@ -43,7 +43,7 @@ const multipartParser: MultipartParser = ({ request, config }) =>
         try {
           parsed = JSON.parse(value);
         } catch (err) {
-          reject('Invalid JSON in the «operations» multipart field');
+          reject(`Invalid JSON in the «operations» multipart field. ${err instanceof Error ? err.message : 'Unknown Error'}`);
 
           return;
         }
@@ -104,8 +104,8 @@ const multipartParser: MultipartParser = ({ request, config }) =>
         let mapData: Record<number, string[]>;
         try {
           mapData = JSON.parse(value);
-        } catch (error) {
-          reject('Invalid JSON in the «map» field');
+        } catch (err) {
+          reject(`Invalid JSON in the «map» field. ${err instanceof Error ? err.message : 'Unknown Error'}`);
 
           return;
         }

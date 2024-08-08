@@ -187,6 +187,7 @@ export class WriteStream extends Writable {
     if (typeof this._fd === 'number')
       try {
         closeSync(this._fd);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
         // An error here probably means the fd was already closed, but we can
         // still try to unlink the file.
@@ -196,6 +197,7 @@ export class WriteStream extends Writable {
       if (this._path !== null) {
         unlinkSync(this._path);
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       // If we are unable to unlink the file, the operating system will clean
       // up on next restart, since we use store thes in `os.tmpdir()`

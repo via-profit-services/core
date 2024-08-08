@@ -1,25 +1,55 @@
 # CHANGELOG
 
-## `2.4.0` *xx xxxxxxxx xxxx`
+## `2.5.0` 08.08 2024`
+
+### Updates
+
+Graphql was updated to `16.9.0`.
+
+ - The method `makeGraphQLRequest` in the class `CoreService` is now static 
+ - The method `getVersion` in the class `CoreService` is now static 
 
 ### Breaking
 
- - `timezone` value in Context now is deprecated
- - `defaultOutputFilter` value now is deprecated
- - `stringToCursor` function now is deprecated
- - `cursorToString` function now is deprecated
- - `makeNodeCursor` function now is deprecated
- - `getCursorPayload` function now is deprecated
- - `buildCursorConnection` function now is deprecated
- - `nodeToEdge` function now is deprecated
- - `extractNodeField` function now is deprecated
- - `extractNodeIds` function now is deprecated
- - `arrayOfIdsToArrayOfObjectIds` function now is deprecated
- - `buildQueryFilter` function now is deprecated
- - `extractKeyAsObject` function now is deprecated
- - `fieldBuilder` function now is deprecated
- - `DEFAULT_SERVER_TIMEZONE` constant now is deprecated
- - `ListResponse` type now is deprecated
+ - input type `BetweenDate` now is removed. Use `BetweenDateTime` instead
+ - scalar type `Date` now is removed. Use `DateTime` instead
+ - `timezone` value in Context now is removed
+ - `defaultOutputFilter` value now is removed
+ - `stringToCursor` function now is removed
+ - `cursorToString` function now is removed
+ - `makeNodeCursor` function now is removed
+ - `getCursorPayload` function now is removed
+ - `buildCursorConnection` function now is removed
+ - `nodeToEdge` function now is removed
+ - `extractNodeField` function now is removed
+ - `extractNodeIds` function now is removed
+ - `arrayOfIdsToArrayOfObjectIds` function now is removed
+ - `buildQueryFilter` function now is removed
+ - `extractKeyAsObject` function now is removed
+ - `fieldBuilder` function now is removed
+ - `DEFAULT_SERVER_TIMEZONE` constant now is removed
+ - `ListResponse` type now is removed
+
+## `2.4.0` 30.08.2023`
+
+### Breaking
+
+ - `timezone` value in Context now is removed
+ - `defaultOutputFilter` value now is removed
+ - `stringToCursor` function now is removed
+ - `cursorToString` function now is removed
+ - `makeNodeCursor` function now is removed
+ - `getCursorPayload` function now is removed
+ - `buildCursorConnection` function now is removed
+ - `nodeToEdge` function now is removed
+ - `extractNodeField` function now is removed
+ - `extractNodeIds` function now is removed
+ - `arrayOfIdsToArrayOfObjectIds` function now is removed
+ - `buildQueryFilter` function now is removed
+ - `extractKeyAsObject` function now is removed
+ - `fieldBuilder` function now is removed
+ - `DEFAULT_SERVER_TIMEZONE` constant now is removed
+ - `ListResponse` type now is removed
 
 ### Bugfixes
 

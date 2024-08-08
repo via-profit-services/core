@@ -63,7 +63,7 @@ export default new GraphQLScalarType({
 
     const result = new Date(ast.kind === Kind.INT ? Number(ast.value) : ast.value);
 
-    // eslint-disable-next-line no-restricted-globals
+     
     if (Number.isNaN(result.getTime())) {
       throw new GraphQLError(`Value is not a valid Date: ${ast.value}`, {});
     }

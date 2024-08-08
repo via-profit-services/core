@@ -1,7 +1,5 @@
-/* eslint-disable import/max-dependencies */
 import { JSON as JSONScalarType, JSONObject as JSONObjectScalarType } from './scalars/JSON';
 import FileUploadScalarType from './scalars/FileUpload';
-import DateScalarType from './scalars/Date';
 import DateTimeScalarType from './scalars/DateTime';
 import EmailAddressScalarType from './scalars/EmailAddress';
 import MoneyScalarType from './scalars/Money';
@@ -9,7 +7,6 @@ import TimeScalarType from './scalars/Time';
 import VoidScalarType from './scalars/Void';
 import URLScalarType from './scalars/URL';
 import BigIntScalarType from './scalars/BigInt';
-import BetweenDateInputType from './inputs/BetweenDate';
 import BetweenDateTimeInputType from './inputs/BetweenDateTime';
 import BetweenIntInputType from './inputs/BetweenInt';
 import BetweenMoneyInputType from './inputs/BetweenMoney';
@@ -27,7 +24,6 @@ export {
   PageInfoType,
   // scalars
   FileUploadScalarType,
-  DateScalarType,
   DateTimeScalarType,
   EmailAddressScalarType,
   MoneyScalarType,
@@ -38,7 +34,6 @@ export {
   JSONScalarType,
   JSONObjectScalarType,
   // inputs
-  BetweenDateInputType,
   BetweenDateTimeInputType,
   BetweenIntInputType,
   BetweenMoneyInputType,

@@ -7,7 +7,6 @@ function identity<T>(value: T): T {
   return value;
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 function ensureObject(value: any): value is object {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     throw new TypeError(`JSONObject cannot represent non-object value: ${value}`);
@@ -19,7 +18,7 @@ function ensureObject(value: any): value is object {
 function parseObject(ast: ObjectValueNode, variables: any): any {
   const value = Object.create(null);
   ast.fields.forEach(field => {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+     
     value[field.name.value] = parseLiteral(field.value, variables);
   });
 

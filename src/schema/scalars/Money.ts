@@ -36,6 +36,7 @@ e.g. For 250 USD this record returns value as 250000 (250$ * 100¢)
       const result = parseInt(ast.value, 10);
 
       return result;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       throw new GraphQLError(`Value is not a valid Money: ${ast.value}`, {});
     }

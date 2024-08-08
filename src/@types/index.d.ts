@@ -52,13 +52,6 @@ declare module '@via-profit-services/core' {
      */
     readonly persistedQueryKey?: string;
     /**
-     * Server timezone
-     * @deprecated Since version 2.4. Will be deleted in version 3.0. Use the middlewares to store the time zone in the context object
-     * \
-     * Default: `UTC`
-     */
-    readonly timezone?: string;
-    /**
      * Debug mode \
      * \
      * Default: `false`
@@ -388,11 +381,6 @@ declare module '@via-profit-services/core' {
 
   export interface Context {
     /**
-     * @deprecated Since version 2.4. Will be deleted in version 3.0.
-     */
-    readonly timezone: string;
-
-    /**
      * The property services is used to store various services in context
      */
     readonly services: ServicesCollection;
@@ -498,35 +486,6 @@ declare module '@via-profit-services/core' {
     cursor: string;
   }
 
-  // TODO: Remove since v3
-  export interface ListResponse<T> {
-    /**
-     * @deprecated No longer supported
-     */
-    totalCount?: number;
-    /**
-     * @deprecated No longer supported
-     */
-    revert?: boolean;
-    offset: number;
-    limit: number;
-    nodes: Node<T>[];
-    orderBy: OrderBy;
-    where: Where;
-  }
-
-  // TODO: Remove since v3
-  export interface CursorConnectionProps<T> {
-    nodes: Node<T>[];
-    totalCount?: number;
-    limit?: number;
-    offset?: number;
-    orderBy?: OrderBy;
-    where?: Where;
-    search?: OutputSearch;
-    between?: Between;
-    revert?: boolean;
-  }
   export interface BetweenDate {
     start: Date;
     end: Date;
@@ -550,92 +509,6 @@ declare module '@via-profit-services/core' {
   export interface Between {
     [key: string]: BetweenDate | BetweenTime | BetweenDateTime | BetweenInt | BetweenMoney;
   }
-
-  // TODO: Remove since v3
-  export interface InputFilter {
-    first?: number;
-    offset?: number;
-    last?: number;
-    after?: string;
-    before?: string;
-    orderBy?: OrderBy;
-    search?: InputSearch;
-    between?: Between;
-    filter?: InputFilterRecord;
-  }
-
-  // TODO: Remove since v3
-  export type InputFilterRecord = Record<
-    string,
-    InputFilterValue | readonly string[] | readonly number[] | readonly boolean[]
-  >;
-
-  // TODO: Remove since v3
-  export type InputFilterValue = string | number | boolean | null;
-
-  // TODO: Remove since v3
-  export type InputSearch =
-    | SearchSingleField
-    | SearchSingleField[]
-    | SearchMultipleFields
-    | SearchMultipleFields[];
-
-  // TODO: Remove since v3
-  interface SearchSingleField {
-    field: string;
-    query: string;
-  }
-
-  // TODO: Remove since v3
-  interface SearchMultipleFields {
-    fields: string[];
-    query: string;
-  }
-  export type OutputSearch = {
-    field: string;
-    query: string;
-  }[];
-
-  // TODO: Remove since v3
-  export interface OutputFilter {
-    limit: number;
-    offset: number;
-    orderBy: OrderBy;
-    where: Where;
-    search: OutputSearch | false;
-    between: Between;
-    revert: boolean;
-  }
-
-  // TODO: Remove since v3
-  export interface CursorPayload {
-    offset: number;
-    where: Where;
-    between: Between;
-    orderBy: OrderBy;
-    search: OutputSearch;
-  }
-  export type OrderBy = {
-    field: string;
-    direction: DirectionRange;
-  }[];
-
-  // TODO: Remove since v3
-  export type WhereValue =
-    | string
-    | number
-    | boolean
-    | null
-    | readonly string[]
-    | readonly number[]
-    | readonly boolean[]
-    | undefined;
-
-  // TODO: Remove since v3
-  export type WhereField = [string, WhereAction, WhereValue];
-
-  // TODO: Remove since v3
-  export type Where = WhereField[];
 
   export type RequestBody = {
     operationName?: unknown;
@@ -674,65 +547,6 @@ declare module '@via-profit-services/core' {
     },
   ) => GraphQLSchema;
 
-  // TODO: Remove since v3
-  export type StringToCursor = (str: string) => string;
-
-  // TODO: Remove since v3
-  export type CursorToString = (str: string) => string;
-
-  // TODO: Remove since v3
-  export type MakeNodeCursor = (cursorName: string, cursorPayload: CursorPayload) => string;
-
-  // TODO: Remove since v3
-  export type GetCursorPayload = (cursor: string) => CursorPayload;
-
-  // TODO: Remove since v3
-  export type BuildCursorConnection = <T>(
-    props: CursorConnectionProps<T>,
-    cursorName?: string,
-  ) => CursorConnection<T>;
-
-  // TODO: Remove since v3
-  export type NodeToEdge = <T>(
-    node: Node<T>,
-    cursorName: string,
-    cursorPayload: CursorPayload,
-  ) => Edge<T>;
-
-  // TODO: Remove since v3
-  export type ExtractNodeField = <T, K extends keyof Node<T>>(
-    nodes: Node<T>[],
-    field: K,
-  ) => Node<T>[K][];
-
-  // TODO: Remove since v3
-  export type ExtractNodeIds = <T>(nodes: Node<T, 'id'>[]) => string[];
-
-  // TODO: Remove since version 3
-  export type ArrayOfIdsToArrayOfObjectIds = (array: string[]) => {
-    id: string;
-  }[];
-
-  // TODO: Remove since version 3
-  export type BuildQueryFilter = <T extends InputFilter>(args: T) => OutputFilter;
-
-  export type DirectionRange = 'asc' | 'desc';
-
-  // TODO: Remove since v3
-  export type WhereAction =
-    | '='
-    | '<>'
-    | '>'
-    | '<'
-    | '>='
-    | '<='
-    | 'in'
-    | 'notIn'
-    | 'like'
-    | 'ilike'
-    | 'is null'
-    | 'is not null';
-
   export type BodyParser = (props: {
     request: http.IncomingMessage;
     response: http.ServerResponse;
@@ -751,285 +565,10 @@ declare module '@via-profit-services/core' {
     Args extends Record<string, any> = any,
   > = (field: keyof Data) => GraphQLFieldResolver<Source, Context, Args>;
 
-  // TODO: Remove since v3
-  export type FieldBuilder = <
-    Data extends Record<string, any> = any,
-    Source extends Record<string, any> = any,
-    Args extends Record<string, any> = any,
-  >(
-    fields: (keyof Data)[],
-    resolverFactory: ResolverFactory<Data, Source, Args>,
-  ) => Record<keyof Data, GraphQLFieldResolver<Source, Context, Args>>;
-
-  /**
-   * `OutputFilter` containing the default values
-   * @deprecated Since version 2.4. Will be deleted in version 3.0
-   */
-  export const defaultOutputFilter: OutputFilter;
-
   /**
    * Analogue of https://www.npmjs.com/package/body-parser
    */
   export const bodyParser: BodyParser;
-  /**
-   * Just encode base64 string
-   * _Internal function. Used for GraphQL connection building_
-   *
-   * ```ts
-   * const cursor = stringToCursor(JSON.stringify({ foo: 'bar' }));
-   * console.log(cursor); // <-- eyJmb28iOiJiYXIifQ==
-   * ```
-   * @deprecated Since version 2.4. Will be deleted in version 3.0
-   */
-  export const stringToCursor: StringToCursor;
-
-  /**
-   * Just decode base64 string
-   * _Internal function. Used for GraphQL connection building_
-   *
-   * ```ts
-   * const data = cursorToString('eyJmb28iOiJiYXIifQ==');
-   * console.log(data); // <-- '{"foo":"bar"}'
-   * ```
-   *
-   * @deprecated Since version 2.4. Will be deleted in version 3.0
-   */
-  export const cursorToString: CursorToString;
-
-  /**
-   * Returns cursor base64 cursor string by name and cursor payload
-   *
-   * ```ts
-   * const cursor = makeNodeCursor('persons-cursor', {
-   *   offset: 0,
-   *   limit: 15,
-   *   where: [],
-   *   orderBy: [{
-   *     field: 'name',
-   *     direction: 'desc',
-   *   }],
-   * });
-   * console.log(cursor); // <-- eyJvZmZzZXQiOjAsImxpbWl0IjoxNSwid2hlcmUiOltdLCJvcmRlckJ5IjpbeyJmaWVsZCI6Im5hbWUiLCJkaXJlY3Rpb24iOiJkZXNjIn1dfS0tLXBlcnNvbnMtY3Vyc29y
-   * ```
-   * @deprecated Since version 2.4. Will be deleted in version 3.0
-   */
-  export const makeNodeCursor: MakeNodeCursor;
-
-  /**
-   * Convert string to cursor base64 string and return payload
-   *
-   * ```ts
-   * const payload = getCursorPayload('eyJvZmZzZXQiOjAsImxpbWl0IjoxNSwid2hlcmUiOltdLCJvcmRlckJ5IjpbeyJmaWVsZCI6Im5hbWUiLCJkaXJlY3Rpb24iOiJkZXNjIn1dfS0tLXBlcnNvbnMtY3Vyc29y')
-   *
-   * // {
-   * //   offset: 0,
-   * //  limit: 15,
-   * //  where: [],
-   * //  orderBy: [ { field: 'name', direction: 'desc' } ]
-   * // }
-   *@deprecated Since version 2.4. Will be deleted in version 3.0
-   * ```
-   */
-  export const getCursorPayload: GetCursorPayload;
-
-  /**
-   * Returns Relay cursor bundle
-   *
-   * ```ts
-   * const cursorBundle = buildCursorConnection({
-   *   totalCount: 3,
-   *   offset: 0,
-   *   limit: 2,
-   *   nodes: [
-   *     { id: '1', name: 'Ivan', createdAt: new Date(), updatedAt: new Date() },
-   *     { id: '2', name: 'Stepan', createdAt: new Date(), updatedAt: new Date() },
-   *   ]
-   * }, 'persons-cursor');
-   *
-   * // response -> {
-   * //   totalCount: 3,
-   * //   edges: [
-   * //     {
-   * //       node: { id: '1', name: 'Ivan', ... },
-   * //       cursor:  'eyJvZmZzZXQiOjEsImxpbWl0Ijoy...'
-   * //     },
-   * //     {
-   * //       node: { id: '2', name: 'Stepan', ... },
-   * //       cursor:  'eyJvZmZzZXQiOjIsImxpbWl0Ij...'
-   * //     }
-   * //   ],
-   * //   pageInfo: {
-   * //     startCursor:  'eyJvZmZzZXQiOjEsImxpbWl0Ijoy...',
-   * //     endCursor:  'eyJvZmZzZXQiOjIsImxpbWl0Ij...',
-   * //     hasPreviousPage: false,
-   * //     hasNextPage: true
-   * //   }
-   * // }
-   * @deprecated Since version 2.4. Will be deleted in version 3.0
-   * ```
-   */
-  export const buildCursorConnection: BuildCursorConnection;
-
-  /**
-   * Wrap node to cursor object
-   *
-   * ```ts
-   * const filter = {
-   *   offset: 0,
-   *   limit: 15,
-   *   where: [],
-   *   orderBy: [{
-   *     field: 'name',
-   *     direction: 'desc',
-   *   }],
-   * }
-   *
-   * // Get persons list
-   * const persons = await service.getPersons(filter);
-   *
-   * // Map all persons to compile the edge for each
-   * const edges = persons.map((person) => {
-   *
-   *   // You should passed node, cursor name and filter params
-   *   return nodeToEdge(person, 'persons-cursor', filter);
-   * });
-   * console.log(edges); // <-- [{ cursor: 'XGHJGds', node: { id: '1', name: 'Ivan' } }]
-   *
-   * ```
-   * @deprecated Since version 2.4. Will be deleted in version 3.0
-   */
-  export const nodeToEdge: NodeToEdge;
-
-  /**
-   * Return array of fields of node
-   *
-   * ```ts
-   * const persons = [
-   *   {id: '1', name: 'Ivan'},
-   *   {id: '2', name: 'Stepan'},
-   *   {id: '3', name: 'Petruha'},
-   * ];
-   *
-   * const names = extractNodeField(persons, 'name');
-   * console.log(names); // <-- ['Ivan', 'Stepan', 'Petruha']
-   *
-   * @deprecated Since version 2.4. Will be deleted in version 3.0.
-   * ```
-   */
-  export const extractNodeField: ExtractNodeField;
-
-  /**
-   * Returns node IDs array
-   *
-   * ```ts
-   * const ids = extractNodeIds([
-   *   {id: '1', name: 'Ivan'},
-   *   {id: '2', name: 'Stepan'},
-   *   {id: '3', name: 'Petruha'},
-   * ]);
-   *
-   * console.log(ids); // <-- ['1', '2', '3'];
-   * @deprecated Since version 2.4. Will be deleted in version 3.0.
-   *
-   * ```
-   */
-  export const extractNodeIds: ExtractNodeIds;
-
-  /**
-   * Format array of IDs to object with id key\
-   * Example:
-   *
-   * ```ts
-   * const ids = arrayOfIdsToArrayOfObjectIds(['1', '2', '3']);
-   *
-   * console.log(ids); // <-- [{id: '1'}, {id: '2'}, {id: '3'}]
-   * @deprecated Since version 2.4. Will be deleted in version 3.0.
-   *
-   * ```
-   */
-  export const arrayOfIdsToArrayOfObjectIds: ArrayOfIdsToArrayOfObjectIds;
-
-  /**
-   * Convert input filter (partial from GraphQL request) to persist filter
-   * @deprecated Since version 2.4. Will be deleted in version 3.0. Use your own way of validating the transmitted values
-   */
-  export const buildQueryFilter: BuildQueryFilter;
-
-  /**
-   * Creates an object containing a specific key\
-   * Example:
-   *
-   * ```ts
-   * const source = {
-   *   foo: 'Foo',
-   *   bar: 12,
-   * };
-   * const record = extractKeyAsObject(source, 'bar');
-   *
-   * console.log(record); // <-- { bar: 12 }
-   * ```
-   * @deprecated Since version 2.4. Will be deleted in version 3.0
-   */
-  export const extractKeyAsObject: ExtractKeyAsObject;
-
-  /**
-   * Wrap types resolvers in schema.\
-   * You can wrap types without resolvers - will be created noop-resolver to wrap the field
-   * **Note:** The resolver function should return all the received parameters.\
-   * Example:
-   * ```ts
-   * const { httpListener } = await factory({
-   *   schema,
-   *   middleware: [
-   *     ({ schema }) => ({
-   *       schema: fieldsWrapper(schema, (params) => {
-   *         const { resolver, source, args, context, info } = params;
-   *         // Do something
-   *
-   *         return params;
-   *       })
-   *     }),
-   *   ],
-   * });
-   * ```
-   */
-  export const fieldsWrapper: FieldsWrapper;
-
-  /**
-   * Build GraphQL field resolver.\
-   * This function takes as its first argument an array of keys\
-   * of the Type that needs to be resolved.\
-   * The second argument is the function to which the key name will be passed.\
-   * The function should return a value of the type for this key\
-   * This is useful when you need to modify  the resolver response.
-   *
-   * SDL:
-   * ```graphql
-   * type User {
-   *   id: ID!
-   *   name: String!
-   * }
-   * ```
-   *\
-   * Resolver:
-   * ```ts
-   * const User = fieldBuilder(
-   *  ['id', 'name'],
-   *  field => async (parent, args, context) => {
-   *    const user = parent;
-   *
-   *    if (field === 'name') {
-   *      // compatible
-   *      return user.name.replace(/\b\w/g, l => l.toUpperCase());
-   *    }
-   *
-   *    return user[field];
-   *  },
-   * );
-   * ```
-   * @deprecated Since version 2.4. Will be deleted in version 3.0
-   */
-  export const fieldBuilder: FieldBuilder;
 
   export const graphqlHTTPFactory: ApplicationFactory;
 
@@ -1061,7 +600,7 @@ declare module '@via-profit-services/core' {
    * ```ts
    * import { GraphQLObjectType, GraphQLNonNull, GraphQLID } from 'graphql';
    * import { Context, MoneyScalarType } from '@via-profit-services/core';
-   * 
+   *
    * const Ticket = new GraphQLObjectType<unknown, Context>({
    *   name: 'Ticket',
    *   fields: {
@@ -1073,7 +612,7 @@ declare module '@via-profit-services/core' {
    *     },
    *   },
    * });
-   * 
+   *
    * export default Ticket;
    * ```
    */
@@ -1090,7 +629,6 @@ declare module '@via-profit-services/core' {
   export const BetweenMoneyInputType: GraphQLInputObjectType;
   export const BetweenTimeInputType: GraphQLInputObjectType;
 
-
   /**
    * GraphQL Connection spec. interface\
    * \
@@ -1106,9 +644,9 @@ declare module '@via-profit-services/core' {
    * ```ts
    * import { GraphQLList, GraphQLNonNull, GraphQLObjectType } from 'graphql';
    * import { PageInfoType, ConnectionInterfaceType } from '@via-profit-services/core';
-   * 
+   *
    * import MyEdge from './MyEdge';
-   * 
+   *
    * const MyConnection = new GraphQLObjectType({
    *   name: 'MyConnection',
    *   interfaces: [ConnectionInterfaceType],
@@ -1123,7 +661,7 @@ declare module '@via-profit-services/core' {
    *     },
    *   }),
    * });
-   * 
+   *
    * export default MyConnection;
    * ```
    */
@@ -1147,9 +685,9 @@ declare module '@via-profit-services/core' {
    * ```ts
    * import { GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql';
    * import { EdgeInterfaceType } from '@via-profit-services/core';
-   * 
+   *
    * import MyNode from './MyNode';
-   * 
+   *
    * const MyEdge = new GraphQLObjectType({
    *   name: 'MyEdge',
    *   interfaces: [EdgeInterfaceType],
@@ -1158,7 +696,7 @@ declare module '@via-profit-services/core' {
    *     node: { type: new GraphQLNonNull(MyNode) },
    *   }),
    * });
-   * 
+   *
    * export default MyEdge;
    * ```
    */
@@ -1179,7 +717,7 @@ declare module '@via-profit-services/core' {
    * ```ts
    * import { GraphQLObjectType, GraphQLNonNull, GraphQLString } from 'graphql';
    * import { ErrorInterfaceType } from '@via-profit-services/core';
-   * 
+   *
    * const MyError = new GraphQLObjectType({
    *   name: 'MyError',
    *   interfaces: () => [ErrorInterfaceType],
@@ -1188,12 +726,11 @@ declare module '@via-profit-services/core' {
    *     msg: { type: new GraphQLNonNull(GraphQLString) },
    *   },
    * });
-   * 
+   *
    * export default MyError;
    * ```
    */
   export const ErrorInterfaceType: GraphQLInterfaceType;
-
 
   /**
    * GraphQL Node spec. interface\
@@ -1210,7 +747,7 @@ declare module '@via-profit-services/core' {
    * ```ts
    * import { GraphQLID, GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql';
    * import { Context, DateTimeScalarType, NodeInterfaceType } from '@via-profit-services/core';
-   * 
+   *
    * const MyNode = new GraphQLObjectType<unknown, Context>({
    *   name: 'MyNode',
    *   interfaces: () => [NodeInterfaceType],
@@ -1219,7 +756,7 @@ declare module '@via-profit-services/core' {
    *     name: { type: new GraphQLNonNull(GraphQLString) },
    *   }),
    * });
-   * 
+   *
    * export default MyNode;
    * ```
    */
@@ -1233,7 +770,7 @@ declare module '@via-profit-services/core' {
    * enum OrderDirection {
    *   """Sort the query results in a top to bottom style (e.g.: A->Z)"""
    *   ASC
-   * 
+   *
    *   """Sort the query results in a bottom to top style (e.g.: Z->A)"""
    *   DESC
    * }
@@ -1243,7 +780,7 @@ declare module '@via-profit-services/core' {
    * ```ts
    * import { GraphQLInputObjectType, GraphQLEnumType, GraphQLNonNull } from 'graphql';
    * import { OrderDirectionType } from '@via-profit-services/core';
-   * 
+   *
    * const MyOrderBy = new GraphQLInputObjectType({
    *   name: 'MyOrderBy',
    *   fields: () => ({
@@ -1261,10 +798,10 @@ declare module '@via-profit-services/core' {
    *     },
    *   }),
    * });
-   * 
+   *
    * export default MyOrderBy;
    * ```
-  */
+   */
   export const OrderDirectionType: GraphQLEnumType;
 
   /**
@@ -1284,9 +821,9 @@ declare module '@via-profit-services/core' {
    * ```ts
    * import { GraphQLList, GraphQLNonNull, GraphQLObjectType } from 'graphql';
    * import { PageInfoType, ConnectionInterfaceType } from '@via-profit-services/core';
-   * 
+   *
    * import MyEdge from './MyEdge';
-   * 
+   *
    * const MyConnection = new GraphQLObjectType({
    *   name: 'MyConnection',
    *   interfaces: [ConnectionInterfaceType],
@@ -1295,16 +832,11 @@ declare module '@via-profit-services/core' {
    *     edges: { type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(MyEdge))) },
    *   }),
    * });
-   * 
+   *
    * export default MyConnection;
    * ```
    */
   export const PageInfoType: GraphQLObjectType;
-
-  /**
-   * @deprecated Since version 2.4. Will be deleted in version 3.0.
-   */
-  export const DEFAULT_SERVER_TIMEZONE: string;
 
   export const DEFAULT_PERSISTED_QUERY_KEY: string;
   export const DEFAULT_MAX_FIELD_SIZE: number;

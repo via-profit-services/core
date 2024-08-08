@@ -135,7 +135,9 @@ const readBody = async (
 
     return body;
   } catch (err) {
-    throw new Error('Failed to parse body');
+    throw new Error(
+      `Failed to parse body. ${err instanceof Error ? err.message : 'Unknown Error'}`,
+    );
   }
 };
 

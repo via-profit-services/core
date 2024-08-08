@@ -23,7 +23,6 @@ import {
 } from 'graphql';
 
 import {
-  DEFAULT_SERVER_TIMEZONE,
   DEFAULT_PERSISTED_QUERY_KEY,
   DEFAULT_MAX_FIELD_SIZE,
   DEFAULT_MAX_FILES,
@@ -38,7 +37,6 @@ import ServerError from './server-error';
 
 const applicationFactory: ApplicationFactory = props => {
   const config: Configuration = {
-    timezone: DEFAULT_SERVER_TIMEZONE,
     middleware: [],
     debug: false,
     rootValue: undefined,
@@ -50,7 +48,7 @@ const applicationFactory: ApplicationFactory = props => {
     ...props,
   };
 
-  const { timezone, middleware, rootValue, debug, schema } = config;
+  const { middleware, rootValue, debug, schema } = config;
 
   const coreMiddleware: Middleware = ({ context }) => {
     context.services.core = context.services.core ?? new CoreService({ context });
@@ -60,7 +58,6 @@ const applicationFactory: ApplicationFactory = props => {
 
   // Declare main context
   const context: Context = {
-    timezone,
     request: null,
     services: {
       core: null,
@@ -113,7 +110,7 @@ const applicationFactory: ApplicationFactory = props => {
 
       // validate request
       const graphqlErrors = validateSchema(schema);
-      graphqlErrors;
+
       if (graphqlErrors.length > 0) {
         throw new ServerError(graphqlErrors, 'graphql-error-validate-schema');
       }
