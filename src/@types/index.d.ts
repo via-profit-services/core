@@ -22,7 +22,6 @@ declare module '@via-profit-services/core' {
     GraphQLEnumType,
   } from 'graphql';
   import http from 'http';
-  import { EventEmitter } from 'events';
   import { ReadStream, WriteStream } from 'fs';
   import { ReadableOptions } from 'stream';
 
@@ -244,127 +243,6 @@ declare module '@via-profit-services/core' {
     validationRule: ValidationRule[];
   }) => Promise<void>;
 
-  export class CoreEmitter extends EventEmitter {
-    on(event: 'graphql-error-execute', listener: (errors: readonly GraphQLError[]) => void): this;
-    once(event: 'graphql-error-execute', listener: (errors: readonly GraphQLError[]) => void): this;
-    addListener(
-      event: 'graphql-error-execute',
-      listener: (errors: readonly GraphQLError[]) => void,
-    ): this;
-    removeListener(
-      event: 'graphql-error-execute',
-      listener: (errors: readonly GraphQLError[]) => void,
-    ): this;
-    prependListener(
-      event: 'graphql-error-execute',
-      listener: (errors: readonly GraphQLError[]) => void,
-    ): this;
-    prependOnceListener(
-      event: 'graphql-error-execute',
-      listener: (errors: readonly GraphQLError[]) => void,
-    ): this;
-    emit(event: 'graphql-error-execute', ...args: [errors: readonly GraphQLError[]]): boolean;
-    removeAllListeners(event: 'graphql-error-execute'): this;
-    listeners(event: 'graphql-error-execute'): Function[];
-    listenerCount(event: 'graphql-error-execute'): number;
-
-    on(
-      event: 'graphql-error-validate-field',
-      listener: (errors: readonly GraphQLError[]) => void,
-    ): this;
-    once(
-      event: 'graphql-error-validate-field',
-      listener: (errors: readonly GraphQLError[]) => void,
-    ): this;
-    addListener(
-      event: 'graphql-error-validate-field',
-      listener: (errors: readonly GraphQLError[]) => void,
-    ): this;
-    removeListener(
-      event: 'graphql-error-validate-field',
-      listener: (errors: readonly GraphQLError[]) => void,
-    ): this;
-    prependListener(
-      event: 'graphql-error-validate-field',
-      listener: (errors: readonly GraphQLError[]) => void,
-    ): this;
-    prependOnceListener(
-      event: 'graphql-error-validate-field',
-      listener: (errors: readonly GraphQLError[]) => void,
-    ): this;
-    emit(
-      event: 'graphql-error-validate-field',
-      ...args: [errors: readonly GraphQLError[]]
-    ): boolean;
-    removeAllListeners(event: 'graphql-error-validate-field'): this;
-    listeners(event: 'graphql-error-validate-field'): Function[];
-    listenerCount(event: 'graphql-error-validate-field'): number;
-
-    on(
-      event: 'graphql-error-validate-request',
-      listener: (errors: readonly GraphQLError[]) => void,
-    ): this;
-    once(
-      event: 'graphql-error-validate-request',
-      listener: (errors: readonly GraphQLError[]) => void,
-    ): this;
-    addListener(
-      event: 'graphql-error-validate-request',
-      listener: (errors: readonly GraphQLError[]) => void,
-    ): this;
-    removeListener(
-      event: 'graphql-error-validate-request',
-      listener: (errors: readonly GraphQLError[]) => void,
-    ): this;
-    prependListener(
-      event: 'graphql-error-validate-request',
-      listener: (errors: readonly GraphQLError[]) => void,
-    ): this;
-    prependOnceListener(
-      event: 'graphql-error-validate-request',
-      listener: (errors: readonly GraphQLError[]) => void,
-    ): this;
-    emit(
-      event: 'graphql-error-validate-request',
-      ...args: [errors: readonly GraphQLError[]]
-    ): boolean;
-    removeAllListeners(event: 'graphql-error-validate-request'): this;
-    listeners(event: 'graphql-error-validate-request'): Function[];
-    listenerCount(event: 'graphql-error-validate-request'): number;
-
-    on(
-      event: 'graphql-error-validate-schema',
-      listener: (errors: readonly GraphQLError[]) => void,
-    ): this;
-    once(
-      event: 'graphql-error-validate-schema',
-      listener: (errors: readonly GraphQLError[]) => void,
-    ): this;
-    addListener(
-      event: 'graphql-error-validate-schema',
-      listener: (errors: readonly GraphQLError[]) => void,
-    ): this;
-    removeListener(
-      event: 'graphql-error-validate-schema',
-      listener: (errors: readonly GraphQLError[]) => void,
-    ): this;
-    prependListener(
-      event: 'graphql-error-validate-schema',
-      listener: (errors: readonly GraphQLError[]) => void,
-    ): this;
-    prependOnceListener(
-      event: 'graphql-error-validate-schema',
-      listener: (errors: readonly GraphQLError[]) => void,
-    ): this;
-    emit(
-      event: 'graphql-error-validate-schema',
-      ...args: [errors: readonly GraphQLError[]]
-    ): boolean;
-    removeAllListeners(event: 'graphql-error-validate-schema'): this;
-    listeners(event: 'graphql-error-validate-schema'): Function[];
-    listenerCount(event: 'graphql-error-validate-schema'): number;
-  }
-
   export type MaybePromise<T> = Promise<T> | T;
 
   export type WithKey<K extends string | number | symbol, ResType> = {
@@ -381,35 +259,14 @@ declare module '@via-profit-services/core' {
 
   export interface Context {
     /**
-     * The property services is used to store various services in context
+     * Empty ccontext
      */
-    readonly services: ServicesCollection;
-
-    /**
-     * This is a simple [Node Emitter class](https://nodejs.org/api/events.html#class-eventemitter)
-     */
-    readonly emitter: CoreEmitter;
-
-    /**
-     * Incomming HTTP request
-     */
-    request: http.IncomingMessage;
-
-    /**
-     * Graphql schema
-     */
-    schema: GraphQLSchema;
   }
 
   export type CoreStats = {
     requestCounter: number;
     readonly startupTime: Date;
   };
-
-  export interface ServicesCollection {
-    core: CoreService;
-    [key: string]: unknown;
-  }
 
   export type HTTPListener = (
     request: http.IncomingMessage,

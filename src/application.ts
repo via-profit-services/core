@@ -1,4 +1,3 @@
-import { EventEmitter } from 'node:events';
 import { performance } from 'node:perf_hooks';
 import type {
   Configuration,
@@ -7,7 +6,6 @@ import type {
   ApplicationFactory,
   HTTPListener,
   CoreStats,
-  Middleware,
   GraphqlResponse,
 } from '@via-profit-services/core';
 import {
@@ -28,7 +26,6 @@ import {
   DEFAULT_MAX_FILES,
   DEFAULT_MAX_FILE_SIZE,
 } from './constants';
-import CoreService from './services/CoreService';
 import bodyParser, { parseGraphQLParams } from './utils/body-parser';
 import composeMiddlewares from './utils/compose-middlewares';
 import applyMiddlewares from './utils/apply-middlewares';
@@ -50,20 +47,11 @@ const applicationFactory: ApplicationFactory = props => {
 
   const { middleware, rootValue, debug, schema } = config;
 
-  const coreMiddleware: Middleware = ({ context }) => {
-    context.services.core = context.services.core ?? new CoreService({ context });
-  };
-
-  class CoreEmitter extends EventEmitter {}
-
   // Declare main context
   const context: Context = {
-    request: null,
-    services: {
-      core: null,
-    },
-    emitter: new CoreEmitter(),
-    schema,
+    /**
+     * Empty
+     */
   };
 
   const stats: CoreStats = {
@@ -73,7 +61,6 @@ const applicationFactory: ApplicationFactory = props => {
 
   // compose middlewares to single array of middlewares
   // Core middleware must be a first of this array
-  const middlewares = composeMiddlewares(coreMiddleware, middleware);
   const extensions: GraphQLExtensions = {
     queryTime: 0,
     requestCounter: 0,
@@ -85,7 +72,6 @@ const applicationFactory: ApplicationFactory = props => {
     const { method } = request;
     const startTime = performance.now();
 
-    context.request = request;
     stats.requestCounter += 1;
 
     try {
@@ -99,7 +85,7 @@ const applicationFactory: ApplicationFactory = props => {
       // execute each middleware
       await applyMiddlewares({
         request,
-        middlewares,
+        middlewares: composeMiddlewares(middleware),
         config,
         context,
         schema,

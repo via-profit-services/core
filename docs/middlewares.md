@@ -94,65 +94,7 @@ Output will be:
 
 ## requestCounter property
 
-What might you need a counter for?. `requestCounter` - is simply a counter that indicates the number of requests that have arrived at your server. You can use it for logging or for example to subscribe `EventEmitter` listeners:
-
-```js
-import http from "node:http";
-import core from "@via-profit-services/core";
-import {
-  GraphQLSchema,
-  GraphQLObjectType,
-  GraphQLNonNull,
-  GraphQLString,
-} from "graphql";
-
-const schema = new GraphQLSchema({
-  query: new GraphQLObjectType({
-    name: "Query",
-    fields: () => ({
-      sayHello: {
-        type: new GraphQLNonNull(GraphQLString),
-        resolve: () => {
-          throw new Error("Any error");
-        },
-      },
-    }),
-  }),
-});
-
-const graphqlHTTP = core.graphqlHTTPFactory({
-  schema,
-  middleware: [
-    (props) => {
-      const { context, stats } = props;
-      if (stats.requestCounter === 1) {
-        context.emitter.on("graphql-error-execute", (graphqlErrors) => {
-
-          console.debug("Holy shit. An error accured");
-          console.debug("---------------------------");
-
-          graphqlErrors.forEach((graphqlError) => {
-            console.debug(graphqlError.toString());
-            console.debug(graphqlError.stack)
-          });
-        });
-      }
-    },
-  ],
-});
-
-const server = http.createServer();
-server.on("request", async (req, res) => {
-  const response = await graphqlHTTP(req, res);
-
-  res.statusCode = 200;
-  res.setHeader("content-type", "application/json");
-  res.end(JSON.stringify(response));
-});
-
-server.listen(8080, "localhost");
-
-```
+What might you need a counter for?. `requestCounter` - is simply a counter that indicates the number of requests that have arrived at your server.
 
 In this example, we are subscribing to the `graphql-error-execute` listener. It is very important to do this once, otherwise, we will subscribe to messages every time a new http request is received.
 

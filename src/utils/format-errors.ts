@@ -8,9 +8,8 @@ type FormatErrors = (props: {
   context: Context;
 }) => readonly GraphQLFormattedError[];
 
-const formatErrors: FormatErrors = ({ error, debug, context }) => {
+const formatErrors: FormatErrors = ({ error, debug }) => {
   const errorsList: GraphQLFormattedError[] = [];
-  const { emitter } = context;
 
   if (error instanceof ServerError && Array.isArray(error.graphqlErrors)) {
     const { graphqlErrors, errorType } = error as {
@@ -33,23 +32,6 @@ const formatErrors: FormatErrors = ({ error, debug, context }) => {
       });
     });
 
-    switch (errorType) {
-      case 'graphql-error-execute':
-        emitter.emit('graphql-error-execute', graphqlErrors);
-        break;
-      case 'graphql-error-validate-field':
-        emitter.emit('graphql-error-validate-field', graphqlErrors);
-        break;
-      case 'graphql-error-validate-request':
-        emitter.emit('graphql-error-validate-request', graphqlErrors);
-        break;
-      case 'graphql-error-validate-schema':
-        emitter.emit('graphql-error-validate-schema', graphqlErrors);
-        break;
-      default:
-        break;
-    }
-
     return errorsList;
   }
 
@@ -63,8 +45,6 @@ const formatErrors: FormatErrors = ({ error, debug, context }) => {
       message: error.message,
       extensions: Object.entries(extensions).length ? extensions : undefined,
     });
-
-    emitter.emit('graphql-error-execute', [new GraphQLError(error.message, {})]);
 
     return errorsList;
   }
