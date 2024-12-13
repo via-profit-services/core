@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# `2.7.0` 13.12.2024`
+
+### Breaking
+
+ - The `Money` scalar type now is `bigint` value, not a `number`
+
 # `2.6.0` 02.11.2024`
 
 ### Breaking
