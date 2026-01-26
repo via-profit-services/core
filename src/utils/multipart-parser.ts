@@ -1,10 +1,10 @@
 import type { RequestBody, MultipartParser } from '@via-profit-services/core';
 import busboy from 'busboy';
 
-import { WriteStream, ReadStreamOptions } from '../fs-capacitor';
 import FileUploadInstance from './FileUploadInstance';
 import dotNotationSet from './set';
 import { DEFAULT_PERSISTED_QUERY_KEY } from '../constants';
+import { TempFile } from './TempFile';
 
 const multipartParser: MultipartParser = ({ request, config }) =>
   new Promise<RequestBody>((resolve, reject) => {
@@ -159,7 +159,8 @@ const multipartParser: MultipartParser = ({ request, config }) =>
         return;
       }
 
-      const capacitor = new WriteStream();
+      const temp = new TempFile();
+
 
       // TOTAL SIZE LIMIT CHECK
       stream.on('data', chunk => {
@@ -176,10 +177,6 @@ const multipartParser: MultipartParser = ({ request, config }) =>
         }
       });
 
-      capacitor.on('error', () => {
-        stream.unpipe();
-        stream.resume();
-      });
 
       stream.on('limit', () => {
         reject(`File truncated as it exceeds the ${maxFileSize} byte size limit.`);
@@ -189,21 +186,20 @@ const multipartParser: MultipartParser = ({ request, config }) =>
 
       stream.on('error', (_error: Error) => {
         stream.unpipe();
-        capacitor.destroy(new Error('Upload error'));
-        capacitor.destroy();
       });
 
-      const file: any = {
-        filename,
-        mimeType,
-        encoding,
-        capacitor,
-        createReadStream: (opt?: ReadStreamOptions) => capacitor.createReadStream(opt),
-      };
 
-      Object.defineProperty(file, 'capacitor', { value: capacitor });
-      stream.pipe(capacitor);
-      upload.resolve(file);
+      stream.on('data', chunk => temp.write(chunk));
+      stream.on('end', async () => {
+        await temp.end();
+        upload.resolve({
+          filename,
+          mimeType,
+          encoding,
+          createReadStream: () => temp.createReadStream(),
+          cleanup: () => temp.cleanup(),
+        });
+      });
     });
 
     // FILES LIMIT PARSER

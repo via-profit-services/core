@@ -63,7 +63,7 @@ const Mutation = new GraphQLObjectType({
 
           const writeFile = new Promise<void>(resolve => {
             writeStream.on('close', async () => {
-              file.capacitor.destroy();
+              file.cleanup();
               response.push({
                 location,
                 mimeType: file.mimeType,

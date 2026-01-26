@@ -308,7 +308,7 @@ declare module '@via-profit-services/core' {
      * ```
      */
     readonly createReadStream: (options?: ReadStreamOptions) => ReadStream;
-    readonly capacitor: WriteStream;
+    readonly cleanup: () => void;
   }
 
   export type UploadedFile = Promise<FilePayload>;

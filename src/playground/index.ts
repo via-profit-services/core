@@ -203,7 +203,7 @@ const schema = new GraphQLSchema({
 
           await filesData.reduce(async (prev, file) => {
             await prev;
-            const { createReadStream, mimeType, capacitor } = file;
+            const { createReadStream, mimeType, cleanup } = file;
             const readStream = createReadStream();
 
             const distDir = path.resolve(__dirname, '../.files');
@@ -213,11 +213,11 @@ const schema = new GraphQLSchema({
 
             return new Promise<void>((resolve, reject) => {
               writeStream.on('error', err => {
-                capacitor.destroy();
+                cleanup();
                 reject(err);
               });
               writeStream.on('finish', () => {
-                capacitor.destroy();
+                cleanup();
                 resolve();
               });
 
