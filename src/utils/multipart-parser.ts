@@ -8,7 +8,8 @@ import { DEFAULT_PERSISTED_QUERY_KEY } from '../constants';
 
 const multipartParser: MultipartParser = ({ request, config }) =>
   new Promise<RequestBody>((resolve, reject) => {
-    const { persistedQueryKey, persistedQueriesMap, maxFieldSize, maxFileSize, maxFiles } = config;
+    const { persistedQueryKey, persistedQueriesMap, limits } = config;
+    const { maxFieldSize, maxFileSize, maxFiles } = limits;
     const { headers } = request;
 
     const parser = busboy({

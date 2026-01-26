@@ -39,9 +39,12 @@ const applicationFactory: ApplicationFactory = props => {
     rootValue: undefined,
     persistedQueriesMap: undefined,
     persistedQueryKey: DEFAULT_PERSISTED_QUERY_KEY,
-    maxFieldSize: DEFAULT_MAX_FIELD_SIZE,
-    maxFileSize: DEFAULT_MAX_FILE_SIZE,
-    maxFiles: DEFAULT_MAX_FILES,
+    limits: {
+      maxFieldSize: DEFAULT_MAX_FIELD_SIZE,
+      maxFileSize: DEFAULT_MAX_FILE_SIZE,
+      maxFiles: DEFAULT_MAX_FILES,
+      ...props.limits,
+    },
     ...props,
   };
 

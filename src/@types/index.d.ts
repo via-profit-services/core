@@ -67,6 +67,10 @@ declare module '@via-profit-services/core' {
      */
     readonly middleware?: Middleware | Middleware[];
 
+    readonly limits: Limits;
+  }
+
+  export interface Limits {
     /**
      * Max field value size for busboy (in bytes)
      */
