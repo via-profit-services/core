@@ -67,7 +67,7 @@ declare module '@via-profit-services/core' {
      */
     readonly middleware?: Middleware | Middleware[];
 
-    readonly limits: Limits;
+    readonly limits?: Partial<Limits>;
   }
 
   export interface Limits {
@@ -85,6 +85,14 @@ declare module '@via-profit-services/core' {
      * For multipart forms, the max number of file fields for busboy
      */
     readonly maxFiles?: number;
+
+    readonly maxFileFields?: number;
+
+    readonly maxFileParts?: number;
+
+    readonly maxFilesTotalSize?: number;
+
+    readonly JSONMaxBytes: number;
   }
 
   export interface FilePayload {

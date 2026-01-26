@@ -9,7 +9,7 @@ import { DEFAULT_PERSISTED_QUERY_KEY } from '../constants';
 const multipartParser: MultipartParser = ({ request, config }) =>
   new Promise<RequestBody>((resolve, reject) => {
     const { persistedQueryKey, persistedQueriesMap, limits } = config;
-    const { maxFieldSize, maxFileSize, maxFiles } = limits;
+    const { maxFieldSize, maxFileSize, maxFiles, maxFileFields, maxFileParts, maxFilesTotalSize } = limits;
     const { headers } = request;
 
     const parser = busboy({
@@ -18,15 +18,17 @@ const multipartParser: MultipartParser = ({ request, config }) =>
         ...headers,
       },
       limits: {
-        fields: 2, // Only operations and map.
+        fields: maxFileFields,
         fieldSize: maxFieldSize,
         fileSize: maxFileSize,
         files: maxFiles,
+        parts: maxFileParts,
       },
     });
 
     const map = new Map<number, FileUploadInstance>();
     const operations: RequestBody = {};
+    let totalSize = 0;
 
     // FIELD PARSER
     parser.on('field', (fieldName, value, { valueTruncated }) => {
@@ -158,6 +160,22 @@ const multipartParser: MultipartParser = ({ request, config }) =>
       }
 
       const capacitor = new WriteStream();
+
+      // TOTAL SIZE LIMIT CHECK
+      stream.on('data', chunk => {
+        totalSize += chunk.length;
+
+        if (totalSize > maxFilesTotalSize) {
+          stream.unpipe();
+          stream.resume();
+
+          parser.emit(
+            'error',
+            new Error(`Total upload size exceeds the ${maxFilesTotalSize} byte limit.`),
+          );
+        }
+      });
+
       capacitor.on('error', () => {
         stream.unpipe();
         stream.resume();

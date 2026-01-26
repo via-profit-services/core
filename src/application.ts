@@ -25,6 +25,7 @@ import {
   DEFAULT_MAX_FIELD_SIZE,
   DEFAULT_MAX_FILES,
   DEFAULT_MAX_FILE_SIZE,
+  DEFAULT_JSON_MAX_BYTES, DEFAULT_MAX_FILE_FIELDS, DEFAULT_MAX_FILE_PARTS, DEFAULT_MAX_FILE_TOTAL_SIZE,
 } from './constants';
 import bodyParser, { parseGraphQLParams } from './utils/body-parser';
 import composeMiddlewares from './utils/compose-middlewares';
@@ -43,6 +44,10 @@ const applicationFactory: ApplicationFactory = props => {
       maxFieldSize: DEFAULT_MAX_FIELD_SIZE,
       maxFileSize: DEFAULT_MAX_FILE_SIZE,
       maxFiles: DEFAULT_MAX_FILES,
+      maxFileFields: DEFAULT_MAX_FILE_FIELDS,
+      maxFileParts: DEFAULT_MAX_FILE_PARTS,
+      JSONMaxBytes: DEFAULT_JSON_MAX_BYTES,
+      maxFilesTotalSize: DEFAULT_MAX_FILE_TOTAL_SIZE,
       ...props.limits,
     },
     ...props,
