@@ -7,6 +7,7 @@ export const DEFAULT_MAX_FILE_FIELDS = 2;
 export const DEFAULT_MAX_FILE_PARTS = 20;
 export const DEFAULT_MAX_FILE_TOTAL_SIZE = 200 * 1024 * 1024; // 200MB total
 export const DEFAULT_JSON_MAX_BYTES = 1 * 1024 * 1024; // 1MB JSON body
+export const DEFAULT_JSON_DECOMPRESSED_MAX_BYTES = 5 * 1024 * 1024; // 5MB JSON body decompressed
 
 // GraphQL depth limits
 export const DEFAULT_MAX_GRAPHQL_DEPTH_LIMIT = 10;

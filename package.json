@@ -68,8 +68,5 @@
     "peerDependencies": {
         "busboy": "^1.6",
         "graphql": "^16"
-    },
-    "dependencies": {
-        "raw-body": "^3.0.0"
     }
 }

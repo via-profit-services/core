@@ -11,6 +11,120 @@ import {
 
 import type { UploadedFile } from '@via-profit-services/core';
 import { FileUploadScalarType } from '../index';
+import { GraphQLFieldConfigMap, GraphQLID } from 'graphql/index';
+
+
+type UserType = {
+  id: string;
+  name: string;
+  accountID: string;
+};
+
+type AccountType = {
+  id: string;
+  userID: string;
+};
+
+type PostType = {
+  id: string;
+  userID: string;
+};
+
+type CommentType = {
+  id: string;
+  postID: string;
+};
+
+// ----------------------
+// Mock data
+// ----------------------
+
+const users: UserType[] = [{ id: '1', name: 'User-001', accountID: '8' }];
+
+const accounts: AccountType[] = [{ id: '8', userID: '1' }];
+
+const posts: PostType[] = [
+  { id: '101', userID: '1' },
+  { id: '102', userID: '1' },
+];
+
+const comments: CommentType[] = [
+  { id: '1001', postID: '101' },
+  { id: '1002', postID: '101' },
+  { id: '1003', postID: '102' },
+];
+
+// ----------------------
+// GraphQL Types
+// ----------------------
+
+const Comment = new GraphQLObjectType({
+  name: 'Comment',
+  fields: () => ({
+    id: { type: new GraphQLNonNull(GraphQLID) },
+  }),
+});
+
+const Post = new GraphQLObjectType({
+  name: 'Post',
+  fields: () => ({
+    id: { type: new GraphQLNonNull(GraphQLID) },
+    comments: {
+      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(Comment))),
+      args: {
+        first: { type: GraphQLInt },
+      },
+      resolve: (post, args) => {
+        const list = comments.filter(c => c.postID === post.id);
+        return args.first ? list.slice(0, args.first) : list;
+      },
+    },
+  }),
+});
+
+const Account = new GraphQLObjectType({
+  name: 'Account',
+  fields: () => {
+    const fields: GraphQLFieldConfigMap<AccountType, unknown> = {
+      id: { type: new GraphQLNonNull(GraphQLID) },
+      user: {
+        type: new GraphQLNonNull(User),
+        resolve: parent => users.find(u => u.id === parent.userID),
+      },
+    };
+
+    return fields;
+  },
+});
+
+const User = new GraphQLObjectType({
+  name: 'User',
+  fields: () => ({
+    id: { type: new GraphQLNonNull(GraphQLID) },
+    name: { type: new GraphQLNonNull(GraphQLString) },
+    account: {
+      type: new GraphQLNonNull(Account),
+      resolve: user => accounts.find(a => a.id === user.accountID),
+    },
+    posts: {
+      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(Post))),
+      args: {
+        first: { type: GraphQLInt },
+      },
+      resolve: (user, args) => {
+        const list = posts.filter(p => p.userID === user.id);
+        return args.first ? list.slice(0, args.first) : list;
+      },
+    },
+
+    // A deliberately expensive field for testing complexity
+    expensiveField: {
+      type: new GraphQLNonNull(GraphQLString),
+      resolve: () => 'expensive',
+    },
+  }),
+});
+
 
 const UploadedFilePayload = new GraphQLObjectType({
   name: 'UploadedFilePayload',
@@ -35,6 +149,25 @@ const Query = new GraphQLObjectType({
     getFiveWithError: {
       type: new GraphQLNonNull(GraphQLInt),
       resolve: () => null, // will be error
+    },
+    users: {
+      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(User))),
+      args: {
+        first: { type: GraphQLInt },
+      },
+      resolve: (_p, args) => {
+        return args.first ? users.slice(0, args.first) : users;
+      },
+    },
+
+    accounts: {
+      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(Account))),
+      args: {
+        first: { type: GraphQLInt },
+      },
+      resolve: (_p, args) => {
+        return args.first ? accounts.slice(0, args.first) : accounts;
+      },
     },
   },
 });

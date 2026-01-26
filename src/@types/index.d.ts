@@ -112,7 +112,18 @@ declare module '@via-profit-services/core' {
      * Maximum allowed size of a JSON request body (in bytes).
      * Applies to standard GraphQL POST requests with application/json.
      */
-    readonly JSONMaxBytes?: number;
+    readonly maxJSONBodySize?: number;
+
+    /**
+     * Maximum allowed size (in bytes) of the request body *after* decompression.
+     *
+     * This limit protects the server from gzip/deflate bomb attacks, where a very small
+     * compressed payload expands into an extremely large body during decompression.
+     *
+     * If the decompressed body exceeds this threshold, the request is rejected before
+     * parsing to prevent excessive memory usage and potential denial‑of‑service scenarios.
+     */
+    readonly maxJSONBodyDecompressedSize?: number;
 
     /**
      * Maximum allowed GraphQL query depth.
