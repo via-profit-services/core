@@ -6,7 +6,6 @@ import type {
   ApplicationFactory,
   HTTPListener,
   CoreStats,
-  GraphqlResponse,
 } from '@via-profit-services/core';
 import {
   validateSchema,
@@ -25,8 +24,12 @@ import {
   DEFAULT_MAX_FIELD_SIZE,
   DEFAULT_MAX_FILES,
   DEFAULT_MAX_FILE_SIZE,
-  DEFAULT_JSON_MAX_BYTES, DEFAULT_MAX_FILE_FIELDS, DEFAULT_MAX_FILE_PARTS, DEFAULT_MAX_FILE_TOTAL_SIZE,
+  DEFAULT_JSON_MAX_BYTES,
+  DEFAULT_MAX_FILE_FIELDS,
+  DEFAULT_MAX_FILE_PARTS,
+  DEFAULT_MAX_FILE_TOTAL_SIZE,
 } from './constants';
+
 import bodyParser, { parseGraphQLParams } from './utils/body-parser';
 import composeMiddlewares from './utils/compose-middlewares';
 import applyMiddlewares from './utils/apply-middlewares';
@@ -55,42 +58,36 @@ const applicationFactory: ApplicationFactory = props => {
 
   const { middleware, rootValue, debug, schema } = config;
 
-  // Declare main context
-  const context: Context = {
-    /**
-     * Empty
-     */
-  };
+  const context: Context = {};
 
   const stats: CoreStats = {
     requestCounter: 0,
     startupTime: new Date(),
   };
 
-  // compose middlewares to single array of middlewares
-  // Core middleware must be a first of this array
   const extensions: GraphQLExtensions = {
     queryTime: 0,
     requestCounter: 0,
-    startupTime: new Date(),
+    startupTime: stats.startupTime,
   };
+
   const validationRule: ValidationRule[] = [];
 
   const httpListener: HTTPListener = async (request, response) => {
-    const { method } = request;
     const startTime = performance.now();
-
     stats.requestCounter += 1;
 
     try {
+      const { method } = request;
+
       if (!['GET', 'POST', 'OPTIONS'].includes(method)) {
         throw new ServerError(
-          [new GraphQLError('GraphQL only supports GET, POST and OPTIONS requests', {})],
+          [new GraphQLError('GraphQL only supports GET, POST and OPTIONS requests')],
           'graphql-error-execute',
         );
       }
 
-      // execute each middleware
+      // Middleware chain
       await applyMiddlewares({
         request,
         middlewares: composeMiddlewares(middleware),
@@ -102,35 +99,37 @@ const applicationFactory: ApplicationFactory = props => {
         validationRule,
       });
 
-      // validate request
-      const graphqlErrors = validateSchema(schema);
-
-      if (graphqlErrors.length > 0) {
-        throw new ServerError(graphqlErrors, 'graphql-error-validate-schema');
+      // Schema validation
+      const schemaErrors = validateSchema(schema);
+      if (schemaErrors.length > 0) {
+        throw new ServerError(schemaErrors, 'graphql-error-validate-schema');
       }
 
+      // Parse body (JSON or multipart)
       const body = await bodyParser({ request, response, config });
+
+      // Extract query, variables, operationName
       const { query, operationName, variables } = parseGraphQLParams({
         body,
         request,
         config,
       });
 
-      if (typeof query !== 'string' || query === '') {
+      if (!query || typeof query !== 'string') {
         throw new ServerError(
           [
             new GraphQLError(
-              `Failed to parse Graphql query. The received request is empty. Got «${String(
-                query,
-              )}»`,
+              `Failed to parse GraphQL query. The request is empty. Got «${String(query)}»`,
             ),
           ],
           'graphql-error-validate-request',
         );
       }
 
+      // Parse query into AST
       const documentAST = parse(new Source(query, 'GraphQL request'));
 
+      // Validate AST
       const validationErrors = validate(schema, documentAST, [
         ...specifiedRules,
         ...validationRule,
@@ -139,16 +138,14 @@ const applicationFactory: ApplicationFactory = props => {
         throw new ServerError(validationErrors, 'graphql-error-validate-field');
       }
 
-      // Only query operations are allowed on GET requests.
+      // GET must not perform mutations/subscriptions
       if (method === 'GET') {
-        // Determine if this GET request will perform a non-query.
         const operationAST = getOperationAST(documentAST, operationName);
         if (operationAST && operationAST.operation !== 'query') {
           throw new ServerError(
             [
               new GraphQLError(
                 `Can only perform a ${operationAST.operation} operation from a POST request`,
-                {},
               ),
             ],
             'graphql-error-execute',
@@ -156,6 +153,7 @@ const applicationFactory: ApplicationFactory = props => {
         }
       }
 
+      // Execute GraphQL
       const { errors, data } = await execute({
         variableValues: variables,
         document: documentAST,
@@ -169,7 +167,7 @@ const applicationFactory: ApplicationFactory = props => {
         throw new ServerError(errors, 'graphql-error-execute');
       }
 
-      const r: GraphqlResponse = {
+      return {
         data,
         extensions: debug
           ? {
@@ -179,10 +177,8 @@ const applicationFactory: ApplicationFactory = props => {
             }
           : undefined,
       };
-
-      return r;
     } catch (error: unknown) {
-      const r: GraphqlResponse = {
+      return {
         errors: formatErrors({
           error,
           debug,
@@ -194,8 +190,6 @@ const applicationFactory: ApplicationFactory = props => {
           queryTime: performance.now() - startTime,
         },
       };
-
-      return r;
     }
   };
 
