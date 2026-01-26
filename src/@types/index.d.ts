@@ -72,27 +72,115 @@ declare module '@via-profit-services/core' {
 
   export interface Limits {
     /**
-     * Max field value size for busboy (in bytes)
+     * Maximum allowed size of a non-file field value in multipart/form-data (in bytes).
+     * This applies to fields like "operations" and "map" when using Busboy.
+     * Helps prevent oversized JSON payloads inside multipart requests.
      */
     readonly maxFieldSize?: number;
 
     /**
-     * For multipart forms, the max file size for busboy (in bytes)
+     * Maximum allowed size of a single uploaded file (in bytes).
+     * Busboy will truncate the stream and emit a "limit" event if exceeded.
      */
     readonly maxFileSize?: number;
 
     /**
-     * For multipart forms, the max number of file fields for busboy
+     * Maximum number of file fields allowed in a multipart/form-data request.
+     * Prevents clients from uploading too many files in a single operation.
      */
     readonly maxFiles?: number;
 
+    /**
+     * Maximum number of non-file fields allowed in a multipart/form-data request.
+     * Typically used to restrict "operations" and "map" fields.
+     */
     readonly maxFileFields?: number;
 
+    /**
+     * Maximum number of total parts (fields + files) allowed in a multipart request.
+     * Protects against multipart flooding attacks.
+     */
     readonly maxFileParts?: number;
 
+    /**
+     * Maximum combined size of all uploaded files in a single request (in bytes).
+     * This limit is enforced manually by summing incoming file chunks.
+     */
     readonly maxFilesTotalSize?: number;
 
-    readonly JSONMaxBytes: number;
+    /**
+     * Maximum allowed size of a JSON request body (in bytes).
+     * Applies to standard GraphQL POST requests with application/json.
+     */
+    readonly JSONMaxBytes?: number;
+
+    /**
+     * Maximum allowed GraphQL query depth.
+     * Depth is measured by nested selection sets, not by number of fields.
+     * Helps prevent deeply nested queries that may cause excessive resolver work.
+     */
+    readonly maxGraphQLDepthLimit?: number;
+
+    /**
+     * Maximum allowed depth for introspection queries.
+     * Introspection fields (e.g., __schema, __type) can be restricted separately
+     * to reduce server load and limit schema exposure.
+     */
+    readonly maxGraphQLIntrospectionDepthLimit?: number;
+
+    /**
+     * Maximum allowed GraphQL query complexity score.
+     * Complexity is calculated based on field cost, nesting, and list multipliers.
+     * Helps prevent expensive queries that may overload the server.
+     */
+    readonly complexityLimit?: ComplexityLimitOptions;
+  }
+
+  export interface ComplexityLimitOptions {
+    /**
+     * Maximum allowed total complexity for a GraphQL operation.
+     */
+    maxComplexity: number;
+
+    /**
+     * Base cost for each field. Default: 1.
+     */
+    fieldCost?: number;
+
+    /**
+     * Argument names that represent list size (e.g. first, limit, take).
+     * These arguments multiply the field cost.
+     */
+    listArguments?: string[];
+
+    /**
+     * Default multiplier for list fields when no list argument is provided.
+     * Useful when list size is unknown but should be treated as expensive.
+     */
+    defaultListMultiplier?: number;
+
+    /**
+     * Additional cost applied to introspection fields (__schema, __type).
+     * Default: same as fieldCost.
+     */
+    introspectionCost?: number;
+
+    /**
+     * Maximum number of fields allowed inside a single selection set.
+     * Helps prevent extremely wide queries.
+     */
+    maxFieldsPerSelection?: number;
+
+    /**
+     * Callback invoked after complexity is calculated.
+     * Useful for logging or rate limiting.
+     */
+    onComplete?: (complexity: number) => void;
+
+    /**
+     * Custom error factory for overriding the default error message.
+     */
+    createError?: (max: number, actual: number) => GraphQLError;
   }
 
   export interface FilePayload {
@@ -706,9 +794,4 @@ declare module '@via-profit-services/core' {
    * ```
    */
   export const PageInfoType: GraphQLObjectType;
-
-  export const DEFAULT_PERSISTED_QUERY_KEY: string;
-  export const DEFAULT_MAX_FIELD_SIZE: number;
-  export const DEFAULT_MAX_FILE_SIZE: number;
-  export const DEFAULT_MAX_FILES: number;
 }

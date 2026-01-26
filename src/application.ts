@@ -28,6 +28,14 @@ import {
   DEFAULT_MAX_FILE_FIELDS,
   DEFAULT_MAX_FILE_PARTS,
   DEFAULT_MAX_FILE_TOTAL_SIZE,
+  DEFAULT_MAX_GRAPHQL_DEPTH_LIMIT,
+  DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIMIT,
+  DEFAULT_MAX_GRAPHQL_INTROSPECTION_DEPTH_LIMIT,
+  DEFAULT_MAX_GRAPHQL_COMPLEXITY_FIELD_COST,
+  DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIST_ARGUMENTS,
+  DEFAULT_MAX_GRAPHQL_COMPLEXITY_DEFAULT_LIST_MULTIPLIER,
+  DEFAULT_MAX_GRAPHQL_COMPLEXITY_INTROSPECTION_COST,
+  DEFAULT_MAX_GRAPHQL_COMPLEXITY_MAX_FIELDS_PER_SELECTION,
 } from './constants';
 
 import bodyParser, { parseGraphQLParams } from './utils/body-parser';
@@ -35,14 +43,18 @@ import composeMiddlewares from './utils/compose-middlewares';
 import applyMiddlewares from './utils/apply-middlewares';
 import formatErrors from './utils/format-errors';
 import ServerError from './server-error';
+import depthLimitRule from './utils/depth-limit-rule';
+import complexityLimit from './utils/сomplexity-limit-rule';
 
 const applicationFactory: ApplicationFactory = props => {
-  const config: Configuration = {
+  const {limits, ...restProps} = props;
+  const config: NonNullable<Configuration> = {
     middleware: [],
     debug: false,
     rootValue: undefined,
     persistedQueriesMap: undefined,
     persistedQueryKey: DEFAULT_PERSISTED_QUERY_KEY,
+
     limits: {
       maxFieldSize: DEFAULT_MAX_FIELD_SIZE,
       maxFileSize: DEFAULT_MAX_FILE_SIZE,
@@ -51,10 +63,28 @@ const applicationFactory: ApplicationFactory = props => {
       maxFileParts: DEFAULT_MAX_FILE_PARTS,
       JSONMaxBytes: DEFAULT_JSON_MAX_BYTES,
       maxFilesTotalSize: DEFAULT_MAX_FILE_TOTAL_SIZE,
+
+      maxGraphQLDepthLimit: DEFAULT_MAX_GRAPHQL_DEPTH_LIMIT,
+      maxGraphQLIntrospectionDepthLimit: DEFAULT_MAX_GRAPHQL_INTROSPECTION_DEPTH_LIMIT,
+
+      complexityLimit: {
+        maxComplexity: DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIMIT,
+        fieldCost: DEFAULT_MAX_GRAPHQL_COMPLEXITY_FIELD_COST,
+        listArguments: DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIST_ARGUMENTS,
+        defaultListMultiplier: DEFAULT_MAX_GRAPHQL_COMPLEXITY_DEFAULT_LIST_MULTIPLIER,
+        introspectionCost: DEFAULT_MAX_GRAPHQL_COMPLEXITY_INTROSPECTION_COST,
+        maxFieldsPerSelection: DEFAULT_MAX_GRAPHQL_COMPLEXITY_MAX_FIELDS_PER_SELECTION,
+
+        // override defaults with user-provided values
+        ...props.limits?.complexityLimit,
+      },
+
+      // override top-level limits (but not nested complexityLimit)
       ...props.limits,
     },
-    ...props,
+    ...restProps,
   };
+
 
   const { middleware, rootValue, debug, schema } = config;
 
@@ -72,6 +102,25 @@ const applicationFactory: ApplicationFactory = props => {
   };
 
   const validationRule: ValidationRule[] = [];
+
+  if (config.limits.maxGraphQLDepthLimit) {
+    validationRule.push(
+      depthLimitRule({
+        maxDepth: config.limits.maxGraphQLDepthLimit,
+        maxIntrospectionDepth: config.limits.maxGraphQLDepthLimit, // или другое значение
+      }),
+    );
+  }
+
+  if (config.limits.complexityLimit) {
+    validationRule.push(
+      complexityLimit({
+        maxComplexity: config.limits.complexityLimit.maxComplexity,
+        fieldCost: config.limits.complexityLimit.fieldCost,
+        listArguments: ['first', 'limit', 'take', 'pageSize', 'size'],
+      }),
+    );
+  }
 
   const httpListener: HTTPListener = async (request, response) => {
     const startTime = performance.now();
