@@ -2,6 +2,7 @@ import http from 'node:http';
 import type { GraphQLSchema } from 'graphql';
 
 import { graphqlHTTPFactory } from '../index';
+import { Limits } from '@via-profit-services/core';
 
 /**
  * Start the GraphQL server\
@@ -31,6 +32,7 @@ type ConfigTestOptions = {
   schema: GraphQLSchema;
   port: number;
   endpoint: string;
+  limits?: Limits;
 };
 
 /**
@@ -41,13 +43,15 @@ type ConfigTest = (options: ConfigTestOptions) => {
   stopServer: StopServer;
 };
 
+
+
 const configTest: ConfigTest = options => {
   const server = http.createServer();
-  const { schema, port } = options;
+  const { schema, port, limits } = options;
 
   const startServer = async () =>
     new Promise<void>(resolve => {
-      const graphqlHTTP = graphqlHTTPFactory({ schema });
+      const graphqlHTTP = graphqlHTTPFactory({ schema, limits, });
       server.on('request', async (req, res) => {
         if (!['POST', 'GET'].includes(req.method)) {
           res.end();
@@ -56,7 +60,7 @@ const configTest: ConfigTest = options => {
         }
 
         const data = await graphqlHTTP(req, res);
-        res.statusCode = 200;
+        res.statusCode = data.errors ? 400 : 200;
         res.setHeader('Content-Type', 'application/json');
         res.write(JSON.stringify(data));
         res.end();
