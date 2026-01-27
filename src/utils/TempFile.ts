@@ -16,6 +16,10 @@ export class TempFile {
 
     this.filePath = path.join(dir, filename);
     this.writeStream = fs.createWriteStream(this.filePath);
+
+    this.writeStream.on('error', () => {
+      // ignore, cleanup will handle it
+    });
   }
 
   write(chunk: Buffer) {
@@ -27,10 +31,22 @@ export class TempFile {
 
   end() {
     return new Promise<void>(resolve => {
-      this.writeStream.end(() => {
+      const ws = this.writeStream;
+
+      const onClose = () => {
+        ws.removeListener('error', onError);
         this.closed = true;
         resolve();
-      });
+      };
+
+      const onError = () => {
+        // игнорируем, cleanup всё удалит
+      };
+
+      ws.once('close', onClose);
+      ws.on('error', onError);
+
+      ws.end();
     });
   }
 
@@ -38,15 +54,34 @@ export class TempFile {
     if (!this.closed) {
       throw new Error('Cannot create read stream before file is closed');
     }
-    return fs.createReadStream(this.filePath);
+
+    const stream = fs.createReadStream(this.filePath);
+
+    stream.on('error', err => {
+      if ('code' in err && err.code === 'ENOENT') {
+        // файл уже удалён — просто тихо гасим поток
+        stream.destroy();
+        return;
+      }
+
+      // остальные ошибки по-прежнему можно логировать или гасить
+      stream.destroy();
+    });
+
+    return stream;
   }
 
   cleanup() {
     try {
       fs.unlinkSync(this.filePath);
+    } catch {
+      // do nothing
+    }
+
+    try {
       fs.rmdirSync(path.dirname(this.filePath));
     } catch {
-      // ignore
+      // do nothing
     }
   }
 }

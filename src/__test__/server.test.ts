@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import http from 'node:http';
 import { URL } from 'node:url';
 
-import configTest from './config-test';
+import configTest, { sendGraphQLRequest } from './config-test';
 import schema from './schema';
 
 const port = 8083;
@@ -48,62 +48,27 @@ describe('Graphql server', () => {
     });
   });
 
-
-  test('POST request with Content-Type headers should be passed successfully', done => {
-    const req = http.request({
+  test('POST request with Content-Type headers should be passed successfully', async () => {
+    const { status, parsedBody, headers } = await sendGraphQLRequest({
       port,
-      path: endpoint,
-      hostname: 'localhost',
-      method: 'POST',
+      endpoint,
+      body: JSON.stringify({
+        query: 'query {getFourAsString, getFourAsNumber}',
+        variables: {},
+      }),
       headers: {
         'Content-Type': 'application/json',
       },
     });
 
-    req.on('response', res => {
-      const buffers: Buffer[] = [];
-
-      res.on('data', chunk => buffers.push(chunk));
-
-      res.on('end', () => {
-        const response = Buffer.concat(buffers).toString();
-
-        let parsed;
-        try {
-          parsed = JSON.parse(response);
-        } catch (err) {
-          return done(err);
-        }
-
-        const { data, errors } = parsed;
-
-        try {
-          expect(res.statusCode).toBe(200);
-          expect(res.headers['content-type']).toBe('application/json');
-          expect(errors).toBeUndefined();
-          expect(data.getFourAsString).toBe('four');
-          expect(data.getFourAsNumber).toBe(4);
-          done();
-        } catch (err) {
-          done(err);
-        }
-      });
-
-      res.on('error', err => done(err));
+    expect(status).toBe(200);
+    expect(headers['content-type']).toBe('application/json');
+    expect(parsedBody.errors).toBeUndefined();
+    expect(parsedBody.data).toMatchObject({
+      getFourAsString: 'four',
+      getFourAsNumber: 4,
     });
-
-    req.on('error', err => done(err));
-
-    req.write(
-      JSON.stringify({
-        query: 'query {getFourAsString, getFourAsNumber}',
-        variables: {},
-      }),
-    );
-
-    req.end();
   });
-
 
   test('GET request with wrong query string params should be broken', done => {
     const url = new URL(
@@ -151,8 +116,6 @@ describe('Graphql server', () => {
 
     req.on('error', err => done(err));
   });
-
-
 
   test('POST request without Content-Type headers should be braking', done => {
     const req = http.request({
@@ -211,7 +174,6 @@ describe('Graphql server', () => {
     req.end();
   });
 
-
   test('POST request with OPTIONAL method should be skipped', done => {
     const req = http.request({
       port,
@@ -246,7 +208,6 @@ describe('Graphql server', () => {
     // ВАЖНО: никаких request.write() для OPTIONS
     req.end();
   });
-
 
   test('Echo mutation should returns passed string', done => {
     const req = http.request({
@@ -383,5 +344,4 @@ describe('Graphql server', () => {
     req.write(body);
     req.end();
   });
-
 });

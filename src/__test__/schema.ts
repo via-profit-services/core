@@ -138,6 +138,10 @@ const UploadedFilePayload = new GraphQLObjectType({
 const Query = new GraphQLObjectType({
   name: 'Query',
   fields: {
+    ping: {
+      type: new GraphQLNonNull(GraphQLString),
+      resolve: () => 'pong',
+    },
     getFourAsString: {
       type: new GraphQLNonNull(GraphQLString),
       resolve: () => 'four',
