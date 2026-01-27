@@ -6,6 +6,7 @@ import type {
   ApplicationFactory,
   HTTPListener,
   CoreStats,
+  RequiredDeep,
 } from '@via-profit-services/core';
 import {
   validateSchema,
@@ -35,7 +36,8 @@ import {
   DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIST_ARGUMENTS,
   DEFAULT_MAX_GRAPHQL_COMPLEXITY_DEFAULT_LIST_MULTIPLIER,
   DEFAULT_MAX_GRAPHQL_COMPLEXITY_INTROSPECTION_COST,
-  DEFAULT_MAX_GRAPHQL_COMPLEXITY_MAX_FIELDS_PER_SELECTION, DEFAULT_JSON_DECOMPRESSED_MAX_BYTES,
+  DEFAULT_MAX_GRAPHQL_COMPLEXITY_MAX_FIELDS_PER_SELECTION,
+  DEFAULT_JSON_DECOMPRESSED_MAX_BYTES,
 } from './constants';
 
 import bodyParser, { parseGraphQLParams } from './utils/body-parser';
@@ -47,27 +49,26 @@ import depthLimitRule from './utils/depth-limit-rule';
 import complexityLimit from './utils/сomplexity-limit-rule';
 
 const applicationFactory: ApplicationFactory = props => {
-  const {limits, ...restProps} = props;
-  const config: NonNullable<Configuration> = {
+  const config: Configuration = {
     middleware: [],
     debug: false,
     rootValue: undefined,
     persistedQueriesMap: undefined,
     persistedQueryKey: DEFAULT_PERSISTED_QUERY_KEY,
-
+    ...props,
     limits: {
       maxFieldSize: DEFAULT_MAX_FIELD_SIZE,
       maxFileSize: DEFAULT_MAX_FILE_SIZE,
+      maxFilesTotalSize: DEFAULT_MAX_FILE_TOTAL_SIZE,
       maxFiles: DEFAULT_MAX_FILES,
       maxFileFields: DEFAULT_MAX_FILE_FIELDS,
       maxFileParts: DEFAULT_MAX_FILE_PARTS,
       maxJSONBodySize: DEFAULT_JSON_MAX_BYTES,
       maxJSONBodyDecompressedSize: DEFAULT_JSON_DECOMPRESSED_MAX_BYTES,
-      maxFilesTotalSize: DEFAULT_MAX_FILE_TOTAL_SIZE,
 
       maxGraphQLDepthLimit: DEFAULT_MAX_GRAPHQL_DEPTH_LIMIT,
       maxGraphQLIntrospectionDepthLimit: DEFAULT_MAX_GRAPHQL_INTROSPECTION_DEPTH_LIMIT,
-
+      ...props.limits,
       complexityLimit: {
         maxComplexity: DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIMIT,
         fieldCost: DEFAULT_MAX_GRAPHQL_COMPLEXITY_FIELD_COST,
@@ -75,17 +76,10 @@ const applicationFactory: ApplicationFactory = props => {
         defaultListMultiplier: DEFAULT_MAX_GRAPHQL_COMPLEXITY_DEFAULT_LIST_MULTIPLIER,
         introspectionCost: DEFAULT_MAX_GRAPHQL_COMPLEXITY_INTROSPECTION_COST,
         maxFieldsPerSelection: DEFAULT_MAX_GRAPHQL_COMPLEXITY_MAX_FIELDS_PER_SELECTION,
-
-        // override defaults with user-provided values
         ...props.limits?.complexityLimit,
       },
-
-      // override top-level limits (but not nested complexityLimit)
-      ...props.limits,
     },
-    ...restProps,
   };
-
 
   const { middleware, rootValue, debug, schema } = config;
 

@@ -6,7 +6,7 @@ import { URL } from 'node:url';
 import configTest, { sendGraphQLRequest } from './config-test';
 import schema from './schema';
 
-const port = 8083;
+const port = 8082;
 const endpoint = '/graphql';
 const { startServer, stopServer } = configTest({ schema, port, endpoint });
 
@@ -326,9 +326,10 @@ describe('Graphql server', () => {
         const { data, errors } = parsed;
 
         try {
+
+          expect(errors).toBeUndefined();
           expect(res.statusCode).toBe(200);
           expect(res.headers['content-type']).toBe('application/json');
-          expect(errors).toBeUndefined();
           expect(data.uploadFiles[0].mimeType).toBe('image/jpeg');
           done();
         } catch (err) {

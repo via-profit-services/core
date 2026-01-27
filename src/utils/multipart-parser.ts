@@ -1,10 +1,10 @@
 import type { RequestBody, MultipartParser } from '@via-profit-services/core';
-import busboy from 'busboy';
 
 import FileUploadInstance from './FileUploadInstance';
 import dotNotationSet from './set';
 import { DEFAULT_PERSISTED_QUERY_KEY } from '../constants';
 import { TempFile } from './TempFile';
+import { Multipart } from './Multipart';
 
 const validateMapPath = (obj: any, path: string): boolean => {
   const parts = path.split('.');
@@ -18,38 +18,14 @@ const validateMapPath = (obj: any, path: string): boolean => {
   }
 
   return true;
-}
-
+};
 
 const multipartParser: MultipartParser = ({ request, config }) =>
   new Promise<RequestBody>((resolve, reject) => {
     const { persistedQueryKey, persistedQueriesMap, limits } = config;
-    const { maxFieldSize, maxFileSize, maxFiles, maxFileFields, maxFileParts, maxFilesTotalSize } =
+    const { maxFieldSize, maxFileSize, maxFiles, maxFilesTotalSize } =
       limits;
     const { headers } = request;
-
-    const parser = busboy({
-      headers: {
-        'content-type': 'multipart/form-data',
-        ...headers,
-      },
-      limits: {
-        fields: maxFileFields,
-        fieldSize: maxFieldSize,
-        fileSize: maxFileSize,
-        files: maxFiles,
-        parts: maxFileParts,
-      },
-    });
-
-    request.on('close', () => {
-      parser.destroy(new Error('Request closed unexpectedly'));
-    });
-
-    const map = new Map<number, FileUploadInstance>();
-    const operations: RequestBody = {};
-    let totalSize = 0;
-
 
     let finished = false;
     const safeReject = (err: any) => {
@@ -66,6 +42,24 @@ const multipartParser: MultipartParser = ({ request, config }) =>
       finished = true;
       resolve(value);
     };
+
+    if (!headers?.['content-type']?.includes('multipart/form-data')) {
+      safeReject('Invalid content-type for multipart');
+      return;
+    }
+
+    const parser = new Multipart({
+      headers,
+      limits,
+    });
+
+    request.on('close', () => {
+      parser.destroy(new Error('Request closed unexpectedly'));
+    });
+
+    const map = new Map<number, FileUploadInstance>();
+    const operations: RequestBody = {};
+    let totalSize = 0;
 
     // FIELD PARSER
     let operationsReceived = false;
@@ -198,7 +192,7 @@ const multipartParser: MultipartParser = ({ request, config }) =>
     });
 
     request.on('aborted', () => {
-      parser.destroy(new Error('Request aborted by the client'));
+      parser.emit('error', new Error('Request aborted by client'));
     });
 
     // FILE PARSER
@@ -223,7 +217,7 @@ const multipartParser: MultipartParser = ({ request, config }) =>
       const temp = new TempFile();
 
       // TOTAL SIZE LIMIT CHECK
-      stream.on('data', chunk => {
+      stream.on('data', (chunk: Buffer) => {
         totalSize += chunk.length;
 
         if (totalSize > maxFilesTotalSize) {
@@ -247,7 +241,7 @@ const multipartParser: MultipartParser = ({ request, config }) =>
         stream.unpipe();
       });
 
-      stream.on('data', chunk => temp.write(chunk));
+      stream.on('data', (chunk: Buffer) => temp.write(chunk));
       stream.on('end', async () => {
         await temp.end();
         upload.resolve({
@@ -258,13 +252,6 @@ const multipartParser: MultipartParser = ({ request, config }) =>
           cleanup: () => temp.cleanup(),
         });
       });
-    });
-
-    // FILES LIMIT PARSER
-    parser.once('filesLimit', () => {
-      safeReject(`${Infinity} max file uploads exceeded.`);
-
-      return;
     });
 
     // FINISH PARSER
@@ -301,3 +288,5 @@ const multipartParser: MultipartParser = ({ request, config }) =>
   });
 
 export default multipartParser;
+
+const CRLF = Buffer.from('\r\n');

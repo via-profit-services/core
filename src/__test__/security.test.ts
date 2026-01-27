@@ -40,36 +40,6 @@ afterAll(async () => {
   await stopServer();
 });
 
-//
-// // Helper to send HTTP requests
-// function send(body: Buffer | string, headers: Record<string, string>) {
-//   return new Promise<{ status: number; body: string }>((resolve, reject) => {
-//     const req = http.request(
-//       {
-//         method: 'POST',
-//         port,
-//         path: endpoint,
-//         headers: {
-//           'content-length': Buffer.byteLength(body),
-//           ...headers,
-//         },
-//       },
-//       res => {
-//         const chunks: Buffer[] = [];
-//         res.on('data', c => chunks.push(c));
-//         res.on('end', () =>
-//           resolve({
-//             status: res.statusCode || 0,
-//             body: Buffer.concat(chunks).toString(),
-//           }),
-//         );
-//       },
-//     );
-//     req.on('error', reject);
-//     req.write(body);
-//     req.end();
-//   });
-// }
 
 // Helper to build multipart bodies
 function mp(boundary: string, parts: Array<{ headers: string[]; body: string | Buffer }>) {

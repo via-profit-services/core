@@ -73,7 +73,7 @@ declare module '@via-profit-services/core' {
   export interface Limits {
     /**
      * Maximum allowed size of a non-file field value in multipart/form-data (in bytes).
-     * This applies to fields like "operations" and "map" when using Busboy.
+     * This applies to fields like "operations" and "map" when using multipart parser.
      * Helps prevent oversized JSON payloads inside multipart requests.
      */
     readonly maxFieldSize?: number;
@@ -417,7 +417,12 @@ declare module '@via-profit-services/core' {
 
   export type Middleware = (props: MiddlewareProps) => MaybePromise<void>;
 
-  export type Configuration = Required<InitProps>;
+  type RequiredDeep<T> = {
+    [K in keyof T]-?: RequiredDeep<T[K]>;
+  };
+
+
+  export type Configuration = InitProps;
 
   /**
    * GraphQL Cursor connection
