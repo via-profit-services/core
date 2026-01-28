@@ -5,6 +5,8 @@
 `@via-profit-services/core` представляет собой минималистичное, производительное и расширяемое серверное ядро GraphQL.
 Оно включает поддержку multipart-загрузок, Persisted Queries, систему middleware.
 
+## Документация --> [Здесь](./docs/introduction.md)
+
 ## Установка
 
 ```

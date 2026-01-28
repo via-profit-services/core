@@ -16,7 +16,7 @@ Suppose we need to create an api that can return a list of users. We also need t
 
 If you want to use pagination by cursors, then the sequence of actions should be as follows: First you apply some sort of selection filter, sorting, and anything else. You can specify how many elements you want to get, but you can't pass cursors (**after** or **before**) in the first request. When you get the first selection result, you will get access to the cursors. To move back and forth through the pages, you have to pass only two parameters: the cursor (**after** or **before**) and the number of results (**first** or **last**). The thing is that cursor-based pagination assumes that when you move through pages, you cannot change their order and total number. That is why all filters and sorting are applied once at the first request.
 
-![GraphQL connections](../assets/connections.png)
+![GraphQL connections](../../assets/connections.png)
 
 According to the graphQL paradigm, first we have to declare the scheme:
 
@@ -57,7 +57,7 @@ type UserEdge implements Edge {
 }
 ```
 
-When you create your own scheme, according to the `SDL` proposed above, you will need to create such types as: **OrderDirection**, **Connection**, **PageInfo**, **Edge**, **Node**, etc. You can use the ready-made graphql scalar types available in the Core (see: [Scalars](./scalars.md)).
+When you create your own scheme, according to the `SDL` proposed above, you will need to create such types as: **OrderDirection**, **Connection**, **PageInfo**, **Edge**, **Node**, etc. You can use the ready-made graphql scalar types available in the Core (see: [Scalars](scalars.md)).
 
 As you can see, the field `users` of type `Query` has the following set of arguments:
 

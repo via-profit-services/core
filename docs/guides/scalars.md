@@ -117,7 +117,7 @@ type User {
 
 ### Node
 
-The `Node` **interface** is used to declare a type that must have an `ID`. Node is also used in connections [connections](./connections.md)
+The `Node` **interface** is used to declare a type that must have an `ID`. Node is also used in connections [connections](connections.md)
 
 According to the specification, the Node must contain at least an `id` field with the `ID!` type
 
@@ -149,7 +149,7 @@ export default MyNode;
 
 ### Edge
 
-The `Edge` **interface** is used to declare [connections](./connections.md). Each edge must contain a key `node` and `cursor`. (see [Connection spec.](https://relay.dev/graphql/connections.htm) for more details).
+The `Edge` **interface** is used to declare [connections](connections.md). Each edge must contain a key `node` and `cursor`. (see [Connection spec.](https://relay.dev/graphql/connections.htm) for more details).
 According to the specification, the Edge must contain at least an `cursor` field with the type of `String!` and the `node` field with type of your Node.
 
 Interface implements the SDL:
@@ -183,7 +183,7 @@ export default MyEdge;
 
 ### Connection
 
-The `Connection` **interface** is used to declare connections. more info - [connections](./connections.md). Each connection must contain a key `totalCount`, `pageInfo` and `edges` (see [Connection spec.](https://relay.dev/graphql/connections.htm) for more details).
+The `Connection` **interface** is used to declare connections. more info - [connections](connections.md). Each connection must contain a key `totalCount`, `pageInfo` and `edges` (see [Connection spec.](https://relay.dev/graphql/connections.htm) for more details).
 
 Interface implements the SDL:
 
