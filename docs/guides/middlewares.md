@@ -9,7 +9,7 @@
 
 ## Overview
 
-Middleware is a special function that allows you to expand the GraphQL [Context](./context.md) by adding new parameters into it, as well as performing GraphQL validation at the [ValidationRule](https://graphql.org/graphql-js/validation/). In addition, you can modify the current GraphQL scheme.
+Middleware is a special function that allows you to expand the GraphQL [Context](context.md) by adding new parameters into it, as well as performing GraphQL validation at the [ValidationRule](https://graphql.org/graphql-js/validation/). In addition, you can modify the current GraphQL scheme.
 
 Middleware factory function will be called on **every GraphQL request**. Keep it in mind. When calling function, it would passed a set of parameters which contains a current context value, current schema, http request and so on.
 

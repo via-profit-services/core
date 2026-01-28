@@ -19,4 +19,4 @@ According to the graphql spec, each resolver receives the following set of argum
 
 ## Extends Context
 
-To extend the `Context` and add your properties to it, you should use middlelevars. You can find more information on how to do this and examples in the [middleware documentation](./middlewares.md).
+To extend the `Context` and add your properties to it, you should use middlelevars. You can find more information on how to do this and examples in the [middleware documentation](middlewares.md).

@@ -2,6 +2,8 @@ import http from 'node:http';
 import type { GraphQLSchema } from 'graphql';
 
 import { graphqlHTTPFactory } from '../index';
+import { Limits } from '@via-profit-services/core';
+import { IncomingHttpHeaders } from 'http';
 
 /**
  * Start the GraphQL server\
@@ -31,6 +33,7 @@ type ConfigTestOptions = {
   schema: GraphQLSchema;
   port: number;
   endpoint: string;
+  limits?: Limits;
 };
 
 /**
@@ -43,11 +46,11 @@ type ConfigTest = (options: ConfigTestOptions) => {
 
 const configTest: ConfigTest = options => {
   const server = http.createServer();
-  const { schema, port } = options;
+  const { schema, port, limits } = options;
 
   const startServer = async () =>
     new Promise<void>(resolve => {
-      const graphqlHTTP = graphqlHTTPFactory({ schema });
+      const graphqlHTTP = graphqlHTTPFactory({ schema, limits });
       server.on('request', async (req, res) => {
         if (!['POST', 'GET'].includes(req.method)) {
           res.end();
@@ -56,7 +59,7 @@ const configTest: ConfigTest = options => {
         }
 
         const data = await graphqlHTTP(req, res);
-        res.statusCode = 200;
+        res.statusCode = data.errors ? 400 : 200;
         res.setHeader('Content-Type', 'application/json');
         res.write(JSON.stringify(data));
         res.end();
@@ -79,6 +82,64 @@ const configTest: ConfigTest = options => {
     });
 
   return { server, startServer, stopServer };
+};
+
+// Helper to send HTTP requests
+type SendGraphQLRequestProps = {
+  readonly port: number;
+  readonly endpoint: string;
+  readonly body: Buffer | string;
+  readonly headers: Record<string, string>;
+};
+
+type SendGraphQLRequestPayload = {
+  readonly status: number;
+  readonly body: string;
+  readonly headers?: IncomingHttpHeaders;
+  readonly parsedBody: {
+    readonly errors?: string[] | null;
+    readonly data?: unknown;
+  };
+};
+export const sendGraphQLRequest = (props: SendGraphQLRequestProps) => {
+  const { body, headers, port, endpoint } = props;
+  return new Promise<SendGraphQLRequestPayload>((resolve, reject) => {
+    const req = http.request(
+      {
+        method: 'POST',
+        port,
+        path: endpoint,
+        headers: {
+          'content-length': Buffer.byteLength(body),
+          ...headers,
+        },
+      },
+      res => {
+        const chunks: Buffer[] = [];
+        res.on('data', c => chunks.push(c));
+        res.on('end', () => {
+          const stringifyBody = Buffer.concat(chunks).toString();
+          let parsed;
+          try {
+            parsed = JSON.parse(stringifyBody);
+          } catch (e) {
+            parsed = {};
+            // do nothing
+          }
+
+          resolve({
+            headers: res.headers,
+            status: res.statusCode || 0,
+            body: stringifyBody,
+            parsedBody: parsed,
+          });
+        });
+      },
+    );
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
 };
 
 export default configTest;

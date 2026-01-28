@@ -1,36 +1,71 @@
 import type { RequestBody, MultipartParser } from '@via-profit-services/core';
-import busboy from 'busboy';
 
-import { WriteStream, ReadStreamOptions } from '../fs-capacitor';
 import FileUploadInstance from './FileUploadInstance';
 import dotNotationSet from './set';
 import { DEFAULT_PERSISTED_QUERY_KEY } from '../constants';
+import { TempFile } from './TempFile';
+import { Multipart } from './Multipart';
+
+const validateMapPath = (obj: any, path: string): boolean => {
+  const parts = path.split('.');
+  let current = obj;
+
+  for (const part of parts) {
+    if (current == null || typeof current !== 'object' || !(part in current)) {
+      return false;
+    }
+    current = current[part];
+  }
+
+  return true;
+};
 
 const multipartParser: MultipartParser = ({ request, config }) =>
   new Promise<RequestBody>((resolve, reject) => {
-    const { persistedQueryKey, persistedQueriesMap, maxFieldSize, maxFileSize, maxFiles } = config;
+    const { persistedQueryKey, persistedQueriesMap, limits } = config;
+    const { maxFieldSize, maxFileSize, maxFiles, maxFilesTotalSize } =
+      limits;
     const { headers } = request;
 
-    const parser = busboy({
-      headers: {
-        'content-type': 'multipart/form-data',
-        ...headers,
-      },
-      limits: {
-        fields: 2, // Only operations and map.
-        fieldSize: maxFieldSize,
-        fileSize: maxFileSize,
-        files: maxFiles,
-      },
+    let finished = false;
+    const safeReject = (err: any) => {
+      if (finished) {
+        return;
+      }
+      finished = true;
+      reject(err);
+    };
+    const safeResolve = (value: any) => {
+      if (finished) {
+        return;
+      }
+      finished = true;
+      resolve(value);
+    };
+
+    if (!headers?.['content-type']?.includes('multipart/form-data')) {
+      safeReject('Invalid content-type for multipart');
+      return;
+    }
+
+    const parser = new Multipart({
+      headers,
+      limits,
+    });
+
+    request.on('close', () => {
+      parser.destroy(new Error('Request closed unexpectedly'));
     });
 
     const map = new Map<number, FileUploadInstance>();
     const operations: RequestBody = {};
+    let totalSize = 0;
 
     // FIELD PARSER
+    let operationsReceived = false;
     parser.on('field', (fieldName, value, { valueTruncated }) => {
       if (valueTruncated) {
-        reject(
+        safeReject(
           `The «${fieldName}» multipart field value exceeds the ${maxFieldSize} byte size limit.`,
         );
 
@@ -38,19 +73,27 @@ const multipartParser: MultipartParser = ({ request, config }) =>
       }
 
       if (fieldName === 'operations') {
+        if (operationsReceived) {
+          safeReject('Multiple "operations" fields are not allowed.');
+          return;
+        }
+        operationsReceived = true;
+
         // try to parse operations field
         let parsed: any = {};
         try {
           parsed = JSON.parse(value);
         } catch (err) {
-          reject(`Invalid JSON in the «operations» multipart field. ${err instanceof Error ? err.message : 'Unknown Error'}`);
+          safeReject(
+            `Invalid JSON in the «operations» multipart field. ${err instanceof Error ? err.message : 'Unknown Error'}`,
+          );
 
           return;
         }
 
         // operations must be an object
         if (typeof parsed !== 'object') {
-          reject(`«operations» multipart field must be an object. Got ${typeof parsed}`);
+          safeReject(`«operations» multipart field must be an object. Got ${typeof parsed}`);
 
           return;
         }
@@ -80,7 +123,7 @@ const multipartParser: MultipartParser = ({ request, config }) =>
 
         // query must be a string
         if (typeof operations.query !== 'string') {
-          reject(
+          safeReject(
             [
               `«operations.query» multipart field must be a string. Got ${typeof operations.query}.`,
               `if you use PersistedQuery, then the request must contain a key, for example, «${DEFAULT_PERSISTED_QUERY_KEY}» containing the ID of the request stored on the server`,
@@ -91,7 +134,7 @@ const multipartParser: MultipartParser = ({ request, config }) =>
         }
 
         if (typeof operations.variables !== 'object') {
-          reject(
+          safeReject(
             `«operations.variables» multipart field must be an object. Got ${typeof operations.variables}`,
           );
 
@@ -105,20 +148,24 @@ const multipartParser: MultipartParser = ({ request, config }) =>
         try {
           mapData = JSON.parse(value);
         } catch (err) {
-          reject(`Invalid JSON in the «map» field. ${err instanceof Error ? err.message : 'Unknown Error'}`);
+          safeReject(
+            `Invalid JSON in the «map» field. ${err instanceof Error ? err.message : 'Unknown Error'}`,
+          );
 
           return;
         }
 
         if (Object.entries(mapData).length > maxFiles) {
-          reject(`${maxFiles} max file uploads exceeded.`);
+          safeReject(`${maxFiles} max file uploads exceeded.`);
 
           return;
         }
 
         Object.entries(mapData).forEach(([fieldName, paths]) => {
           if (!Array.isArray(paths)) {
-            reject(`Invalid type for the «map» multipart field entry key «${fieldName}» array.`);
+            safeReject(
+              `Invalid type for the «map» multipart field entry key «${fieldName}» array.`,
+            );
 
             return;
           }
@@ -127,10 +174,14 @@ const multipartParser: MultipartParser = ({ request, config }) =>
 
           paths.forEach((pathValue, pathIndex) => {
             if (typeof pathValue !== 'string') {
-              reject(
+              safeReject(
                 `Invalid type for the «map» multipart field entry key «${fieldName}» array index «${pathIndex}» value`,
               );
+              return;
+            }
 
+            if (!validateMapPath(operations, pathValue)) {
+              safeReject(`Invalid map path: «${pathValue}»`);
               return;
             }
 
@@ -140,85 +191,102 @@ const multipartParser: MultipartParser = ({ request, config }) =>
       }
     });
 
+    request.on('aborted', () => {
+      parser.emit('error', new Error('Request aborted by client'));
+    });
+
     // FILE PARSER
     parser.on('file', (fieldName, stream, { filename, mimeType, encoding }) => {
+      stream.on('error', () => {
+        safeReject(new Error('File stream error'));
+      });
       const upload = map.get(Number(fieldName));
 
       if (!upload) {
-        reject(`File from field «${fieldName}» are not registered in map field`);
+        safeReject(`File from field «${fieldName}» are not registered in map field`);
 
         return;
       }
 
       if (!upload?.resolve) {
-        reject(`File from field «${fieldName}» are not registered in map field`);
+        safeReject(`File from field «${fieldName}» are not registered in map field`);
 
         return;
       }
 
-      const capacitor = new WriteStream();
-      capacitor.on('error', () => {
-        stream.unpipe();
-        stream.resume();
+      const temp = new TempFile();
+
+      // TOTAL SIZE LIMIT CHECK
+      stream.on('data', (chunk: Buffer) => {
+        totalSize += chunk.length;
+
+        if (totalSize > maxFilesTotalSize) {
+          stream.unpipe();
+          stream.resume();
+
+          parser.emit(
+            'error',
+            new Error(`Total upload size exceeds the ${maxFilesTotalSize} byte limit.`),
+          );
+        }
       });
 
       stream.on('limit', () => {
-        reject(`File truncated as it exceeds the ${maxFileSize} byte size limit.`);
+        safeReject(`File truncated as it exceeds the ${maxFileSize} byte size limit.`);
 
         return;
       });
 
       stream.on('error', (_error: Error) => {
         stream.unpipe();
-        capacitor.destroy(new Error('Upload error'));
-        capacitor.destroy();
       });
 
-      const file: any = {
-        filename,
-        mimeType,
-        encoding,
-        capacitor,
-        createReadStream: (opt?: ReadStreamOptions) => capacitor.createReadStream(opt),
-      };
-
-      Object.defineProperty(file, 'capacitor', { value: capacitor });
-      stream.pipe(capacitor);
-      upload.resolve(file);
-    });
-
-    // FILES LIMIT PARSER
-    parser.once('filesLimit', () => {
-      reject(`${Infinity} max file uploads exceeded.`);
-
-      return;
+      stream.on('data', (chunk: Buffer) => temp.write(chunk));
+      stream.on('end', async () => {
+        await temp.end();
+        upload.resolve({
+          filename,
+          mimeType,
+          encoding,
+          createReadStream: () => temp.createReadStream(),
+          cleanup: () => temp.cleanup(),
+        });
+      });
     });
 
     // FINISH PARSER
     parser.once('finish', () => {
+      if (finished) {
+        return;
+      }
+
       request.unpipe(parser);
       request.resume();
 
       if (operations === null) {
-        reject('Missing multipart field «operations»');
+        safeReject('Missing multipart field «operations»');
 
         return;
       }
 
       if (!map.size) {
-        reject('Missing multipart field «map»');
+        safeReject('Missing multipart field «map»');
 
         return;
       }
 
-      resolve(operations);
+      safeResolve(operations);
     });
 
-    parser.once('error', (err: any) => {
-      reject(err);
+    parser.on('error', err => {
+      request.unpipe(parser);
+      request.resume();
+      safeReject(err);
     });
 
     request.pipe(parser);
   });
 
 export default multipartParser;
+
+const CRLF = Buffer.from('\r\n');

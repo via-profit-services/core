@@ -1,7 +1,6 @@
 import zlib from 'node:zlib';
 import http from 'node:http';
 import type { BodyParser, RequestBody, Configuration } from '@via-profit-services/core';
-import getRawBody from 'raw-body';
 
 import multipartParser from './multipart-parser';
 
@@ -24,7 +23,11 @@ const bodyParser: BodyParser = async ({ request, response, config }) => {
     }
   }
 
-  const rawBody = await readBody(request, { charset: 'utf-8' });
+  const rawBody = await readBody(request, {
+    charset: 'utf-8',
+    maxJSONBodySize: config.limits.maxJSONBodySize,
+    maxDecompressedSize: config.limits.maxJSONBodyDecompressedSize,
+  });
 
   if (JSONOBJREGEX.test(rawBody)) {
     try {
@@ -114,31 +117,75 @@ const decompressBody = (request: http.IncomingMessage, encoding: string) => {
   }
 };
 
-const readBody = async (
-  request: http.IncomingMessage,
-  opts: { charset: string },
-): Promise<string> => {
-  const { charset } = opts;
+type ReadBodyOptions = {
+  readonly charset: BufferEncoding;
+  readonly maxJSONBodySize: number;
+  readonly maxDecompressedSize: number;
+};
+const readBody = async (request: http.IncomingMessage, opts: ReadBodyOptions): Promise<string> => {
+  const { charset, maxJSONBodySize, maxDecompressedSize } = opts;
+
   if (!charset.startsWith('utf-')) {
     throw new Error(`Unsupported charset "${charset.toUpperCase()}".`);
   }
+
   const contentEncoding = request.headers['content-encoding'];
   const encoding = typeof contentEncoding === 'string' ? contentEncoding.toLowerCase() : 'identity';
-  const length = encoding === 'identity' ? request.headers['content-length'] : null;
+
+  const contentLengthHeader = request.headers['content-length'];
+  const contentLength =
+    encoding === 'identity' && typeof contentLengthHeader === 'string'
+      ? Number(contentLengthHeader)
+      : null;
+
+  if (contentLength !== null && contentLength > maxJSONBodySize) {
+    throw new Error(`Request body exceeds maximum allowed size of ${maxJSONBodySize} bytes.`);
+  }
+
   const stream = decompressBody(request, encoding);
 
-  try {
-    const body = await getRawBody(stream, {
-      encoding: charset,
-      length,
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    let received = 0;
+
+    stream.on('data', chunk => {
+      received += chunk.length;
+
+      // Проверка лимита декомпрессированного тела
+      if (received > maxDecompressedSize) {
+        reject(
+          new Error(
+            `Decompressed body exceeds maximum allowed size of ${maxDecompressedSize} bytes.`,
+          ),
+        );
+        stream.destroy();
+        return;
+      }
+
+      chunks.push(chunk);
     });
 
-    return body;
-  } catch (err) {
-    throw new Error(
-      `Failed to parse body. ${err instanceof Error ? err.message : 'Unknown Error'}`,
-    );
-  }
+    stream.on('end', () => {
+      try {
+        const buffer = Buffer.concat(chunks);
+
+        // Проверка лимита исходного тела (identity)
+        if (encoding === 'identity' && buffer.length > maxJSONBodySize) {
+          return reject(
+            new Error(`Request body exceeds maximum allowed size of ${maxJSONBodySize} bytes.`),
+          );
+        }
+
+        resolve(buffer.toString(charset));
+      } catch (err) {
+        reject(err);
+      }
+    });
+
+    stream.on('error', err => {
+      reject(new Error(`Failed to read body: ${err instanceof Error ? err.message : err}`));
+    });
+  });
 };
 
 export default bodyParser;

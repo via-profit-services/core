@@ -24,12 +24,7 @@
 
 First of all you should install some peer dependencies and install the core:
 
-- [Busboy](https://github.com/mscdex/busboy) - A streaming parser for HTML form data for Node. Used for the files upload
 - [GraphQL](https://github.com/graphql/graphql-js) - The JavaScript reference implementation for GraphQL
-
-```bash
-$ npm install busboy graphql @via-profit-services/core
-```
 
 ## Simple GraphQL server
 
