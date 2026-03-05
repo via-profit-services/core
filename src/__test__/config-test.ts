@@ -97,8 +97,10 @@ type SendGraphQLRequestPayload = {
   readonly body: string;
   readonly headers?: IncomingHttpHeaders;
   readonly parsedBody: {
-    readonly errors?: string[] | null;
-    readonly data?: unknown;
+    readonly errors?: {
+      readonly message: string;
+    } | null;
+    readonly data?: any;
   };
 };
 export const sendGraphQLRequest = (props: SendGraphQLRequestProps) => {

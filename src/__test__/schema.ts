@@ -7,11 +7,12 @@ import {
   GraphQLObjectType,
   GraphQLSchema,
   GraphQLString,
+  GraphQLFieldConfigMap,
+  GraphQLID,
 } from 'graphql';
 
 import type { UploadedFile } from '@via-profit-services/core';
-import { FileUploadScalarType } from '../index';
-import { GraphQLFieldConfigMap, GraphQLID } from 'graphql/index';
+import { FileUploadScalarType, DateTimeScalarType } from '../index';
 
 
 type UserType = {
@@ -138,6 +139,13 @@ const UploadedFilePayload = new GraphQLObjectType({
 const Query = new GraphQLObjectType({
   name: 'Query',
   fields: {
+    echoDateTime: {
+      args: {
+        dt: { type: new GraphQLNonNull(DateTimeScalarType) },
+      },
+      type: new GraphQLNonNull(DateTimeScalarType),
+      resolve: (_, { dt }) => dt,
+    },
     ping: {
       type: new GraphQLNonNull(GraphQLString),
       resolve: () => 'pong',

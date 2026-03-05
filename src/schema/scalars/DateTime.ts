@@ -1,73 +1,75 @@
 import { Kind, GraphQLError, GraphQLScalarType } from 'graphql';
 
-export default new GraphQLScalarType({
-  name: 'DateTime',
-  description: 'Analogue of Date object',
+// ISO-8601 строго в UTC
+const ISO_UTC_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;
 
-  serialize(value) {
-    if (!(value instanceof Date) && typeof value !== 'string' && typeof value !== 'number') {
-      throw new TypeError(
-        `Value is not an instance of Date, Date string or number: ${JSON.stringify(value)}`,
-      );
-    }
-
-    if (typeof value === 'string') {
-      const date = new Date();
-      date.setTime(Date.parse(value));
-      if (Number.isNaN(date.getTime())) {
-        throw new TypeError(`Value is not a valid Date: ${JSON.stringify(date)}`);
-      }
-
-      return date.toJSON();
-    }
-
-    if (typeof value === 'number') {
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) {
-        throw new TypeError(`Value is not a valid Date: ${JSON.stringify(date)}`);
-      }
-
-      return date.toJSON();
-    }
-
+function parseDate(value: unknown): Date {
+  if (value instanceof Date) {
     if (Number.isNaN(value.getTime())) {
-      throw new TypeError(`Value is not a valid Date: ${JSON.stringify(value)}`);
+      throw new TypeError(`Invalid Date object: ${value}`);
     }
+    return value;
+  }
 
-    return value.toJSON();
-  },
-
-  parseValue(value) {
-    if (!(value instanceof Date) && typeof value !== 'string' && typeof value !== 'number') {
-      throw new TypeError(
-        `Value is not an instance of Date, Date string or number: ${JSON.stringify(value)}`,
-      );
+  // ISO-UTC only
+  if (typeof value === 'string') {
+    if (!ISO_UTC_REGEX.test(value)) {
+      throw new TypeError(`Date string must be ISO-UTC (YYYY-MM-DDTHH:mm:ss.sssZ): ${value}`);
     }
 
     const date = new Date(value);
-
     if (Number.isNaN(date.getTime())) {
-      throw new TypeError(`Value is not a valid Date: ${value}`);
+      throw new TypeError(`Invalid ISO-UTC date: ${value}`);
+    }
+    return date;
+  }
+
+  // timestamp in milliseconds
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) {
+      throw new TypeError(`Date number must be finite: ${value}`);
+    }
+
+    // Проверка: timestamp должен быть в миллисекундах
+    if (value < 1e12) {
+      throw new TypeError(`Invalid timestamp: ${value}. Expected milliseconds.`);
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      throw new TypeError(`Invalid timestamp: ${value}`);
     }
 
     return date;
+  }
+
+
+  throw new TypeError(`Value must be Date, ISO-UTC string, or timestamp: ${JSON.stringify(value)}`);
+}
+
+export default new GraphQLScalarType<Date, string>({
+  name: 'DateTime',
+  description:
+    'DateTime ISO-UTC',
+
+  serialize(value) {
+    const date = parseDate(value);
+    return date.toISOString(); // always UTC
+  },
+
+  parseValue(value) {
+    return parseDate(value);
   },
 
   parseLiteral(ast) {
-    if (ast.kind !== Kind.STRING && ast.kind !== Kind.INT) {
-      throw new GraphQLError(
-        `Can only parse strings & integers to dates but got a: ${ast.kind}`,
-        {},
-      );
+    if (ast.kind === Kind.STRING) {
+      return parseDate(ast.value);
     }
 
-    const result = new Date(ast.kind === Kind.INT ? Number(ast.value) : ast.value);
-
-     
-    if (Number.isNaN(result.getTime())) {
-      throw new GraphQLError(`Value is not a valid Date: ${ast.value}`, {});
+    if (ast.kind === Kind.INT) {
+      return parseDate(Number(ast.value));
     }
 
-    return result;
+    throw new GraphQLError(`DateTime must be a string or integer, got: ${ast.kind}`);
   },
 });
