@@ -19,7 +19,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git@github.com:via-profit-services/core.git"
+        "url": "git+ssh://git@github.com/via-profit-services/core.git"
     },
     "author": {
         "name": "Via Profit",
