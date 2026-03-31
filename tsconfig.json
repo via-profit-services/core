@@ -1,10 +1,12 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "ESNext",
     "target": "ES2022",
+    "lib": ["ES2022"],
     "allowSyntheticDefaultImports": true,
     "baseUrl": "./src",
     "declaration": false,
+    "declarationDir": "./dist",
     "esModuleInterop": true,
     "moduleResolution": "node",
     "noImplicitAny": true,
@@ -12,9 +14,12 @@
     "outDir": "./dist",
     "resolveJsonModule": true,
     "rootDir": "./src",
-    "sourceMap": true,
-    "types": ["node", "jest"]
+    "sourceMap": false,
+    "types": ["node", "jest"],
+    "skipLibCheck": true,
+    "strict": true,
+    "emitDeclarationOnly": false
   },
-  "exclude": ["src/**/*.spec.ts", "./dist"],
+  "exclude": ["src/**/*.spec.ts", "src/playground/**/*", "./dist", "./build"],
   "include": ["src/**/*"]
 }

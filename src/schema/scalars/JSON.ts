@@ -66,5 +66,5 @@ export const JSONObject = new GraphQLScalarType({
     'The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).',
   serialize: ensureObject,
   parseValue: ensureObject,
-  parseLiteral: parseObject,
+  parseLiteral:  (ast, variables) => parseLiteral(ast, variables),
 });

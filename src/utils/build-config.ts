@@ -1,0 +1,56 @@
+import { GraphQLSchema } from 'graphql';
+import {
+  DEFAULT_PERSISTED_QUERY_KEY,
+  DEFAULT_MAX_FIELD_SIZE,
+  DEFAULT_MAX_FILES,
+  DEFAULT_MAX_FILE_SIZE,
+  DEFAULT_JSON_MAX_BYTES,
+  DEFAULT_MAX_FILE_FIELDS,
+  DEFAULT_MAX_FILE_PARTS,
+  DEFAULT_MAX_FILE_TOTAL_SIZE,
+  DEFAULT_MAX_GRAPHQL_DEPTH_LIMIT,
+  DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIMIT,
+  DEFAULT_MAX_GRAPHQL_INTROSPECTION_DEPTH_LIMIT,
+  DEFAULT_MAX_GRAPHQL_COMPLEXITY_FIELD_COST,
+  DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIST_ARGUMENTS,
+  DEFAULT_MAX_GRAPHQL_COMPLEXITY_DEFAULT_LIST_MULTIPLIER,
+  DEFAULT_MAX_GRAPHQL_COMPLEXITY_INTROSPECTION_COST,
+  DEFAULT_MAX_GRAPHQL_COMPLEXITY_MAX_FIELDS_PER_SELECTION,
+  DEFAULT_JSON_DECOMPRESSED_MAX_BYTES,
+} from '../constants';
+
+import type { Configuration } from '@via-profit-services/core';
+
+export const buildConfig = (
+  props: Partial<Configuration> & { schema: GraphQLSchema },
+): Configuration => ({
+  middleware: [],
+  debug: false,
+  rootValue: undefined,
+  persistedQueriesMap: undefined,
+  persistedQueryKey: DEFAULT_PERSISTED_QUERY_KEY,
+  ...props,
+  limits: {
+    maxFieldSize: DEFAULT_MAX_FIELD_SIZE,
+    maxFileSize: DEFAULT_MAX_FILE_SIZE,
+    maxFilesTotalSize: DEFAULT_MAX_FILE_TOTAL_SIZE,
+    maxFiles: DEFAULT_MAX_FILES,
+    maxFileFields: DEFAULT_MAX_FILE_FIELDS,
+    maxFileParts: DEFAULT_MAX_FILE_PARTS,
+    maxJSONBodySize: DEFAULT_JSON_MAX_BYTES,
+    maxJSONBodyDecompressedSize: DEFAULT_JSON_DECOMPRESSED_MAX_BYTES,
+
+    maxGraphQLDepthLimit: DEFAULT_MAX_GRAPHQL_DEPTH_LIMIT,
+    maxGraphQLIntrospectionDepthLimit: DEFAULT_MAX_GRAPHQL_INTROSPECTION_DEPTH_LIMIT,
+    ...props.limits,
+    complexityLimit: {
+      maxComplexity: DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIMIT,
+      fieldCost: DEFAULT_MAX_GRAPHQL_COMPLEXITY_FIELD_COST,
+      listArguments: DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIST_ARGUMENTS,
+      defaultListMultiplier: DEFAULT_MAX_GRAPHQL_COMPLEXITY_DEFAULT_LIST_MULTIPLIER,
+      introspectionCost: DEFAULT_MAX_GRAPHQL_COMPLEXITY_INTROSPECTION_COST,
+      maxFieldsPerSelection: DEFAULT_MAX_GRAPHQL_COMPLEXITY_MAX_FIELDS_PER_SELECTION,
+      ...props.limits?.complexityLimit,
+    },
+  },
+});

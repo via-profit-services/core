@@ -11,17 +11,15 @@ import {
  * Options for configuring the complexity‑limit validation rule.
  *
  * maxComplexity:
- *   The maximum allowed total complexity for a GraphQL operation.
- *   If the calculated complexity exceeds this value, the query is rejected.
+ *   Maximum allowed total complexity for a GraphQL operation.
  *
  * fieldCost:
- *   Base cost assigned to every field. This cost is added before applying
- *   list multipliers or child complexity. Default: 1.
+ *   Base cost assigned to every field. Default: 1.
  *
  * listArguments:
  *   Argument names that represent list size or pagination limits.
  *   If a field contains one of these arguments, its complexity is multiplied
- *   by the argument value. Example: users(first: 50) → multiplier = 50.
+ *   by the argument value.
  */
 export interface ComplexityLimitOptions {
   maxComplexity: number;
@@ -32,22 +30,13 @@ export interface ComplexityLimitOptions {
 /**
  * Internal state passed through recursive complexity calculations.
  *
- * complexity:
- *   Not used for incremental accumulation. Instead, each recursive call
- *   returns its own complexity value. This field is kept for potential
- *   debugging or future extensions.
- *
  * visitedFragments:
- *   Tracks fragment names to prevent infinite recursion caused by cyclic
- *   fragment spreads. GraphQL allows recursive fragments, so we must guard
- *   against them manually.
+ *   Tracks fragment names to prevent infinite recursion.
  *
  * report:
- *   Helper function for reporting validation errors through GraphQL's
- *   ValidationContext. Ensures consistent error formatting.
+ *   Helper for reporting validation errors.
  */
 type CheckState = {
-  complexity: number;
   visitedFragments: string[];
   report: (msg: string) => void;
 };
@@ -56,12 +45,12 @@ type CheckState = {
  * Creates a GraphQL validation rule that calculates the total complexity
  * of a query and rejects it if it exceeds the configured limit.
  *
- * Complexity is calculated using a multiplicative model:
+ * Complexity model:
  *
  *   fieldComplexity = (fieldCost + childComplexity) * listMultiplier
  *
- * This model reflects real server load more accurately than a simple
- * additive approach, especially for nested lists.
+ * This multiplicative model reflects real server load more accurately
+ * than a simple additive approach.
  */
 export default function complexityLimit(options: ComplexityLimitOptions): ValidationRule {
   const {
@@ -72,7 +61,6 @@ export default function complexityLimit(options: ComplexityLimitOptions): Valida
 
   /**
    * Cache of fragment definitions for quick lookup.
-   * Populated once per operation to avoid repeated scanning.
    */
   const fragmentCache = new Map<string, FragmentDefinitionNode>();
 
@@ -83,7 +71,7 @@ export default function complexityLimit(options: ComplexityLimitOptions): Valida
        * Triggered once per operation definition.
        */
       OperationDefinition(node) {
-        // Collect all fragment definitions from the document.
+        // Collect fragment definitions once per document.
         const doc = context.getDocument();
         for (const def of doc.definitions) {
           if (def.kind === Kind.FRAGMENT_DEFINITION) {
@@ -92,7 +80,6 @@ export default function complexityLimit(options: ComplexityLimitOptions): Valida
         }
 
         const state: CheckState = {
-          complexity: 0,
           visitedFragments: [],
           report: msg =>
             context.reportError(
@@ -100,10 +87,8 @@ export default function complexityLimit(options: ComplexityLimitOptions): Valida
             ),
         };
 
-        // Calculate total complexity for the operation.
         const complexity = calculateSelections(node.selectionSet.selections, state);
 
-        // Reject the query if it exceeds the configured limit.
         if (complexity > maxComplexity) {
           state.report(
             `Query complexity ${complexity} exceeds the maximum allowed complexity of ${maxComplexity}.`,
@@ -115,68 +100,31 @@ export default function complexityLimit(options: ComplexityLimitOptions): Valida
 
   /**
    * Recursively calculates the complexity of a selection set.
-   *
-   * This function:
-   *   - Computes field complexity using the multiplicative model.
-   *   - Handles inline fragments and fragment spreads.
-   *   - Prevents infinite recursion via visitedFragments.
-   *   - Returns the total complexity for the current selection set.
    */
-  function calculateSelections(selections: readonly SelectionNode[], state: CheckState): number {
+  function calculateSelections(
+    selections: readonly SelectionNode[],
+    state: CheckState,
+  ): number {
     let total = 0;
 
     for (const selection of selections) {
       switch (selection.kind) {
-        /**
-         * FIELD
-         * Represents a single field in the query.
-         */
         case Kind.FIELD: {
-          // Base cost for the field.
-          const cost = fieldCost;
+          const base = fieldCost;
+          const multiplier = extractListMultiplier(selection, listArguments);
+          const child = selection.selectionSet
+            ? calculateSelections(selection.selectionSet.selections, state)
+            : 0;
 
-          // Multiplier for list fields (e.g., first: 50).
-          let multiplier = 1;
-
-          if (selection.arguments?.length) {
-            for (const arg of selection.arguments) {
-              if (listArguments.includes(arg.name.value)) {
-                const value = extractIntValue(arg.value);
-                if (value && value > 0) {
-                  multiplier = value;
-                }
-              }
-            }
-          }
-
-          // Recursively compute complexity of nested selection sets.
-          let childComplexity = 0;
-          if (selection.selectionSet) {
-            childComplexity = calculateSelections(selection.selectionSet.selections, state);
-          }
-
-          // Final complexity for this field.
-          const fieldComplexity = (cost + childComplexity) * multiplier;
-
-          total += fieldComplexity;
+          total += (base + child) * multiplier;
           break;
         }
 
-        /**
-         * INLINE_FRAGMENT
-         * Example: ... on User { id name }
-         * Inline fragments behave like nested selection sets.
-         */
         case Kind.INLINE_FRAGMENT: {
           total += calculateSelections(selection.selectionSet.selections, state);
           break;
         }
 
-        /**
-         * FRAGMENT_SPREAD
-         * Example: ...UserFields
-         * We must guard against recursive fragments.
-         */
         case Kind.FRAGMENT_SPREAD: {
           const name = selection.name.value;
 
@@ -184,10 +132,9 @@ export default function complexityLimit(options: ComplexityLimitOptions): Valida
           if (state.visitedFragments.includes(name)) break;
 
           const fragment = fragmentCache.get(name);
-          if (!fragment) break; // Should be validated elsewhere.
+          if (!fragment) break;
 
           state.visitedFragments.push(name);
-
           total += calculateSelections(fragment.selectionSet.selections, state);
           break;
         }
@@ -198,9 +145,28 @@ export default function complexityLimit(options: ComplexityLimitOptions): Valida
   }
 
   /**
+   * Extracts list multiplier from field arguments.
+   * Example: users(first: 50) → multiplier = 50
+   */
+  function extractListMultiplier(
+    selection: any,
+    listArguments: string[],
+  ): number {
+    if (!selection.arguments?.length) return 1;
+
+    for (const arg of selection.arguments) {
+      if (listArguments.includes(arg.name.value)) {
+        const value = extractIntValue(arg.value);
+        if (value && value > 0) return value;
+      }
+    }
+
+    return 1;
+  }
+
+  /**
    * Extracts an integer value from an AST literal node.
-   * Supports INT and STRING literals. Variables are ignored because
-   * this rule does not resolve variable values.
+   * Variables are ignored because this rule does not resolve them.
    */
   function extractIntValue(node: any): number | null {
     switch (node.kind) {
@@ -209,7 +175,7 @@ export default function complexityLimit(options: ComplexityLimitOptions): Valida
       case Kind.STRING:
         return parseInt(node.value, 10) || null;
       case Kind.VARIABLE:
-        return null; // Variables are not resolved here.
+        return null;
       default:
         return null;
     }

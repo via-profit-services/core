@@ -6,10 +6,10 @@ export default new GraphQLScalarType({
     'A field whose value conforms to the standard URL format as specified in RFC3986: https://www.ietf.org/rfc/rfc3986.txt.',
 
   serialize(value) {
-    return new URL(value.toString()).toString();
+    return new URL((value as any).toString()).toString();
   },
 
-  parseValue: value => new URL(value.toString()),
+  parseValue: value => new URL((value as any).toString()),
 
   parseLiteral(ast) {
     if (ast.kind !== Kind.STRING) {

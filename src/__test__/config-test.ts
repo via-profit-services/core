@@ -52,7 +52,7 @@ const configTest: ConfigTest = options => {
     new Promise<void>(resolve => {
       const graphqlHTTP = graphqlHTTPFactory({ schema, limits });
       server.on('request', async (req, res) => {
-        if (!['POST', 'GET'].includes(req.method)) {
+        if (!['POST', 'GET'].includes(req.method || '')) {
           res.end();
 
           return;

@@ -422,7 +422,7 @@ declare module '@via-profit-services/core' {
   };
 
 
-  export type Configuration = InitProps;
+  export type Configuration = NonNullable<InitProps>;
 
   /**
    * GraphQL Cursor connection

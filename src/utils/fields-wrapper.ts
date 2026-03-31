@@ -54,7 +54,7 @@ const fieldsWrapper: FieldsWrapper = (schema, wrapperFunction, options) => {
         const mutatedInfo = res.info || info;
         const mutatedResolver = res.resolve || resolve;
 
-        return mutatedResolver(mutatedSource, mutatedArgs, mutatedContext, mutatedInfo);
+        return mutatedResolver ? mutatedResolver(mutatedSource, mutatedArgs, mutatedContext, mutatedInfo) : undefined;
       };
 
       // mark field as affected

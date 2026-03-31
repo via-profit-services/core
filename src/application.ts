@@ -1,12 +1,11 @@
 import { performance } from 'node:perf_hooks';
 import type {
-  Configuration,
   Context,
   GraphQLExtensions,
   ApplicationFactory,
   HTTPListener,
   CoreStats,
-  RequiredDeep,
+  GraphqlResponse,
 } from '@via-profit-services/core';
 import {
   validateSchema,
@@ -16,226 +15,157 @@ import {
   Source,
   getOperationAST,
   validate,
-  ValidationRule,
   GraphQLError,
 } from 'graphql';
-
-import {
-  DEFAULT_PERSISTED_QUERY_KEY,
-  DEFAULT_MAX_FIELD_SIZE,
-  DEFAULT_MAX_FILES,
-  DEFAULT_MAX_FILE_SIZE,
-  DEFAULT_JSON_MAX_BYTES,
-  DEFAULT_MAX_FILE_FIELDS,
-  DEFAULT_MAX_FILE_PARTS,
-  DEFAULT_MAX_FILE_TOTAL_SIZE,
-  DEFAULT_MAX_GRAPHQL_DEPTH_LIMIT,
-  DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIMIT,
-  DEFAULT_MAX_GRAPHQL_INTROSPECTION_DEPTH_LIMIT,
-  DEFAULT_MAX_GRAPHQL_COMPLEXITY_FIELD_COST,
-  DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIST_ARGUMENTS,
-  DEFAULT_MAX_GRAPHQL_COMPLEXITY_DEFAULT_LIST_MULTIPLIER,
-  DEFAULT_MAX_GRAPHQL_COMPLEXITY_INTROSPECTION_COST,
-  DEFAULT_MAX_GRAPHQL_COMPLEXITY_MAX_FIELDS_PER_SELECTION,
-  DEFAULT_JSON_DECOMPRESSED_MAX_BYTES,
-} from './constants';
 
 import bodyParser, { parseGraphQLParams } from './utils/body-parser';
 import composeMiddlewares from './utils/compose-middlewares';
 import applyMiddlewares from './utils/apply-middlewares';
 import formatErrors from './utils/format-errors';
 import ServerError from './server-error';
-import depthLimitRule from './utils/depth-limit-rule';
-import complexityLimit from './utils/сomplexity-limit-rule';
+import { buildValidationRules } from './utils/build-validation-rules';
+import { buildConfig } from './utils/build-config';
 
 const applicationFactory: ApplicationFactory = props => {
-  const config: Configuration = {
-    middleware: [],
-    debug: false,
-    rootValue: undefined,
-    persistedQueriesMap: undefined,
-    persistedQueryKey: DEFAULT_PERSISTED_QUERY_KEY,
-    ...props,
-    limits: {
-      maxFieldSize: DEFAULT_MAX_FIELD_SIZE,
-      maxFileSize: DEFAULT_MAX_FILE_SIZE,
-      maxFilesTotalSize: DEFAULT_MAX_FILE_TOTAL_SIZE,
-      maxFiles: DEFAULT_MAX_FILES,
-      maxFileFields: DEFAULT_MAX_FILE_FIELDS,
-      maxFileParts: DEFAULT_MAX_FILE_PARTS,
-      maxJSONBodySize: DEFAULT_JSON_MAX_BYTES,
-      maxJSONBodyDecompressedSize: DEFAULT_JSON_DECOMPRESSED_MAX_BYTES,
-
-      maxGraphQLDepthLimit: DEFAULT_MAX_GRAPHQL_DEPTH_LIMIT,
-      maxGraphQLIntrospectionDepthLimit: DEFAULT_MAX_GRAPHQL_INTROSPECTION_DEPTH_LIMIT,
-      ...props.limits,
-      complexityLimit: {
-        maxComplexity: DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIMIT,
-        fieldCost: DEFAULT_MAX_GRAPHQL_COMPLEXITY_FIELD_COST,
-        listArguments: DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIST_ARGUMENTS,
-        defaultListMultiplier: DEFAULT_MAX_GRAPHQL_COMPLEXITY_DEFAULT_LIST_MULTIPLIER,
-        introspectionCost: DEFAULT_MAX_GRAPHQL_COMPLEXITY_INTROSPECTION_COST,
-        maxFieldsPerSelection: DEFAULT_MAX_GRAPHQL_COMPLEXITY_MAX_FIELDS_PER_SELECTION,
-        ...props.limits?.complexityLimit,
-      },
-    },
-  };
-
-  const { middleware, rootValue, debug, schema } = config;
+  const config = buildConfig(props);
+  const validationRule = buildValidationRules(config);
+  const { middleware, schema, rootValue, debug } = config;
 
   const context: Context = {};
-
-  const stats: CoreStats = {
-    requestCounter: 0,
-    startupTime: new Date(),
-  };
-
+  const stats: CoreStats = { requestCounter: 0, startupTime: new Date() };
   const extensions: GraphQLExtensions = {
     queryTime: 0,
     requestCounter: 0,
     startupTime: stats.startupTime,
   };
 
-  const validationRule: ValidationRule[] = [];
+const httpListener: HTTPListener = async (request, response) => {
+  const startTime = performance.now();
+  stats.requestCounter += 1;
 
-  if (config.limits.maxGraphQLDepthLimit) {
-    validationRule.push(
-      depthLimitRule({
-        maxDepth: config.limits.maxGraphQLDepthLimit,
-        maxIntrospectionDepth: config.limits.maxGraphQLDepthLimit, // или другое значение
-      }),
-    );
-  }
+  const finish = (payload: GraphqlResponse) => ({
+    ...payload,
+    extensions: {
+      ...extensions,
+      ...stats,
+      queryTime: performance.now() - startTime,
+    },
+  });
 
-  if (config.limits.complexityLimit) {
-    validationRule.push(
-      complexityLimit({
-        maxComplexity: config.limits.complexityLimit.maxComplexity,
-        fieldCost: config.limits.complexityLimit.fieldCost,
-        listArguments: ['first', 'limit', 'take', 'pageSize', 'size'],
-      }),
-    );
-  }
+  try {
+    const method = request.method || '';
 
-  const httpListener: HTTPListener = async (request, response) => {
-    const startTime = performance.now();
-    stats.requestCounter += 1;
+    // 1. Validate HTTP method
+    if (!['GET', 'POST', 'OPTIONS'].includes(method)) {
+      throw new ServerError(
+        [new GraphQLError('GraphQL only supports GET, POST and OPTIONS requests')],
+        'graphql-error-execute',
+      );
+    }
 
-    try {
-      const { method } = request;
+    // 2. Run middleware chain
+    await applyMiddlewares({
+      request,
+      middlewares: composeMiddlewares(middleware || []),
+      config,
+      context,
+      schema,
+      stats,
+      extensions,
+      validationRule,
+    });
 
-      if (!['GET', 'POST', 'OPTIONS'].includes(method)) {
-        throw new ServerError(
-          [new GraphQLError('GraphQL only supports GET, POST and OPTIONS requests')],
-          'graphql-error-execute',
-        );
-      }
+    // 3. Validate schema
+    const schemaErrors = validateSchema(schema);
+    if (schemaErrors.length > 0) {
+      throw new ServerError(schemaErrors, 'graphql-error-validate-schema');
+    }
 
-      // Middleware chain
-      await applyMiddlewares({
-        request,
-        middlewares: composeMiddlewares(middleware),
-        config,
-        context,
-        schema,
-        stats,
-        extensions,
-        validationRule,
-      });
+    // 4. Parse request body (JSON or multipart)
+    const body = await bodyParser({ request, response, config });
 
-      // Schema validation
-      const schemaErrors = validateSchema(schema);
-      if (schemaErrors.length > 0) {
-        throw new ServerError(schemaErrors, 'graphql-error-validate-schema');
-      }
+    // 5. Extract GraphQL params
+    const { query, operationName, variables } = parseGraphQLParams({
+      body,
+      request,
+      config,
+    });
 
-      // Parse body (JSON or multipart)
-      const body = await bodyParser({ request, response, config });
+    if (!query || typeof query !== 'string') {
+      throw new ServerError(
+        [
+          new GraphQLError(
+            `Failed to parse GraphQL query. The request is empty. Got «${String(query)}»`,
+          ),
+        ],
+        'graphql-error-validate-request',
+      );
+    }
 
-      // Extract query, variables, operationName
-      const { query, operationName, variables } = parseGraphQLParams({
-        body,
-        request,
-        config,
-      });
+    // 6. Parse query → AST
+    const documentAST = parse(new Source(query, 'GraphQL request'));
 
-      if (!query || typeof query !== 'string') {
+    // 7. Validate AST
+    const validationErrors = validate(schema, documentAST, [
+      ...specifiedRules,
+      ...validationRule,
+    ]);
+    if (validationErrors.length > 0) {
+      throw new ServerError(validationErrors, 'graphql-error-validate-field');
+    }
+
+    // 8. GET must not execute mutations/subscriptions
+    if (method === 'GET') {
+      const operationAST = getOperationAST(documentAST, operationName);
+      if (operationAST && operationAST.operation !== 'query') {
         throw new ServerError(
           [
             new GraphQLError(
-              `Failed to parse GraphQL query. The request is empty. Got «${String(query)}»`,
+              `Can only perform a ${operationAST.operation} operation from a POST request`,
             ),
           ],
-          'graphql-error-validate-request',
+          'graphql-error-execute',
         );
       }
-
-      // Parse query into AST
-      const documentAST = parse(new Source(query, 'GraphQL request'));
-
-      // Validate AST
-      const validationErrors = validate(schema, documentAST, [
-        ...specifiedRules,
-        ...validationRule,
-      ]);
-      if (validationErrors.length > 0) {
-        throw new ServerError(validationErrors, 'graphql-error-validate-field');
-      }
-
-      // GET must not perform mutations/subscriptions
-      if (method === 'GET') {
-        const operationAST = getOperationAST(documentAST, operationName);
-        if (operationAST && operationAST.operation !== 'query') {
-          throw new ServerError(
-            [
-              new GraphQLError(
-                `Can only perform a ${operationAST.operation} operation from a POST request`,
-              ),
-            ],
-            'graphql-error-execute',
-          );
-        }
-      }
-
-      // Execute GraphQL
-      const { errors, data } = await execute({
-        variableValues: variables,
-        document: documentAST,
-        contextValue: context,
-        schema,
-        rootValue,
-        operationName,
-      });
-
-      if (errors) {
-        throw new ServerError(errors, 'graphql-error-execute');
-      }
-
-      return {
-        data,
-        extensions: debug
-          ? {
-              ...extensions,
-              ...stats,
-              queryTime: performance.now() - startTime,
-            }
-          : undefined,
-      };
-    } catch (error: unknown) {
-      return {
-        errors: formatErrors({
-          error,
-          debug,
-          context,
-        }),
-        extensions: {
-          ...extensions,
-          ...stats,
-          queryTime: performance.now() - startTime,
-        },
-      };
     }
-  };
+
+    // 9. Execute GraphQL
+    const result = await execute({
+      variableValues: variables,
+      document: documentAST,
+      contextValue: context,
+      schema,
+      rootValue,
+      operationName,
+    });
+
+    if (result.errors) {
+      throw new ServerError(result.errors, 'graphql-error-execute');
+    }
+
+    // 10. Success response
+    return finish({
+      data: result.data,
+      extensions: debug
+        ? {
+            ...extensions,
+            ...stats,
+            queryTime: performance.now() - startTime,
+          }
+        : undefined,
+    });
+  } catch (error) {
+    // 11. Error response
+    return finish({
+      errors: formatErrors({
+        error,
+        debug,
+        context,
+      }),
+    });
+  }
+};
+
 
   return httpListener;
 };

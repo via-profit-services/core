@@ -3,37 +3,50 @@ import http from 'node:http';
 import type { BodyParser, RequestBody, Configuration } from '@via-profit-services/core';
 
 import multipartParser from './multipart-parser';
+import {  } from 'constants';
+import { DEFAULT_JSON_DECOMPRESSED_MAX_BYTES, DEFAULT_JSON_MAX_BYTES } from '../constants';
 
 const JSONOBJREGEX = /^[ \t\n\r]*\{/;
 
+/**
+ * Main body parser entry point.
+ * Handles:
+ *   - multipart/form-data (file uploads)
+ *   - JSON bodies
+ *   - gzip/deflate decompression
+ *   - size limits
+ */
 const bodyParser: BodyParser = async ({ request, response, config }) => {
   const { method, headers } = request;
 
-  // Skip requests without content types.
+  // POST without content-type is invalid
   if (method === 'POST' && typeof headers['content-type'] === 'undefined') {
     throw new Error('Missing Content-Type header');
   }
 
-  // check to multipart (file upload)
-  if (headers['content-type']?.match(/^multipart\/form-data/)) {
+  // Multipart (file upload)
+  if (headers['content-type']?.startsWith('multipart/form-data')) {
     try {
       return await multipartParser({ request, response, config });
     } catch (err) {
-      throw new Error(err);
+      // Preserve original error
+      throw err instanceof Error ? err : new Error(String(err));
     }
   }
 
+  // JSON or other text body
   const rawBody = await readBody(request, {
     charset: 'utf-8',
-    maxJSONBodySize: config.limits.maxJSONBodySize,
-    maxDecompressedSize: config.limits.maxJSONBodyDecompressedSize,
+    maxJSONBodySize: config.limits?.maxJSONBodySize || DEFAULT_JSON_MAX_BYTES,
+    maxDecompressedSize: config.limits?.maxJSONBodyDecompressedSize || DEFAULT_JSON_DECOMPRESSED_MAX_BYTES,
   });
 
+  // Try to parse JSON only if it looks like JSON
   if (JSONOBJREGEX.test(rawBody)) {
     try {
       return JSON.parse(rawBody);
     } catch {
-      // Do nothing
+      // Invalid JSON — return empty object
     }
   }
 
@@ -52,10 +65,18 @@ interface GraphQLParamsProps {
   config: Configuration;
 }
 
+/**
+ * Extracts GraphQL parameters from:
+ *   - query string
+ *   - request body
+ *   - persisted queries
+ */
 export const parseGraphQLParams = (props: GraphQLParamsProps): GraphQLParams => {
   const { body, request, config } = props;
   const { persistedQueriesMap, persistedQueryKey } = config;
-  const urlData = new URLSearchParams(request.url.split('?')[1]);
+  const url = request.url || '';
+
+  const urlData = new URLSearchParams(url.split('?')[1]);
 
   const graphQLParams: GraphQLParams = {
     query: '',
@@ -63,36 +84,42 @@ export const parseGraphQLParams = (props: GraphQLParamsProps): GraphQLParams => 
     operationName: null,
   };
 
-  // if persistedQueryKey exits (in query string or body) then
-  // try to get query by persisted queries
-  if (urlData.get(persistedQueryKey) || typeof body[persistedQueryKey] === 'string') {
-    const queryKey = urlData.get(persistedQueryKey) || body[persistedQueryKey];
-    const mappedQuery = persistedQueriesMap[queryKey as string];
-
-    if (typeof mappedQuery !== 'undefined') {
+  //
+  // Persisted query support
+  //
+  const persistedKey = persistedQueryKey ? urlData.get(persistedQueryKey) || body[persistedQueryKey] : undefined;
+  if (typeof persistedKey === 'string') {
+    const mappedQuery = persistedQueriesMap ? persistedQueriesMap[persistedKey] : undefined;
+    if (typeof mappedQuery === 'string') {
       graphQLParams.query = mappedQuery;
     }
+  }
 
-    // if persistedQueryKey not exist
-    // then try to get query from query string or bofy
-  } else {
+  //
+  // Query from URL or body
+  //
+  if (!graphQLParams.query) {
     graphQLParams.query = urlData.get('query') ?? String(body.query || '');
   }
 
+  //
+  // Variables
+  //
   const variables = urlData.get('variables') ?? body.variables;
+
   if (typeof variables === 'string') {
     try {
       graphQLParams.variables = JSON.parse(variables);
     } catch {
       throw new Error('Variables are invalid JSON.');
     }
-  }
-
-  if (typeof variables === 'object') {
+  } else if (typeof variables === 'object' && variables !== null) {
     graphQLParams.variables = { ...variables };
   }
 
-  // Name of GraphQL operation to execute.
+  //
+  // Operation name
+  //
   const operationName = urlData.get('operationName') ?? body.operationName;
   if (typeof operationName === 'string') {
     graphQLParams.operationName = operationName;
@@ -101,6 +128,9 @@ export const parseGraphQLParams = (props: GraphQLParamsProps): GraphQLParams => 
   return graphQLParams;
 };
 
+/**
+ * Decompresses request body stream based on Content-Encoding.
+ */
 const decompressBody = (request: http.IncomingMessage, encoding: string) => {
   switch (encoding) {
     case 'identity':
@@ -122,7 +152,17 @@ type ReadBodyOptions = {
   readonly maxJSONBodySize: number;
   readonly maxDecompressedSize: number;
 };
-const readBody = async (request: http.IncomingMessage, opts: ReadBodyOptions): Promise<string> => {
+
+/**
+ * Reads and optionally decompresses the request body.
+ * Enforces:
+ *   - max JSON body size
+ *   - max decompressed size
+ */
+const readBody = async (
+  request: http.IncomingMessage,
+  opts: ReadBodyOptions,
+): Promise<string> => {
   const { charset, maxJSONBodySize, maxDecompressedSize } = opts;
 
   if (!charset.startsWith('utf-')) {
@@ -151,7 +191,6 @@ const readBody = async (request: http.IncomingMessage, opts: ReadBodyOptions): P
     stream.on('data', chunk => {
       received += chunk.length;
 
-      // Проверка лимита декомпрессированного тела
       if (received > maxDecompressedSize) {
         reject(
           new Error(
@@ -169,7 +208,6 @@ const readBody = async (request: http.IncomingMessage, opts: ReadBodyOptions): P
       try {
         const buffer = Buffer.concat(chunks);
 
-        // Проверка лимита исходного тела (identity)
         if (encoding === 'identity' && buffer.length > maxJSONBodySize) {
           return reject(
             new Error(`Request body exceeds maximum allowed size of ${maxJSONBodySize} bytes.`),
@@ -178,7 +216,7 @@ const readBody = async (request: http.IncomingMessage, opts: ReadBodyOptions): P
 
         resolve(buffer.toString(charset));
       } catch (err) {
-        reject(err);
+        reject(err instanceof Error ? err : new Error(String(err)));
       }
     });
 

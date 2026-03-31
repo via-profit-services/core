@@ -1,6 +1,6 @@
 import { GraphQLScalarType, GraphQLError, print } from 'graphql';
 
-export default new GraphQLScalarType({
+export default new GraphQLScalarType<bigint, string | number>({
   name: 'BigInt',
   description: 'The `BigInt` scalar type represents non-fractional signed whole numeric values',
   serialize(value) {
@@ -24,9 +24,9 @@ export default new GraphQLScalarType({
     return bigint.toString();
   },
   parseValue(value) {
-    const bigint = BigInt(value.toString());
+    const bigint = BigInt((value as any).toString());
 
-    if (value.toString() !== bigint.toString()) {
+    if ((value as any).toString() !== bigint.toString()) {
       throw new GraphQLError(`BigInt cannot represent value: ${value}`);
     }
 

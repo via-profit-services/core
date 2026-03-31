@@ -3,25 +3,38 @@ import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 
+/**
+ * Represents a temporary file used to buffer uploaded file data.
+ *
+ * Guarantees:
+ *   - Safe creation of a unique temp directory and file
+ *   - Writes are rejected after the file is closed
+ *   - end() resolves only once
+ *   - cleanup() is idempotent and safe to call multiple times
+ *   - createReadStream() works only after end()
+ */
 export class TempFile {
   private readonly filePath: string;
   private writeStream: fs.WriteStream;
   private closed = false;
+  private cleaned = false;
 
   constructor() {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'upload-'));
-
-    // Generate a unique filename
     const filename = crypto.randomUUID();
 
     this.filePath = path.join(dir, filename);
     this.writeStream = fs.createWriteStream(this.filePath);
 
     this.writeStream.on('error', () => {
-      // ignore, cleanup will handle it
+      // Errors are handled by end() / cleanup()
     });
   }
 
+  /**
+   * Writes a chunk to the temp file.
+   * Throws if the file is already closed.
+   */
   write(chunk: Buffer) {
     if (this.closed) {
       throw new Error('Cannot write to closed TempFile');
@@ -29,7 +42,15 @@ export class TempFile {
     return this.writeStream.write(chunk);
   }
 
-  end() {
+  /**
+   * Finalizes the file.
+   * Ensures the write stream is closed exactly once.
+   */
+  end(): Promise<void> {
+    if (this.closed) {
+      return Promise.resolve();
+    }
+
     return new Promise<void>(resolve => {
       const ws = this.writeStream;
 
@@ -40,7 +61,7 @@ export class TempFile {
       };
 
       const onError = () => {
-        // игнорируем, cleanup всё удалит
+        // Ignore — cleanup() will remove the file anyway
       };
 
       ws.once('close', onClose);
@@ -50,6 +71,10 @@ export class TempFile {
     });
   }
 
+  /**
+   * Creates a read stream for the temp file.
+   * Only allowed after the file is closed.
+   */
   createReadStream() {
     if (!this.closed) {
       throw new Error('Cannot create read stream before file is closed');
@@ -58,30 +83,37 @@ export class TempFile {
     const stream = fs.createReadStream(this.filePath);
 
     stream.on('error', err => {
-      if ('code' in err && err.code === 'ENOENT') {
-        // файл уже удалён — просто тихо гасим поток
+      if (err && typeof err === 'object' && 'code' in err && err.code === 'ENOENT') {
+        // File already removed — silently destroy
         stream.destroy();
         return;
       }
 
-      // остальные ошибки по-прежнему можно логировать или гасить
+      // Other errors can be logged or handled upstream
       stream.destroy();
     });
 
     return stream;
   }
 
+  /**
+   * Removes the temp file and its directory.
+   * Safe to call multiple times.
+   */
   cleanup() {
+    if (this.cleaned) return;
+    this.cleaned = true;
+
     try {
       fs.unlinkSync(this.filePath);
     } catch {
-      // do nothing
+      // File may already be removed
     }
 
     try {
       fs.rmdirSync(path.dirname(this.filePath));
     } catch {
-      // do nothing
+      // Directory may already be removed
     }
   }
 }
