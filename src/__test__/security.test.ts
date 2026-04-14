@@ -162,7 +162,7 @@ describe('SECURITY / ADVANCED SUITE', () => {
       body,
       headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
     });
-console.log(res.body);
+
     expect(res.status).toBe(200);
     expect(res.body).toMatch(/upload/i);
   });

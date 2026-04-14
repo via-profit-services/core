@@ -2,7 +2,7 @@ import http from 'node:http';
 import type { GraphQLSchema } from 'graphql';
 
 import { graphqlHTTPFactory } from '../index';
-import { Limits } from '@via-profit-services/core';
+import type { Limits } from '@via-profit-services/core';
 import { IncomingHttpHeaders } from 'http';
 
 /**
@@ -66,6 +66,7 @@ const configTest: ConfigTest = options => {
       });
 
       server.listen(port, 'localhost', () => {
+        // console.log(`server started at http://localhost:${port}`);
         resolve();
       });
     });

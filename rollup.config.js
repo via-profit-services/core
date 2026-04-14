@@ -13,17 +13,19 @@ const __dirname = path.dirname(__filename);
 const packageJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, './package.json'), 'utf-8'));
 
 const bannerContent = `
-Via Profit Services / Core
-
-Repository ${packageJson.repository?.url || ''}
-Contact    ${packageJson.support || ''}
+/**
+/ Via Profit Services / Core
+* 
+* Repository ${packageJson.repository?.url || ''}
+* Contact    ${packageJson.support || ''}
+*/
 `;
 
 export default {
   input: path.resolve(__dirname, './src/index.ts'),
   output: {
     dir: path.resolve(__dirname, './dist/'),
-    format: 'cjs',
+    format: 'esm',
     sourcemap: false,
     entryFileNames: '[name].js',
   },
