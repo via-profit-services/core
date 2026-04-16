@@ -1,23 +1,19 @@
 {
   "compilerOptions": {
-    "module": "NodeNext",
     "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "node",
     "lib": ["ES2022"],
-    "allowSyntheticDefaultImports": true,
-    "declaration": false,
-    "esModuleInterop": true,
-    "moduleResolution": "nodenext",
-    "noImplicitAny": true,
-    "removeComments": false,
-    "outDir": "./dist",
-    "resolveJsonModule": true,
     "rootDir": "./src",
-    "sourceMap": false,
-    "types": ["node", "jest"],
-    "skipLibCheck": true,
+    "outDir": "./dist",
     "strict": true,
-    "emitDeclarationOnly": false
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "emitDeclarationOnly": false,
+    "types": ["node", "jest"]
   },
-  "exclude": ["src/**/*.spec.ts", "src/playground/**/*", "./dist", "./build"],
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["src/**/*.spec.ts", "src/playground/**/*", "dist", "build"]
 }

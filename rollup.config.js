@@ -25,7 +25,7 @@ export default {
   input: path.resolve(__dirname, './src/index.ts'),
   output: {
     dir: path.resolve(__dirname, './dist/'),
-    format: 'esm',
+    format: 'cjs',
     sourcemap: false,
     entryFileNames: '[name].js',
   },
