@@ -1,8 +1,5 @@
 import { Kind, GraphQLError, GraphQLScalarType } from 'graphql';
 
-// ISO-8601 строго в UTC
-const ISO_UTC_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;
-
 function parseDate(value: unknown): Date {
   if (value instanceof Date) {
     if (Number.isNaN(value.getTime())) {
@@ -13,13 +10,9 @@ function parseDate(value: unknown): Date {
 
   // ISO-UTC only
   if (typeof value === 'string') {
-    if (!ISO_UTC_REGEX.test(value)) {
-      throw new TypeError(`Date string must be ISO-UTC (YYYY-MM-DDTHH:mm:ss.sssZ): ${value}`);
-    }
-
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) {
-      throw new TypeError(`Invalid ISO-UTC date: ${value}`);
+      throw new TypeError(`Invalid ISO date: ${value}`);
     }
     return date;
   }

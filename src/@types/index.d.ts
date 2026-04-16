@@ -558,7 +558,6 @@ declare module '@via-profit-services/core' {
   }
 
   export const FileUploadScalarType: GraphQLScalarType;
-  export const DateScalarType: GraphQLScalarType;
   export const DateTimeScalarType: GraphQLScalarType;
   export const EmailAddressScalarType: GraphQLScalarType;
 
