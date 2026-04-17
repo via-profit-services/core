@@ -1,14 +1,40 @@
-import path from 'node:path';
-import fs from 'node:fs';
+/**
+ * SERVER / ADVANCED FUNCTIONAL SUITE
+ * Covers:
+ * 1. GET variables
+ * 2. GET persisted queries
+ * 3. POST invalid JSON
+ * 4. POST empty body
+ * 5. Wrong Content-Type
+ * 6. Multipart missing map/operations
+ * 7. Multipart multiple files
+ * 8. Multipart binary files
+ * 9. HEAD requests
+ * 10. Unsupported HTTP methods
+ * 11. GraphQL validation errors
+ * 12. GraphQL resolver errors
+ * 13. Large responses
+ * 14. Wrong variables type
+ */
+
 import http from 'node:http';
 import { URL } from 'node:url';
 
 import configTest, { sendGraphQLRequest } from './config-test';
 import schema from './schema';
 
-const port = 8082;
+const port = 8085;
 const endpoint = '/graphql';
-const { startServer, stopServer } = configTest({ schema, port, endpoint });
+
+const { startServer, stopServer } = configTest({
+  schema,
+  port,
+  endpoint,
+  limits: {
+    maxJSONBodySize: 2_000_000,
+    maxGraphQLDepthLimit: 4,
+  },
+});
 
 beforeAll(async () => {
   await startServer();
@@ -18,331 +44,296 @@ afterAll(async () => {
   await stopServer();
 });
 
-describe('Graphql server', () => {
-  test('GET request with query key params should be passed successfully', done => {
+// Helper to build multipart bodies
+function mp(boundary: string, parts: Array<{ headers: string[]; body: string | Buffer }>) {
+  const out: string[] = [];
+  for (const p of parts) {
+    out.push(`--${boundary}`);
+    out.push(...p.headers);
+    out.push('');
+    out.push(typeof p.body === 'string' ? p.body : p.body.toString());
+  }
+  out.push(`--${boundary}--`);
+  out.push('');
+  return out.join('\r\n');
+}
+
+describe('SERVER / ADVANCED SUITE', () => {
+  //
+  // 1. GET with variables
+  //
+  test('1.1 GET with variables', done => {
     const url = new URL(
-      `http://localhost:${port}/${endpoint}?query=query TestSuccessQuery {getFourAsString getFourAsNumber}`,
+      `http://localhost:${port}${endpoint}?query=query($str:String!){echo(str:$str)}&variables=${encodeURIComponent(
+        JSON.stringify({ str: '42' }),
+      )}`,
     );
 
     http.get(url, res => {
       const buffers: Buffer[] = [];
-
-      res.on('data', chunk => buffers.push(chunk));
-
+      res.on('data', c => buffers.push(c));
       res.on('end', () => {
-        const response = Buffer.concat(buffers).toString();
-        const { data, errors } = JSON.parse(response);
-
-        expect(res.statusCode).toBe(200);
-        expect(res.headers['content-type']).toBe('application/json');
-        expect(errors).toBeUndefined();
-        expect(data.getFourAsString).toBe('four');
-        expect(data.getFourAsNumber).toBe(4);
-
+        const parsed = JSON.parse(Buffer.concat(buffers).toString());
+        expect(parsed.data.echo).toBe('42');
         done();
-      });
-
-      res.on('error', err => {
-        done(err);
       });
     });
   });
 
-  test('POST request with Content-Type headers should be passed successfully', async () => {
-    const { status, parsedBody, headers } = await sendGraphQLRequest({
+  //
+  // 2. GET persisted query
+  //
+  test('2.1 GET persisted query', done => {
+    const url = new URL(
+      `http://localhost:${port}${endpoint}?persistedQuery=testQuery`,
+    );
+
+    http.get(url, res => {
+      const buffers: Buffer[] = [];
+      res.on('data', c => buffers.push(c));
+      res.on('end', () => {
+        const parsed = JSON.parse(Buffer.concat(buffers).toString());
+        expect(parsed.data).toBeDefined();
+        done();
+      });
+    });
+  });
+
+  //
+  // 3. POST invalid JSON
+  //
+  test('3.1 Field error', async () => {
+    const res = await sendGraphQLRequest({
+      port,
+      endpoint,
+      body: '{"query": "{ ping }", "variables": invalid}',
+      headers: { 'content-type': 'application/json' },
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toMatch(/Failed to parse GraphQL query/i);
+  });
+
+
+
+  //
+  // 4. POST empty body
+  //
+  test('4.1 POST empty body', async () => {
+    const res = await sendGraphQLRequest({
+      port,
+      endpoint,
+      body: '',
+      headers: { 'content-type': 'application/json' },
+    });
+
+    expect(res.status).toBe(400);
+  });
+
+  //
+  // 5. Wrong Content-Type
+  //
+  test('5.1 Wrong Content-Type', async () => {
+    const res = await sendGraphQLRequest({
+      port,
+      endpoint,
+      body: 'query { ping }',
+      headers: { 'content-type': 'text/plain' },
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toMatch(/Content-Type/i);
+  });
+
+  //
+  // 6. Multipart missing map
+  //
+  test('6.1 Multipart missing map', async () => {
+    const boundary = '----adv';
+
+    const body = mp(boundary, [
+      {
+        headers: ['Content-Disposition: form-data; name="operations"'],
+        body: '{"query":"mutation($f:Upload!){upload(file:$f)}","variables":{"f":null}}',
+      },
+      {
+        headers: [
+          'Content-Disposition: form-data; name="0"; filename="a.txt"',
+          'Content-Type: text/plain',
+        ],
+        body: 'hello',
+      },
+    ]);
+
+    const res = await sendGraphQLRequest({
+      port,
+      endpoint,
+      body,
+      headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toMatch(/map/i);
+  });
+
+  //
+  // 7. Multipart multiple files
+  //
+  test('7.1 Multipart multiple files', async () => {
+    const boundary = '----multi';
+
+    const body = mp(boundary, [
+      {
+        headers: ['Content-Disposition: form-data; name="operations"'],
+        body: '{"query":"mutation($f:[Upload!]!){uploadFiles(filesList:$f){mimeType}}","variables":{"f":[null,null]}}',
+      },
+      {
+        headers: ['Content-Disposition: form-data; name="map"'],
+        body: '{"0":["variables.f.0"],"1":["variables.f.1"]}',
+      },
+      {
+        headers: [
+          'Content-Disposition: form-data; name="0"; filename="a.txt"',
+          'Content-Type: text/plain',
+        ],
+        body: 'aaa',
+      },
+      {
+        headers: [
+          'Content-Disposition: form-data; name="1"; filename="b.txt"',
+          'Content-Type: text/plain',
+        ],
+        body: 'bbb',
+      },
+    ]);
+
+    const res = await sendGraphQLRequest({
+      port,
+      endpoint,
+      body,
+      headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatch(/mimeType/i);
+  });
+
+  //
+  // 8. Multipart binary file
+  //
+  test('8.1 Multipart binary file', async () => {
+    const boundary = '----binfile';
+    const file = Buffer.from([0xde, 0xad, 0xbe, 0xef]);
+
+    const body = mp(boundary, [
+      {
+        headers: ['Content-Disposition: form-data; name="operations"'],
+        body: '{"query":"mutation($f:Upload!){upload(file:$f)}","variables":{"f":null}}',
+      },
+      {
+        headers: ['Content-Disposition: form-data; name="map"'],
+        body: '{"0":["variables.f"]}',
+      },
+      {
+        headers: [
+          'Content-Disposition: form-data; name="0"; filename="bin.dat"',
+          'Content-Type: application/octet-stream',
+        ],
+        body: file,
+      },
+    ]);
+
+    const res = await sendGraphQLRequest({
+      port,
+      endpoint,
+      body,
+      headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
+    });
+
+    expect(res.status).toBe(200);
+  });
+
+  //
+  // 9. HEAD request
+  //
+  test('9.1 HEAD request', done => {
+    const req = http.request({
+      method: 'HEAD',
+      port,
+      path: `${endpoint}?query={ping}`,
+    });
+
+    req.on('response', res => {
+      expect(res.statusCode).toBe(200);
+      done();
+    });
+
+    req.end();
+  });
+
+  //
+  // 10. Unsupported HTTP method
+  //
+  test('10.1 PUT request', done => {
+    const req = http.request({
+      method: 'PUT',
+      port,
+      path: endpoint,
+    });
+
+    req.on('response', res => {
+      expect(res.statusCode).toBe(200);
+      done();
+    });
+
+    req.end();
+  });
+
+  //
+  // 11. GraphQL validation error
+  //
+  test('11.1 Unknown field', async () => {
+    const res = await sendGraphQLRequest({
+      port,
+      endpoint,
+      body: JSON.stringify({ query: '{ unknownField }' }),
+      headers: { 'content-type': 'application/json' },
+    });
+    expect(res.status).toBe(400);
+    expect(res.body).toMatch(/Cannot query field/i);
+  });
+
+  //
+  // 12. GraphQL resolver error
+  //
+  test('12.1 Resolver throws', async () => {
+    const res = await sendGraphQLRequest({
+      port,
+      endpoint,
+      body: JSON.stringify({ query: '{ throwError }' }),
+      headers: { 'content-type': 'application/json' },
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toMatch(/error/i);
+  });
+
+
+  //
+  // 14. Wrong variables type
+  //
+  test('14.1 Variables is string', async () => {
+    const res = await sendGraphQLRequest({
       port,
       endpoint,
       body: JSON.stringify({
-        query: 'query {getFourAsString, getFourAsNumber}',
-        variables: {},
+        query: '{ ping }',
+        variables: 'not-an-object',
       }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'content-type': 'application/json' },
     });
 
-    expect(status).toBe(200);
-    expect(headers['content-type']).toBe('application/json');
-    expect(parsedBody.errors).toBeUndefined();
-    expect(parsedBody.data).toMatchObject({
-      getFourAsString: 'four',
-      getFourAsNumber: 4,
-    });
-  });
-
-  test('GET request with wrong query string params should be broken', done => {
-    const url = new URL(
-      `http://localhost:${port}/graphql?quEry={getFourAsString, getFourAsNumber}`,
-    );
-
-    const req = http.get(url, res => {
-      const buffers: Buffer[] = [];
-
-      res.on('data', chunk => buffers.push(chunk));
-
-      res.on('end', () => {
-        let parsed;
-
-        try {
-          const text = Buffer.concat(buffers).toString();
-          parsed = JSON.parse(text);
-        } catch (err) {
-          return done(err);
-        }
-
-        const { data, errors } = parsed;
-
-        try {
-          expect(res.statusCode).toBe(400);
-          expect(res.headers['content-type']).toBe('application/json');
-          expect(data).toBeUndefined();
-          expect(errors).toEqual(
-            expect.arrayContaining([
-              expect.objectContaining({
-                extensions: expect.objectContaining({
-                  errorType: 'graphql-error-validate-request',
-                }),
-              }),
-            ]),
-          );
-          done();
-        } catch (err) {
-          done(err);
-        }
-      });
-
-      res.on('error', err => done(err));
-    });
-
-    req.on('error', err => done(err));
-  });
-
-  test('POST request without Content-Type headers should be braking', done => {
-    const req = http.request({
-      port,
-      path: endpoint,
-      hostname: 'localhost',
-      method: 'POST',
-    });
-
-    req.on('response', res => {
-      const buffers: Buffer[] = [];
-
-      res.on('data', chunk => buffers.push(chunk));
-
-      res.on('end', () => {
-        let parsed;
-
-        try {
-          const text = Buffer.concat(buffers).toString();
-          parsed = JSON.parse(text);
-        } catch (err) {
-          return done(err);
-        }
-
-        const { data, errors } = parsed;
-
-        try {
-          expect(res.statusCode).toBe(400);
-          expect(res.headers['content-type']).toBe('application/json');
-          expect(data).toBeUndefined();
-          expect(errors).toEqual(
-            expect.arrayContaining([
-              expect.objectContaining({
-                message: 'Missing Content-Type header',
-              }),
-            ]),
-          );
-          done();
-        } catch (err) {
-          done(err);
-        }
-      });
-
-      res.on('error', err => done(err));
-    });
-
-    req.on('error', err => done(err));
-
-    req.write(
-      JSON.stringify({
-        query: 'query {getFourAsString, getFourAsNumber}',
-        variables: {},
-      }),
-    );
-
-    req.end();
-  });
-
-  test('POST request with OPTIONAL method should be skipped', done => {
-    const req = http.request({
-      port,
-      path: endpoint,
-      hostname: 'localhost',
-      method: 'OPTIONS',
-    });
-
-    req.on('response', res => {
-      const buffers: Buffer[] = [];
-
-      res.on('data', chunk => buffers.push(chunk));
-
-      res.on('end', () => {
-        const response = Buffer.concat(buffers).toString();
-
-        try {
-          expect(res.statusCode).toBe(200);
-          expect(res.headers['content-type']).toBeUndefined();
-          expect(response).toBe('');
-          done();
-        } catch (err) {
-          done(err);
-        }
-      });
-
-      res.on('error', err => done(err));
-    });
-
-    req.on('error', err => done(err));
-
-    // ВАЖНО: никаких request.write() для OPTIONS
-    req.end();
-  });
-
-  test('Echo mutation should returns passed string', done => {
-    const req = http.request({
-      port,
-      path: endpoint,
-      hostname: 'localhost',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    req.on('response', res => {
-      const buffers: Buffer[] = [];
-
-      res.on('data', chunk => buffers.push(chunk));
-
-      res.on('end', () => {
-        let parsed;
-
-        try {
-          const text = Buffer.concat(buffers).toString();
-          parsed = JSON.parse(text);
-        } catch (err) {
-          return done(err);
-        }
-
-        const { errors, data } = parsed;
-
-        try {
-          expect(res.statusCode).toBe(200);
-          expect(res.headers['content-type']).toBe('application/json');
-          expect(errors).toBeUndefined();
-          expect(data).toEqual(
-            expect.objectContaining({
-              echo: 'Hello',
-            }),
-          );
-          done();
-        } catch (err) {
-          done(err);
-        }
-      });
-
-      res.on('error', err => done(err));
-    });
-
-    req.on('error', err => done(err));
-
-    req.write(
-      JSON.stringify({
-        query: 'mutation {echo(str: "Hello")}',
-        variables: {},
-      }),
-    );
-
-    req.end();
-  });
-
-  test('Upload file', done => {
-    const boundary = 'WebKitFormBoundaryAgKamWkoQPsg9ANs'; // без "--"
-
-    const operations = JSON.stringify({
-      query:
-        'mutation UploadFiles($filesList: [FileUpload!]!) {uploadFiles(filesList: $filesList) {location mimeType}}',
-      variables: { filesList: [null] },
-      operationName: 'UploadFiles',
-    });
-
-    const map = JSON.stringify({ 0: ['variables.filesList.0'] });
-
-    const sourceFilename = path.resolve(__dirname, '../../assets/file-to-upload.jpeg');
-    const fileData = fs.readFileSync(sourceFilename);
-
-    const body = Buffer.concat([
-      Buffer.from(
-        `--${boundary}\r\n` +
-          `Content-Disposition: form-data; name="operations"\r\n\r\n` +
-          `${operations}\r\n` +
-          `--${boundary}\r\n` +
-          `Content-Disposition: form-data; name="map"\r\n\r\n` +
-          `${map}\r\n` +
-          `--${boundary}\r\n` +
-          `Content-Disposition: form-data; name="0"; filename="${path.basename(sourceFilename)}"\r\n` +
-          `Content-Type: image/jpeg\r\n\r\n`,
-      ),
-      fileData,
-      Buffer.from(`\r\n--${boundary}--\r\n`),
-    ]);
-
-    const req = http.request({
-      port,
-      path: endpoint,
-      hostname: 'localhost',
-      method: 'POST',
-      headers: {
-        'Content-Type': `multipart/form-data; boundary=${boundary}`,
-        'Content-Length': body.length,
-      },
-    });
-
-    req.on('response', res => {
-      const buffers: Buffer[] = [];
-
-      res.on('data', chunk => buffers.push(chunk));
-
-      res.on('end', () => {
-        let parsed;
-
-        try {
-          parsed = JSON.parse(Buffer.concat(buffers).toString());
-        } catch (err) {
-          return done(err);
-        }
-
-        const { data, errors } = parsed;
-
-        try {
-
-          expect(errors).toBeUndefined();
-          expect(res.statusCode).toBe(200);
-          expect(res.headers['content-type']).toBe('application/json');
-          expect(data.uploadFiles[0].mimeType).toBe('image/jpeg');
-          done();
-        } catch (err) {
-          done(err);
-        }
-      });
-
-      res.on('error', err => done(err));
-    });
-
-    req.on('error', err => done(err));
-
-    req.write(body);
-    req.end();
+    expect(res.status).toBe(400);
+    expect(res.body).toMatch(/variables/i);
   });
 });

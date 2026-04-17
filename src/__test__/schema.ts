@@ -146,6 +146,13 @@ const Query = new GraphQLObjectType({
       type: new GraphQLNonNull(DateTimeScalarType),
       resolve: (_, { dt }) => dt,
     },
+    echo: {
+      type: new GraphQLNonNull(GraphQLString),
+      args: {
+        str: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      resolve: (_parent, args) => args.str,
+    },
     ping: {
       type: new GraphQLNonNull(GraphQLString),
       resolve: () => 'pong',
