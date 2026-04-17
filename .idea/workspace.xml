@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="e95be4f5-41e5-4301-8ab6-1613555f343f" name="Changes" comment="chore: esm supports" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;vasily-novosad&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;git@github.com:via-profit-services/core.git&quot;,
+    &quot;accountId&quot;: &quot;2b11e90b-19ad-4e22-af81-6dc762ba8899&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1
+}</component>
+  <component name="ProjectId" id="38mQhYEyFxIpZH0LSumqnZ5zzY3" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Attach to Node.js/Chrome.Debug.executor": "Debug",
+    "Jest.DateTime scalar.parseValue: reject invalid date.executor": "Run",
+    "Jest.DateTime scalar.parseValue: reject timestamp in seconds.executor": "Debug",
+    "Jest.Graphql depth limit tests.Depth-limit: query deeper than allowed should be rejected.executor": "Run",
+    "Jest.Graphql depth limit tests.Depth-limit: query is fine than request should be accepted.executor": "Run",
+    "Jest.Graphql depth limit tests.executor": "Run",
+    "Jest.Graphql server.Echo mutation should returns passed string.executor": "Run",
+    "Jest.Graphql server.GET request with wrong query string params should be broken.executor": "Run",
+    "Jest.Graphql server.POST request with Content-Type headers should be passed successfully.executor": "Run",
+    "Jest.Graphql server.POST request with OPTIONAL method should be skipped.executor": "Run",
+    "Jest.Graphql server.POST request without Content-Type headers should be braking.executor": "Run",
+    "Jest.Graphql server.Upload file.executor": "Run",
+    "Jest.Graphql server.executor": "Run",
+    "Jest.SECURITY SUITE.1.1 JSON body overflow.executor": "Run",
+    "Jest.SECURITY SUITE.10.1 Files before operations.executor": "Run",
+    "Jest.SECURITY SUITE.2.1 Invalid gzip body.executor": "Run",
+    "Jest.SECURITY SUITE.3.1 Multiple operations fields.executor": "Run",
+    "Jest.SECURITY SUITE.3.2 Invalid JSON in map.executor": "Run",
+    "Jest.SECURITY SUITE.4.1 File exceeds maxFileSize.executor": "Run",
+    "Jest.SECURITY SUITE.5.1 Missing Content-Type.executor": "Run",
+    "Jest.SECURITY SUITE.6.1 Client aborts upload.executor": "Run",
+    "Jest.SECURITY SUITE.7.1 Too deep query.executor": "Run",
+    "Jest.SECURITY SUITE.8.1 TempFile: createReadStream before end.executor": "Run",
+    "Jest.SECURITY SUITE.8.2 TempFile: cleanup twice.executor": "Run",
+    "Jest.SECURITY SUITE.9.1 Map points to non-existing path.executor": "Run",
+    "Jest.SECURITY SUITE.executor": "Run",
+    "Jest.scalars.test.ts.executor": "Run",
+    "Jest.security.test.ts.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "dart.analysis.tool.window.visible": "false",
+    "git-widget-placeholder": "standalone/1.5",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/home/admin/Projects/via-profit-services/core",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "nodejs.jest.jest_package": "/home/admin/Projects/via-profit-services/core/node_modules/jest",
+    "nodejs_package_manager_path": "npm",
+    "npm.test.executor": "Run",
+    "prettierjs.PrettierConfiguration.Package": "/home/admin/Projects/via-profit-services/core/node_modules/prettier",
+    "settings.editor.selected.configurable": "database.other",
+    "show.migrate.to.gradle.popup": "false",
+    "ts.external.directory.path": "/home/admin/.local/share/JetBrains/Toolbox/apps/intellij-idea/plugins/javascript-plugin/jsLanguageServicesImpl/external",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/docs/api" />
+      <recent name="$PROJECT_DIR$/docs/guides" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Jest.scalars.test.ts">
+    <configuration name="Debug" type="ChromiumRemoteDebugType" factoryName="Chromium Remote" port="9229" restartOnDisconnect="true">
+      <mapping url="webpack://via-profit-services/core/src/playground/index.ts" local-file="$PROJECT_DIR$/src/playground/index.ts" />
+      <method v="2" />
+    </configuration>
+    <configuration name="DateTime scalar.parseValue: reject invalid date" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
+      <node-interpreter value="project" />
+      <jest-package value="$PROJECT_DIR$/node_modules/jest" />
+      <working-dir value="$PROJECT_DIR$" />
+      <envs />
+      <scope-kind value="TEST" />
+      <test-file value="$PROJECT_DIR$/src/__test__/scalars.test.ts" />
+      <test-names>
+        <test-name value="DateTime scalar" />
+        <test-name value="parseValue: reject invalid date" />
+      </test-names>
+      <method v="2" />
+    </configuration>
+    <configuration name="DateTime scalar.parseValue: reject timestamp in seconds" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
+      <node-interpreter value="project" />
+      <jest-package value="$PROJECT_DIR$/node_modules/jest" />
+      <working-dir value="$PROJECT_DIR$" />
+      <envs />
+      <scope-kind value="TEST" />
+      <test-file value="$PROJECT_DIR$/src/__test__/scalars.test.ts" />
+      <test-names>
+        <test-name value="DateTime scalar" />
+        <test-name value="parseValue: reject timestamp in seconds" />
+      </test-names>
+      <method v="2" />
+    </configuration>
+    <configuration name="SECURITY SUITE" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
+      <node-interpreter value="project" />
+      <jest-package value="$PROJECT_DIR$/node_modules/jest" />
+      <working-dir value="$PROJECT_DIR$" />
+      <envs />
+      <scope-kind value="SUITE" />
+      <test-file value="$PROJECT_DIR$/src/__test__/security.test.ts" />
+      <test-names>
+        <test-name value="SECURITY SUITE" />
+      </test-names>
+      <method v="2" />
+    </configuration>
+    <configuration name="scalars.test.ts" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
+      <node-interpreter value="project" />
+      <jest-package value="$PROJECT_DIR$/node_modules/jest" />
+      <working-dir value="$PROJECT_DIR$" />
+      <envs />
+      <scope-kind value="TEST_FILE" />
+      <test-file value="$PROJECT_DIR$/src/__test__/scalars.test.ts" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="core" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="core" />
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
+    <configuration name="test" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="test" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Attach to Node.js/Chrome.Debug" />
+      <item itemvalue="Jest.DateTime scalar.parseValue: reject invalid date" />
+      <item itemvalue="Jest.DateTime scalar.parseValue: reject timestamp in seconds" />
+      <item itemvalue="Jest.scalars.test.ts" />
+      <item itemvalue="Jest.SECURITY SUITE" />
+      <item itemvalue="npm.test" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Jest.scalars.test.ts" />
+        <item itemvalue="Jest.DateTime scalar.parseValue: reject invalid date" />
+        <item itemvalue="Jest.DateTime scalar.parseValue: reject timestamp in seconds" />
+        <item itemvalue="npm.test" />
+        <item itemvalue="Jest.SECURITY SUITE" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-26cb7f24e5b0-intellij.indexing.shared.core-IU-253.29346.138" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.29346.138" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="e95be4f5-41e5-4301-8ab6-1613555f343f" name="Changes" comment="" />
+      <created>1769402386887</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1769402386887</updated>
+      <workItem from="1769402389285" duration="18009000" />
+      <workItem from="1769487825822" duration="18988000" />
+      <workItem from="1769576093834" duration="2019000" />
+      <workItem from="1772711310264" duration="1040000" />
+      <workItem from="1772712366100" duration="217000" />
+      <workItem from="1776237066242" duration="4670000" />
+      <workItem from="1776255228318" duration="875000" />
+      <workItem from="1776336946844" duration="2341000" />
+      <workItem from="1776405140656" duration="216000" />
+      <workItem from="1776406082765" duration="2445000" />
+      <workItem from="1776427887239" duration="136000" />
+    </task>
+    <task id="LOCAL-00001" summary="Refactoring">
+      <option name="closed" value="true" />
+      <created>1769402872053</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1769402872053</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Security update">
+      <option name="closed" value="true" />
+      <created>1769404060601</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1769404060601</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Refactoring">
+      <option name="closed" value="true" />
+      <created>1769404337193</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1769404337193</updated>
+    </task>
+    <task id="LOCAL-00004" summary="IDE">
+      <option name="closed" value="true" />
+      <created>1769404343720</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1769404343720</updated>
+    </task>
+    <task id="LOCAL-00005" summary="ROADMAP changes">
+      <option name="closed" value="true" />
+      <created>1769404354988</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1769404354988</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Security updates">
+      <option name="closed" value="true" />
+      <created>1769412564758</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1769412564758</updated>
+    </task>
+    <task id="LOCAL-00007" summary="README">
+      <option name="closed" value="true" />
+      <created>1769412587744</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1769412587744</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Bump">
+      <option name="closed" value="true" />
+      <created>1769412705646</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1769412705646</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Tests">
+      <option name="closed" value="true" />
+      <created>1769428431525</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1769428431525</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Refactoring">
+      <option name="closed" value="true" />
+      <created>1769429250763</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1769429250763</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Security tests">
+      <option name="closed" value="true" />
+      <created>1769491599327</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1769491599327</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Security: fixed scalar date issue">
+      <option name="closed" value="true" />
+      <created>1772712344956</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1772712344956</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Bump">
+      <option name="closed" value="true" />
+      <created>1772712411673</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1772712411673</updated>
+    </task>
+    <task id="LOCAL-00014" summary="fix: bugfix on scalar parser">
+      <option name="closed" value="true" />
+      <created>1776337720104</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1776337720104</updated>
+    </task>
+    <task id="LOCAL-00015" summary="chore: module config">
+      <option name="closed" value="true" />
+      <created>1776337730920</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1776337730920</updated>
+    </task>
+    <task id="LOCAL-00016" summary="chore: bump">
+      <option name="closed" value="true" />
+      <created>1776405168838</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1776405168838</updated>
+    </task>
+    <task id="LOCAL-00017" summary="chore: esm supports">
+      <option name="closed" value="true" />
+      <created>1776408324129</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1776408324129</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Security update" />
+    <MESSAGE value="IDE" />
+    <MESSAGE value="ROADMAP changes" />
+    <MESSAGE value="Security updates" />
+    <MESSAGE value="README" />
+    <MESSAGE value="Tests" />
+    <MESSAGE value="Refactoring" />
+    <MESSAGE value="Security tests" />
+    <MESSAGE value="Security: fixed scalar date issue" />
+    <MESSAGE value="Bump" />
+    <MESSAGE value="fix: bugfix on scalar parser" />
+    <MESSAGE value="chore: module config" />
+    <MESSAGE value="chore: bump" />
+    <MESSAGE value="chore: esm supports" />
+    <option name="LAST_COMMIT_MESSAGE" value="chore: esm supports" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/utils/format-errors.ts</url>
+          <line>65</line>
+          <option name="timeStamp" value="16" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>

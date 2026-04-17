@@ -161,12 +161,9 @@ const applicationFactory: ApplicationFactory = async props => {
         operationName,
       });
 
-      if (errors) {
-        throw new ServerError(errors, 'graphql-error-execute');
-      }
-
       response.status(200).json({
         data,
+        errors,
         extensions: {
           ...extensions,
           queryTime: performance.now() - startTime,
