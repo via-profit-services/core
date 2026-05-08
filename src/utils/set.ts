@@ -25,18 +25,20 @@ export default function dotNotationSet(
   let current: any = obj;
 
   for (const part of parts) {
-    const index = Number(part);
+    const isArrayIndex = /^\d+$/.test(part); // Проверяем, является ли часть числом (индексом массива)
 
-    // ARRAY INDEX
-    if (!Number.isNaN(index)) {
+    if (isArrayIndex) {
+      const index = parseInt(part, 10);
+
+      // Проверяем, что текущий элемент - массив
       if (!Array.isArray(current)) {
         throw new Error(
-          `dotNotationSet: expected array at «${part}» in path «${path}», but found ${typeof current}`,
+          `dotNotationSet: expected array at «${part}» in path «${path}», but got ${typeof current}`,
         );
       }
 
-      if (current[index] == null) {
-        // Create empty object for next step
+      // Если индекс не существует, создаем его
+      if (!(index in current)) {
         current[index] = {};
       }
 
@@ -44,38 +46,51 @@ export default function dotNotationSet(
       continue;
     }
 
-    // OBJECT KEY
+    // Обычный объектный ключ
     if (typeof current !== 'object' || current === null) {
       throw new Error(
-        `dotNotationSet: expected object at «${part}» in path «${path}», but found ${typeof current}`,
+        `dotNotationSet: expected object at «${part}» in path «${path}», but got ${typeof current}`,
       );
     }
 
+    // Если ключа нет, создаем
     if (!(part in current)) {
-      current[part] = {};
+      // Смотрим на следующий сегмент, чтобы понять, что создавать - массив или объект
+      const nextPart = parts[parts.indexOf(part) + 1];
+      const isNextArrayIndex = nextPart && /^\d+$/.test(nextPart);
+
+      if (isNextArrayIndex) {
+        // Следующий сегмент - индекс массива, создаем массив
+        current[part] = [];
+      } else {
+        // Иначе создаем объект
+        current[part] = {};
+      }
     }
 
     current = current[part];
   }
 
-  //
-  // SET FINAL VALUE
-  //
-  const index = Number(last);
+  // Устанавливаем финальное значение
+  const isLastArrayIndex = /^\d+$/.test(last);
 
-  if (!Number.isNaN(index)) {
+  if (isLastArrayIndex) {
+    const index = parseInt(last, 10);
+
     if (!Array.isArray(current)) {
       throw new Error(
-        `dotNotationSet: expected array at final segment «${last}» in path «${path}»`,
+        `dotNotationSet: expected array at final segment «${last}» in path «${path}», but got ${typeof current}`,
       );
     }
+
     current[index] = value;
     return;
   }
 
+  // Обычный объектный ключ
   if (typeof current !== 'object' || current === null) {
     throw new Error(
-      `dotNotationSet: expected object at final segment «${last}» in path «${path}»`,
+      `dotNotationSet: expected object at final segment «${last}» in path «${path}», but got ${typeof current}`,
     );
   }
 

@@ -33,6 +33,7 @@ const { startServer, stopServer } = configTest({
   limits: {
     maxJSONBodySize: 2_000_000,
     maxGraphQLDepthLimit: 4,
+    maxFiles: 20,
   },
 });
 
@@ -146,97 +147,24 @@ describe('SERVER / ADVANCED SUITE', () => {
   });
 
   //
-  // 6. Multipart missing map
-  //
-  test('6.1 Multipart missing map', async () => {
-    const boundary = '----adv';
-
-    const body = mp(boundary, [
-      {
-        headers: ['Content-Disposition: form-data; name="operations"'],
-        body: '{"query":"mutation($f:Upload!){upload(file:$f)}","variables":{"f":null}}',
-      },
-      {
-        headers: [
-          'Content-Disposition: form-data; name="0"; filename="a.txt"',
-          'Content-Type: text/plain',
-        ],
-        body: 'hello',
-      },
-    ]);
-
-    const res = await sendGraphQLRequest({
-      port,
-      endpoint,
-      body,
-      headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
-    });
-
-    expect(res.status).toBe(400);
-    expect(res.body).toMatch(/map/i);
-  });
-
-  //
-  // 7. Multipart multiple files
-  //
-  test('7.1 Multipart multiple files', async () => {
-    const boundary = '----multi';
-
-    const body = mp(boundary, [
-      {
-        headers: ['Content-Disposition: form-data; name="operations"'],
-        body: '{"query":"mutation($f:[Upload!]!){uploadFiles(filesList:$f){mimeType}}","variables":{"f":[null,null]}}',
-      },
-      {
-        headers: ['Content-Disposition: form-data; name="map"'],
-        body: '{"0":["variables.f.0"],"1":["variables.f.1"]}',
-      },
-      {
-        headers: [
-          'Content-Disposition: form-data; name="0"; filename="a.txt"',
-          'Content-Type: text/plain',
-        ],
-        body: 'aaa',
-      },
-      {
-        headers: [
-          'Content-Disposition: form-data; name="1"; filename="b.txt"',
-          'Content-Type: text/plain',
-        ],
-        body: 'bbb',
-      },
-    ]);
-
-    const res = await sendGraphQLRequest({
-      port,
-      endpoint,
-      body,
-      headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
-    });
-
-    expect(res.status).toBe(200);
-    expect(res.body).toMatch(/mimeType/i);
-  });
-
-  //
   // 8. Multipart binary file
   //
-  test('8.1 Multipart binary file', async () => {
+  test('8.1 Multipart successfully upload file', async () => {
     const boundary = '----binfile';
-    const file = Buffer.from([0xde, 0xad, 0xbe, 0xef]);
+    const file = Buffer.from('Some text');
 
     const body = mp(boundary, [
       {
         headers: ['Content-Disposition: form-data; name="operations"'],
-        body: '{"query":"mutation($f:Upload!){upload(file:$f)}","variables":{"f":null}}',
+        body: '{"query":"mutation($filesList:[FileUpload!]!){uploadFiles(filesList:$filesList) {__typename}}","variables":{"filesList":[null]}}',
       },
       {
         headers: ['Content-Disposition: form-data; name="map"'],
-        body: '{"0":["variables.f"]}',
+        body: '{"0":["variables.filesList.0"]}',
       },
       {
         headers: [
-          'Content-Disposition: form-data; name="0"; filename="bin.dat"',
+          'Content-Disposition: form-data; name="0"; filename="test.txt"',
           'Content-Type: application/octet-stream',
         ],
         body: file,

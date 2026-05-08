@@ -1,29 +1,19 @@
-import type { RequestBody, MultipartParser } from '@via-profit-services/core';
+import type { MultipartParser, RequestBody } from '@via-profit-services/core';
 
 import FileUploadInstance from './FileUploadInstance';
 import dotNotationSet from './set';
-import { DEFAULT_MAX_FIELD_SIZE, DEFAULT_MAX_FILE_SIZE, DEFAULT_MAX_FILE_TOTAL_SIZE, DEFAULT_MAX_FILES, DEFAULT_PERSISTED_QUERY_KEY } from '../constants';
+import {
+  DEFAULT_MAX_FIELD_SIZE,
+  DEFAULT_MAX_FILE_SIZE,
+  DEFAULT_MAX_FILE_TOTAL_SIZE,
+  DEFAULT_MAX_FILES,
+  DEFAULT_PERSISTED_QUERY_KEY,
+} from '../constants';
 import { TempFile } from './TempFile';
 import { Multipart, NormalizeLineEndings } from './Multipart';
+import { validateMapPath } from './validate-map-path';
 
-/**
- * Validates that a dot-notation path exists inside an object.
- */
-const validateMapPath = (obj: any, path: string): boolean => {
-  const parts = path.split('.');
-  let current = obj;
-
-  for (const part of parts) {
-    if (current == null || typeof current !== 'object' || !(part in current)) {
-      return false;
-    }
-    current = current[part];
-  }
-
-  return true;
-};
-
-const multipartParser: MultipartParser = ({ request, config }) =>
+const graphqlFileUploader: MultipartParser = ({ request, config }) =>
   new Promise<RequestBody>((resolve, reject) => {
     const persistedQueriesMap = config.persistedQueriesMap || {};
     const persistedQueryKey = config.persistedQueryKey || DEFAULT_PERSISTED_QUERY_KEY;
@@ -33,14 +23,16 @@ const multipartParser: MultipartParser = ({ request, config }) =>
       maxFiles: DEFAULT_MAX_FILES,
       maxFilesTotalSize: DEFAULT_MAX_FILE_TOTAL_SIZE,
       ...config.limits,
-    }
+    };
     const { maxFieldSize, maxFileSize, maxFiles, maxFilesTotalSize } = limits;
     const { headers } = request;
 
     let finished = false;
 
     const safeReject = (err: any) => {
-      if (finished) return;
+      if (finished) {
+        return;
+      }
       finished = true;
 
       cleanupAllTempFiles();
@@ -48,10 +40,10 @@ const multipartParser: MultipartParser = ({ request, config }) =>
     };
 
     const safeResolve = (value: any) => {
-      if (finished) return;
+      if (finished) {
+        return;
+      }
       finished = true;
-
-      cleanupAllTempFiles();
       resolve(value);
     };
 
@@ -60,8 +52,7 @@ const multipartParser: MultipartParser = ({ request, config }) =>
       return;
     }
 
-    
-    const parser = new Multipart({ headers, limits });
+    const parser = new Multipart({ headers });
 
     // Track all TempFiles for cleanup
     const tempFiles = new Set<TempFile>();
@@ -241,7 +232,7 @@ const multipartParser: MultipartParser = ({ request, config }) =>
     //
     // FILE HANDLER
     //
-    parser.on('file', (fieldName, stream, { filename, mimeType, encoding }) => {
+    parser.on('file', (fieldName, stream, { filename, mimeType, encoding, fileSize }) => {
       const upload = map.get(Number(fieldName));
 
       if (!upload) {
@@ -264,11 +255,7 @@ const multipartParser: MultipartParser = ({ request, config }) =>
         totalSize += chunk.length;
 
         if (totalSize > maxFilesTotalSize) {
-          safeReject(
-            new Error(
-              `Total upload size exceeds the ${maxFilesTotalSize} byte limit.`,
-            ),
-          );
+          safeReject(new Error(`Total upload size exceeds the ${maxFilesTotalSize} byte limit.`));
           return;
         }
 
@@ -282,6 +269,7 @@ const multipartParser: MultipartParser = ({ request, config }) =>
             filename,
             mimeType,
             encoding,
+            fileSize,
             createReadStream: () => temp.createReadStream(),
             cleanup: () => temp.cleanup(),
           });
@@ -309,15 +297,7 @@ const multipartParser: MultipartParser = ({ request, config }) =>
 
       if (!map.size) {
         safeResolve(operations);
-        // safeReject(new Error('Missing multipart field «map»'));
         return;
-      }
-
-      // Ensure all uploads are resolved or rejected
-      for (const upload of map.values()) {
-        if (!upload.file) {
-          upload.reject(new Error('File was declared in map but not received'));
-        }
       }
 
       safeResolve(operations);
@@ -331,9 +311,7 @@ const multipartParser: MultipartParser = ({ request, config }) =>
 
     const normalizer = new NormalizeLineEndings();
     request.pipe(normalizer).pipe(parser);
-
   });
 
-export default multipartParser;
+export default graphqlFileUploader;
 
-const CRLF = Buffer.from('\r\n');

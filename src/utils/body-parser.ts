@@ -2,8 +2,7 @@ import zlib from 'node:zlib';
 import http from 'node:http';
 import type { BodyParser, RequestBody, Configuration } from '@via-profit-services/core';
 
-import multipartParser from './multipart-parser';
-import {  } from 'constants';
+import graphqlFileUploader from './graphql-file-uploader';
 import { DEFAULT_JSON_DECOMPRESSED_MAX_BYTES, DEFAULT_JSON_MAX_BYTES } from '../constants';
 
 const JSONOBJREGEX = /^[ \t\n\r]*\{/;
@@ -27,7 +26,7 @@ const bodyParser: BodyParser = async ({ request, response, config }) => {
   // Multipart (file upload)
   if (headers['content-type']?.startsWith('multipart/form-data')) {
     try {
-      return await multipartParser({ request, response, config });
+      return await graphqlFileUploader({ request, response, config });
     } catch (err) {
       // Preserve original error
       throw err instanceof Error ? err : new Error(String(err));

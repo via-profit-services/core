@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { ReadStreamOptions } from '@via-profit-services/core';
 
 /**
  * Represents a temporary file used to buffer uploaded file data.
@@ -26,7 +27,8 @@ export class TempFile {
     this.filePath = path.join(dir, filename);
     this.writeStream = fs.createWriteStream(this.filePath);
 
-    this.writeStream.on('error', () => {
+    this.writeStream.on('error', err => {
+      console.error(err);
       // Errors are handled by end() / cleanup()
     });
   }
@@ -61,6 +63,7 @@ export class TempFile {
       };
 
       const onError = () => {
+        console.error('onError');
         // Ignore — cleanup() will remove the file anyway
       };
 
@@ -101,7 +104,9 @@ export class TempFile {
    * Safe to call multiple times.
    */
   cleanup() {
-    if (this.cleaned) return;
+    if (this.cleaned) {
+      return;
+    }
     this.cleaned = true;
 
     try {

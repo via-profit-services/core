@@ -1,31 +1,11 @@
-import { Writable, PassThrough, Transform, TransformCallback } from 'node:stream';
-import { TempFile } from './TempFile';
-import { 
-  DEFAULT_MAX_FILE_SIZE,
-  DEFAULT_MAX_FIELD_SIZE,
-  DEFAULT_MAX_FILE_FIELDS,
-  DEFAULT_MAX_FILES,
-  DEFAULT_MAX_FILE_PARTS,
-  DEFAULT_MAX_FILE_TOTAL_SIZE,
-} from '../constants';
-
-type Limits = {
-  readonly maxFileSize: number;
-  readonly maxFieldSize: number;
-  readonly maxFilesTotalSize: number;
-  readonly maxFiles: number;
-  readonly maxFileFields: number;
-  readonly maxFileParts: number;
-};
+import { PassThrough, Transform, TransformCallback, Writable } from 'node:stream';
 
 type MultipartOptions = {
   headers: Record<string, any>;
-  limits: Partial<Limits>;
 };
 
 export class Multipart extends Writable {
   private readonly boundary: Buffer;
-  private readonly boundaryEnd: Buffer;
 
   private buffer = Buffer.alloc(0);
   private state: 'SEARCH' | 'HEADERS' | 'FIELD' | 'FILE' | 'DONE' = 'SEARCH';
@@ -33,7 +13,7 @@ export class Multipart extends Writable {
   private headers: Record<string, string> = {};
   private fieldName = '';
 
-  private fileTemp: TempFile | null = null;
+  // private fileTemp: TempFile | null = null;
   private fileStream: PassThrough | null = null;
   private fileSize = 0;
   private totalFiles = 0;
@@ -45,10 +25,21 @@ export class Multipart extends Writable {
 
   private finished = false;
 
+  // Буферы для отсроченного эмита событий
+  private pendingFields: Array<{ name: string; value: string; truncated: boolean }> = [];
+  private pendingFiles: Array<{
+    name: string;
+    stream: PassThrough;
+    info: { filename: string; mimeType: string; encoding: string; fileSize: number };
+  }> = [];
+
+  private eventsFlushed = false;
+
   constructor(private opts: MultipartOptions) {
     super();
-    this.boundary = Buffer.from('-');
-    this.boundaryEnd = Buffer.from('-');
+
+    this.boundary = Buffer.from('');
+
     const rawCT = opts.headers['content-type'] || opts.headers['Content-Type'] || '';
     const ct = rawCT.toLowerCase();
 
@@ -64,11 +55,12 @@ export class Multipart extends Writable {
     }
 
     this.boundary = Buffer.from(`--${match[1]}`);
-    this.boundaryEnd = Buffer.from(`--${match[1]}--`);
   }
 
   override _write(chunk: Buffer, _enc: any, cb: any) {
-    if (this.state === 'DONE') return cb();
+    if (this.state === 'DONE') {
+      return cb();
+    }
 
     try {
       this.processChunk(chunk);
@@ -79,8 +71,22 @@ export class Multipart extends Writable {
     }
   }
 
+  override _final(cb: any) {
+    if (this.state !== 'DONE') {
+      // Проверяем, что все boundaries закрыты
+      if (this.buffer.length > 0) {
+        this.safeDestroy(new Error('Malformed multipart body'));
+      } else {
+        this.finishParsing();
+      }
+    }
+    cb();
+  }
+
   private safeDestroy(err: Error) {
-    if (this.finished) return;
+    if (this.finished) {
+      return;
+    }
     this.finished = true;
 
     if (this.fileStream) {
@@ -88,205 +94,52 @@ export class Multipart extends Writable {
       this.fileStream = null;
     }
 
-    if (this.fileTemp) {
-      try { this.fileTemp.end(); } catch {
-        // do nothing
-      }
-      try { this.fileTemp.cleanup(); } catch {
-        // do nothing
-      }
-      this.fileTemp = null;
-    }
-
     super.destroy(err);
   }
 
-  private processChunk(chunk: Buffer) {
-    if (!this.boundary) {
-      this.safeDestroy(new Error('Multipart parser used without boundary'));
-      return;
-    }
-
-    if (this.state === 'DONE') return;
-
-    if (this.buffer.length + chunk.length > this.MAX_BUFFER_SIZE) {
-      this.safeDestroy(new Error('Multipart buffer overflow'));
-      return;
-    }
-
-    this.buffer = Buffer.concat([this.buffer, chunk]);
-
-    while (true) {
-
-      //
-      // SEARCH — ищем начало части
-      //
-      if (this.state === 'SEARCH') {
-        const idx = this.findBoundary(this.buffer, this.boundary);
-        if (idx === -1) return;
-
-        const endIdx = this.findBoundary(this.buffer, this.boundaryEnd);
-        if (endIdx === idx) {
-          this.finishParsing();
-          return;
-        }
-
-        this.partsCount++;
-        if (this.partsCount > (this.opts.limits.maxFileParts || DEFAULT_MAX_FILE_PARTS)) {
-          this.safeDestroy(
-            new Error(`${this.opts.limits.maxFileParts} max multipart parts exceeded.`),
-          );
-          return;
-        }
-
-        this.buffer = this.buffer.slice(idx + this.boundary.length);
-
-        if (this.buffer[0] === 13 && this.buffer[1] === 10) {
-          this.buffer = this.buffer.slice(2);
-        }
-
-        this.state = 'HEADERS';
-      }
-
-      //
-      // HEADERS
-      //
-      if (this.state === 'HEADERS') {
-        const idx = this.buffer.indexOf('\r\n\r\n');
-        if (idx === -1) return;
-
-        const raw = this.buffer.slice(0, idx).toString();
-        this.buffer = this.buffer.slice(idx + 4);
-
-        this.headers = this.parseHeaders(raw);
-        const cd = this.parseContentDisposition(this.headers['content-disposition']);
-
-        if (!cd.name) {
-          this.safeDestroy(new Error('Malformed Content-Disposition'));
-          return;
-        }
-
-        this.fieldName = cd.name;
-
-        if (cd.filename) {
-          this.totalFiles++;
-          if (this.totalFiles > (this.opts.limits.maxFiles || DEFAULT_MAX_FILES)) {
-            this.safeDestroy(new Error(`${this.opts.limits.maxFiles} max file uploads exceeded.`));
-            return;
-          }
-
-          this.state = 'FILE';
-          this.fileTemp = new TempFile();
-          this.fileStream = new PassThrough();
-          this.fileSize = 0;
-
-          this.emit('file', this.fieldName, this.fileStream, {
-            filename: cd.filename,
-            mimeType: this.headers['content-type'],
-            encoding: '7bit',
-          });
-        } else {
-          this.fieldsCount++;
-          if (this.fieldsCount > (this.opts.limits.maxFileFields || DEFAULT_MAX_FILE_FIELDS)) {
-            this.safeDestroy(
-              new Error(`${this.opts.limits.maxFileFields} max field count exceeded.`),
-            );
-            return;
-          }
-
-          this.state = 'FIELD';
-        }
-      }
-
-      //
-      // FIELD
-      //
-      if (this.state === 'FIELD') {
-        const idx = this.findBoundary(this.buffer, this.boundary);
-        if (idx === -1) return;
-
-        const value = this.buffer.slice(0, idx - 2).toString();
-
-        if (value.length > (this.opts.limits.maxFieldSize || DEFAULT_MAX_FIELD_SIZE)) {
-          this.safeDestroy(
-            new Error(
-              `Field «${this.fieldName}» exceeds the ${this.opts.limits.maxFieldSize} byte size limit.`,
-            ),
-          );
-          return;
-        }
-
-        this.emit('field', this.fieldName, value, { valueTruncated: false });
-
-        this.buffer = this.buffer.slice(idx);
-        this.state = 'SEARCH';
-      }
-
-      //
-      // FILE
-      //
-      if (this.state === 'FILE') {
-        const idx = this.findBoundary(this.buffer, this.boundary);
-
-        if (idx === -1) {
-          this.writeFileChunk(this.buffer);
-          this.buffer = Buffer.alloc(0);
-          return;
-        }
-
-        const data = this.buffer.slice(0, idx - 2);
-        this.writeFileChunk(data);
-
-        this.fileStream?.end();
-        this.fileTemp?.end();
-
-        this.buffer = this.buffer.slice(idx);
-        this.state = 'SEARCH';
-      }
-    }
-  }
-
   private writeFileChunk(chunk: Buffer) {
-    if (!this.fileStream || !this.fileTemp) return;
+    if (!this.fileStream) {
+      return;
+    }
 
     this.fileStream.write(chunk);
-    this.fileTemp.write(chunk);
-
     this.fileSize += chunk.length;
     this.totalSize += chunk.length;
+  }
 
-    if (this.fileSize > (this.opts.limits.maxFileSize || DEFAULT_MAX_FILE_SIZE)) {
-      this.fileStream.emit('limit');
-      this.safeDestroy(
-        new Error(`File exceeds the ${this.opts.limits.maxFileSize} byte size limit.`),
-      );
+  private flushEvents() {
+    if (this.eventsFlushed) return;
+    this.eventsFlushed = true;
+
+    // Сначала все поля
+    for (const field of this.pendingFields) {
+      this.emit('field', field.name, field.value, { valueTruncated: field.truncated });
     }
 
-    if (this.totalSize > (this.opts.limits.maxFilesTotalSize || DEFAULT_MAX_FILE_TOTAL_SIZE)) {
-      this.safeDestroy(
-        new Error(
-          `Total upload size exceeds the ${this.opts.limits.maxFilesTotalSize} byte limit.`,
-        ),
-      );
+    // Затем все файлы
+    for (const file of this.pendingFiles) {
+      this.emit('file', file.name, file.stream, file.info);
     }
+
+    // Очищаем буферы
+    this.pendingFields = [];
+    this.pendingFiles = [];
   }
 
   private finishParsing() {
     if (this.finished) return;
     this.finished = true;
 
-    if (this.fileStream) this.fileStream.end();
-    if (this.fileTemp) this.fileTemp.end();
+    // Сбрасываем все накопленные события
+    this.flushEvents();
+
+    if (this.fileStream) {
+      this.fileStream.end();
+      this.fileStream = null;
+    }
 
     this.emit('finish');
     this.state = 'DONE';
-  }
-
-  override _final(cb: any) {
-    if (this.state !== 'DONE') {
-      this.safeDestroy(new Error('Malformed multipart body'));
-    }
-    cb();
   }
 
   private parseHeaders(raw: string) {
@@ -307,27 +160,263 @@ export class Multipart extends Writable {
     if (!value) return out;
 
     value.split(';').forEach(part => {
-      const [k, v] = part.trim().split('=');
-      if (!v) return;
-      out[k] = v.replace(/^"|"$/g, '');
+      const trimmed = part.trim();
+      const eqIndex = trimmed.indexOf('=');
+      if (eqIndex === -1) return;
+
+      const k = trimmed.slice(0, eqIndex).trim();
+      let v = trimmed.slice(eqIndex + 1).trim();
+      // Убираем кавычки
+      if (v.startsWith('"') && v.endsWith('"')) {
+        v = v.slice(1, -1);
+      }
+      out[k] = v;
     });
 
     return out;
   }
 
-  private findBoundary(buffer: Buffer, boundary: Buffer): number {
-    const seq = Buffer.concat([Buffer.from('\r\n'), boundary]);
-
-    const idx = buffer.indexOf(seq);
-    if (idx !== -1) {
-      return idx + 2;
+  private processChunk(chunk: Buffer) {
+    if (!this.boundary) {
+      this.safeDestroy(new Error('Multipart parser used without boundary'));
+      return;
     }
 
-    if (buffer.indexOf(boundary) === 0) {
-      return 0;
+    if (this.state === 'DONE') {
+      return;
     }
 
-    return -1;
+    if (this.buffer.length + chunk.length > this.MAX_BUFFER_SIZE) {
+      this.safeDestroy(new Error('Multipart buffer overflow'));
+      return;
+    }
+
+    this.buffer = Buffer.concat([this.buffer, chunk]);
+
+    while (true) {
+      //
+      // SEARCH — ищем начало части
+      //
+      if (this.state === 'SEARCH') {
+        const boundaryInfo = this.findNextBoundary(this.buffer, this.boundary);
+
+        if (!boundaryInfo) {
+          // Не нашли boundary, ждем следующий chunk
+          return;
+        }
+
+        const { endPos, isClosing } = boundaryInfo;
+
+        if (isClosing) {
+          // Это closing boundary, заканчиваем парсинг
+          this.buffer = this.buffer.slice(endPos);
+          this.finishParsing();
+          return;
+        }
+
+        // Удаляем все до конца boundary
+        this.buffer = this.buffer.slice(endPos);
+
+        // Удаляем следующий \r\n если есть
+        if (this.buffer[0] === 13 && this.buffer[1] === 10) {
+          this.buffer = this.buffer.slice(2);
+        }
+
+        this.partsCount++;
+        this.state = 'HEADERS';
+        continue;
+      }
+
+      //
+      // HEADERS
+      //
+      if (this.state === 'HEADERS') {
+        console.log('HEADERS: looking for end of headers');
+        console.log('Buffer for headers:', this.buffer.slice(0, 200).toString());
+
+        const idx = this.buffer.indexOf('\r\n\r\n');
+        if (idx === -1) {
+          console.log('HEADERS: waiting for end of headers, buffer length:', this.buffer.length);
+          return;
+        }
+
+        console.log('HEADERS: found headers end at idx:', idx);
+
+        const raw = this.buffer.slice(0, idx).toString();
+        console.log('HEADERS raw content:', raw);
+
+        this.buffer = this.buffer.slice(idx + 4);
+
+        this.headers = this.parseHeaders(raw);
+        const cd = this.parseContentDisposition(this.headers['content-disposition']);
+
+        console.log('HEADERS: parsed field:', cd.name, 'has filename:', !!cd.filename);
+
+        if (!cd.name) {
+          this.safeDestroy(new Error('Malformed Content-Disposition'));
+          return;
+        }
+
+        this.fieldName = cd.name;
+
+        if (cd.filename) {
+          this.totalFiles++;
+          this.state = 'FILE';
+          this.fileStream = new PassThrough();
+          this.fileSize = 0;
+        } else {
+          this.fieldsCount++;
+
+          console.log('Starting FIELD for field:', this.fieldName);
+          this.state = 'FIELD';
+        }
+        continue; // Продолжаем цикл, чтобы сразу обработать FIELD или FILE
+      }
+
+      //
+      // FIELD
+      //
+      if (this.state === 'FIELD') {
+        console.log(
+          `FIELD: processing field "${this.fieldName}", buffer length: ${this.buffer.length}`,
+        );
+
+        const boundaryInfo = this.findNextBoundary(this.buffer, this.boundary);
+        if (!boundaryInfo) {
+          console.log(`FIELD: boundary not found for field "${this.fieldName}"`);
+          return;
+        }
+
+        const { position, hasCRLF } = boundaryInfo;
+        console.log(`FIELD: found boundary at position ${position}`);
+
+        // Значение находится между началом буфера и boundary
+        // Вычитаем 2 если есть \r\n перед boundary
+        let valueEnd = position;
+        if (hasCRLF) {
+          valueEnd = position; // position уже указывает на \r\n
+        }
+
+        const value = this.buffer.slice(0, valueEnd).toString();
+
+        console.log(
+          `FIELD: extracted value length ${value.length}, preview: ${value.slice(0, 100)}`,
+        );
+
+        this.pendingFields.push({
+          name: this.fieldName,
+          value,
+          truncated: false,
+        });
+
+        // Удаляем значение поля из буфера
+        let bytesToRemove = valueEnd;
+        if (hasCRLF) {
+          bytesToRemove += 2; // Удаляем \r\n
+        }
+
+        this.buffer = this.buffer.slice(bytesToRemove);
+        this.state = 'SEARCH';
+        continue; // Продолжаем цикл для обработки следующей части
+      }
+
+      //
+      // FILE
+      //
+      if (this.state === 'FILE') {
+        const boundaryInfo = this.findNextBoundary(this.buffer, this.boundary);
+
+        if (!boundaryInfo) {
+          this.writeFileChunk(this.buffer);
+          this.buffer = Buffer.alloc(0);
+          return;
+        }
+
+        const { position, hasCRLF } = boundaryInfo;
+
+        // Данные файла находятся между началом буфера и boundary
+        let dataEnd = position;
+        if (hasCRLF) {
+          dataEnd = position; // position уже указывает на \r\n
+        }
+
+        const data = this.buffer.slice(0, dataEnd);
+        this.writeFileChunk(data);
+
+        this.fileStream?.end();
+
+        const cd = this.parseContentDisposition(this.headers['content-disposition']);
+        this.pendingFiles.push({
+          name: this.fieldName,
+          stream: this.fileStream!,
+          info: {
+            filename: cd.filename || '',
+            mimeType: this.headers['content-type'] || 'application/octet-stream',
+            encoding: '7bit',
+            fileSize: this.fileSize,
+          },
+        });
+
+        this.fileStream = null;
+        // this.fileTemp = null;
+
+        // Удаляем данные файла из буфера
+        let bytesToRemove = dataEnd;
+        if (hasCRLF) {
+          bytesToRemove += 2; // Удаляем \r\n
+        }
+
+        this.buffer = this.buffer.slice(bytesToRemove);
+        this.state = 'SEARCH';
+        continue; // Продолжаем цикл
+      }
+    }
+  }
+
+  private findNextBoundary(
+    buffer: Buffer,
+    boundary: Buffer,
+  ): {
+    position: number;
+    startPos: number;
+    endPos: number;
+    isClosing: boolean;
+    hasCRLF: boolean;
+  } | null {
+    // Ищем boundary в буфере
+    const pos = buffer.indexOf(boundary);
+    if (pos === -1) return null;
+
+    // Проверяем, является ли это closing boundary (--boundary--)
+    const isClosing =
+      buffer.length >= pos + boundary.length + 2 &&
+      buffer[pos + boundary.length] === 45 && // '-'
+      buffer[pos + boundary.length + 1] === 45; // '-'
+
+    // Определяем начало части (позиция после предыдущего boundary)
+    let startPos = pos;
+    let hasCRLF = false;
+
+    // Проверяем, есть ли перед boundary \r\n
+    if (pos >= 2 && buffer[pos - 2] === 13 && buffer[pos - 1] === 10) {
+      startPos = pos - 2;
+      hasCRLF = true;
+    } else if (pos >= 1 && buffer[pos - 1] === 10) {
+      startPos = pos - 1;
+      hasCRLF = false;
+    }
+
+    // Определяем конец boundary
+    let endPos = pos + boundary.length;
+    if (isClosing) endPos += 2;
+
+    return {
+      position: startPos,
+      startPos,
+      endPos,
+      isClosing,
+      hasCRLF,
+    };
   }
 }
 
@@ -340,8 +429,8 @@ export class NormalizeLineEndings extends Transform {
     for (let i = 0; i < chunk.length; i++) {
       const byte = chunk[i];
 
-      if (byte === 0x0A && this.lastByte !== 0x0D) {
-        out.push(0x0D, 0x0A);
+      if (byte === 0x0a && this.lastByte !== 0x0d) {
+        out.push(0x0d, 0x0a);
       } else {
         out.push(byte);
       }
