@@ -211,6 +211,11 @@ declare module '@via-profit-services/core' {
     readonly encoding: string;
 
     /**
+     * The size of file
+     */
+    readonly fileSize: number;
+
+    /**
      * Function to read uploaded file\
      * Example:
      *

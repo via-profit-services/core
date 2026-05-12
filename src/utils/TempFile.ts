@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { ReadStreamOptions } from '@via-profit-services/core';
 
 /**
  * Represents a temporary file used to buffer uploaded file data.
@@ -26,7 +27,8 @@ export class TempFile {
     this.filePath = path.join(dir, filename);
     this.writeStream = fs.createWriteStream(this.filePath);
 
-    this.writeStream.on('error', () => {
+    this.writeStream.on('error', err => {
+      console.error(err);
       // Errors are handled by end() / cleanup()
     });
   }
@@ -36,9 +38,12 @@ export class TempFile {
    * Throws if the file is already closed.
    */
   write(chunk: Buffer) {
+    console.log('[TempFile] write chunk:', chunk.length);
     if (this.closed) {
       throw new Error('Cannot write to closed TempFile');
     }
+
+
     return this.writeStream.write(chunk);
   }
 
@@ -47,6 +52,7 @@ export class TempFile {
    * Ensures the write stream is closed exactly once.
    */
   end(): Promise<void> {
+    console.log('[TempFile] end() called');
     if (this.closed) {
       return Promise.resolve();
     }
@@ -61,6 +67,7 @@ export class TempFile {
       };
 
       const onError = () => {
+        console.error('onError');
         // Ignore — cleanup() will remove the file anyway
       };
 
@@ -101,7 +108,9 @@ export class TempFile {
    * Safe to call multiple times.
    */
   cleanup() {
-    if (this.cleaned) return;
+    if (this.cleaned) {
+      return;
+    }
     this.cleaned = true;
 
     try {

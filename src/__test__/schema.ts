@@ -212,21 +212,20 @@ const Mutation = new GraphQLObjectType({
         const { filesList } = args;
 
         const response: { location: string; mimeType: string }[] = [];
-        const filesData = await Promise.all(filesList);
-        await filesData.reduce(async (prev, file) => {
-          await prev;
+        const files = await Promise.all(filesList);
 
-          const { createReadStream, mimeType } = file;
+
+        for(const file of files) {
+          const { createReadStream, mimeType, filename, cleanup } = file;
           const readStream = createReadStream();
-          const filename = `${Date.now()}-${mimeType.replace(/\//, '.')}`;
           const location = path.resolve(__dirname, `../../.files/${filename}`);
-          fs.mkdirSync(path.dirname(location), {
-            recursive: true,
-          });
+
+          fs.mkdirSync(path.dirname(location), { recursive: true });
           const writeStream = fs.createWriteStream(location);
 
-          const writeFile = new Promise<void>(resolve => {
-            writeStream.on('close', async () => {
+          // wait of end of writing
+          await new Promise<void>((resolve, reject) => {
+            writeStream.on('finish', () => {
               response.push({
                 location,
                 mimeType,
@@ -234,11 +233,16 @@ const Mutation = new GraphQLObjectType({
               resolve();
             });
 
+            writeStream.on('error', reject);
+            readStream.on('error', reject);
+
             readStream.pipe(writeStream);
           });
 
-          await writeFile;
-        }, Promise.resolve());
+          cleanup();
+        }
+
+
 
         return response;
       },

@@ -65,7 +65,7 @@ const applicationFactory: ApplicationFactory = props => {
       }
 
       // 1.1 validate content-type
-      if (contentType !== 'application/json') {
+      if (contentType !== 'application/json' && !contentType.startsWith('multipart/form-data')) {
         throw new ServerError(
           [
             new GraphQLError(
