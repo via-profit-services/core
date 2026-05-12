@@ -22,9 +22,12 @@ import { URL } from 'node:url';
 
 import configTest, { sendGraphQLRequest } from './config-test';
 import schema from './schema';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const port = 8085;
 const endpoint = '/graphql';
+
 
 const { startServer, stopServer } = configTest({
   schema,
@@ -58,6 +61,33 @@ function mp(boundary: string, parts: Array<{ headers: string[]; body: string | B
   out.push('');
   return out.join('\r\n');
 }
+
+function mpBuf(boundary: string, parts: Array<{ headers: string[]; body: string | Buffer }>) {
+  const chunks: Buffer[] = [];
+
+  for (const p of parts) {
+    chunks.push(Buffer.from(`--${boundary}\r\n`));
+
+    for (const h of p.headers) {
+      chunks.push(Buffer.from(h + '\r\n'));
+    }
+
+    chunks.push(Buffer.from('\r\n'));
+
+    if (Buffer.isBuffer(p.body)) {
+      chunks.push(p.body);
+    } else {
+      chunks.push(Buffer.from(p.body));
+    }
+
+    chunks.push(Buffer.from('\r\n'));
+  }
+
+  chunks.push(Buffer.from(`--${boundary}--\r\n`));
+
+  return Buffer.concat(chunks);
+}
+
 
 describe('SERVER / ADVANCED SUITE', () => {
   //
@@ -150,10 +180,34 @@ describe('SERVER / ADVANCED SUITE', () => {
   // 8. Multipart binary file
   //
   test('8.1 Multipart successfully upload file', async () => {
-    const boundary = '----binfile';
-    const file = Buffer.from('Some text');
 
-    const body = mp(boundary, [
+
+
+    const boundary = '----binfile';
+    // const fullFilename = path.resolve(__dirname, '../../assets/pattern.bin');
+    // const fullFilename = path.resolve(__dirname, '../../assets/boundary-test.bin');
+    // const fullFilename = path.resolve(__dirname, '../../assets/repeat.bin');
+    const fullFilename = path.resolve(__dirname, '../../assets/image.png');
+    // const fullFilename = path.resolve(__dirname, '../../assets/test-file.txt');
+    const filename = path.basename(fullFilename);
+
+    // if (!fs.existsSync(fullFilename)) {
+    //   throw new Error(`file ${fullFilename} does not exist`);
+    // }
+    // const buf = Buffer.from('ABCDEF'.repeat(1000));
+    // fs.writeFileSync(path.resolve(__dirname, '../../assets/repeat.bin'), buf);
+    //
+    // const buf = Buffer.alloc(256);
+    // for (let i = 0; i < 256; i++) buf[i] = i;
+    // fs.writeFileSync(path.resolve(__dirname, '../../assets/pattern.bin'), buf);
+    // const boundary = '----WebKitFormBoundary123456';
+    // const buf = Buffer.from('AAAA----WebKitFormBoundary123456BBBB');
+    // fs.writeFileSync(path.resolve(__dirname, "../../assets/boundary-test.bin"), buf);
+
+
+    const file = fs.readFileSync(fullFilename);
+
+    const body = mpBuf(boundary, [
       {
         headers: ['Content-Disposition: form-data; name="operations"'],
         body: '{"query":"mutation($filesList:[FileUpload!]!){uploadFiles(filesList:$filesList) {__typename}}","variables":{"filesList":[null]}}',
@@ -164,7 +218,7 @@ describe('SERVER / ADVANCED SUITE', () => {
       },
       {
         headers: [
-          'Content-Disposition: form-data; name="0"; filename="test.txt"',
+          `Content-Disposition: form-data; name="0"; filename="${filename}"`,
           'Content-Type: application/octet-stream',
         ],
         body: file,

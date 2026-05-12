@@ -233,6 +233,7 @@ const graphqlFileUploader: MultipartParser = ({ request, config }) =>
     // FILE HANDLER
     //
     parser.on('file', (fieldName, stream, { filename, mimeType, encoding, fileSize }) => {
+      console.log('FILE EVENT:', { fieldName, mimeType, encoding, fileSize });
       const upload = map.get(Number(fieldName));
 
       if (!upload) {
@@ -250,9 +251,10 @@ const graphqlFileUploader: MultipartParser = ({ request, config }) =>
       stream.on('limit', () => {
         safeReject(new Error(`File truncated as it exceeds the ${maxFileSize} byte size limit.`));
       });
-
+      let fileBytes = 0;
       stream.on('data', (chunk: Buffer) => {
         totalSize += chunk.length;
+        fileBytes += chunk.length;
 
         if (totalSize > maxFilesTotalSize) {
           safeReject(new Error(`Total upload size exceeds the ${maxFilesTotalSize} byte limit.`));
@@ -263,6 +265,7 @@ const graphqlFileUploader: MultipartParser = ({ request, config }) =>
       });
 
       stream.on('end', async () => {
+        console.log('FILE STREAM ENDED, BYTES FROM PARSER:', fileBytes);
         try {
           await temp.end();
           upload.resolve({
@@ -309,8 +312,9 @@ const graphqlFileUploader: MultipartParser = ({ request, config }) =>
       safeReject(err);
     });
 
-    const normalizer = new NormalizeLineEndings();
-    request.pipe(normalizer).pipe(parser);
+    request.pipe(parser);
+    // const normalizer = new NormalizeLineEndings();
+    // request.pipe(normalizer).pipe(parser);
   });
 
 export default graphqlFileUploader;

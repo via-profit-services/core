@@ -38,9 +38,12 @@ export class TempFile {
    * Throws if the file is already closed.
    */
   write(chunk: Buffer) {
+    console.log('[TempFile] write chunk:', chunk.length);
     if (this.closed) {
       throw new Error('Cannot write to closed TempFile');
     }
+
+
     return this.writeStream.write(chunk);
   }
 
@@ -49,6 +52,7 @@ export class TempFile {
    * Ensures the write stream is closed exactly once.
    */
   end(): Promise<void> {
+    console.log('[TempFile] end() called');
     if (this.closed) {
       return Promise.resolve();
     }

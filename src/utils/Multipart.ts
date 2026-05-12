@@ -98,6 +98,7 @@ export class Multipart extends Writable {
   }
 
   private writeFileChunk(chunk: Buffer) {
+    console.log('[Multipart] writeFileChunk:', chunk.length);
     if (!this.fileStream) {
       return;
     }
@@ -324,6 +325,9 @@ export class Multipart extends Writable {
       // FILE
       //
       if (this.state === 'FILE') {
+        console.log('[DEBUG] BUFFER LENGTH:', this.buffer.length);
+        console.log('[DEBUG] BUFFER HEAD:', this.buffer.slice(0, 32));
+        console.log('[DEBUG] BUFFER TAIL:', this.buffer.slice(-32));
         const boundaryInfo = this.findNextBoundary(this.buffer, this.boundary);
 
         if (!boundaryInfo) {
@@ -373,50 +377,55 @@ export class Multipart extends Writable {
     }
   }
 
-  private findNextBoundary(
-    buffer: Buffer,
-    boundary: Buffer,
-  ): {
-    position: number;
-    startPos: number;
-    endPos: number;
-    isClosing: boolean;
-    hasCRLF: boolean;
-  } | null {
-    // Ищем boundary в буфере
-    const pos = buffer.indexOf(boundary);
-    if (pos === -1) return null;
+  private findNextBoundary(buffer: Buffer, boundary: Buffer) {
 
-    // Проверяем, является ли это closing boundary (--boundary--)
-    const isClosing =
-      buffer.length >= pos + boundary.length + 2 &&
-      buffer[pos + boundary.length] === 45 && // '-'
-      buffer[pos + boundary.length + 1] === 45; // '-'
+    // boundary уже содержит "--"
+    const normal = Buffer.concat([Buffer.from('\r\n'), boundary]);
+    const first = boundary; // первая часть начинается прямо с boundary
 
-    // Определяем начало части (позиция после предыдущего boundary)
-    let startPos = pos;
-    let hasCRLF = false;
+    // 1. boundary в начале (первая часть)
+    if (buffer.indexOf(first) === 0) {
+      const isClosing =
+        buffer.length >= first.length + 2 &&
+        buffer[first.length] === 45 &&
+        buffer[first.length + 1] === 45;
 
-    // Проверяем, есть ли перед boundary \r\n
-    if (pos >= 2 && buffer[pos - 2] === 13 && buffer[pos - 1] === 10) {
-      startPos = pos - 2;
-      hasCRLF = true;
-    } else if (pos >= 1 && buffer[pos - 1] === 10) {
-      startPos = pos - 1;
-      hasCRLF = false;
+      return {
+        position: 0,
+        startPos: 0,
+        endPos: first.length + (isClosing ? 2 : 0),
+        isClosing,
+        hasCRLF: false,
+      };
     }
 
-    // Определяем конец boundary
-    let endPos = pos + boundary.length;
-    if (isClosing) endPos += 2;
+    // 2. boundary после CRLF
+    const pos = buffer.indexOf(normal);
+    if (pos !== -1) {
+      const boundaryStart = pos + 2; // пропускаем CRLF
 
-    return {
-      position: startPos,
-      startPos,
-      endPos,
-      isClosing,
-      hasCRLF,
-    };
+      const isClosing =
+        buffer.length >= boundaryStart + boundary.length + 2 &&
+        buffer[boundaryStart + boundary.length] === 45 &&
+        buffer[boundaryStart + boundary.length + 1] === 45;
+
+      console.log('[DEBUG] SEARCH BOUNDARY:', boundary.toString());
+      console.log(
+        '[DEBUG] RAW BUFFER AROUND POS:',
+        buffer.slice(pos - 10, pos + boundary.length + 10),
+      );
+
+
+      return {
+        position: pos,
+        startPos: pos,
+        endPos: boundaryStart + boundary.length + (isClosing ? 2 : 0),
+        isClosing,
+        hasCRLF: true,
+      };
+    }
+
+    return null;
   }
 }
 

@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import typescript from '@rollup/plugin-typescript';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+import terser from '@rollup/plugin-terser';
 import { fileURLToPath } from 'node:url';
 import * as path from 'node:path';
 
@@ -20,6 +21,7 @@ const basePlugins = [
     sourceMap: false,
     declaration: false,
   }),
+  terser({ compress: { drop_console: true } }),
 ];
 
 // Плагин копирования .d.ts
