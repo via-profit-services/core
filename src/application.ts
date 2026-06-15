@@ -25,6 +25,7 @@ import formatErrors from './utils/format-errors';
 import ServerError from './server-error';
 import { buildValidationRules } from './utils/build-validation-rules';
 import { buildConfig } from './utils/build-config';
+import parseContentType from './utils/content-type-parser';
 
 const applicationFactory: ApplicationFactory = props => {
   const config = buildConfig(props);
@@ -54,7 +55,7 @@ const applicationFactory: ApplicationFactory = props => {
 
     try {
       const method = request.method || '';
-      const contentType = request.headers['content-type'] || 'application/json';
+      const contentType = parseContentType(request.headers['content-type'] || 'application/json');
 
       // 1. Validate HTTP method
       if (!['GET', 'POST', 'OPTIONS'].includes(method)) {
@@ -65,7 +66,10 @@ const applicationFactory: ApplicationFactory = props => {
       }
 
       // 1.1 validate content-type
-      if (contentType !== 'application/json' && !contentType.startsWith('multipart/form-data')) {
+      if (
+        !contentType?.type?.startsWith('application/json') &&
+        !contentType?.type?.startsWith('multipart/form-data')
+      ) {
         throw new ServerError(
           [
             new GraphQLError(
