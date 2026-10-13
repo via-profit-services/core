@@ -85,6 +85,65 @@ declare module '@via-profit-services/core' {
     readonly sharedContext?: boolean;
 
     readonly limits?: Partial<Limits>;
+
+    /**
+     * Hide internal error messages from clients.
+     *
+     * If `true`, an error thrown by a resolver or a middleware that is NOT a
+     * `GraphQLError` (a plain `Error`, a database driver error...) is sent to
+     * the client as `"Internal server error"` with
+     * `extensions.code = "INTERNAL_SERVER_ERROR"`.
+     * Throw `GraphQLError` for messages the client must see:
+     * ```ts
+     * throw new GraphQLError('Access denied', { extensions: { code: 'FORBIDDEN' } });
+     * ```
+     * Validation and request errors of the core are never masked.
+     * Use `onError` to log the original errors.
+     *
+     * Recommended for production. Default: `false`
+     */
+    readonly maskErrors?: boolean;
+
+    /**
+     * Called with the original error of every error of a response
+     * (before masking). Use it for logging.
+     */
+    readonly onError?: (error: Error) => void;
+
+    /**
+     * CSRF protection.
+     *
+     * A browser sends `GET` and `multipart/form-data` POST requests to any
+     * site without a CORS preflight, together with the cookies of that site.
+     * If authorization relies on cookies, a foreign page can execute a
+     * mutation (e.g. an upload) on behalf of the user.
+     *
+     * If `true`, such requests must contain one of the headers
+     * `x-requested-with`, `apollo-require-preflight`, `x-apollo-operation-name`
+     * or `graphql-preflight` (any non-empty value). A browser cannot add
+     * them cross-origin without a preflight. `application/json` POST requests
+     * always require a preflight and are not affected.
+     *
+     * Recommended if cookies are used for authorization. Default: `false`
+     */
+    readonly csrfPrevention?: boolean;
+
+    /**
+     * Accept only queries from `persistedQueriesMap`.
+     * A request with an arbitrary query text is rejected.
+     *
+     * Default: `false`
+     */
+    readonly persistedQueriesOnly?: boolean;
+
+    /**
+     * Allow introspection queries (`__schema`, `__type`).
+     * Set `false` in production if the schema must not be discoverable.
+     * `__typename` is always allowed.
+     *
+     * Default: `true`
+     */
+    readonly introspection?: boolean;
   }
 
   export interface Limits {
@@ -151,6 +210,14 @@ declare module '@via-profit-services/core' {
      * parsing to prevent excessive memory usage and potential denial‑of‑service scenarios.
      */
     readonly maxJSONBodyDecompressedSize?: number;
+
+    /**
+     * Maximum number of tokens in a GraphQL document.
+     * The parser stops as soon as the limit is reached.
+     *
+     * Default: 10 000
+     */
+    readonly maxGraphQLTokens?: number;
 
     /**
      * Maximum allowed GraphQL query depth.

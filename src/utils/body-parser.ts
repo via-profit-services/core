@@ -68,6 +68,8 @@ interface GraphQLParams {
   query: string;
   variables: { readonly [key: string]: unknown } | null;
   operationName: string | null;
+  /** true if the query text was taken from the persisted queries map */
+  persisted: boolean;
 }
 
 interface GraphQLParamsProps {
@@ -93,6 +95,7 @@ export const parseGraphQLParams = (props: GraphQLParamsProps): GraphQLParams => 
     query: '',
     variables: null,
     operationName: null,
+    persisted: false,
   };
 
   //
@@ -109,6 +112,7 @@ export const parseGraphQLParams = (props: GraphQLParamsProps): GraphQLParams => 
     const mappedQuery = persistedQueriesMap[persistedKey];
     if (typeof mappedQuery === 'string') {
       graphQLParams.query = mappedQuery;
+      graphQLParams.persisted = true;
     }
   }
 

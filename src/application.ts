@@ -16,23 +16,56 @@ import {
   getOperationAST,
   validate,
   GraphQLError,
+  NoSchemaIntrospectionCustomRule,
+  type ValidationRule,
 } from 'graphql';
 
 import bodyParser, { parseGraphQLParams } from './utils/body-parser';
 import composeMiddlewares from './utils/compose-middlewares';
 import applyMiddlewares from './utils/apply-middlewares';
-import formatErrors from './utils/format-errors';
+import formatErrors, { formatExecutionErrors } from './utils/format-errors';
 import ServerError from './server-error';
 import { buildValidationRules, buildComplexityRule } from './utils/build-validation-rules';
 import { buildConfig } from './utils/build-config';
 import parseContentType from './utils/content-type-parser';
 import { UPLOAD_CLEANUP } from './utils/graphql-file-uploader';
+import { CSRF_PREVENTION_HEADERS } from './constants';
+
+/**
+ * Wraps an error of request parsing into a ServerError: such errors are
+ * produced by the core, they are safe to show and must not be masked.
+ */
+const asRequestError = (error: unknown): never => {
+  if (error instanceof ServerError) {
+    throw error;
+  }
+
+  const message = error instanceof Error ? error.message : String(error);
+  const graphqlError = new GraphQLError(message, {
+    originalError: error instanceof Error ? error : undefined,
+  });
+
+  throw new ServerError([graphqlError], 'graphql-error-validate-request');
+};
 
 const applicationFactory: ApplicationFactory = props => {
   const config = buildConfig(props);
   const baseValidationRules = buildValidationRules(config);
-  const { middleware, schema, rootValue, debug, sharedContext } = config;
+  const {
+    middleware,
+    schema,
+    rootValue,
+    debug,
+    sharedContext,
+    maskErrors,
+    onError,
+    csrfPrevention,
+    persistedQueriesOnly,
+    introspection,
+    limits,
+  } = config;
   const stats: CoreStats = { requestCounter: 0, startupTime: new Date() };
+  const securityRules: ValidationRule[] = introspection ? [] : [NoSchemaIntrospectionCustomRule];
 
   /**
    * Legacy mode only (`sharedContext: true`).
@@ -57,13 +90,16 @@ const applicationFactory: ApplicationFactory = props => {
     // A copy: rules pushed by a middleware live only during this request
     const validationRule = [...baseValidationRules];
 
-    const finish = (payload: GraphqlResponse) => ({
+    // Server statistics are internal information: only in debug mode
+    const finish = (payload: GraphqlResponse): GraphqlResponse => ({
       ...payload,
-      extensions: {
-        ...extensions,
-        ...stats,
-        queryTime: performance.now() - startTime,
-      },
+      extensions: debug
+        ? {
+            ...extensions,
+            ...stats,
+            queryTime: performance.now() - startTime,
+          }
+        : undefined,
     });
 
     // Removes temporary upload files when there is no http.ServerResponse
@@ -95,6 +131,23 @@ const applicationFactory: ApplicationFactory = props => {
         );
       }
 
+      // 1.2 CSRF: GET and multipart requests are sent by browsers without a
+      // CORS preflight, so they must carry a header a foreign page cannot set
+      if (
+        csrfPrevention &&
+        (method === 'GET' || contentType.type === 'multipart/form-data') &&
+        !CSRF_PREVENTION_HEADERS.some(header => Boolean(request.headers[header]))
+      ) {
+        throw new ServerError(
+          [
+            new GraphQLError(
+              `This request requires a non-empty «${CSRF_PREVENTION_HEADERS.join('» or «')}» header (CSRF prevention)`,
+            ),
+          ],
+          'graphql-error-validate-request',
+        );
+      }
+
       // 2. Run middleware chain
       await applyMiddlewares({
         request,
@@ -107,22 +160,31 @@ const applicationFactory: ApplicationFactory = props => {
         validationRule,
       });
 
-      // 3. Validate schema
+      // 3. Validate schema (graphql-js caches the result in the schema)
       const schemaErrors = validateSchema(schema);
       if (schemaErrors.length > 0) {
         throw new ServerError(schemaErrors, 'graphql-error-validate-schema');
       }
 
       // 4. Parse request body (JSON or multipart)
-      const body = await bodyParser({ request, response, config });
+      const body = await bodyParser({ request, response, config }).catch(asRequestError);
       uploadCleanup = (body as Record<symbol, (() => void) | undefined>)[UPLOAD_CLEANUP];
 
       // 5. Extract GraphQL params
-      const { query, operationName, variables } = parseGraphQLParams({
-        body,
-        request,
-        config,
-      });
+      let params: ReturnType<typeof parseGraphQLParams>;
+      try {
+        params = parseGraphQLParams({ body, request, config });
+      } catch (err) {
+        return asRequestError(err);
+      }
+      const { query, operationName, variables, persisted } = params;
+
+      if (persistedQueriesOnly && !persisted) {
+        throw new ServerError(
+          [new GraphQLError('Only persisted queries are allowed')],
+          'graphql-error-validate-request',
+        );
+      }
 
       if (!query || typeof query !== 'string') {
         throw new ServerError(
@@ -135,13 +197,24 @@ const applicationFactory: ApplicationFactory = props => {
         );
       }
 
-      // 6. Parse query → AST
-      const documentAST = parse(new Source(query, 'GraphQL request'));
+      // 6. Parse query → AST. maxTokens stops the parser early on huge documents
+      let documentAST: ReturnType<typeof parse>;
+      try {
+        documentAST = parse(new Source(query, 'GraphQL request'), {
+          maxTokens: limits?.maxGraphQLTokens,
+        });
+      } catch (err) {
+        throw new ServerError(
+          [err instanceof GraphQLError ? err : new GraphQLError(String(err))],
+          'graphql-error-validate-request',
+        );
+      }
 
       // 7. Validate AST
       const complexityRule = buildComplexityRule(config, variables);
       const validationErrors = validate(schema, documentAST, [
         ...specifiedRules,
+        ...securityRules,
         ...validationRule,
         ...(complexityRule ? [complexityRule] : []),
       ]);
@@ -177,14 +250,7 @@ const applicationFactory: ApplicationFactory = props => {
       // 10. Success response
       return finish({
         data: result.data,
-        errors: result.errors,
-        extensions: debug
-          ? {
-              ...extensions,
-              ...stats,
-              queryTime: performance.now() - startTime,
-            }
-          : undefined,
+        errors: formatExecutionErrors(result.errors, { debug, maskErrors, onError }),
       });
     } catch (error) {
       // 11. Error response
@@ -192,6 +258,8 @@ const applicationFactory: ApplicationFactory = props => {
         errors: formatErrors({
           error,
           debug,
+          maskErrors,
+          onError,
           context,
         }),
       });

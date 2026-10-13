@@ -16,6 +16,21 @@ export const DEFAULT_JSON_DECOMPRESSED_MAX_BYTES = 5 * 1024 * 1024; // 5MB JSON 
 export const DEFAULT_MAX_GRAPHQL_DEPTH_LIMIT = 10;
 // the standard introspection query (GraphiQL, codegen) has depth 14
 export const DEFAULT_MAX_GRAPHQL_INTROSPECTION_DEPTH_LIMIT = 20;
+// Max number of tokens in a GraphQL document. The parser stops early on
+// huge documents (a 1 MB body may contain ~250 000 tokens).
+// A large real-world query has a few thousand tokens.
+export const DEFAULT_MAX_GRAPHQL_TOKENS = 10_000;
+
+// Headers accepted as a proof that a request is not a CSRF (see csrfPrevention).
+// A browser cannot add custom headers to a cross-origin request without a
+// CORS preflight, and the preflight is controlled by the server.
+export const CSRF_PREVENTION_HEADERS = [
+  'x-requested-with',
+  'apollo-require-preflight',
+  'x-apollo-operation-name',
+  'graphql-preflight',
+];
+
 // GraphQL complexity limits
 export const DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIMIT = 5000;
 export const DEFAULT_MAX_GRAPHQL_COMPLEXITY_FIELD_COST = 1;
