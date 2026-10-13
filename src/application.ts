@@ -282,6 +282,14 @@ const applicationFactory: ApplicationFactory = props => {
         operationName,
       });
 
+      // 9.1 No data means execution did not start: a GraphQL request error,
+      // e.g. a variable value rejected by a scalar or an unknown operationName.
+      // It is caused by the client, so it is reported (and never masked) as a
+      // request error, not as an execution error.
+      if (!('data' in result) && result.errors?.length) {
+        throw new ServerError(result.errors, 'graphql-error-validate-request');
+      }
+
       // 10. Success response
       return finish({
         data: result.data,

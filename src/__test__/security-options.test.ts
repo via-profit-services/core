@@ -1,7 +1,7 @@
 import { GraphQLError, GraphQLObjectType, GraphQLSchema, GraphQLString } from 'graphql';
 import type { InitProps } from '@via-profit-services/core';
 
-import { graphqlHTTPFactory } from '../index';
+import { graphqlHTTPFactory, DateTimeScalarType } from '../index';
 import { fakeRequest, fakeResponse, jsonRequest } from './helpers';
 
 const schema = new GraphQLSchema({
@@ -52,6 +52,25 @@ describe('maskErrors', () => {
 
     const invalid = await run(props, '{ unknownField }');
     expect(invalid.errors?.[0]?.message).toMatch(/Cannot query field "unknownField"/);
+  });
+
+  test('invalid variable values are request errors and are not masked', async () => {
+    const withDate = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          echo: { type: GraphQLString, args: { d: { type: DateTimeScalarType } }, resolve: () => 'ok' },
+        },
+      }),
+    });
+    const res = await graphqlHTTPFactory({ schema: withDate, maskErrors: true })(
+      jsonRequest({ query: 'query($d: DateTime) { echo(d: $d) }', variables: { d: '2026-01-01' } }),
+      fakeResponse(),
+    );
+
+    expect(res.data).toBeUndefined();
+    expect(res.errors?.[0]?.message).toMatch(/ISO-UTC/);
+    expect(res.errors?.[0]?.extensions?.errorType).toBe('graphql-error-validate-request');
   });
 
   test('errors thrown by a middleware are masked too', async () => {
