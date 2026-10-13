@@ -265,7 +265,9 @@ const readBody = (request: http.IncomingMessage, opts: ReadBodyOptions): Promise
       }
 
       decodedSize += chunk.length;
-      if (decodedSize > maxDecompressedSize) {
+      // Only for an encoded body: an identity body is limited by maxJSONBodySize,
+      // and maxJSONBodySize above maxJSONBodyDecompressedSize must take effect
+      if (decoder && decodedSize > maxDecompressedSize) {
         fail(
           new HttpError(
             `Decompressed body exceeds maximum allowed size of ${maxDecompressedSize} bytes.`,

@@ -21,13 +21,24 @@ const schema = new GraphQLSchema({
 
 const listener = graphqlHTTPFactory({ schema });
 
-const send = (body: Buffer | string, headers: Record<string, string> = {}, method = 'POST', url = '/graphql') =>
+const send = (
+  body: Buffer | string,
+  headers: Record<string, string> = {},
+  method = 'POST',
+  url = '/graphql',
+) =>
   listener(
-    fakeRequest({ method, url, headers: { 'content-type': 'application/json', ...headers }, chunks: [body] }),
+    fakeRequest({
+      method,
+      url,
+      headers: { 'content-type': 'application/json', ...headers },
+      chunks: [body],
+    }),
     fakeResponse(),
   );
 
-const firstError = (res: { errors?: readonly { message: string }[] | null }) => res.errors?.[0]?.message;
+const firstError = (res: { errors?: readonly { message: string }[] | null }) =>
+  res.errors?.[0]?.message;
 
 describe('Body parser', () => {
   test('invalid JSON is reported, not replaced by an empty request', async () => {
@@ -80,6 +91,30 @@ describe('Body parser', () => {
     expect(firstError(res)).toMatch(/Decompressed body exceeds/);
   });
 
+  test('the decompressed limit does not cap an identity body', async () => {
+    // maxJSONBodySize above maxJSONBodyDecompressedSize (e.g. mail bodies with images)
+    const large = graphqlHTTPFactory({
+      schema,
+      limits: { maxJSONBodySize: 4000, maxJSONBodyDecompressedSize: 1000 },
+    });
+    const body = JSON.stringify({ query: `{ echo(str: "${'x'.repeat(2000)}") }` });
+
+    const plain = await large(
+      fakeRequest({ headers: { 'content-type': 'application/json' }, chunks: [body] }),
+      fakeResponse(),
+    );
+    expect(plain.errors).toBeUndefined();
+
+    const gzipped = await large(
+      fakeRequest({
+        headers: { 'content-type': 'application/json', 'content-encoding': 'gzip' },
+        chunks: [zlib.gzipSync(body)],
+      }),
+      fakeResponse(),
+    );
+    expect(firstError(gzipped)).toMatch(/Decompressed body exceeds/);
+  });
+
   test('a broken gzip stream fails instead of hanging', async () => {
     const res = await send(Buffer.from('definitely not gzip'), { 'content-encoding': 'gzip' });
     expect(firstError(res)).toMatch(/Failed to read body/);
@@ -92,7 +127,11 @@ describe('Body parser', () => {
         throw new Error('socket hang up');
       })(),
     ) as unknown as http.IncomingMessage;
-    Object.assign(request, { method: 'POST', url: '/', headers: { 'content-type': 'application/json' } });
+    Object.assign(request, {
+      method: 'POST',
+      url: '/',
+      headers: { 'content-type': 'application/json' },
+    });
 
     const res = await listener(request, fakeResponse());
     expect(firstError(res)).toMatch(/socket hang up|aborted/);

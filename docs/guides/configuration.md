@@ -47,7 +47,7 @@ const graphqlHTTP = graphqlHTTPFactory({
 | Лимит | По умолчанию | Константа | Описание |
 |-------|--------------|-----------|----------|
 | `maxJSONBodySize` | 1 МБ | `DEFAULT_JSON_MAX_BYTES` | Размер JSON-тела «на проводе» (до распаковки) |
-| `maxJSONBodyDecompressedSize` | 5 МБ | `DEFAULT_JSON_DECOMPRESSED_MAX_BYTES` | Размер после распаковки gzip/deflate/br. Защита от gzip-бомб |
+| `maxJSONBodyDecompressedSize` | 5 МБ | `DEFAULT_JSON_DECOMPRESSED_MAX_BYTES` | Размер после распаковки gzip/deflate/br. Защита от gzip-бомб. Применяется только к сжатому телу (с `Content-Encoding`) |
 
 ### Загрузка файлов (multipart)
 
