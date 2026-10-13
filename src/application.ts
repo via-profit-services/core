@@ -23,7 +23,7 @@ import composeMiddlewares from './utils/compose-middlewares';
 import applyMiddlewares from './utils/apply-middlewares';
 import formatErrors from './utils/format-errors';
 import ServerError from './server-error';
-import { buildValidationRules } from './utils/build-validation-rules';
+import { buildValidationRules, buildComplexityRule } from './utils/build-validation-rules';
 import { buildConfig } from './utils/build-config';
 import parseContentType from './utils/content-type-parser';
 import { UPLOAD_CLEANUP } from './utils/graphql-file-uploader';
@@ -141,9 +141,11 @@ const applicationFactory: ApplicationFactory = props => {
       const documentAST = parse(new Source(query, 'GraphQL request'));
 
       // 7. Validate AST
+      const complexityRule = buildComplexityRule(config, variables);
       const validationErrors = validate(schema, documentAST, [
         ...specifiedRules,
         ...validationRule,
+        ...(complexityRule ? [complexityRule] : []),
       ]);
       if (validationErrors.length > 0) {
         throw new ServerError(validationErrors, 'graphql-error-validate-field');
