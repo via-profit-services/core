@@ -491,7 +491,7 @@ declare module '@via-profit-services/core' {
      * only `data`, `errors` and `extensions` as the GraphQL spec requires.
      * Read it explicitly: `res.statusCode = response.status ?? 200`.
      *
-     * Always set by the core (since 2.11).
+     * Always set by the core (since 2.12).
      */
     readonly status?: number;
   };

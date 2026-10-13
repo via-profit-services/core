@@ -77,7 +77,7 @@ curl -X POST http://localhost:8080/graphql \
 | [Persisted Queries](./docs/guides/persisted-queries.md) | Запросы по идентификатору |
 | [Безопасность](./docs/guides/security.md) | Лимиты, CSRF, маскирование, рекомендуемая конфигурация для прода |
 | [API](./docs/api/api.md) | Справочник экспортов пакета |
-| [Миграция на 2.11](./docs/guides/migration-2.11.md) | Что изменилось и что проверить в проекте |
+| [Миграция на 2.12](./docs/guides/migration-2.12.md) | Что изменилось и что проверить в проекте |
 | [CHANGELOG](./CHANGELOG.md) | История версий |
 
 ## Рекомендуемая конфигурация для продакшена

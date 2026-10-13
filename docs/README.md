@@ -17,7 +17,7 @@
 - [Ошибки](./guides/errors.md)
 - [Persisted Queries](./guides/persisted-queries.md)
 - [Безопасность](./guides/security.md)
-- [Миграция на 2.11](./guides/migration-2.11.md)
+- [Миграция на 2.12](./guides/migration-2.12.md)
 
 ## Справочник
 

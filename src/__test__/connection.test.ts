@@ -57,7 +57,10 @@ describe('createCursorCodec', () => {
     const unsigned = Buffer.from(JSON.stringify({ offset: 5 })).toString('base64');
     const foreign = createCursorCodec({ secret: crypto.randomBytes(32) }).encode({ offset: 5 });
 
-    for (const value of [changed, unsigned, foreign, `${cursor}.x`, '', '.', `${cursor.slice(0, -1)}A`]) {
+    // the last character of the signature replaced by a different one
+    const lastChanged = `${cursor.slice(0, -1)}${cursor.endsWith('A') ? 'B' : 'A'}`;
+
+    for (const value of [changed, unsigned, foreign, `${cursor}.x`, '', '.', lastChanged]) {
       const error = thrown(() => codec.decode(value));
       expect(error).toBeInstanceOf(GraphQLError);
       expect(error.message).toBe('Invalid cursor');
