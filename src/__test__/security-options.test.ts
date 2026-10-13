@@ -64,12 +64,12 @@ describe('maskErrors', () => {
       }),
     });
     const res = await graphqlHTTPFactory({ schema: withDate, maskErrors: true })(
-      jsonRequest({ query: 'query($d: DateTime) { echo(d: $d) }', variables: { d: '2026-01-01' } }),
+      jsonRequest({ query: 'query($d: DateTime) { echo(d: $d) }', variables: { d: '05.03.2026' } }),
       fakeResponse(),
     );
 
     expect(res.data).toBeUndefined();
-    expect(res.errors?.[0]?.message).toMatch(/ISO-UTC/);
+    expect(res.errors?.[0]?.message).toMatch(/ISO 8601/);
     expect(res.errors?.[0]?.extensions?.errorType).toBe('graphql-error-validate-request');
   });
 

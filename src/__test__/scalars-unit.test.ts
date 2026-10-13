@@ -12,14 +12,24 @@ import {
 const fails = (fn: () => unknown) => expect(fn).toThrow();
 
 describe('DateTime', () => {
-  test('input: ISO-UTC only, real calendar dates only', () => {
+  test('input: ISO 8601 with or without a time zone, real calendar dates only', () => {
     expect(DateTimeScalarType.parseValue('2026-03-05T10:15:20.123Z')).toEqual(
       new Date(Date.UTC(2026, 2, 5, 10, 15, 20, 123)),
     );
-    fails(() => DateTimeScalarType.parseValue('2026-03-05T10:15:20')); // no zone
-    fails(() => DateTimeScalarType.parseValue('2026-03-05T10:15:20+05:00'));
+    expect(DateTimeScalarType.parseValue('2026-03-05T10:15:20+05:00')).toEqual(
+      new Date(Date.UTC(2026, 2, 5, 5, 15, 20)),
+    );
+    // Dart: DateTime.now().toIso8601String() - local time, microseconds, no zone
+    expect(DateTimeScalarType.parseValue('2026-03-05T10:15:20.123456')).toEqual(
+      new Date('2026-03-05T10:15:20.123456'),
+    );
+    expect(DateTimeScalarType.parseValue('2026-03-05')).toEqual(new Date(Date.UTC(2026, 2, 5)));
+
     fails(() => DateTimeScalarType.parseValue('2026-02-30T00:00:00Z')); // would become March 2
+    fails(() => DateTimeScalarType.parseValue('2026-03-05T24:30:00Z'));
     fails(() => DateTimeScalarType.parseValue('1'));
+    fails(() => DateTimeScalarType.parseValue('05.03.2026'));
+    fails(() => DateTimeScalarType.parseValue('March 5, 2026'));
   });
 
   test('input: millisecond timestamps, including dates before 2001 and 1970', () => {
@@ -29,7 +39,9 @@ describe('DateTime', () => {
   });
 
   test('output: any valid date representation', () => {
-    expect(DateTimeScalarType.serialize(new Date('2026-01-01T00:00:00Z'))).toBe('2026-01-01T00:00:00.000Z');
+    expect(DateTimeScalarType.serialize(new Date('2026-01-01T00:00:00Z'))).toBe(
+      '2026-01-01T00:00:00.000Z',
+    );
     expect(DateTimeScalarType.serialize('2026-01-01 05:00:00+05')).toBe('2026-01-01T00:00:00.000Z');
     fails(() => DateTimeScalarType.serialize('not a date'));
   });
@@ -73,7 +85,9 @@ describe('Time', () => {
 
 describe('URL', () => {
   test('script URLs are rejected', () => {
-    expect(String(URLScalarType.parseValue('https://example.com/a?b=1'))).toBe('https://example.com/a?b=1');
+    expect(String(URLScalarType.parseValue('https://example.com/a?b=1'))).toBe(
+      'https://example.com/a?b=1',
+    );
     fails(() => URLScalarType.parseValue('javascript:alert(1)'));
     fails(() => URLScalarType.parseValue('JavaScript:alert(1)'));
     fails(() => URLScalarType.parseValue('vbscript:msgbox(1)'));

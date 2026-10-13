@@ -62,7 +62,7 @@ limits: { complexityLimit: { onComplete: c => console.log('complexity', c) } }
 
 | Скаляр | Больше не принимается | Что слать |
 |--------|----------------------|-----------|
-| `DateTime` | `"2026-03-05"`, `"2026-03-05T10:00:00"` (без `Z`), смещения `+05:00`, timestamp в секундах | `date.toISOString()` или миллисекунды |
+| `DateTime` | Строки не в ISO 8601 (`"05.03.2026"`), несуществующие даты (`"2026-02-30"`), timestamp в секундах | ISO 8601, лучше UTC: `date.toISOString()` (JS), `toUtc().toIso8601String()` (Dart) |
 | `Money` | `""`, `" 100 "`, `"0x64"`, числа | Строка из цифр: `"10000"` |
 | `Time` | `"24:30"` и другие `24:xx`, кроме `24:00` | `"HH:MM"` или `"HH:MM:SS"` |
 | `URL` | `javascript:…`, `vbscript:…` | — |

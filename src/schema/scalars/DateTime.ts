@@ -1,9 +1,16 @@
 import { Kind, GraphQLError, GraphQLScalarType } from 'graphql';
 
 /**
- * ISO-8601 strictly in UTC: `2026-03-05T10:15:20Z` or `2026-03-05T10:15:20.123Z`
+ * ISO 8601 date or date-time:
+ *   2026-03-05
+ *   2026-03-05T10:15
+ *   2026-03-05T10:15:20.123456      (Dart DateTime.toIso8601String() of a local date)
+ *   2026-03-05T10:15:20.123Z
+ *   2026-03-05T10:15:20+05:00
+ * A space instead of "T" is accepted too (RFC 3339).
  */
-const ISO_UTC_REGEX = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,9})?Z$/;
+const ISO_REGEX =
+  /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,9})?)?)?(Z|[+-]\d{2}:?\d{2})?$/i;
 
 /**
  * Timestamps below this absolute value are most likely seconds, not
@@ -14,31 +21,41 @@ const ISO_UTC_REGEX = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1
 const MIN_MILLISECONDS_TIMESTAMP = 1e11;
 
 /**
- * Input values (variables and literals) are validated strictly: a string
- * without a time zone is ambiguous (local time of whom?), and `new Date()`
- * accepts almost anything (`new Date('1')` is 2001-01-01 in the local zone).
+ * Input values (variables and literals).
+ *
+ * Only ISO 8601 strings are accepted: `new Date()` alone accepts almost
+ * anything (`new Date('1')` is 2001-01-01) and silently moves impossible
+ * dates (`2026-02-30` becomes March 2).
+ *
+ * A string WITHOUT a time zone is accepted for compatibility with existing
+ * clients (mobile apps send `DateTime.now().toIso8601String()`). JavaScript
+ * interprets such a date-time in the time zone of the SERVER, and a
+ * date-only string (`2026-03-05`) as UTC midnight. Clients should send UTC
+ * (`...Z`) or an explicit offset.
  */
 const parseInput = (value: unknown): Date => {
   if (typeof value === 'string') {
-    const match = ISO_UTC_REGEX.exec(value);
+    const match = ISO_REGEX.exec(value);
     if (!match) {
-      throw new TypeError(`Date string must be ISO-UTC (YYYY-MM-DDTHH:mm:ss.sssZ): ${value}`);
+      throw new TypeError(`Date string must be ISO 8601, e.g. 2026-03-05T10:15:20.000Z: ${value}`);
     }
 
-    const date = new Date(value);
-    const [, year, month, day, hours, minutes, seconds] = match.map(Number);
+    const [, year, month, day, hours = '0', minutes = '0', seconds = '0'] = match;
+    const calendarDay = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+    const isRealDay =
+      calendarDay.getUTCFullYear() === Number(year) &&
+      calendarDay.getUTCMonth() === Number(month) - 1 &&
+      calendarDay.getUTCDate() === Number(day);
 
-    // new Date() silently normalizes impossible dates: 2026-02-30 → 2026-03-02
+    const date = new Date(value);
     if (
-      Number.isNaN(date.getTime()) ||
-      date.getUTCFullYear() !== year ||
-      date.getUTCMonth() + 1 !== month ||
-      date.getUTCDate() !== day ||
-      date.getUTCHours() !== hours ||
-      date.getUTCMinutes() !== minutes ||
-      date.getUTCSeconds() !== seconds
+      !isRealDay ||
+      Number(hours) > 23 ||
+      Number(minutes) > 59 ||
+      Number(seconds) > 59 ||
+      Number.isNaN(date.getTime())
     ) {
-      throw new TypeError(`Invalid ISO-UTC date: ${value}`);
+      throw new TypeError(`Invalid ISO date: ${value}`);
     }
 
     return date;
@@ -57,7 +74,7 @@ const parseInput = (value: unknown): Date => {
     return date;
   }
 
-  throw new TypeError(`DateTime must be an ISO-UTC string or a timestamp in milliseconds`);
+  throw new TypeError(`DateTime must be an ISO 8601 string or a timestamp in milliseconds`);
 };
 
 /**
@@ -82,7 +99,7 @@ const parseOutput = (value: unknown): Date => {
 
 export default new GraphQLScalarType<Date, string>({
   name: 'DateTime',
-  description: 'Date and time in ISO-8601 UTC format, e.g. `2026-03-05T10:15:20.000Z`',
+  description: 'Date and time in ISO 8601. Output is always UTC, e.g. `2026-03-05T10:15:20.000Z`',
 
   serialize(value) {
     return parseOutput(value).toISOString();
@@ -101,6 +118,8 @@ export default new GraphQLScalarType<Date, string>({
       return parseInput(Number(ast.value));
     }
 
-    throw new GraphQLError(`DateTime must be a string or integer, got: ${ast.kind}`, { nodes: ast });
+    throw new GraphQLError(`DateTime must be a string or integer, got: ${ast.kind}`, {
+      nodes: ast,
+    });
   },
 });
