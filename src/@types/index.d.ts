@@ -67,6 +67,23 @@ declare module '@via-profit-services/core' {
      */
     readonly middleware?: Middleware | Middleware[];
 
+    /**
+     * **Legacy mode. Do not use it in new projects.**
+     *
+     * By default every HTTP request receives its own empty `context` object.
+     * Middlewares fill it and resolvers of this request read it.
+     *
+     * If `true`, a single context object is created once and is shared by
+     * **all** requests, including concurrent ones (behavior of versions <= 2.10).
+     * Anything a middleware writes into it (user, token, locale...) becomes
+     * visible to other requests. Use it only for code that stores long-living
+     * objects (DB pools, loggers) in the context and was not migrated yet.
+     *
+     * Default: `false`
+     * @deprecated
+     */
+    readonly sharedContext?: boolean;
+
     readonly limits?: Partial<Limits>;
   }
 

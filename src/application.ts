@@ -29,20 +29,32 @@ import parseContentType from './utils/content-type-parser';
 
 const applicationFactory: ApplicationFactory = props => {
   const config = buildConfig(props);
-  const validationRule = buildValidationRules(config);
-  const { middleware, schema, rootValue, debug } = config;
-
-  const context: Context = {};
+  const baseValidationRules = buildValidationRules(config);
+  const { middleware, schema, rootValue, debug, sharedContext } = config;
   const stats: CoreStats = { requestCounter: 0, startupTime: new Date() };
-  const extensions: GraphQLExtensions = {
-    queryTime: 0,
-    requestCounter: 0,
-    startupTime: stats.startupTime,
-  };
+
+  /**
+   * Legacy mode only (`sharedContext: true`).
+   * One object is shared by ALL requests, including concurrent ones:
+   * whatever a middleware writes here is visible to every other request.
+   */
+  const legacySharedContext: Context = {};
 
   const httpListener: HTTPListener = async (request, response) => {
     const startTime = performance.now();
     stats.requestCounter += 1;
+
+    // Every request gets its own state. Requests are processed concurrently
+    // (every `await` lets another request run), so a shared mutable object
+    // would mix data of different users.
+    const context: Context = sharedContext ? legacySharedContext : {};
+    const extensions: GraphQLExtensions = {
+      queryTime: 0,
+      requestCounter: stats.requestCounter,
+      startupTime: stats.startupTime,
+    };
+    // A copy: rules pushed by a middleware live only during this request
+    const validationRule = [...baseValidationRules];
 
     const finish = (payload: GraphqlResponse) => ({
       ...payload,

@@ -26,6 +26,7 @@ export const buildConfig = (
 ): Configuration => ({
   middleware: [],
   debug: false,
+  sharedContext: false,
   rootValue: undefined,
   persistedQueriesMap: undefined,
   persistedQueryKey: DEFAULT_PERSISTED_QUERY_KEY,
