@@ -2,67 +2,89 @@ import type {
   MutatedField,
   MutatedObjectType,
   FieldsWrapper,
-  NoopResolver,
+  ResolversWrapperFunction,
 } from '@via-profit-services/core';
-import { isIntrospectionType, isObjectType } from 'graphql';
+import { defaultFieldResolver, isIntrospectionType, isObjectType } from 'graphql';
 
+type WrapperResult = Awaited<ReturnType<ResolversWrapperFunction>>;
+
+const isPromiseLike = (value: unknown): value is PromiseLike<unknown> =>
+  typeof value === 'object' && value !== null && typeof (value as PromiseLike<unknown>).then === 'function';
+
+/**
+ * Wraps resolvers of all fields of all object types of the schema.
+ *
+ * The wrapper receives `{ resolve, source, args, context, info }` and may
+ * return replacements for any of them (or nothing). Then the resolver is
+ * called with the (possibly replaced) arguments.
+ *
+ * Fields without a resolver use graphql-js `defaultFieldResolver`
+ * (reads `source[fieldName]`, calls it if it is a function), exactly as
+ * graphql-js does for them.
+ *
+ * Options:
+ *   - wrapWithoutResolvers (default true): if false, fields that have no
+ *     own resolver are left untouched.
+ *
+ * Performance: if the wrapper returns a plain value (not a Promise), the
+ * resolver is called synchronously. An `async` wrapper around every field
+ * would create a Promise for every scalar of every list item.
+ *
+ * Calling fieldsWrapper twice with different wrappers wraps fields twice
+ * (both wrappers run): this is intended.
+ */
 const fieldsWrapper: FieldsWrapper = (schema, wrapperFunction, options) => {
-  const { wrapWithoutResolvers } = options || {};
-  const SYMBOL_PROCESSED: string = Symbol('processed') as any;
-  const types = schema.getTypeMap();
-  const noopResolve: NoopResolver = async (parent, _args, _context, info) => {
-    const { fieldName } = info;
+  const { wrapWithoutResolvers = true } = options || {};
+  // One marker per call: protects from wrapping a field twice inside this call
+  // (several types may share field objects). Every new call wraps again.
+  const processed = Symbol('processed');
 
-    return parent ? parent[fieldName] : undefined;
-  };
-
-  Object.entries(types).forEach(([_typeName, type]) => {
-    if (
-      isIntrospectionType(type) ||
-      !isObjectType(type) ||
-      (type as MutatedObjectType)[SYMBOL_PROCESSED]
-    ) {
+  Object.values(schema.getTypeMap()).forEach(type => {
+    if (isIntrospectionType(type) || !isObjectType(type)) {
       return;
     }
 
-    const fields = type.getFields();
+    const mutatedType = type as unknown as MutatedObjectType & Record<symbol, boolean>;
+    if (mutatedType[processed]) {
+      return;
+    }
 
-    Object.entries(fields).forEach(([_fieldName, field]) => {
-      // check to affected field and field without resolver
-      if ((field as MutatedField)[SYMBOL_PROCESSED]) {
+    Object.values(type.getFields()).forEach(field => {
+      const mutatedField = field as unknown as MutatedField & Record<symbol, boolean>;
+      if (mutatedField[processed]) {
         return;
       }
 
-      if (typeof wrapWithoutResolvers !== 'undefined' && !wrapWithoutResolvers) {
+      if (!wrapWithoutResolvers && !field.resolve) {
         return;
       }
 
-      const { resolve } = field;
+      const resolve = field.resolve ?? defaultFieldResolver;
 
-      // mutate original resolver
-      field.resolve = async (source, args, context, info) => {
-        const res = await wrapperFunction({
-          resolve: resolve || noopResolve,
-          source,
-          args,
-          context,
-          info,
-        });
-        const mutatedSource = res.source || source;
-        const mutatedArgs = res.args || args;
-        const mutatedContext = res.context || context;
-        const mutatedInfo = res.info || info;
-        const mutatedResolver = res.resolve || resolve;
+      const callResolver = (res: WrapperResult | void | undefined, source: unknown, args: unknown, context: unknown, info: unknown) => {
+        const result = res || {};
+        const mutatedResolver = result.resolve || resolve;
 
-        return mutatedResolver ? mutatedResolver(mutatedSource, mutatedArgs, mutatedContext, mutatedInfo) : undefined;
+        return mutatedResolver(
+          (result.source ?? source) as never,
+          (result.args ?? args) as never,
+          (result.context ?? context) as never,
+          (result.info ?? info) as never,
+        );
       };
 
-      // mark field as affected
-      (field as MutatedField)[SYMBOL_PROCESSED] = true;
+      field.resolve = (source, args, context, info) => {
+        const res = wrapperFunction({ resolve, source, args, context, info });
+
+        return isPromiseLike(res)
+          ? Promise.resolve(res).then(value => callResolver(value, source, args, context, info))
+          : callResolver(res, source, args, context, info);
+      };
+
+      mutatedField[processed] = true;
     });
 
-    // mark type as affected
-    (type as MutatedObjectType)[SYMBOL_PROCESSED] = true;
+    mutatedType[processed] = true;
   });
 
   return schema;
