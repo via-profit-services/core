@@ -69,9 +69,19 @@ limits: { complexityLimit: { onComplete: c => console.log('complexity', c) } }
 
 Выход тоже изменился: `Time` теперь всегда возвращается в формате `HH:MM:SS` (`"9:05"` → `"09:05:00"`).
 
-### 5. `extensions` только в режиме `debug`
+### 5. `extensions` есть в каждом ответе, статистика — только в `debug`
 
-Статистика (`queryTime`, `requestCounter`, `startupTime`) больше не попадает в ответ без `debug: true`. Проверьте, не читает ли её фронтенд или мониторинг.
+Теперь в каждом ответе есть `extensions.requestId` и поля проекта (`setExtension`, middleware). Статистика сервера (`queryTime`, `requestCounter`, `startupTime`) и диагностика отдаются только при `debug: true`. Подробнее в разделе [Extensions](./extensions.md).
+
+**Что сделать.** В маршрутах замените
+
+```ts
+extensions: debug ? extensions : undefined,
+```
+
+на `extensions`. Иначе поля проекта и `requestId` не дойдут до клиента в проде. Проверьте, не читает ли фронтенд или мониторинг статистику без `debug`.
+
+`validationRule` в middleware теперь изначально пуст: правила глубины и сложности ядро применяет отдельно.
 
 ### 6. Загрузка файлов
 

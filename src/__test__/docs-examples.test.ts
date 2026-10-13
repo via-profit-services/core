@@ -91,7 +91,7 @@ describe('docs/guides/errors.md: HTTP-статусы', () => {
     );
 
     expect(response.status ?? 200).toBe(200); // partial success
-    expect(Object.keys(JSON.parse(JSON.stringify(response)))).toEqual(['data', 'errors']);
+    expect(Object.keys(JSON.parse(JSON.stringify(response)))).toEqual(['data', 'errors', 'extensions']);
   });
 });
 

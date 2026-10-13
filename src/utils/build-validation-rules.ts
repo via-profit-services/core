@@ -5,40 +5,85 @@ import depthLimitRule from './depth-limit-rule';
 import complexityLimitRule from './complexity-limit-rule';
 
 /**
- * Rules that do not depend on the request: built once in the factory.
- * A copy of this array is passed to middlewares on every request.
+ * Collects the measured values of one request (see `limits.onUsage`).
+ * A document may contain several operations: the largest value is kept,
+ * it is the one that was checked against the limit.
  */
-export const buildValidationRules = (config: Configuration): ValidationRule[] => {
+export type RuleMeasurements = {
+  depth?: number;
+  complexity?: number;
+  width?: number;
+};
+
+const keepMax = (current: number | undefined, value: number) =>
+  typeof current === 'number' ? Math.max(current, value) : value;
+
+/**
+ * Depth and complexity rules of a request.
+ *
+ * They are built for every request: the complexity rule needs the variables
+ * (`users(first: $count)`), and both rules report the measured values of
+ * this request. Building them is cheap: it only creates closures.
+ *
+ * With `measurements` a disabled limit is still measured (with an infinite
+ * maximum): the values are needed to choose the limit.
+ */
+export const buildRequestRules = (
+  config: Configuration,
+  variables: Readonly<Record<string, unknown>> | null,
+  measurements?: RuleMeasurements,
+): ValidationRule[] => {
   const rules: ValidationRule[] = [];
   const { limits } = config;
+  const maxDepth = limits?.maxGraphQLDepthLimit;
 
-  if (limits?.maxGraphQLDepthLimit) {
+  if (maxDepth || measurements) {
     rules.push(
       depthLimitRule({
-        maxDepth: limits.maxGraphQLDepthLimit,
-        maxIntrospectionDepth: limits.maxGraphQLIntrospectionDepthLimit,
+        maxDepth: maxDepth || Infinity,
+        maxIntrospectionDepth: maxDepth ? limits?.maxGraphQLIntrospectionDepthLimit : Infinity,
+        onComplete: measurements
+          ? depth => {
+              measurements.depth = keepMax(measurements.depth, depth);
+            }
+          : undefined,
+      }),
+    );
+  }
+
+  const options = limits?.complexityLimit;
+  const maxComplexity = options?.maxComplexity;
+
+  if (maxComplexity) {
+    rules.push(
+      complexityLimitRule({
+        ...options,
+        maxComplexity,
+        variables,
+        onComplete: (complexity, info) => {
+          if (measurements) {
+            measurements.complexity = keepMax(measurements.complexity, complexity);
+            measurements.width = keepMax(measurements.width, info.width);
+          }
+          options.onComplete?.(complexity, info);
+        },
+      }),
+    );
+  } else if (measurements) {
+    // measure only: no complexity and no width limit
+    rules.push(
+      complexityLimitRule({
+        ...options,
+        maxComplexity: Infinity,
+        maxFieldsPerSelection: undefined,
+        variables,
+        onComplete: (complexity, info) => {
+          measurements.complexity = keepMax(measurements.complexity, complexity);
+          measurements.width = keepMax(measurements.width, info.width);
+        },
       }),
     );
   }
 
   return rules;
-};
-
-/**
- * The complexity rule needs the variables of the current request
- * (`users(first: $count)`), so it is built for every request.
- * Building it is cheap: it only creates closures.
- */
-export const buildComplexityRule = (
-  config: Configuration,
-  variables: Readonly<Record<string, unknown>> | null,
-): ValidationRule | null => {
-  const options = config.limits?.complexityLimit;
-
-  const maxComplexity = options?.maxComplexity;
-  if (!options || !maxComplexity) {
-    return null;
-  }
-
-  return complexityLimitRule({ ...options, maxComplexity, variables });
 };

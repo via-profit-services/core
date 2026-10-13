@@ -15,6 +15,7 @@
 - [Скаляры и типы](./guides/scalars.md)
 - [Пагинация (Connections)](./guides/connections.md)
 - [Ошибки](./guides/errors.md)
+- [Extensions](./guides/extensions.md)
 - [Persisted Queries](./guides/persisted-queries.md)
 - [Безопасность](./guides/security.md)
 - [Миграция на 2.12](./guides/migration-2.12.md)

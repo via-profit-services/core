@@ -20,6 +20,8 @@ import { GraphQLError, Kind } from 'graphql';
 export interface DepthLimitOptions {
   maxDepth: number;
   maxIntrospectionDepth?: number;
+  /** Called with the measured depth of every validated operation */
+  onComplete?: (depth: number, operationName: string) => void;
 }
 
 type Depth = {
@@ -57,7 +59,7 @@ const ZERO: Depth = { regular: 0, introspection: 0 };
  * between requests.
  */
 export default function depthLimit(options: DepthLimitOptions): ValidationRule {
-  const { maxDepth, maxIntrospectionDepth = maxDepth } = options;
+  const { maxDepth, maxIntrospectionDepth = maxDepth, onComplete } = options;
 
   return function DepthLimitRule(context: ValidationContext) {
     const fragments = new Map<string, FragmentDefinitionNode>();
@@ -140,6 +142,8 @@ export default function depthLimit(options: DepthLimitOptions): ValidationRule {
       OperationDefinition(node: OperationDefinitionNode) {
         const depth = measure(node.selectionSet.selections, false);
         const operationName = node.name?.value ?? '(anonymous)';
+
+        onComplete?.(depth.regular, operationName);
 
         if (depth.regular > maxDepth) {
           context.reportError(

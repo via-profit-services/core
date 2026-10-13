@@ -88,8 +88,9 @@ describe('maskErrors', () => {
 });
 
 describe('extensions', () => {
-  test('server statistics are returned only in debug mode', async () => {
-    expect((await run({}, '{ ok }')).extensions).toBeUndefined();
+  test('server statistics are returned only in debug mode, requestId always', async () => {
+    const plain = (await run({}, '{ ok }')).extensions;
+    expect(Object.keys(plain ?? {})).toEqual(['requestId']);
     expect((await run({ debug: true }, '{ ok }')).extensions).toMatchObject({ requestCounter: 1 });
   });
 });

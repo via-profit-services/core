@@ -51,8 +51,16 @@ declare module '@via-profit-services/core' {
      */
     readonly persistedQueryKey?: string;
     /**
-     * Debug mode \
-     * \
+     * Diagnostics of the server for development. Adds to the response:
+     * - `extensions.queryTime`, `requestCounter`, `startupTime`, `diagnostics`
+     *   (timing of the steps, document cache, operation name);
+     * - `extensions.limits` (as `limits.exposeUsage`);
+     * - `stacktrace` to every error.
+     *
+     * The fields added by the project (`setExtension`, middleware) and
+     * `extensions.requestId` are sent regardless of this option.
+     * Do not enable in production: stack traces reveal the code.
+     *
      * Default: `false`
      */
     readonly debug?: boolean;
@@ -146,7 +154,60 @@ declare module '@via-profit-services/core' {
     readonly introspection?: boolean;
   }
 
+  /**
+   * How much of a limit a request used. `max` is `null` when the limit is disabled.
+   */
+  export interface LimitUsage {
+    readonly value: number;
+    readonly max: number | null;
+  }
+
+  /**
+   * Measured values of a request against the limits.
+   * Only the measured values are present: e.g. a request rejected while
+   * reading the body has no `depth`.
+   */
+  export interface LimitsUsage {
+    /** Operation name from the request, `null` for an anonymous operation */
+    readonly operationName: string | null;
+    /** Size of the JSON body on the wire, bytes (against `maxJSONBodySize`) */
+    readonly bodySize?: LimitUsage;
+    /** Number of uploaded files (against `maxFiles`) */
+    readonly files?: LimitUsage;
+    /** Total size of uploaded files, bytes (against `maxFilesTotalSize`) */
+    readonly filesTotalSize?: LimitUsage;
+    /** Tokens of the document (against `maxGraphQLTokens`) */
+    readonly tokens?: LimitUsage;
+    /** Depth, the largest of all operations (against `maxGraphQLDepthLimit`) */
+    readonly depth?: LimitUsage;
+    /** Complexity, the largest of all operations (against `complexityLimit.maxComplexity`) */
+    readonly complexity?: LimitUsage;
+    /** Most fields in one selection set (against `complexityLimit.maxFieldsPerSelection`) */
+    readonly width?: LimitUsage;
+  }
+
   export interface Limits {
+    /**
+     * Send `extensions.limits` (how much of every limit the request used)
+     * in every response. Always on with `debug: true`.
+     *
+     * The values reveal the configured limits. Those can be found by probing
+     * anyway, but keep it off unless the clients need it.
+     *
+     * Default: `false`
+     */
+    readonly exposeUsage?: boolean;
+
+    /**
+     * Called for every request whose document was parsed, also for requests
+     * rejected by a limit. Works in production without exposing anything to
+     * the client: collect the values (histogram, log) and set the limits from
+     * real traffic instead of guessing them.
+     *
+     * An exception thrown here is passed to `onError` and does not affect the request.
+     */
+    readonly onUsage?: (usage: LimitsUsage, context: Context) => void;
+
     /**
      * Maximum allowed size of a non-file field value in multipart/form-data (in bytes).
      * This applies to fields like "operations" and "map" when using multipart parser.
@@ -285,7 +346,7 @@ declare module '@via-profit-services/core' {
      * Callback invoked after complexity is calculated.
      * Useful for logging or rate limiting.
      */
-    onComplete?: (complexity: number) => void;
+    onComplete?: (complexity: number, info: { operationName: string; width: number }) => void;
 
     /**
      * Custom error factory for overriding the default error message.
@@ -496,12 +557,69 @@ declare module '@via-profit-services/core' {
     readonly status?: number;
   };
 
-  export type GraphQLExtensions = CoreStats & {
-    // stats: CoreStats;
-    queryTime: number;
-    requestCounter: number;
-    readonly startupTime: Date;
-  };
+  /**
+   * Timing and other internals of a request (only with `debug: true`)
+   */
+  export interface RequestDiagnostics {
+    readonly operationName: string | null;
+    /** The query came from the persisted queries map */
+    readonly persisted: boolean;
+    /** The parsed and validated document was taken from the cache */
+    readonly documentCache: 'hit' | 'miss';
+    /** Milliseconds spent in every step; a step that did not run is absent */
+    readonly timing: {
+      readonly middlewares?: number;
+      readonly body?: number;
+      readonly document?: number;
+      readonly validation?: number;
+      readonly execution?: number;
+    };
+  }
+
+  /**
+   * `extensions` of a response.
+   *
+   * - fields added by the project (`setExtension`, middleware) and `requestId`: always;
+   * - `limits`: with `limits.exposeUsage` or `debug`;
+   * - `queryTime`, `requestCounter`, `startupTime`, `diagnostics`: only with `debug`.
+   */
+  export interface GraphQLExtensions {
+    /** `X-Request-Id` of the request if it is a safe string, otherwise a random UUID */
+    readonly requestId: string;
+    readonly limits?: LimitsUsage;
+    /** Time of the whole request, ms */
+    readonly queryTime?: number;
+    /** Number of this request since the start of the server */
+    readonly requestCounter?: number;
+    readonly startupTime?: Date;
+    readonly diagnostics?: RequestDiagnostics;
+    readonly [key: string]: unknown;
+  }
+
+  /**
+   * Names of `extensions` fields set by the core. `setExtension` refuses them.
+   */
+  export const RESERVED_EXTENSIONS: readonly string[];
+
+  /**
+   * Adds a field to `extensions` of the response of the current request.
+   * Works in resolvers and middlewares; the field is sent in every mode.
+   *
+   * @example
+   * resolve: (_parent, args, context) => {
+   *   setExtension(context, 'deprecation', 'Use «ordersV2»');
+   * }
+   *
+   * Throws for a reserved name (see RESERVED_EXTENSIONS) and for a context
+   * that does not belong to a request (`sharedContext: true` is not supported).
+   */
+  export const setExtension: (context: Context, name: string, value: unknown) => void;
+
+  /**
+   * ID of the current request: the same value as `extensions.requestId`.
+   * Use it in logs to connect a response with the server log records.
+   */
+  export const getRequestId: (context: Context) => string | undefined;
 
   export type ApplicationFactory = (props: InitProps) => HTTPListener;
 

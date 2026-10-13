@@ -6,6 +6,7 @@ import graphqlFileUploader from './graphql-file-uploader';
 import parseContentType from './content-type-parser';
 import { DEFAULT_JSON_DECOMPRESSED_MAX_BYTES, DEFAULT_JSON_MAX_BYTES } from '../constants';
 import { HttpError } from './http-error';
+import { setBodyStats } from './body-stats';
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -35,14 +36,17 @@ const bodyParser: BodyParser = async ({ request, response, config }) => {
     return graphqlFileUploader({ request, response, config });
   }
 
-  const rawBody = await readBody(request, {
+  const { text: rawBody, wireSize } = await readBody(request, {
     maxJSONBodySize: config.limits?.maxJSONBodySize || DEFAULT_JSON_MAX_BYTES,
     maxDecompressedSize:
       config.limits?.maxJSONBodyDecompressedSize || DEFAULT_JSON_DECOMPRESSED_MAX_BYTES,
   });
 
   if (rawBody.trim() === '') {
-    return {};
+    const empty = {};
+    setBodyStats(empty, { bodySize: wireSize });
+
+    return empty;
   }
 
   let parsed: unknown;
@@ -61,6 +65,8 @@ const bodyParser: BodyParser = async ({ request, response, config }) => {
   if (!isPlainObject(parsed)) {
     throw new HttpError('The request body must be a JSON object');
   }
+
+  setBodyStats(parsed, { bodySize: wireSize });
 
   return parsed as RequestBody;
 };
@@ -198,8 +204,11 @@ type ReadBodyOptions = {
  * destroys the request and its socket, so the client would get a connection
  * reset instead of an error response.
  */
-const readBody = (request: http.IncomingMessage, opts: ReadBodyOptions): Promise<string> =>
-  new Promise<string>((resolve, reject) => {
+const readBody = (
+  request: http.IncomingMessage,
+  opts: ReadBodyOptions,
+): Promise<{ text: string; wireSize: number }> =>
+  new Promise((resolve, reject) => {
     const { maxJSONBodySize, maxDecompressedSize } = opts;
     const contentEncoding = request.headers['content-encoding'];
     const encoding =
@@ -284,7 +293,7 @@ const readBody = (request: http.IncomingMessage, opts: ReadBodyOptions): Promise
     source.once('end', () => {
       if (!settled) {
         settled = true;
-        resolve(Buffer.concat(chunks).toString('utf8'));
+        resolve({ text: Buffer.concat(chunks).toString('utf8'), wireSize });
       }
     });
 

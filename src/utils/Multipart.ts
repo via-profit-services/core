@@ -163,6 +163,16 @@ export class Multipart extends Writable {
     this.delimiter = Buffer.from(`\r\n--${boundary}`);
   }
 
+  /** Number of file parts received so far */
+  get filesReceived() {
+    return this.filesCount;
+  }
+
+  /** Total size of all files received so far, bytes */
+  get filesReceivedSize() {
+    return this.filesTotalSize;
+  }
+
   override _write(
     chunk: Buffer,
     _encoding: BufferEncoding,

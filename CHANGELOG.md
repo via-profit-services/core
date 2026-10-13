@@ -6,6 +6,19 @@
 
 Версия 2.11.0 не публиковалась: её изменения вошли в 2.12.0.
 
+### Extensions
+
+Подробности в разделе [Extensions](./docs/guides/extensions.md).
+
+- `extensions` есть в каждом ответе: `requestId` и поля проекта отправляются всегда, статистика и диагностика сервера — только при `debug`. **Маршруты проектов должны передавать `extensions` как есть** (без `debug ? extensions : undefined`).
+- `setExtension(context, name, value)`: поле в `extensions` из резолвера. `getRequestId(context)`: ID запроса для логов. Константа `RESERVED_EXTENSIONS`.
+- `requestId`: из заголовка `X-Request-Id`, если это безопасная строка, иначе случайный UUID.
+- Замеры лимитов: `extensions.limits` (`limits.exposeUsage` или `debug`) и `limits.onUsage(usage, context)` для сбора статистики в проде. Измеряются размер тела, файлы, токены, глубина, сложность и ширина запроса, в том числе отклонённого лимитом.
+- `debug`: `extensions.diagnostics` — имя операции, persisted query, попадание в кэш документов, время по этапам.
+- `complexityLimit.onComplete` получает второй аргумент `{ operationName, width }`.
+- Исправлено: `extensions.requestCounter` показывал значение глобального счётчика на момент ответа, а не номер запроса (при параллельных запросах номера совпадали).
+- `validationRule` в middleware изначально пуст: правила глубины и сложности применяются ядром отдельно.
+
 ### Пагинация
 
 Функции для курсорной пагинации. Раньше каждый проект держал свою копию этой логики в `BaseService`, и копии разошлись: подписанный курсор и защита фильтров от подмены были только в biotransfer. Подробности в разделе [Пагинация](./docs/guides/connections.md).

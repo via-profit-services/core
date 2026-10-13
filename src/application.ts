@@ -7,6 +7,8 @@ import type {
   HTTPListener,
   CoreStats,
   GraphqlResponse,
+  LimitsUsage,
+  RequestDiagnostics,
 } from '@via-profit-services/core';
 import {
   validateSchema,
@@ -18,6 +20,8 @@ import {
   validate,
   GraphQLError,
   NoSchemaIntrospectionCustomRule,
+  Lexer,
+  TokenKind,
   type ValidationRule,
   type DocumentNode,
   type ExecutionResult,
@@ -28,13 +32,20 @@ import composeMiddlewares from './utils/compose-middlewares';
 import applyMiddlewares from './utils/apply-middlewares';
 import formatErrors, { formatExecutionErrors } from './utils/format-errors';
 import ServerError from './server-error';
-import { buildValidationRules, buildComplexityRule } from './utils/build-validation-rules';
+import { buildRequestRules, type RuleMeasurements } from './utils/build-validation-rules';
 import { buildConfig } from './utils/build-config';
 import parseContentType from './utils/content-type-parser';
 import { UPLOAD_CLEANUP } from './utils/graphql-file-uploader';
 import { CSRF_PREVENTION_HEADERS } from './constants';
 import { LRUCache } from './utils/lru-cache';
 import { HttpError, isValidHttpStatus } from './utils/http-error';
+import { getBodyStats, type BodyStats } from './utils/body-stats';
+import { registerRequest, resolveRequestId } from './utils/request-extensions';
+import {
+  DEFAULT_JSON_MAX_BYTES,
+  DEFAULT_MAX_FILES,
+  DEFAULT_MAX_FILE_TOTAL_SIZE,
+} from './constants';
 
 /**
  * Cache of parsed and validated documents (see the comment in the listener).
@@ -47,7 +58,26 @@ const DOCUMENT_CACHE_MAX_TOTAL_LENGTH = 2 * 1024 * 1024;
 type CachedDocument = {
   readonly document: DocumentNode;
   readonly errors: readonly GraphQLError[];
+  /** Number of tokens, counted only when the usage of the limits is measured */
+  readonly tokens?: number;
 };
+
+/**
+ * Number of tokens of a document, as the parser counts them for maxTokens.
+ * One more pass of the lexer: done only on a cache miss and only when the
+ * usage is measured.
+ */
+const countTokens = (source: Source): number => {
+  const lexer = new Lexer(source);
+  let count = 0;
+  while (lexer.advance().kind !== TokenKind.EOF) {
+    count += 1;
+  }
+
+  return count;
+};
+
+const round = (ms: number) => Math.round(ms * 100) / 100;
 
 /**
  * Wraps an error of request parsing into a ServerError: such errors are
@@ -118,15 +148,28 @@ const statusOfError = (error: unknown): number => {
  */
 type RequestState = {
   readonly context: Context;
-  readonly extensions: GraphQLExtensions;
+  readonly requestId: string;
+  /** Number of this request since the start (stats.requestCounter is shared) */
+  readonly requestNumber: number;
+  /** Fields added by the project: middleware `extensions` and `setExtension` */
+  readonly extensions: Record<string, unknown>;
   readonly validationRule: ValidationRule[];
   /** Removes temporary upload files (see graphql-file-uploader) */
   uploadCleanup?: () => void;
+
+  // Measurements, filled while the request goes through the steps
+  readonly measurements: RuleMeasurements;
+  readonly timing: { -readonly [K in keyof RequestDiagnostics['timing']]: number };
+  bodyStats?: BodyStats;
+  tokens?: number;
+  documentParsed: boolean;
+  operationName: string | null;
+  persisted: boolean;
+  documentCache: 'hit' | 'miss';
 };
 
 const applicationFactory: ApplicationFactory = props => {
   const config = buildConfig(props);
-  const baseValidationRules = buildValidationRules(config);
   const {
     middleware,
     schema,
@@ -143,6 +186,9 @@ const applicationFactory: ApplicationFactory = props => {
   const stats: CoreStats = { requestCounter: 0, startupTime: new Date() };
   const securityRules: ValidationRule[] = introspection ? [] : [NoSchemaIntrospectionCustomRule];
   const staticRules = [...specifiedRules, ...securityRules];
+  // Measuring costs a little (one more lexer pass on a cache miss, rules with
+  // callbacks), so it is done only when somebody uses the values
+  const measureUsage = Boolean(debug || limits?.exposeUsage || limits?.onUsage);
   const documentCache = new LRUCache<string, CachedDocument>(
     DOCUMENT_CACHE_MAX_ENTRIES,
     DOCUMENT_CACHE_MAX_TOTAL_LENGTH,
@@ -224,16 +270,16 @@ const applicationFactory: ApplicationFactory = props => {
    * parse() + validate() with request-independent rules depends only on the
    * text, so it is cached.
    */
-  const getDocument = (query: string): DocumentNode => {
+  const getDocument = (query: string, state: RequestState): DocumentNode => {
     let cached = documentCache.get(query);
+    state.documentCache = cached ? 'hit' : 'miss';
 
     if (!cached) {
+      const source = new Source(query, 'GraphQL request');
       let document: DocumentNode;
       try {
         // maxTokens stops the parser early on huge documents
-        document = parse(new Source(query, 'GraphQL request'), {
-          maxTokens: limits?.maxGraphQLTokens,
-        });
+        document = parse(source, { maxTokens: limits?.maxGraphQLTokens });
       } catch (err) {
         throw new ServerError(
           [err instanceof GraphQLError ? err : new GraphQLError(String(err))],
@@ -241,15 +287,77 @@ const applicationFactory: ApplicationFactory = props => {
         );
       }
 
-      cached = { document, errors: validate(schema, document, staticRules) };
+      cached = {
+        document,
+        errors: validate(schema, document, staticRules),
+        tokens: measureUsage ? countTokens(source) : undefined,
+      };
       documentCache.set(query, cached, query.length);
     }
+
+    state.documentParsed = true;
+    state.tokens = cached.tokens;
 
     if (cached.errors.length > 0) {
       throw new ServerError(cached.errors, 'graphql-error-validate-field');
     }
 
     return cached.document;
+  };
+
+  /**
+   * Usage of the limits by the request: only the values that were measured
+   */
+  const buildUsage = (state: RequestState): LimitsUsage => {
+    const { bodyStats, measurements } = state;
+    const complexityLimit = limits?.complexityLimit;
+    const usage: Record<string, unknown> = { operationName: state.operationName };
+    const add = (name: keyof LimitsUsage, value: number | undefined, max: number | undefined) => {
+      if (typeof value === 'number') {
+        usage[name] = { value, max: max || null };
+      }
+    };
+
+    add('bodySize', bodyStats?.bodySize, limits?.maxJSONBodySize || DEFAULT_JSON_MAX_BYTES);
+    add('files', bodyStats?.files, limits?.maxFiles ?? DEFAULT_MAX_FILES);
+    add(
+      'filesTotalSize',
+      bodyStats?.filesTotalSize,
+      limits?.maxFilesTotalSize ?? DEFAULT_MAX_FILE_TOTAL_SIZE,
+    );
+    add('tokens', state.tokens, limits?.maxGraphQLTokens);
+    add('depth', measurements.depth, limits?.maxGraphQLDepthLimit);
+    add('complexity', measurements.complexity, complexityLimit?.maxComplexity);
+    add(
+      'width',
+      measurements.width,
+      complexityLimit?.maxComplexity ? complexityLimit.maxFieldsPerSelection : undefined,
+    );
+
+    return usage as unknown as LimitsUsage;
+  };
+
+  /**
+   * Runs a step and adds its duration to the timing of the request
+   */
+  const timed = <T>(
+    state: RequestState,
+    step: keyof RequestState['timing'],
+    fn: () => T | Promise<T>,
+  ): T | Promise<T> => {
+    // The timing is shown only in debug mode: no extra work otherwise
+    if (!debug) {
+      return fn();
+    }
+
+    const start = performance.now();
+    const done = () => {
+      state.timing[step] = round((state.timing[step] ?? 0) + performance.now() - start);
+    };
+
+    return Promise.resolve()
+      .then(fn)
+      .finally(done);
   };
 
   /**
@@ -272,16 +380,18 @@ const applicationFactory: ApplicationFactory = props => {
     assertRequestAllowed(request);
 
     // 2. Run middleware chain
-    await applyMiddlewares({
-      request,
-      middlewares: composeMiddlewares(middleware || []),
-      config,
-      context,
-      schema,
-      stats,
-      extensions,
-      validationRule,
-    });
+    await timed(state, 'middlewares', () =>
+      applyMiddlewares({
+        request,
+        middlewares: composeMiddlewares(middleware || []),
+        config,
+        context,
+        schema,
+        stats,
+        extensions,
+        validationRule,
+      }),
+    );
 
     // 3. Validate schema (graphql-js caches the result in the schema)
     const schemaErrors = validateSchema(schema);
@@ -290,11 +400,16 @@ const applicationFactory: ApplicationFactory = props => {
     }
 
     // 4. Parse request body (JSON or multipart)
-    const body = await bodyParser({ request, response, config }).catch(asRequestError);
+    const body = await timed(state, 'body', () =>
+      bodyParser({ request, response, config }).catch(asRequestError),
+    );
     state.uploadCleanup = (body as Record<symbol, (() => void) | undefined>)[UPLOAD_CLEANUP];
+    state.bodyStats = getBodyStats(body);
 
     // 5. Extract GraphQL params
     const { query, operationName, variables, persisted } = extractParams(body, request);
+    state.operationName = typeof operationName === 'string' ? operationName : null;
+    state.persisted = Boolean(persisted);
 
     if (persistedQueriesOnly && !persisted) {
       throw new ServerError(
@@ -315,15 +430,18 @@ const applicationFactory: ApplicationFactory = props => {
     }
 
     // 6. Parse and validate with the standard rules (cached)
-    const documentAST = getDocument(query);
+    const documentAST = await timed(state, 'document', () => getDocument(query, state));
 
     // 7. Validate with request-dependent rules: depth, complexity (uses the
     // variables) and rules added by middlewares. They are linear and cheap.
-    const complexityRule = buildComplexityRule(config, variables);
-    const validationErrors = validate(schema, documentAST, [
-      ...validationRule,
-      ...(complexityRule ? [complexityRule] : []),
-    ]);
+    const requestRules = buildRequestRules(
+      config,
+      variables,
+      measureUsage ? state.measurements : undefined,
+    );
+    const validationErrors = await timed(state, 'validation', () =>
+      validate(schema, documentAST, [...requestRules, ...validationRule]),
+    );
     if (validationErrors.length > 0) {
       throw new ServerError(validationErrors, 'graphql-error-validate-field');
     }
@@ -344,14 +462,16 @@ const applicationFactory: ApplicationFactory = props => {
     }
 
     // 9. Execute GraphQL
-    const result = await execute({
-      variableValues: variables,
-      document: documentAST,
-      contextValue: context,
-      schema,
-      rootValue,
-      operationName,
-    });
+    const result = await timed(state, 'execution', () =>
+      execute({
+        variableValues: variables,
+        document: documentAST,
+        contextValue: context,
+        schema,
+        rootValue,
+        operationName,
+      }),
+    );
 
     // 9.1 No data means execution did not start: a GraphQL request error,
     // e.g. a variable value rejected by a scalar or an unknown operationName.
@@ -377,27 +497,62 @@ const applicationFactory: ApplicationFactory = props => {
     // would mix data of different users.
     const state: RequestState = {
       context: sharedContext ? legacySharedContext : {},
-      extensions: {
-        queryTime: 0,
-        requestCounter: stats.requestCounter,
-        startupTime: stats.startupTime,
-      },
-      // A copy: rules pushed by a middleware live only during this request
-      validationRule: [...baseValidationRules],
+      requestId: resolveRequestId(request),
+      requestNumber: stats.requestCounter,
+      extensions: {},
+      // Rules pushed by middlewares live only during this request
+      validationRule: [],
+      measurements: {},
+      timing: {},
+      documentParsed: false,
+      operationName: null,
+      persisted: false,
+      documentCache: 'miss',
+    };
+
+    // setExtension() and getRequestId() find the request by its context.
+    // The shared legacy context belongs to every request at once: not registered.
+    if (!sharedContext) {
+      registerRequest(state.context, { requestId: state.requestId, extensions: state.extensions });
+    }
+
+    const buildExtensions = (): GraphQLExtensions => {
+      const usage = measureUsage && state.documentParsed ? buildUsage(state) : undefined;
+
+      if (usage && limits?.onUsage) {
+        try {
+          limits.onUsage(usage, state.context);
+        } catch (err) {
+          onError?.(err instanceof Error ? err : new Error(String(err)));
+        }
+      }
+
+      // The fields of the project first: the core fields can not be replaced
+      const extensions: Record<string, unknown> = { ...state.extensions, requestId: state.requestId };
+
+      if (usage && (debug || limits?.exposeUsage)) {
+        extensions.limits = usage;
+      }
+
+      // Internals of the server: only in debug mode
+      if (debug) {
+        const diagnostics: RequestDiagnostics = {
+          operationName: state.operationName,
+          persisted: state.persisted,
+          documentCache: state.documentCache,
+          timing: state.timing,
+        };
+        extensions.queryTime = round(performance.now() - startTime);
+        extensions.requestCounter = state.requestNumber;
+        extensions.startupTime = stats.startupTime;
+        extensions.diagnostics = diagnostics;
+      }
+
+      return extensions as GraphQLExtensions;
     };
 
     const finish = (payload: GraphqlResponse, status: number): GraphqlResponse => {
-      const graphqlResponse: GraphqlResponse = {
-        ...payload,
-        // Server statistics are internal information: only in debug mode
-        extensions: debug
-          ? {
-              ...state.extensions,
-              ...stats,
-              queryTime: performance.now() - startTime,
-            }
-          : undefined,
-      };
+      const graphqlResponse: GraphqlResponse = { ...payload, extensions: buildExtensions() };
 
       // Non-enumerable: JSON.stringify(response) and { ...response } do not
       // see it, so existing code keeps sending exactly data/errors/extensions

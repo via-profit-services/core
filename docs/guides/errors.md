@@ -8,7 +8,7 @@
 type GraphqlResponse = {
   data?: Record<string, unknown> | null;  // есть, если запрос дошёл до выполнения
   errors?: GraphQLFormattedError[];      // есть, если были ошибки
-  extensions?: GraphQLExtensions;        // только при debug: true
+  extensions?: GraphQLExtensions;        // requestId, поля проекта, диагностика при debug
 };
 ```
 
@@ -95,7 +95,7 @@ graphqlHTTPFactory({
 
 ## Режим `debug`
 
-При `debug: true` каждая ошибка получает `extensions.stacktrace` (массив строк), а ответ получает `extensions` со статистикой сервера. **Не включайте `debug` в проде**: стек раскрывает структуру кода.
+При `debug: true` каждая ошибка получает `extensions.stacktrace` (массив строк), а `extensions` ответа — диагностику сервера (см. [Extensions](./extensions.md)). **Не включайте `debug` в проде**: стек раскрывает структуру кода.
 
 ## HTTP-статусы
 

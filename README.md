@@ -74,6 +74,7 @@ curl -X POST http://localhost:8080/graphql \
 | [Скаляры и типы](./docs/guides/scalars.md) | `DateTime`, `Money`, `Time`, `BigInt`, `JSON`… |
 | [Пагинация (Connections)](./docs/guides/connections.md) | Курсорная пагинация по спецификации Relay |
 | [Ошибки](./docs/guides/errors.md) | Формат ошибок, HTTP-статусы, маскирование |
+| [Extensions](./docs/guides/extensions.md) | `requestId`, свои поля в ответе, подбор лимитов, диагностика |
 | [Persisted Queries](./docs/guides/persisted-queries.md) | Запросы по идентификатору |
 | [Безопасность](./docs/guides/security.md) | Лимиты, CSRF, маскирование, рекомендуемая конфигурация для прода |
 | [API](./docs/api/api.md) | Справочник экспортов пакета |

@@ -12,6 +12,7 @@ import {
 } from './Multipart';
 import { setUploadByPath } from './map-path';
 import parseContentType from './content-type-parser';
+import { setBodyStats } from './body-stats';
 import {
   DEFAULT_MAX_FIELD_SIZE,
   DEFAULT_MAX_FILE_SIZE,
@@ -156,6 +157,10 @@ const graphqlFileUploader: MultipartParser = ({ request, response, config }) =>
       }
 
       settled = true;
+      setBodyStats(operations, {
+        files: parser.filesReceived,
+        filesTotalSize: parser.filesReceivedSize,
+      });
       scheduleCleanup(operations, response, cleanupAll);
       resolve(operations);
     };

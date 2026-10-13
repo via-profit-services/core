@@ -187,7 +187,10 @@ describe('response.status', () => {
     const response = await listener(jsonRequest({ query: '{ ok }' }), fakeResponse());
 
     expect(response.status).toBe(200);
-    expect(JSON.parse(JSON.stringify(response))).toEqual({ data: { ok: 'ok' } });
+    expect(JSON.parse(JSON.stringify(response))).toEqual({
+      data: { ok: 'ok' },
+      extensions: { requestId: expect.any(String) },
+    });
     expect({ ...response }).not.toHaveProperty('status');
     expect(Object.keys(response)).not.toContain('status');
   });

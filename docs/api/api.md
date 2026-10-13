@@ -68,6 +68,14 @@ fieldsWrapper(schema, ({ resolve, source, args, context, info }) => {
 - Опция `wrapWithoutResolvers: false` пропускает поля, у которых нет своего резолвера.
 - Повторный вызов на той же схеме оборачивает поля ещё раз: выполнятся обе обёртки.
 
+### `setExtension(context, name, value)`
+
+Добавляет поле в `extensions` ответа текущего запроса. Работает в резолверах и middleware, поле отправляется в любом режиме. Бросает ошибку для зарезервированного имени (`RESERVED_EXTENSIONS`) и для контекста, который не принадлежит запросу (`sharedContext: true`). См. [Extensions](../guides/extensions.md#свои-поля).
+
+### `getRequestId(context)`
+
+ID текущего запроса, то же значение, что `extensions.requestId`. Для логов. См. [Extensions](../guides/extensions.md#requestid).
+
 ### `bodyParser({ request, response, config })`
 
 Низкоуровневая функция: читает и разбирает тело запроса (JSON или multipart) и возвращает объект `{ query?, variables?, operationName?, … }`. Ядро вызывает её само; отдельно она нужна, только если вы строите свой обработчик. Применяет лимиты из `config.limits`.
@@ -117,6 +125,7 @@ fieldsWrapper(schema, ({ resolve, source, args, context, info }) => {
 | `DEFAULT_MAX_GRAPHQL_COMPLEXITY_INTROSPECTION_COST` | 2 |
 | `DEFAULT_MAX_GRAPHQL_COMPLEXITY_MAX_FIELDS_PER_SELECTION` | 50 |
 | `CSRF_PREVENTION_HEADERS` | `['x-requested-with', 'apollo-require-preflight', 'x-apollo-operation-name', 'graphql-preflight']` |
+| `RESERVED_EXTENSIONS` | `['requestId', 'limits', 'queryTime', 'requestCounter', 'startupTime', 'diagnostics']` |
 
 ## Типы TypeScript
 
@@ -128,7 +137,10 @@ fieldsWrapper(schema, ({ resolve, source, args, context, info }) => {
 | `Limits`, `ComplexityLimitOptions` | Лимиты |
 | `HTTPListener` | Обработчик запроса |
 | `GraphqlResponse` | `{ data?, errors?, extensions? }` и неперечисляемое `status` |
-| `GraphQLExtensions`, `CoreStats` | Статистика: `queryTime`, `requestCounter`, `startupTime` |
+| `GraphQLExtensions` | `extensions` ответа: `requestId`, `limits`, диагностика `debug` и поля проекта |
+| `LimitsUsage`, `LimitUsage` | Замеры запроса относительно лимитов (`limits.onUsage`, `extensions.limits`) |
+| `RequestDiagnostics` | `extensions.diagnostics` в режиме `debug` |
+| `CoreStats` | `requestCounter`, `startupTime` |
 | `Context` | Контекст. Пустой интерфейс, расширяется в проекте ([пример](../guides/context.md#типизация)) |
 | `Middleware`, `MiddlewareProps` | Middleware |
 | `ServerErrorType` | Значения `extensions.errorType` |

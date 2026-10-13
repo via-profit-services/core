@@ -49,8 +49,11 @@ export interface ComplexityLimitOptions {
   /** Maximum number of fields in one selection set. Default: no limit */
   maxFieldsPerSelection?: number;
 
-  /** Called with the complexity of every validated operation */
-  onComplete?: (complexity: number) => void;
+  /**
+   * Called with the complexity of every validated operation.
+   * `info.width` is the largest number of fields in one selection set.
+   */
+  onComplete?: (complexity: number, info: { operationName: string; width: number }) => void;
 
   /** Custom error factory for overriding the default error message */
   createError?: (max: number, actual: number) => GraphQLError;
@@ -109,6 +112,7 @@ export default function complexityLimit(options: ComplexityLimitOptions): Valida
         const memo = new Map<string, number>();
         const inProgress = new Set<string>();
         let widthReported = false;
+        let width = 0;
 
         // Default values of variables: `query($n: Int = 50)`
         const variableValues: Record<string, unknown> = {};
@@ -226,6 +230,8 @@ export default function complexityLimit(options: ComplexityLimitOptions): Valida
             }
           }
 
+          width = Math.max(width, fieldsCount);
+
           if (
             typeof maxFieldsPerSelection === 'number' &&
             fieldsCount > maxFieldsPerSelection &&
@@ -246,7 +252,7 @@ export default function complexityLimit(options: ComplexityLimitOptions): Valida
         const rootType = schema.getRootType(node.operation);
         const complexity = calculate(node.selectionSet.selections, rootType, false);
 
-        onComplete?.(complexity);
+        onComplete?.(complexity, { operationName, width });
 
         if (complexity > maxComplexity) {
           context.reportError(

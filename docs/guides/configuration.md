@@ -20,7 +20,7 @@ const graphqlHTTP = graphqlHTTPFactory({
 | `schema` | `GraphQLSchema` | — | **Обязательный.** Схема GraphQL |
 | `middleware` | `Middleware \| Middleware[]` | `[]` | Функции, выполняемые на каждый запрос перед чтением тела. См. [Middleware](./middlewares.md) |
 | `rootValue` | `unknown` | `undefined` | Передаётся в `execute` graphql-js как есть |
-| `debug` | `boolean` | `false` | Добавляет в ответ `extensions` (время запроса, счётчик, время старта) и `stacktrace` в ошибки. **Не включайте в проде** |
+| `debug` | `boolean` | `false` | Диагностика сервера: `stacktrace` в ошибках, в `extensions` — время запроса и этапов, счётчик, кэш документов, `limits`. См. [Extensions](./extensions.md). **Не включайте в проде** |
 | `persistedQueriesMap` | `Record<string, string>` | `undefined` | Карта «идентификатор → текст запроса». См. [Persisted Queries](./persisted-queries.md) |
 | `persistedQueryKey` | `string` | `'documentId'` | Имя параметра с идентификатором persisted query |
 | `limits` | `Limits` | см. ниже | Лимиты размеров, глубины и сложности |
@@ -71,6 +71,13 @@ const graphqlHTTP = graphqlHTTPFactory({
 | `maxGraphQLIntrospectionDepthLimit` | 20 | `DEFAULT_MAX_GRAPHQL_INTROSPECTION_DEPTH_LIMIT` | Глубина внутри `__schema`/`__type`. Стандартный introspection-запрос имеет глубину 14 |
 | `complexityLimit` | см. ниже | — | Ограничение «стоимости» запроса |
 
+### Замеры
+
+| Параметр | По умолчанию | Описание |
+|----------|--------------|----------|
+| `exposeUsage` | `false` | Отдавать `extensions.limits`: сколько каждого лимита израсходовал запрос. При `debug` включено всегда |
+| `onUsage` | — | `(usage, context) => void`, вызывается для каждого запроса с разобранным документом. Для подбора лимитов по рабочему трафику, см. [Подбор лимитов](./extensions.md#подбор-лимитов) |
+
 ### `complexityLimit`
 
 | Параметр | По умолчанию | Константа | Описание |
@@ -81,7 +88,7 @@ const graphqlHTTP = graphqlHTTPFactory({
 | `defaultListMultiplier` | 1 | `DEFAULT_MAX_GRAPHQL_COMPLEXITY_DEFAULT_LIST_MULTIPLIER` | Множитель для полей-списков без аргумента размера. `1` — без множителя |
 | `introspectionCost` | 2 | `DEFAULT_MAX_GRAPHQL_COMPLEXITY_INTROSPECTION_COST` | Стоимость поля внутри `__schema`/`__type` |
 | `maxFieldsPerSelection` | 50 | `DEFAULT_MAX_GRAPHQL_COMPLEXITY_MAX_FIELDS_PER_SELECTION` | Максимум полей в одном блоке `{ }` |
-| `onComplete` | — | — | `(complexity: number) => void`, вызывается с итоговой сложностью каждой операции |
+| `onComplete` | — | — | `(complexity, { operationName, width }) => void`, вызывается для каждой операции: сложность и наибольшее число полей в одном блоке |
 | `createError` | — | — | `(max, actual) => GraphQLError`, своя ошибка при превышении |
 
 Как считается сложность:
