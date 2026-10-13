@@ -506,3 +506,54 @@ describe('File uploads: security', () => {
     (response as unknown as EventEmitter).emit('close');
   });
 });
+
+describe('Real HTTP client', () => {
+  // The other tests build the multipart body by hand. Here the body is encoded
+  // by fetch + FormData (undici): the same encoder as in browsers, and the
+  // request goes through a real socket, split into TCP chunks by the OS.
+  let server: http.Server;
+  let url: string;
+
+  beforeAll(async () => {
+    const { createServer } = await import('node:http');
+    const listener = graphqlHTTPFactory({ schema });
+    server = createServer(async (req, res) => {
+      const { data, errors } = await listener(req, res);
+      res.setHeader('content-type', 'application/json');
+      res.end(JSON.stringify({ data, errors }));
+    });
+    await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
+    const address = server.address() as { port: number };
+    url = `http://127.0.0.1:${address.port}/graphql`;
+  });
+
+  afterAll(() => new Promise<void>(resolve => server.close(() => resolve())));
+
+  test('files sent by fetch + FormData arrive intact', async () => {
+    const big = crypto.randomBytes(3 * 1024 * 1024 + 7);
+    const small = Buffer.from('Привет, мир');
+    const form = new FormData();
+    form.append(
+      'operations',
+      JSON.stringify({
+        query: 'mutation($files: [FileUpload!]) { uploadMany(files: $files) { filename mimeType readSize sha256 } }',
+        variables: { files: [null, null] },
+      }),
+    );
+    form.append('map', JSON.stringify({ 0: ['variables.files.0'], 1: ['variables.files.1'] }));
+    form.append('0', new Blob([big], { type: 'application/octet-stream' }), 'photo.bin');
+    // The HTML spec makes clients encode `"` in a file name as %22 (CR and LF as
+    // %0D, %0A). Like busboy, the parser does not decode it back: a file name
+    // containing a literal "%22" could not be told apart.
+    form.append('1', new Blob([small], { type: 'text/plain' }), 'отчёт "март".txt');
+
+    const res = await fetch(url, { method: 'POST', body: form, headers: { 'x-requested-with': 'test' } });
+    const body = (await res.json()) as { data: { uploadMany: unknown[] }; errors?: unknown[] };
+
+    expect(body.errors).toBeUndefined();
+    expect(body.data.uploadMany).toEqual([
+      { filename: 'photo.bin', mimeType: 'application/octet-stream', readSize: big.length, sha256: sha256(big) },
+      { filename: 'отчёт %22март%22.txt', mimeType: 'text/plain', readSize: small.length, sha256: sha256(small) },
+    ]);
+  });
+});
