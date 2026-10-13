@@ -1,72 +1,101 @@
 # CHANGELOG
 
-# `2.7.0` 13.12.2024`
+## 2.11.0
 
-### Breaking
+Исправлены ошибки и уязвимости, найденные при аудите. Публичный API не изменился; новые параметры необязательны. Некоторые изменения поведения требуют проверки проектов: см. [руководство по миграции](./docs/guides/migration-2.11.md).
 
- - The `Money` scalar type now is `bigint` value, not a `number`
+### Безопасность
 
-# `2.6.0` 02.11.2024`
+- **Контекст создаётся на каждый запрос.** Раньше `context`, `extensions` и `validationRule` были общими для всех запросов: данные одного пользователя могли попасть в резолверы другого, а правила, добавленные middleware, накапливались бесконечно. Прежнее поведение доступно через устаревший параметр `sharedContext: true`.
+- **Prototype pollution через поле `map`** multipart-запроса: путь `variables.__proto__.*` позволял одним запросом изменить `Object.prototype` всего процесса.
+- **Загрузка файлов**: тело запроса целиком накапливалось в памяти, лимиты `maxFileSize`, `maxFiles`, `maxFileFields`, `maxFileParts` не применялись.
+- **Валидация**: правила глубины и сложности работали экспоненциально долго на запросах с многократно вложенными фрагментами (запрос в 1 КБ блокировал сервер на секунды).
+- **Обход лимита сложности** через переменные (`first: $n`) и повторное использование фрагментов.
+- **Утечка памяти** в правилах валидации (кэш фрагментов всех запросов).
+- `extensions` со статистикой сервера возвращались при `debug: false`.
 
-### Breaking
+### Новое
 
-- The `Context` property now is empty object
+- `maskErrors` и `onError`: скрытие внутренних ошибок от клиента и их логирование.
+- `csrfPrevention`: защита от CSRF для GET- и multipart-запросов. Константа `CSRF_PREVENTION_HEADERS`.
+- `persistedQueriesOnly`: выполнять только persisted queries.
+- `introspection`: возможность запретить introspection.
+- `limits.maxGraphQLTokens` (по умолчанию 10 000), константа `DEFAULT_MAX_GRAPHQL_TOKENS`.
+- Работают все параметры `complexityLimit`: `listArguments`, `defaultListMultiplier`, `introspectionCost`, `maxFieldsPerSelection`, `onComplete`, `createError`.
+- Поддержка `Content-Encoding: br`.
+- Кэш разобранных и провалидированных документов: +39% запросов в секунду, +110% при использовании `fieldsWrapper`.
 
-## `2.5.0` 08.08.2024`
+### Исправления
 
-### Updates
+- Новый потоковый multipart-парсер: разделитель, разрезанный между TCP-пакетами, больше не теряется (раньше файлы портились или запрос зависал); файлы пишутся на диск с обратным давлением; запрос больше не зависает, если файл из `map` не пришёл; поддержаны boundary в кавычках и `filename*`.
+- Временные файлы загрузок удаляются автоматически после закрытия ответа; создаются с правами `0600`.
+- Глубина: фрагменты не добавляют уровень; `maxGraphQLIntrospectionDepthLimit` применяется (раньше игнорировался, и стандартный introspection-запрос отклонялся).
+- `fieldsWrapper`: поля без резолвера возвращали `null`; `wrapWithoutResolvers: false` отключал обёртку всех полей; синхронный путь без лишних Promise.
+- Невалидный JSON в теле запроса больше не превращается молча в пустой запрос; `variables` обязаны быть объектом; batch-запросы отклоняются явно.
+- Обрыв запроса или повреждённый gzip больше не оставляют запрос висеть.
+- Ошибки значений переменных возвращаются как ошибки запроса (`graphql-error-validate-request`) и не маскируются.
+- Сообщение о неверном `Content-Type` содержало `[object Object]`.
+- Скаляры: `DateTime` — строгий ISO-UTC на входе, timestamp до 2001 года больше не отклоняются; `Money` — только десятичные целые строки (`""` и `"0x10"` принимались); `Time` — `24:59` отклоняется, вывод всегда `HH:MM:SS`; `URL` — запрещены `javascript:` и `vbscript:`; `BigInt` — ошибки в виде `GraphQLError`; `JSONObject` — литерал обязан быть объектом.
 
-Graphql was updated to `16.9.0`.
+### Изменены значения по умолчанию
 
-- The method `makeGraphQLRequest` in the class `CoreService` is now static
-- The method `getVersion` in the class `CoreService` is now static
+- `DEFAULT_MAX_FIELD_SIZE`: 16 МБ → 1 МБ.
+- `DEFAULT_MAX_FILE_PARTS`: 20 → 26 (`maxFiles` + `maxFileFields`).
+- `DEFAULT_MAX_GRAPHQL_INTROSPECTION_DEPTH_LIMIT`: 8120 → 20.
+- `maxFieldsPerSelection` (50) теперь применяется.
 
-### Breaking
+### Прочее
 
-- input type `BetweenDate` now is removed. Use `BetweenDateTime` instead
-- scalar type `Date` now is removed. Use `DateTime` instead
-- `timezone` value in Context now is removed
-- `defaultOutputFilter` value now is removed
-- `stringToCursor` function now is removed
-- `cursorToString` function now is removed
-- `makeNodeCursor` function now is removed
-- `getCursorPayload` function now is removed
-- `buildCursorConnection` function now is removed
-- `nodeToEdge` function now is removed
-- `extractNodeField` function now is removed
-- `extractNodeIds` function now is removed
-- `arrayOfIdsToArrayOfObjectIds` function now is removed
-- `buildQueryFilter` function now is removed
-- `extractKeyAsObject` function now is removed
-- `fieldBuilder` function now is removed
-- `DEFAULT_SERVER_TIMEZONE` constant now is removed
-- `ListResponse` type now is removed
+- `engines.node >= 18.18`; `types` в карте `exports`; в npm-пакет попадают только `dist`, README, CHANGELOG, LICENSE.
+- Из типов удалены `CoreService` и `BetweenDateInputType`: они не существовали в рантайме. `BetweenMoney` использует `bigint`.
+- Документация переписана и приведена в соответствие с кодом.
 
-## `2.4.0` 30.08.2023`
+## 2.10.0 (17.04.2026)
 
-### Breaking
+- Сборка ESM и CommonJS (`"type": "module"`, `exports`).
+- Большой рефакторинг ядра.
+- 2.10.1–2.10.6: исправления multipart-парсера и проверки `Content-Type`.
 
-- `timezone` value in Context now is removed
-- `defaultOutputFilter` value now is removed
-- `stringToCursor` function now is removed
-- `cursorToString` function now is removed
-- `makeNodeCursor` function now is removed
-- `getCursorPayload` function now is removed
-- `buildCursorConnection` function now is removed
-- `nodeToEdge` function now is removed
-- `extractNodeField` function now is removed
-- `extractNodeIds` function now is removed
-- `arrayOfIdsToArrayOfObjectIds` function now is removed
-- `buildQueryFilter` function now is removed
-- `extractKeyAsObject` function now is removed
-- `fieldBuilder` function now is removed
-- `DEFAULT_SERVER_TIMEZONE` constant now is removed
-- `ListResponse` type now is removed
+## 2.8.0 (26.01.2026)
 
-### Bugfixes
+- Лимиты размеров тела, файлов, глубины (`maxGraphQLDepthLimit`) и сложности (`complexityLimit`) запроса.
+- Собственный multipart-парсер вместо `busboy`: пакет больше не имеет runtime-зависимостей.
+- 2.8.1 (05.03.2026): `DateTime` принимает только ISO-UTC.
 
-- Fixed errors in `buildQueryFilter` function (`between` param).
+## 2.7.0 (13.12.2024)
 
-### New features
+### Ломающие изменения
 
-- `BigInt` scalar added named as `BigIntScalarType`
+- Скаляр `Money` теперь использует `bigint`, а не `number`.
+
+## 2.6.0 (02.11.2024)
+
+### Ломающие изменения
+
+- `Context` теперь пустой объект.
+
+## 2.5.0 (08.08.2024)
+
+- `graphql` обновлён до 16.9.0.
+- Методы `makeGraphQLRequest` и `getVersion` класса `CoreService` стали статическими (класс удалён в более поздних версиях).
+
+### Ломающие изменения
+
+- Удалён input-тип `BetweenDate`, используйте `BetweenDateTime`.
+- Удалён скаляр `Date`, используйте `DateTime`.
+
+## 2.4.0 (30.08.2023)
+
+### Ломающие изменения
+
+- Из контекста удалено значение `timezone`, удалён `defaultOutputFilter`.
+- Удалены функции `stringToCursor`, `cursorToString`, `makeNodeCursor`, `getCursorPayload`, `buildCursorConnection`, `nodeToEdge`, `extractNodeField`, `extractNodeIds`, `arrayOfIdsToArrayOfObjectIds`, `buildQueryFilter`, `extractKeyAsObject`, `fieldBuilder`.
+- Удалены константа `DEFAULT_SERVER_TIMEZONE` и тип `ListResponse`.
+
+### Исправления
+
+- Ошибки параметра `between` в функции `buildQueryFilter`.
+
+### Новое
+
+- Скаляр `BigInt` (`BigIntScalarType`).
