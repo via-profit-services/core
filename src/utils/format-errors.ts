@@ -20,6 +20,21 @@ type FormatErrors = (
 const stacktrace = (error: Error) =>
   typeof error.stack === 'string' ? error.stack.split('\n') : undefined;
 
+/**
+ * `extensions.http` only carries the HTTP status for the server
+ * (`throw new GraphQLError('...', { extensions: { http: { status: 401 } } })`)
+ * and is not sent to the client.
+ */
+const publicExtensions = (extensions: GraphQLFormattedError['extensions']) => {
+  if (!extensions || !('http' in extensions)) {
+    return extensions;
+  }
+
+  const { http: _http, ...rest } = extensions;
+
+  return Object.keys(rest).length ? rest : undefined;
+};
+
 const report = (error: Error, onError: FormatOptions['onError']) => {
   try {
     onError?.(error);
@@ -57,7 +72,8 @@ export const formatExecutionErrors = (
     report(original ?? error, onError);
 
     const isPublic = !original || original instanceof GraphQLError;
-    const formatted = error.toJSON();
+    const json = error.toJSON();
+    const formatted = { ...json, extensions: publicExtensions(json.extensions) };
 
     if (maskErrors && !isPublic) {
       return {
@@ -76,6 +92,10 @@ export const formatExecutionErrors = (
         ...formatted,
         extensions: { ...formatted.extensions, stacktrace: stacktrace(original ?? error) },
       };
+    }
+
+    if (!formatted.extensions) {
+      delete formatted.extensions;
     }
 
     return formatted;
@@ -104,7 +124,7 @@ const formatErrors: FormatErrors = ({ error, debug, maskErrors, onError }) => {
       return {
         ...formatted,
         extensions: {
-          ...formatted.extensions,
+          ...publicExtensions(formatted.extensions),
           errorType,
           ...(debug ? { stacktrace: stacktrace(graphqlError) } : {}),
         },

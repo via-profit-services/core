@@ -1,5 +1,7 @@
 import { Readable, Writable } from 'node:stream';
 
+import { HttpError } from './http-error';
+
 /**
  * Streaming multipart/form-data parser (RFC 7578, RFC 2046).
  *
@@ -69,9 +71,13 @@ export interface MultipartFileInfo {
   readonly encoding: string;
 }
 
-export class MultipartError extends Error {
-  constructor(message: string) {
-    super(message);
+/**
+ * A malformed multipart body is 400 (Bad Request),
+ * an exceeded limit is 413 (Content Too Large).
+ */
+export class MultipartError extends HttpError {
+  constructor(message: string, status = 400) {
+    super(message, status);
     this.name = 'MultipartError';
   }
 }
@@ -157,7 +163,11 @@ export class Multipart extends Writable {
     this.delimiter = Buffer.from(`\r\n--${boundary}`);
   }
 
-  override _write(chunk: Buffer, _encoding: BufferEncoding, callback: (error?: Error | null) => void) {
+  override _write(
+    chunk: Buffer,
+    _encoding: BufferEncoding,
+    callback: (error?: Error | null) => void,
+  ) {
     // The buffer contains only a small unprocessed tail here, so concat is cheap
     this.buffer = this.buffer.length ? Buffer.concat([this.buffer, chunk]) : chunk;
 
@@ -182,7 +192,9 @@ export class Multipart extends Writable {
 
   override _final(callback: (error?: Error | null) => void) {
     if (this.state !== 'done') {
-      callback(new MultipartError('Unexpected end of multipart body: the closing boundary is missing'));
+      callback(
+        new MultipartError('Unexpected end of multipart body: the closing boundary is missing'),
+      );
 
       return;
     }
@@ -273,6 +285,7 @@ export class Multipart extends Writable {
           if (this.partsCount > this.limits.parts) {
             throw new MultipartError(
               `Multipart request exceeds the limit of ${this.limits.parts} parts`,
+              413,
             );
           }
 
@@ -282,12 +295,15 @@ export class Multipart extends Writable {
 
         case 'headers': {
           // A part without headers starts with CRLF right away
-          const index = this.buffer.subarray(0, 2).equals(CRLF) ? -2 : this.buffer.indexOf(HEADERS_END);
+          const index = this.buffer.subarray(0, 2).equals(CRLF)
+            ? -2
+            : this.buffer.indexOf(HEADERS_END);
 
           if (index === -1) {
             if (this.buffer.length > this.limits.headerSize) {
               throw new MultipartError(
                 `Multipart part headers exceed the ${this.limits.headerSize} byte size limit`,
+                413,
               );
             }
 
@@ -363,6 +379,7 @@ export class Multipart extends Writable {
       if (this.fieldsCount > this.limits.fields) {
         throw new MultipartError(
           `Multipart request exceeds the limit of ${this.limits.fields} non-file field parts`,
+          413,
         );
       }
 
@@ -373,7 +390,10 @@ export class Multipart extends Writable {
 
     this.filesCount += 1;
     if (this.filesCount > this.limits.files) {
-      throw new MultipartError(`Multipart request exceeds the limit of ${this.limits.files} files`);
+      throw new MultipartError(
+        `Multipart request exceeds the limit of ${this.limits.files} files`,
+        413,
+      );
     }
 
     const stream = new FileStream(s => this.resume(s));
@@ -381,7 +401,10 @@ export class Multipart extends Writable {
     stream.once('close', () => this.resume(stream));
     const info: MultipartFileInfo = {
       filename: sanitizeFilename(filename),
-      mimeType: (headers['content-type'] || 'application/octet-stream').split(';')[0].trim().toLowerCase(),
+      mimeType: (headers['content-type'] || 'application/octet-stream')
+        .split(';')[0]
+        .trim()
+        .toLowerCase(),
       encoding: (headers['content-transfer-encoding'] || '7bit').toLowerCase(),
     };
 
@@ -401,6 +424,7 @@ export class Multipart extends Writable {
       if (part.size > this.limits.fieldSize) {
         throw new MultipartError(
           `The «${part.name}» multipart field value exceeds the ${this.limits.fieldSize} byte size limit`,
+          413,
         );
       }
 
@@ -414,12 +438,14 @@ export class Multipart extends Writable {
     if (part.size > this.limits.fileSize) {
       throw new MultipartError(
         `File «${part.filename}» exceeds the ${this.limits.fileSize} byte size limit`,
+        413,
       );
     }
 
     if (this.filesTotalSize > this.limits.filesTotalSize) {
       throw new MultipartError(
         `Total upload size exceeds the ${this.limits.filesTotalSize} byte size limit`,
+        413,
       );
     }
 

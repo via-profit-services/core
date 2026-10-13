@@ -466,6 +466,29 @@ declare module '@via-profit-services/core' {
     data?: Record<string, any> | null;
     errors?: readonly GraphQLFormattedError[] | null;
     extensions?: GraphQLExtensions;
+
+    /**
+     * Recommended HTTP status code of the response.
+     *
+     * - `200` - the operation was executed (also with errors: partial success);
+     * - `400` - malformed request, syntax or validation error;
+     * - `401` / `403` - an error with `extensions.code` `UNAUTHENTICATED` / `FORBIDDEN`;
+     * - `405` - unsupported HTTP method, mutation via GET (send `Allow: GET, POST`);
+     * - `413` - the body, a file or a multipart limit is too large;
+     * - `415` - unsupported Content-Type or Content-Encoding;
+     * - `500` - unexpected server error.
+     *
+     * A `GraphQLError` thrown before execution (e.g. in a middleware) may set
+     * its own status: `extensions: { http: { status: 401 } }`.
+     *
+     * **Non-enumerable**: it is not serialized by `JSON.stringify(response)`
+     * and is not copied by `{ ...response }`, so the response body keeps
+     * only `data`, `errors` and `extensions` as the GraphQL spec requires.
+     * Read it explicitly: `res.statusCode = response.status ?? 200`.
+     *
+     * Always set by the core (since 2.11).
+     */
+    readonly status?: number;
   };
 
   export type GraphQLExtensions = CoreStats & {
@@ -632,7 +655,12 @@ declare module '@via-profit-services/core' {
   class ServerError extends Error {
     readonly graphqlErrors: readonly GraphQLError[];
     readonly errorType: ServerErrorType;
-    constructor(graphqlErrors: readonly GraphQLError[], errorType: ServerErrorType);
+    readonly httpStatus: number;
+    constructor(
+      graphqlErrors: readonly GraphQLError[],
+      errorType: ServerErrorType,
+      httpStatus?: number,
+    );
   }
 
   export const FileUploadScalarType: GraphQLScalarType;

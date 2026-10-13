@@ -34,7 +34,7 @@ const server = http.createServer(async (req, res) => {
   // Обработчик вызывается на КАЖДЫЙ запрос
   const response = await graphqlHTTP(req, res);
 
-  res.statusCode = response.errors && !response.data ? 400 : 200;
+  res.statusCode = response.status ?? 200; // рекомендуемый статус от ядра
   res.setHeader('content-type', 'application/json');
   res.end(JSON.stringify(response));
 });
@@ -73,7 +73,7 @@ const graphqlHTTP = graphqlHTTPFactory({ schema });
 
 app.all('/graphql', async (req, res) => {
   const response = await graphqlHTTP(req, res);
-  res.status(response.errors && !response.data ? 400 : 200).json(response);
+  res.status(response.status ?? 200).json(response);
 });
 ```
 
@@ -92,7 +92,7 @@ HTTP-запрос
   ├─ 6. parse + стандартная валидация graphql-js (результат кэшируется по тексту запроса)
   ├─ 7. Лимиты глубины и сложности, правила из middleware
   ├─ 8. execute: резолверы получают context
-  └─ 9. Ответ { data, errors, extensions } → ваш код отправляет его клиенту
+  └─ 9. Ответ { data, errors, extensions } + response.status → ваш код отправляет его клиенту
         (временные файлы загрузок удаляются после закрытия ответа)
 ```
 

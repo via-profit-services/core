@@ -32,6 +32,7 @@ import parseContentType from './utils/content-type-parser';
 import { UPLOAD_CLEANUP } from './utils/graphql-file-uploader';
 import { CSRF_PREVENTION_HEADERS } from './constants';
 import { LRUCache } from './utils/lru-cache';
+import { HttpError, isValidHttpStatus } from './utils/http-error';
 
 /**
  * Cache of parsed and validated documents (see the comment in the listener).
@@ -60,7 +61,53 @@ const asRequestError = (error: unknown): never => {
     originalError: error instanceof Error ? error : undefined,
   });
 
-  throw new ServerError([graphqlError], 'graphql-error-validate-request');
+  throw new ServerError(
+    [graphqlError],
+    'graphql-error-validate-request',
+    error instanceof HttpError ? error.status : 400,
+  );
+};
+
+/**
+ * Well-known error codes and their HTTP status codes
+ */
+const STATUS_BY_ERROR_CODE: Record<string, number> = {
+  UNAUTHENTICATED: 401,
+  FORBIDDEN: 403,
+  BAD_USER_INPUT: 400,
+};
+
+/**
+ * HTTP status code for an error that stopped the request before or instead
+ * of execution.
+ */
+const statusOfError = (error: unknown): number => {
+  if (error instanceof ServerError) {
+    return error.httpStatus;
+  }
+
+  if (error instanceof GraphQLError) {
+    // thrown on purpose (e.g. by a middleware): it may set its own status
+    const http = error.extensions?.http as { status?: unknown } | undefined;
+    if (isValidHttpStatus(http?.status)) {
+      return http.status;
+    }
+
+    const code = error.extensions?.code;
+
+    // hasOwnProperty, not `in`: 'toString' in {} is true
+    return typeof code === 'string' &&
+      Object.prototype.hasOwnProperty.call(STATUS_BY_ERROR_CODE, code)
+      ? STATUS_BY_ERROR_CODE[code]
+      : 400;
+  }
+
+  if (error instanceof HttpError) {
+    return error.status;
+  }
+
+  // anything else is unexpected: a bug or a failure of an external service
+  return 500;
 };
 
 const applicationFactory: ApplicationFactory = props => {
@@ -110,17 +157,25 @@ const applicationFactory: ApplicationFactory = props => {
     // A copy: rules pushed by a middleware live only during this request
     const validationRule = [...baseValidationRules];
 
-    // Server statistics are internal information: only in debug mode
-    const finish = (payload: GraphqlResponse): GraphqlResponse => ({
-      ...payload,
-      extensions: debug
-        ? {
-            ...extensions,
-            ...stats,
-            queryTime: performance.now() - startTime,
-          }
-        : undefined,
-    });
+    const finish = (payload: GraphqlResponse, status: number): GraphqlResponse => {
+      const graphqlResponse: GraphqlResponse = {
+        ...payload,
+        // Server statistics are internal information: only in debug mode
+        extensions: debug
+          ? {
+              ...extensions,
+              ...stats,
+              queryTime: performance.now() - startTime,
+            }
+          : undefined,
+      };
+
+      // Non-enumerable: JSON.stringify(response) and { ...response } do not
+      // see it, so existing code keeps sending exactly data/errors/extensions
+      Object.defineProperty(graphqlResponse, 'status', { value: status, enumerable: false });
+
+      return graphqlResponse;
+    };
 
     // Removes temporary upload files when there is no http.ServerResponse
     // to wait for (see graphql-file-uploader)
@@ -136,6 +191,7 @@ const applicationFactory: ApplicationFactory = props => {
         throw new ServerError(
           [new GraphQLError('GraphQL only supports GET, POST and OPTIONS requests')],
           'graphql-error-execute',
+          405,
         );
       }
 
@@ -148,6 +204,7 @@ const applicationFactory: ApplicationFactory = props => {
             ),
           ],
           'graphql-error-validate-request',
+          415,
         );
       }
 
@@ -291,21 +348,29 @@ const applicationFactory: ApplicationFactory = props => {
       }
 
       // 10. Success response
-      return finish({
-        data: result.data,
-        errors: formatExecutionErrors(result.errors, { debug, maskErrors, onError }),
-      });
+      // The operation was executed: 200 even with errors (partial success).
+      // 4xx/5xx would make proxies and clients treat useful data as a failure.
+      return finish(
+        {
+          data: result.data,
+          errors: formatExecutionErrors(result.errors, { debug, maskErrors, onError }),
+        },
+        200,
+      );
     } catch (error) {
       // 11. Error response
-      return finish({
-        errors: formatErrors({
-          error,
-          debug,
-          maskErrors,
-          onError,
-          context,
-        }),
-      });
+      return finish(
+        {
+          errors: formatErrors({
+            error,
+            debug,
+            maskErrors,
+            onError,
+            context,
+          }),
+        },
+        statusOfError(error),
+      );
     } finally {
       uploadCleanup?.();
     }

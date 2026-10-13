@@ -16,6 +16,7 @@
 
 ### Новое
 
+- `response.status`: рекомендуемый HTTP-статус ответа (`200`, `400`, `401`, `403`, `405`, `413`, `415`, `500`). Неперечисляемое свойство: не попадает в `JSON.stringify(response)`, поэтому тело ответа не меняется. `GraphQLError` из middleware может задать статус через `extensions.http.status`; поле `http` клиенту не отправляется.
 - `maskErrors` и `onError`: скрытие внутренних ошибок от клиента и их логирование.
 - `csrfPrevention`: защита от CSRF для GET- и multipart-запросов. Константа `CSRF_PREVENTION_HEADERS`.
 - `persistedQueriesOnly`: выполнять только persisted queries.

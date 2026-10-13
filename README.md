@@ -43,11 +43,11 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  const { data, errors, extensions } = await graphqlHTTP(req, res);
+  const response = await graphqlHTTP(req, res);
 
-  res.statusCode = errors && !data ? 400 : 200;
+  res.statusCode = response.status ?? 200; // рекомендуемый статус, вычисленный ядром
   res.setHeader('content-type', 'application/json');
-  res.end(JSON.stringify({ data, errors, extensions }));
+  res.end(JSON.stringify(response));       // status в тело не попадает
 });
 
 server.listen(8080, () => console.log('http://localhost:8080/graphql'));
@@ -60,7 +60,7 @@ curl -X POST http://localhost:8080/graphql \
 # {"data":{"hello":"world"}}
 ```
 
-Ядро только формирует ответ и не отправляет его. Статус, заголовки и сериализацию задаёт ваш код: так ядро встраивается в любой сервер.
+Ядро только формирует ответ и не отправляет его. Рекомендуемый HTTP-статус ядро возвращает в `response.status`, а отправку ответа и заголовки задаёт ваш код: так ядро встраивается в любой сервер. Подробнее о статусах — в разделе [Ошибки](./docs/guides/errors.md#http-статусы).
 
 ## Документация
 
@@ -73,7 +73,7 @@ curl -X POST http://localhost:8080/graphql \
 | [Загрузка файлов](./docs/guides/file-uploads.md) | Протокол, лимиты, временные файлы, прогресс загрузки |
 | [Скаляры и типы](./docs/guides/scalars.md) | `DateTime`, `Money`, `Time`, `BigInt`, `JSON`… |
 | [Пагинация (Connections)](./docs/guides/connections.md) | Курсорная пагинация по спецификации Relay |
-| [Ошибки](./docs/guides/errors.md) | Формат ошибок, типы, HTTP-статусы, маскирование |
+| [Ошибки](./docs/guides/errors.md) | Формат ошибок, HTTP-статусы, маскирование |
 | [Persisted Queries](./docs/guides/persisted-queries.md) | Запросы по идентификатору |
 | [Безопасность](./docs/guides/security.md) | Лимиты, CSRF, маскирование, рекомендуемая конфигурация для прода |
 | [API](./docs/api/api.md) | Справочник экспортов пакета |

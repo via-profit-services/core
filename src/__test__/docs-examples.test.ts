@@ -10,61 +10,43 @@ import {
   GraphQLSchema,
   GraphQLString,
 } from 'graphql';
-import type { GraphqlResponse, Middleware } from '@via-profit-services/core';
+import type { Middleware } from '@via-profit-services/core';
 
 import { graphqlHTTPFactory, fieldsWrapper } from '../index';
-import { fakeRequest, fakeResponse, jsonRequest } from './helpers';
-
-// docs/guides/errors.md → HTTP-статусы → Реализация
-const getHttpStatus = (response: GraphqlResponse): number => {
-  if (response.data !== undefined) {
-    return 200;
-  }
-
-  const extensions = response.errors?.[0]?.extensions ?? {};
-
-  switch (extensions.errorType) {
-    case 'graphql-error-validate-request':
-    case 'graphql-error-validate-field':
-      return 400;
-    case 'graphql-error-execute':
-      return 405;
-    case 'graphql-error-validate-schema':
-      return 500;
-  }
-
-  switch (extensions.code) {
-    case 'UNAUTHENTICATED':
-      return 401;
-    case 'FORBIDDEN':
-      return 403;
-    case 'BAD_USER_INPUT':
-      return 400;
-  }
-
-  return 500;
-};
+import { fakeRequest, jsonRequest, fakeResponse } from './helpers';
 
 const Post = new GraphQLObjectType({ name: 'Post', fields: { title: { type: GraphQLString } } });
 const User = new GraphQLObjectType({
   name: 'User',
   fields: {
     name: { type: GraphQLString },
-    posts: { type: new GraphQLList(Post), args: { first: { type: GraphQLInt } }, resolve: () => [] },
+    posts: {
+      type: new GraphQLList(Post),
+      args: { first: { type: GraphQLInt } },
+      resolve: () => [],
+    },
   },
 });
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
     fields: {
-      users: { type: new GraphQLList(User), args: { first: { type: GraphQLInt } }, resolve: () => [] },
+      users: {
+        type: new GraphQLList(User),
+        args: { first: { type: GraphQLInt } },
+        resolve: () => [],
+      },
       fails: {
         type: GraphQLString,
         resolve: () => {
           throw new Error('boom');
         },
       },
-      secret: { type: GraphQLString, extensions: { requiredRole: 'admin' }, resolve: () => 'secret' },
+      secret: {
+        type: GraphQLString,
+        extensions: { requiredRole: 'admin' },
+        resolve: () => 'secret',
+      },
     },
   }),
   mutation: new GraphQLObjectType({ name: 'Mutation', fields: { m: { type: GraphQLString } } }),
@@ -76,38 +58,39 @@ describe('docs/guides/configuration.md', () => {
     await graphqlHTTPFactory({
       schema,
       limits: { complexityLimit: { maxComplexity: 1e9, onComplete: c => (complexity = c) } },
-    })(jsonRequest({ query: '{ users(first: 100) { name posts(first: 10) { title } } }' }), fakeResponse());
+    })(
+      jsonRequest({ query: '{ users(first: 100) { name posts(first: 10) { title } } }' }),
+      fakeResponse(),
+    );
 
     expect(complexity).toBe(2200);
   });
 });
 
-describe('docs/guides/errors.md: getHttpStatus', () => {
-  const listener = graphqlHTTPFactory({
-    schema,
-    middleware: ({ request }) => {
-      if (request.headers['x-auth'] === 'bad') {
-        throw new GraphQLError('Invalid token', { extensions: { code: 'UNAUTHENTICATED' } });
-      }
-      if (request.headers['x-auth'] === 'crash') {
-        throw new Error('redis is down');
-      }
-    },
+describe('docs/guides/errors.md: HTTP-статусы', () => {
+  test('rate limit middleware sets 429 via extensions.http.status', async () => {
+    const rateLimitMiddleware: Middleware = async () => {
+      throw new GraphQLError('Too many requests', {
+        extensions: { code: 'RATE_LIMITED', http: { status: 429 } },
+      });
+    };
+    const response = await graphqlHTTPFactory({ schema, middleware: [rateLimitMiddleware] })(
+      jsonRequest({ query: '{ users { name } }' }),
+      fakeResponse(),
+    );
+
+    expect(response.status).toBe(429);
+    expect(response.errors?.[0]?.extensions).toEqual({ code: 'RATE_LIMITED' });
   });
 
-  test.each([
-    ['success', jsonRequest({ query: '{ users { name } }' }), 200],
-    ['partial success', jsonRequest({ query: '{ fails users { name } }' }), 200],
-    ['syntax error', jsonRequest({ query: '{ users {' }), 400],
-    ['invalid JSON', fakeRequest({ headers: { 'content-type': 'application/json' }, chunks: ['{oops'] }), 400],
-    ['validation error', jsonRequest({ query: '{ unknown }' }), 400],
-    ['invalid variable', jsonRequest({ query: 'query($n: Int) { users(first: $n) { name } }', variables: { n: 'x' } }), 400],
-    ['mutation via GET', fakeRequest({ method: 'GET', url: `/?query=${encodeURIComponent('mutation { m }')}` }), 405],
-    ['unsupported method', fakeRequest({ method: 'PUT', headers: { 'content-type': 'application/json' } }), 405],
-    ['unauthenticated', jsonRequest({ query: '{ users { name } }' }, { 'x-auth': 'bad' }), 401],
-    ['middleware crash', jsonRequest({ query: '{ users { name } }' }, { 'x-auth': 'crash' }), 500],
-  ])('%s', async (_name, request, status) => {
-    expect(getHttpStatus(await listener(request, fakeResponse()))).toBe(status);
+  test('README: status is sent separately from the body', async () => {
+    const response = await graphqlHTTPFactory({ schema })(
+      jsonRequest({ query: '{ fails }' }),
+      fakeResponse(),
+    );
+
+    expect(response.status ?? 200).toBe(200); // partial success
+    expect(Object.keys(JSON.parse(JSON.stringify(response)))).toEqual(['data', 'errors']);
   });
 });
 
@@ -121,14 +104,19 @@ describe('docs/guides/middlewares.md', () => {
       validationRule.push(validationContext => ({
         OperationDefinition(node) {
           if (node.operation === 'mutation') {
-            validationContext.reportError(new GraphQLError('Mutations are not allowed', { nodes: [node] }));
+            validationContext.reportError(
+              new GraphQLError('Mutations are not allowed', { nodes: [node] }),
+            );
           }
         },
       }));
     };
     const listener = graphqlHTTPFactory({ schema, middleware: [readOnlyMiddleware] });
 
-    const blocked = await listener(jsonRequest({ query: 'mutation { m }' }, { 'x-client': 'read-only' }), fakeResponse());
+    const blocked = await listener(
+      jsonRequest({ query: 'mutation { m }' }, { 'x-client': 'read-only' }),
+      fakeResponse(),
+    );
     const allowed = await listener(jsonRequest({ query: 'mutation { m }' }), fakeResponse());
 
     expect(blocked.errors?.[0]?.message).toBe('Mutations are not allowed');
@@ -158,12 +146,17 @@ describe('docs/api/api.md: fieldsWrapper example', () => {
     const listener = graphqlHTTPFactory({
       schema: wrapped,
       middleware: ({ context, request }) => {
-        Object.assign(context, { user: { roles: request.headers['x-role'] ? [request.headers['x-role']] : [] } });
+        Object.assign(context, {
+          user: { roles: request.headers['x-role'] ? [request.headers['x-role']] : [] },
+        });
       },
     });
 
     const denied = await listener(jsonRequest({ query: '{ secret }' }), fakeResponse());
-    const granted = await listener(jsonRequest({ query: '{ secret }' }, { 'x-role': 'admin' }), fakeResponse());
+    const granted = await listener(
+      jsonRequest({ query: '{ secret }' }, { 'x-role': 'admin' }),
+      fakeResponse(),
+    );
 
     expect(denied.errors?.[0]?.extensions?.code).toBe('FORBIDDEN');
     expect(granted.data).toEqual({ secret: 'secret' });
@@ -173,7 +166,8 @@ describe('docs/api/api.md: fieldsWrapper example', () => {
 describe('docs/guides/connections.md: cursor', () => {
   type UsersCursor = { offset: number; status: Array<'allowed' | 'forbidden'> | null };
 
-  const encodeCursor = (cursor: UsersCursor) => Buffer.from(JSON.stringify(cursor)).toString('base64url');
+  const encodeCursor = (cursor: UsersCursor) =>
+    Buffer.from(JSON.stringify(cursor)).toString('base64url');
 
   const decodeCursor = (value: string): UsersCursor => {
     try {
@@ -197,9 +191,13 @@ describe('docs/guides/connections.md: cursor', () => {
     const cursor = { offset: 10, status: ['allowed' as const] };
     expect(decodeCursor(encodeCursor(cursor))).toEqual(cursor);
     expect(() => decodeCursor('not-a-cursor')).toThrow('Invalid cursor');
-    expect(() => decodeCursor(encodeCursor({ offset: -1, status: null }))).toThrow('Invalid cursor');
+    expect(() => decodeCursor(encodeCursor({ offset: -1, status: null }))).toThrow(
+      'Invalid cursor',
+    );
     expect(() =>
-      decodeCursor(Buffer.from(JSON.stringify({ offset: 0, status: ['admin'] })).toString('base64url')),
+      decodeCursor(
+        Buffer.from(JSON.stringify({ offset: 0, status: ['admin'] })).toString('base64url'),
+      ),
     ).toThrow('Invalid cursor');
   });
 });

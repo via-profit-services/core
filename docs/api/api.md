@@ -24,7 +24,15 @@ type HTTPListener = (
 ) => Promise<GraphqlResponse>;
 ```
 
-Обрабатывает один запрос и возвращает тело ответа. **Ответ не отправляется**: статус, заголовки и сериализацию задаёт вызывающий код (см. [HTTP-статусы](../guides/errors.md#http-статусы)).
+Обрабатывает один запрос и возвращает тело ответа. **Ответ не отправляется**: отправку, заголовки и сериализацию задаёт вызывающий код.
+
+Рекомендуемый HTTP-статус находится в `response.status`. Это неперечисляемое свойство: оно не попадает в `JSON.stringify(response)`. См. [HTTP-статусы](../guides/errors.md#http-статусы).
+
+```ts
+const response = await graphqlHTTP(req, res);
+res.statusCode = response.status ?? 200;
+res.end(JSON.stringify(response));
+```
 
 `response` используется только для того, чтобы удалить временные файлы загрузок после закрытия ответа. В него ничего не пишется.
 
@@ -107,7 +115,7 @@ fieldsWrapper(schema, ({ resolve, source, args, context, info }) => {
 | `InitProps` / `Configuration` | Параметры `graphqlHTTPFactory` |
 | `Limits`, `ComplexityLimitOptions` | Лимиты |
 | `HTTPListener` | Обработчик запроса |
-| `GraphqlResponse` | `{ data?, errors?, extensions? }` |
+| `GraphqlResponse` | `{ data?, errors?, extensions? }` и неперечисляемое `status` |
 | `GraphQLExtensions`, `CoreStats` | Статистика: `queryTime`, `requestCounter`, `startupTime` |
 | `Context` | Контекст. Пустой интерфейс, расширяется в проекте ([пример](../guides/context.md#типизация)) |
 | `Middleware`, `MiddlewareProps` | Middleware |

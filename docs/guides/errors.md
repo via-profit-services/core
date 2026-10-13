@@ -99,74 +99,14 @@ graphqlHTTPFactory({
 
 ## HTTP-статусы
 
-Ядро формирует только тело ответа. HTTP-статус выставляет ваш код. Ниже — что рекомендуют актуальные документы и как это реализовать.
-
-### Что говорят спецификации
-
-- **Спецификация GraphQL** ([spec.graphql.org](https://spec.graphql.org)) не зависит от транспорта и ничего не говорит про HTTP-статусы.
-- **GraphQL over HTTP** ([graphql.github.io/graphql-over-http](https://graphql.github.io/graphql-over-http/draft/)) — отдельная спецификация рабочей группы GraphQL Foundation, пока в статусе черновика (Working Draft):
-  - в редакциях 2022 — первой половины 2026 года для ответов с `Content-Type: application/json` требовалось «SHOULD use the `200` status code, independent of any GraphQL request error or field error», то есть 200 на всё. Отсюда распространённое правило «GraphQL всегда отвечает 200»;
-  - в июле 2026 года этот раздел удалён, и статусы теперь одинаковы для всех клиентов: при ошибке запроса — `4xx`/`5xx`, при частичном успехе — `2xx`.
-- **Рекомендации на graphql.org** ([Serving over HTTP](https://graphql.org/learn/serving-over-http/)) звучат так же: `2xx`, если в ответе есть `data`, и обычно `400` при ошибке валидации.
-
-### Рекомендуемое соответствие
-
-| Ситуация | Признак в ответе ядра | Статус |
-|----------|----------------------|--------|
-| Успех | `data`, нет `errors` | `200` |
-| Частичный успех / ошибки резолверов | `data` есть (даже `null`) и есть `errors` | `200` (черновик предлагает нестандартный `294`, см. ниже) |
-| Синтаксис GraphQL, невалидный JSON, ошибки тела | `errorType: graphql-error-validate-request` | `400` |
-| Ошибка валидации документа | `errorType: graphql-error-validate-field` | `400` (черновик GraphQL over HTTP рекомендует `422`) |
-| Неподдерживаемый метод, мутация через GET | `errorType: graphql-error-execute` | `405` + заголовок `Allow: GET, POST` |
-| Невалидная схема | `errorType: graphql-error-validate-schema` | `500` |
-| Не аутентифицирован / нет доступа (ваш middleware) | `extensions.code: UNAUTHENTICATED` / `FORBIDDEN` | `401` / `403` |
-| Неожиданная ошибка middleware | нет `data` и нет `errorType` | `500` |
-
-**О статусе `294 Partial Success`.** Черновик рекомендует его для частичного успеха, но этот код не зарегистрирован в IANA и пока почти не поддерживается инфраструктурой: прокси, CDN, мониторингом. По RFC 9110 неизвестный клиенту `2xx` трактуется как `200`, но кэширование и метрики могут вести себя иначе. Пока безопаснее отвечать `200`.
-
-**Почему частичный успех — это `2xx`, а не `4xx`/`5xx`.** Запрос корректен и выполнен, часть данных получена. Статус `500` заставил бы клиентов, прокси и балансировщики считать ответ сбоем (повторять запрос, выводить узел из ротации), хотя в теле есть полезные данные.
-
-### Реализация
+Ядро вычисляет рекомендуемый HTTP-статус и возвращает его в поле `response.status`:
 
 ```ts
-import type { GraphqlResponse } from '@via-profit-services/core';
-
-const getHttpStatus = (response: GraphqlResponse): number => {
-  // Запрос выполнялся: успех или частичный успех
-  if (response.data !== undefined) {
-    return 200;
-  }
-
-  const extensions = response.errors?.[0]?.extensions ?? {};
-
-  switch (extensions.errorType) {
-    case 'graphql-error-validate-request':
-    case 'graphql-error-validate-field':
-      return 400;
-    case 'graphql-error-execute':
-      return 405;
-    case 'graphql-error-validate-schema':
-      return 500;
-  }
-
-  switch (extensions.code) {
-    case 'UNAUTHENTICATED':
-      return 401;
-    case 'FORBIDDEN':
-      return 403;
-    case 'BAD_USER_INPUT':
-      return 400;
-  }
-
-  return 500;
-};
-
 server.on('request', async (req, res) => {
   const response = await graphqlHTTP(req, res);
-  const status = getHttpStatus(response);
 
-  res.statusCode = status;
-  if (status === 405) {
+  res.statusCode = response.status ?? 200;
+  if (res.statusCode === 405) {
     res.setHeader('Allow', 'GET, POST');
   }
   res.setHeader('content-type', 'application/json; charset=utf-8');
@@ -174,7 +114,52 @@ server.on('request', async (req, res) => {
 });
 ```
 
-`errorType` объединяет несколько разных причин. Например, `graphql-error-validate-request` возвращается и для слишком большого тела (по спецификации `413`), и для неподдерживаемого `Content-Type` (`415`). Таблица выше даёт корректный, но более общий `400`.
+`status` — **неперечисляемое** свойство: `JSON.stringify(response)` и `{ ...response }` его не видят. Тело ответа по-прежнему содержит только `data`, `errors` и `extensions`, как требует спецификация GraphQL, а код, написанный для версий до 2.11, работает без изменений.
+
+### Таблица статусов
+
+| Статус | Когда |
+|--------|-------|
+| `200` | Операция выполнена. **В том числе с ошибками резолверов** и с `data: null` (частичный успех) |
+| `400` | Невалидный JSON, пустой запрос, `variables` не объект, синтаксическая ошибка GraphQL, ошибка валидации (включая лимиты глубины и сложности), неверное значение переменной, неизвестный `operationName`, CSRF-проверка, `persistedQueriesOnly`, повреждённое multipart-тело |
+| `401` / `403` | `GraphQLError` с `extensions.code` `UNAUTHENTICATED` / `FORBIDDEN`, брошенная до выполнения (в middleware) |
+| `405` | Метод не GET/POST/OPTIONS; мутация через GET. Отправьте заголовок `Allow: GET, POST` |
+| `413` | Превышен размер JSON-тела (в том числе после распаковки), размер файла, суммарный размер, количество файлов, полей или частей multipart |
+| `415` | Неподдерживаемый `Content-Type` или `Content-Encoding`; POST без `Content-Type` |
+| `500` | Невалидная схема; непредвиденное исключение в middleware |
+
+### Свой статус из middleware
+
+`GraphQLError`, брошенная до выполнения, может задать статус явно через `extensions.http.status` (то же соглашение, что в Apollo Server). Поле `http` используется только сервером и в ответ клиенту не попадает:
+
+```ts
+const rateLimitMiddleware: Middleware = async ({ request }) => {
+  if (await isRateLimited(request)) {
+    throw new GraphQLError('Too many requests', {
+      extensions: { code: 'RATE_LIMITED', http: { status: 429 } },
+    });
+  }
+};
+```
+
+Ошибки резолверов на статус не влияют: если операция выполнялась, статус `200`.
+
+### Почему так: что говорят спецификации
+
+- **Спецификация GraphQL** ([spec.graphql.org](https://spec.graphql.org)) не зависит от транспорта и ничего не говорит про HTTP-статусы.
+- **GraphQL over HTTP** ([graphql.github.io/graphql-over-http](https://graphql.github.io/graphql-over-http/draft/)) — отдельная спецификация рабочей группы GraphQL Foundation, пока в статусе черновика (Working Draft):
+  - в редакциях с 2022 по середину 2026 года для ответов с `Content-Type: application/json` требовалось «SHOULD use the `200` status code, independent of any GraphQL request error or field error», то есть 200 на всё. Отсюда распространённое правило «GraphQL всегда отвечает 200»;
+  - в июле 2026 года этот раздел удалён, и статусы теперь одинаковы для всех клиентов: при ошибке запроса — `4xx`/`5xx`, при выполненной операции — `2xx`.
+- **Рекомендации на graphql.org** ([Serving over HTTP](https://graphql.org/learn/serving-over-http/)) звучат так же: `2xx`, если в ответе есть `data`, и обычно `400` при ошибке валидации.
+
+Ядро следует этим правилам с двумя осознанными отступлениями от последнего черновика:
+
+| Ситуация | Черновик | Ядро | Почему |
+|----------|----------|------|--------|
+| Частичный успех (`data` и `errors`) | `294 Partial Success` | `200` | Код `294` добавлен в черновик в 2026 году и не зарегистрирован в IANA. Прокси, CDN и мониторинг могут обрабатывать его неожиданно |
+| Ошибка валидации документа | `422` | `400` | Так поступают graphql.org, Apollo Server и большинство клиентов. Если нужен `422`, замените статус для `extensions.errorType === 'graphql-error-validate-field'` |
+
+**Почему частичный успех — это `2xx`, а не `4xx`/`5xx`.** Запрос корректен и выполнен, часть данных получена. Статус `500` заставил бы клиентов, прокси и балансировщики считать ответ сбоем (повторять запрос, выводить узел из ротации), хотя в теле есть полезные данные.
 
 ### Клиенты
 

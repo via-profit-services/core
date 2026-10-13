@@ -57,7 +57,7 @@ const graphqlFileUploader: MultipartParser = ({ request, response, config }) =>
     const contentType = parseContentType(String(request.headers['content-type'] || ''));
 
     if (!contentType || contentType.type !== 'multipart/form-data') {
-      reject(new MultipartError('Invalid content-type for multipart request'));
+      reject(new MultipartError('Invalid content-type for multipart request', 415));
 
       return;
     }
@@ -193,7 +193,9 @@ const graphqlFileUploader: MultipartParser = ({ request, response, config }) =>
 
     const onMap = (value: string) => {
       if (!operations) {
-        throw new MultipartError('The «map» multipart field must come after the «operations» field');
+        throw new MultipartError(
+          'The «map» multipart field must come after the «operations» field',
+        );
       }
 
       if (mapReceived) {
@@ -216,7 +218,7 @@ const graphqlFileUploader: MultipartParser = ({ request, response, config }) =>
 
       const entries = Object.entries(parsed);
       if (entries.length > maxFiles) {
-        throw new MultipartError(`Multipart request exceeds the limit of ${maxFiles} files`);
+        throw new MultipartError(`Multipart request exceeds the limit of ${maxFiles} files`, 413);
       }
 
       for (const [fileName, paths] of entries) {
@@ -310,11 +312,7 @@ const graphqlFileUploader: MultipartParser = ({ request, response, config }) =>
  * 'close' event (emitted in both cases: response sent or connection lost).
  * Otherwise the HTTP listener calls the cleanup itself after execution.
  */
-const scheduleCleanup = (
-  body: RequestBody,
-  response: unknown,
-  cleanup: () => void,
-) => {
+const scheduleCleanup = (body: RequestBody, response: unknown, cleanup: () => void) => {
   const emitter = response as { once?: unknown; closed?: boolean } | undefined;
 
   if (emitter && typeof emitter.once === 'function') {
