@@ -14,7 +14,7 @@ import { jsonRequest, fakeResponse } from './helpers';
 
 const itemsField = () => ({
   type: new GraphQLList(Item),
-  args: { first: { type: GraphQLInt } },
+  args: { first: { type: GraphQLInt }, last: { type: GraphQLInt } },
   resolve: (_parent: unknown, args: { first?: number }) =>
     Array.from({ length: args.first ?? 1 }, () => ({})),
 });
@@ -33,6 +33,11 @@ const schema = new GraphQLSchema({
     fields: {
       plain: { type: GraphQLString, resolve: () => 'plain' },
       items: itemsField(),
+      paged: {
+        type: new GraphQLList(Item),
+        args: { first: { type: GraphQLInt, defaultValue: 100 } },
+        resolve: () => [],
+      },
     },
   }),
 });
@@ -127,6 +132,28 @@ describe('Complexity limit', () => {
     expect(messages(defaultValue)).toMatch(/complexity 2000 exceeds/);
   });
 
+  test('`last` is a list argument, the largest list argument wins', async () => {
+    const last = await run('{ items(last: 1000) { id } }', { limits });
+    const both = await run('{ items(first: 1, last: 1000) { id } }', { limits });
+
+    expect(messages(last)).toMatch(/complexity 2000 exceeds/);
+    expect(messages(both)).toMatch(/complexity 2000 exceeds/);
+  });
+
+  test('an omitted list argument takes its default value from the schema', async () => {
+    let complexity = 0;
+    const count = { maxComplexity: 1e9, onComplete: (c: number) => (complexity = c) };
+
+    await run('{ paged { id } }', { limits: { complexityLimit: count } });
+    expect(complexity).toBe(200);
+
+    await run('query($n: Int) { paged(first: $n) { id } }', { limits: { complexityLimit: count } });
+    expect(complexity).toBe(200);
+
+    await run('{ paged(first: 2) { id } }', { limits: { complexityLimit: count } });
+    expect(complexity).toBe(4);
+  });
+
   test('a fragment is counted every time it is spread', async () => {
     const aliases = Array.from({ length: 50 }, (_, i) => `a${i}: items(first: 50) { ...F }`).join(' ');
     let complexity = 0;
@@ -146,6 +173,17 @@ describe('Complexity limit', () => {
 
     // items: (1 + 1) * 10 = 20, plain: 1
     expect(complexity).toBe(21);
+  });
+
+  test('options without maxComplexity keep the default limit', async () => {
+    // `complexityLimit: { onComplete }` from the docs: the rest comes from the defaults
+    let complexity = 0;
+    const res = await run('{ a: items(first: 1000) { items(first: 1000) { id } } }', {
+      limits: { complexityLimit: { onComplete: c => (complexity = c) } },
+    });
+
+    expect(complexity).toBe(2_001_000);
+    expect(messages(res)).toMatch(/exceeds the maximum allowed complexity of 50000/);
   });
 
   test('createError and maxFieldsPerSelection', async () => {

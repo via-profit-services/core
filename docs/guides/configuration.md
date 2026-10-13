@@ -67,7 +67,7 @@ const graphqlHTTP = graphqlHTTPFactory({
 | Лимит | По умолчанию | Константа | Описание |
 |-------|--------------|-----------|----------|
 | `maxGraphQLTokens` | 10 000 | `DEFAULT_MAX_GRAPHQL_TOKENS` | Количество токенов в документе. Парсер останавливается на превышении |
-| `maxGraphQLDepthLimit` | 10 | `DEFAULT_MAX_GRAPHQL_DEPTH_LIMIT` | Глубина вложенности полей. `0` отключает проверку |
+| `maxGraphQLDepthLimit` | 20 | `DEFAULT_MAX_GRAPHQL_DEPTH_LIMIT` | Глубина вложенности полей. `0` отключает проверку |
 | `maxGraphQLIntrospectionDepthLimit` | 20 | `DEFAULT_MAX_GRAPHQL_INTROSPECTION_DEPTH_LIMIT` | Глубина внутри `__schema`/`__type`. Стандартный introspection-запрос имеет глубину 14 |
 | `complexityLimit` | см. ниже | — | Ограничение «стоимости» запроса |
 
@@ -75,9 +75,9 @@ const graphqlHTTP = graphqlHTTPFactory({
 
 | Параметр | По умолчанию | Константа | Описание |
 |----------|--------------|-----------|----------|
-| `maxComplexity` | 5000 | `DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIMIT` | Максимальная сложность операции. `0` отключает проверку |
+| `maxComplexity` | 50 000 | `DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIMIT` | Максимальная сложность операции. `0` отключает проверку |
 | `fieldCost` | 1 | `DEFAULT_MAX_GRAPHQL_COMPLEXITY_FIELD_COST` | Стоимость одного поля |
-| `listArguments` | `['first', 'limit', 'take', 'pageSize', 'size']` | `DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIST_ARGUMENTS` | Аргументы, задающие размер списка. Значение (литерал или переменная) умножает стоимость поля |
+| `listArguments` | `['first', 'last', 'limit', 'take', 'pageSize', 'size']` | `DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIST_ARGUMENTS` | Аргументы, задающие размер списка. Значение (литерал, переменная или значение по умолчанию из схемы) умножает стоимость поля. Если указано несколько, берётся наибольшее |
 | `defaultListMultiplier` | 1 | `DEFAULT_MAX_GRAPHQL_COMPLEXITY_DEFAULT_LIST_MULTIPLIER` | Множитель для полей-списков без аргумента размера. `1` — без множителя |
 | `introspectionCost` | 2 | `DEFAULT_MAX_GRAPHQL_COMPLEXITY_INTROSPECTION_COST` | Стоимость поля внутри `__schema`/`__type` |
 | `maxFieldsPerSelection` | 50 | `DEFAULT_MAX_GRAPHQL_COMPLEXITY_MAX_FIELDS_PER_SELECTION` | Максимум полей в одном блоке `{ }` |

@@ -15,7 +15,10 @@ import {
   type FragmentDefinitionNode,
   type OperationDefinitionNode,
   type ValueNode,
+  type GraphQLField,
 } from 'graphql';
+
+import { DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIST_ARGUMENTS } from '../constants';
 
 /**
  * Options for configuring the complexity‑limit validation rule.
@@ -82,7 +85,7 @@ export default function complexityLimit(options: ComplexityLimitOptions): Valida
   const {
     maxComplexity,
     fieldCost = 1,
-    listArguments = ['first', 'limit', 'take', 'pageSize', 'size'],
+    listArguments = DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIST_ARGUMENTS,
     defaultListMultiplier = 1,
     introspectionCost = 2,
     maxFieldsPerSelection,
@@ -132,14 +135,29 @@ export default function complexityLimit(options: ComplexityLimitOptions): Valida
           return null;
         };
 
-        const listMultiplier = (field: FieldNode, returnsList: boolean): number => {
-          for (const argument of field.arguments ?? []) {
-            if (listArguments.includes(argument.name.value)) {
-              const value = toInt(argument.value);
-              if (value !== null && value > 0) {
-                return Math.floor(value);
-              }
+        // The largest of the list arguments: `items(first: 1, last: 1000)` costs 1000.
+        // An argument that is omitted in the query (or passed as an unset variable)
+        // takes the default value from the schema: `items(first: Int = 100)`.
+        const listMultiplier = (
+          field: FieldNode,
+          fieldDef: GraphQLField<unknown, unknown> | null,
+          returnsList: boolean,
+        ): number => {
+          let multiplier = 0;
+          for (const name of listArguments) {
+            const argument = field.arguments?.find(arg => arg.name.value === name);
+            let value = argument ? toInt(argument.value) : null;
+            if (value === null) {
+              const defaultValue = fieldDef?.args.find(arg => arg.name === name)?.defaultValue;
+              value = typeof defaultValue === 'number' && Number.isFinite(defaultValue) ? defaultValue : null;
             }
+            if (value !== null && value > multiplier) {
+              multiplier = Math.floor(value);
+            }
+          }
+
+          if (multiplier > 0) {
+            return multiplier;
           }
 
           return returnsList ? defaultListMultiplier : 1;
@@ -190,7 +208,7 @@ export default function complexityLimit(options: ComplexityLimitOptions): Valida
                   ? calculate(selection.selectionSet.selections, childType, isIntrospection)
                   : 0;
 
-                total += (base + child) * listMultiplier(selection, returnsList);
+                total += (base + child) * listMultiplier(selection, fieldDef, returnsList);
                 break;
               }
 

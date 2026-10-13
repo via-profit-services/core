@@ -13,7 +13,10 @@ export const DEFAULT_JSON_MAX_BYTES = 1 * 1024 * 1024; // 1MB JSON body
 export const DEFAULT_JSON_DECOMPRESSED_MAX_BYTES = 5 * 1024 * 1024; // 5MB JSON body decompressed
 
 // GraphQL depth limits
-export const DEFAULT_MAX_GRAPHQL_DEPTH_LIMIT = 10;
+// Fragments do not add a level. The deepest operation of the biotransfer
+// clients (CRM, driver and client apps, 443 operations) has depth 10;
+// all projects (biotransfer, prime, commerce, crm) use 20 in production.
+export const DEFAULT_MAX_GRAPHQL_DEPTH_LIMIT = 20;
 // the standard introspection query (GraphiQL, codegen) has depth 14
 export const DEFAULT_MAX_GRAPHQL_INTROSPECTION_DEPTH_LIMIT = 20;
 // Max number of tokens in a GraphQL document. The parser stops early on
@@ -32,12 +35,19 @@ export const CSRF_PREVENTION_HEADERS = [
 ];
 
 // GraphQL complexity limits
-export const DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIMIT = 5000;
+// Complexity is close to the number of values in the response: every field
+// costs 1 and is multiplied by the list size (`first: 30` → x30).
+// Real biotransfer operations with real page sizes: median 25, the heaviest
+// ones 13 000 (CRM working hours dialog, first: 10) and 41 000 (driver
+// shift history with every page size set to 30). 50 000 covers them and rejects
+// `items(first: 1000) { items(first: 1000) { id } }` (2 001 000).
+export const DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIMIT = 50_000;
 export const DEFAULT_MAX_GRAPHQL_COMPLEXITY_FIELD_COST = 1;
 
 // Additional recommended defaults for extended complexity options
 export const DEFAULT_MAX_GRAPHQL_COMPLEXITY_LIST_ARGUMENTS = [
   'first',
+  'last',
   'limit',
   'take',
   'pageSize',

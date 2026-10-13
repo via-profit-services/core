@@ -223,6 +223,8 @@ declare module '@via-profit-services/core' {
      * Maximum allowed GraphQL query depth.
      * Depth is measured by nested selection sets, not by number of fields.
      * Helps prevent deeply nested queries that may cause excessive resolver work.
+     * Fragments do not add a level. `0` disables the check.
+     * Default: 20
      */
     readonly maxGraphQLDepthLimit?: number;
 
@@ -244,8 +246,10 @@ declare module '@via-profit-services/core' {
   export interface ComplexityLimitOptions {
     /**
      * Maximum allowed total complexity for a GraphQL operation.
+     * `0` disables the check.
+     * Default: 50 000
      */
-    maxComplexity: number;
+    maxComplexity?: number;
 
     /**
      * Base cost for each field. Default: 1.
@@ -253,8 +257,9 @@ declare module '@via-profit-services/core' {
     fieldCost?: number;
 
     /**
-     * Argument names that represent list size (e.g. first, limit, take).
-     * These arguments multiply the field cost.
+     * Argument names that represent list size (e.g. first, last, limit).
+     * These arguments multiply the field cost: the value of a literal,
+     * a variable or the default value of the argument in the schema.
      */
     listArguments?: string[];
 

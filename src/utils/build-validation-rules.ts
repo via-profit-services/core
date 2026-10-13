@@ -35,9 +35,10 @@ export const buildComplexityRule = (
 ): ValidationRule | null => {
   const options = config.limits?.complexityLimit;
 
-  if (!options || !options.maxComplexity) {
+  const maxComplexity = options?.maxComplexity;
+  if (!options || !maxComplexity) {
     return null;
   }
 
-  return complexityLimitRule({ ...options, variables });
+  return complexityLimitRule({ ...options, maxComplexity, variables });
 };
