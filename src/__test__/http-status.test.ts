@@ -169,6 +169,20 @@ describe('response.status', () => {
     expect(response.status).toBe(status);
   });
 
+  test('an invalid schema is a server error', async () => {
+    const invalidSchema = new GraphQLSchema({
+      query: new GraphQLObjectType({ name: 'Query', fields: {} }), // a type must have fields
+    });
+    const response = await graphqlHTTPFactory({ schema: invalidSchema })(
+      jsonRequest({ query: '{ __typename }' }),
+      fakeResponse(),
+    );
+
+    expect(response.status).toBe(500);
+    expect(response.errors?.[0]?.message).toMatch(/must define one or more fields/);
+    expect(response.errors?.[0]?.extensions?.errorType).toBe('graphql-error-validate-schema');
+  });
+
   test('status is not part of the serialized body', async () => {
     const response = await listener(jsonRequest({ query: '{ ok }' }), fakeResponse());
 
