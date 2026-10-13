@@ -26,6 +26,7 @@ import ServerError from './server-error';
 import { buildValidationRules } from './utils/build-validation-rules';
 import { buildConfig } from './utils/build-config';
 import parseContentType from './utils/content-type-parser';
+import { UPLOAD_CLEANUP } from './utils/graphql-file-uploader';
 
 const applicationFactory: ApplicationFactory = props => {
   const config = buildConfig(props);
@@ -64,6 +65,10 @@ const applicationFactory: ApplicationFactory = props => {
         queryTime: performance.now() - startTime,
       },
     });
+
+    // Removes temporary upload files when there is no http.ServerResponse
+    // to wait for (see graphql-file-uploader)
+    let uploadCleanup: (() => void) | undefined;
 
     try {
       const method = request.method || '';
@@ -112,6 +117,7 @@ const applicationFactory: ApplicationFactory = props => {
 
       // 4. Parse request body (JSON or multipart)
       const body = await bodyParser({ request, response, config });
+      uploadCleanup = (body as Record<symbol, (() => void) | undefined>)[UPLOAD_CLEANUP];
 
       // 5. Extract GraphQL params
       const { query, operationName, variables } = parseGraphQLParams({
@@ -189,6 +195,8 @@ const applicationFactory: ApplicationFactory = props => {
           context,
         }),
       });
+    } finally {
+      uploadCleanup?.();
     }
   };
 

@@ -1,6 +1,15 @@
 import type { FilePayload } from '@via-profit-services/core';
 
 /**
+ * A global symbol (registered via Symbol.for) is the same in every copy of
+ * this package. `instanceof` is not reliable here: the package ships ESM and
+ * CJS builds, and if an application loads both (e.g. its code uses `import`
+ * while a dependency uses `require`), there are two different
+ * FileUploadInstance classes and `instanceof` returns false.
+ */
+const FILE_UPLOAD_INSTANCE = Symbol.for('@via-profit-services/core/FileUploadInstance');
+
+/**
  * Represents a single file upload placeholder used by the GraphQL multipart protocol.
  *
  * This instance exposes:
@@ -22,6 +31,8 @@ class FileUploadInstance {
   private _finished = false;
 
   constructor() {
+    Object.defineProperty(this, FILE_UPLOAD_INSTANCE, { value: true });
+
     this.promise = new Promise<FilePayload>((resolve, reject) => {
       this.resolve = (file: FilePayload) => {
         if (this._finished) return;
@@ -46,6 +57,21 @@ class FileUploadInstance {
    */
   get file(): FilePayload | null {
     return this._file;
+  }
+
+  /**
+   * true when the upload was resolved or rejected
+   */
+  get finished(): boolean {
+    return this._finished;
+  }
+
+  static isFileUploadInstance(value: unknown): value is FileUploadInstance {
+    return (
+      typeof value === 'object' &&
+      value !== null &&
+      (value as Record<symbol, unknown>)[FILE_UPLOAD_INSTANCE] === true
+    );
   }
 }
 

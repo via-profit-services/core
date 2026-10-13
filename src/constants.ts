@@ -1,10 +1,13 @@
 export const DEFAULT_PERSISTED_QUERY_KEY = 'documentId';
 
-export const DEFAULT_MAX_FIELD_SIZE = 16 * 1024 * 1024; // 16MB per field
+// Non-file multipart fields (operations, map) are held in memory:
+// keep the limit equal to the JSON body limit
+export const DEFAULT_MAX_FIELD_SIZE = 1 * 1024 * 1024; // 1MB per field
 export const DEFAULT_MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB per file
 export const DEFAULT_MAX_FILES = 20;
 export const DEFAULT_MAX_FILE_FIELDS = 6;
-export const DEFAULT_MAX_FILE_PARTS = 20;
+// must allow all files and all fields at once
+export const DEFAULT_MAX_FILE_PARTS = DEFAULT_MAX_FILES + DEFAULT_MAX_FILE_FIELDS;
 export const DEFAULT_MAX_FILE_TOTAL_SIZE = 200 * 1024 * 1024; // 200MB total
 export const DEFAULT_JSON_MAX_BYTES = 1 * 1024 * 1024; // 1MB JSON body
 export const DEFAULT_JSON_DECOMPRESSED_MAX_BYTES = 5 * 1024 * 1024; // 5MB JSON body decompressed

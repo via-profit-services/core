@@ -92,30 +92,40 @@ declare module '@via-profit-services/core' {
      * Maximum allowed size of a non-file field value in multipart/form-data (in bytes).
      * This applies to fields like "operations" and "map" when using multipart parser.
      * Helps prevent oversized JSON payloads inside multipart requests.
+     *
+     * Default: 1 MB
      */
     readonly maxFieldSize?: number;
 
     /**
      * Maximum allowed size of a single uploaded file (in bytes).
-     * Busboy will truncate the stream and emit a "limit" event if exceeded.
+     * The request is rejected as soon as a file exceeds the limit.
+     *
+     * Default: 10 MB
      */
     readonly maxFileSize?: number;
 
     /**
      * Maximum number of file fields allowed in a multipart/form-data request.
      * Prevents clients from uploading too many files in a single operation.
+     *
+     * Default: 20
      */
     readonly maxFiles?: number;
 
     /**
      * Maximum number of non-file fields allowed in a multipart/form-data request.
      * Typically used to restrict "operations" and "map" fields.
+     *
+     * Default: 6
      */
     readonly maxFileFields?: number;
 
     /**
      * Maximum number of total parts (fields + files) allowed in a multipart request.
      * Protects against multipart flooding attacks.
+     *
+     * Default: 26 (maxFiles + maxFileFields)
      */
     readonly maxFileParts?: number;
 
@@ -330,6 +340,12 @@ declare module '@via-profit-services/core' {
      * ```
      */
     readonly createReadStream: (options?: ReadStreamOptions) => ReadStream;
+
+    /**
+     * Removes the temporary file right now.\
+     * Optional: the core removes temporary files automatically when the
+     * HTTP response is closed. Read or copy the file before that moment.
+     */
     readonly cleanup: () => void;
   }
 
