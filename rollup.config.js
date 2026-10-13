@@ -11,7 +11,8 @@ const __dirname = path.dirname(__filename);
 
 const input = path.resolve(__dirname, './src/index.ts');
 
-const external = ['graphql', 'busboy', 'supports-color', 'express', '@via-profit-services/core'];
+// Everything from node_modules and Node.js built-ins stays external
+const external = ['graphql', '@via-profit-services/core', /^node:/];
 
 const basePlugins = [
   resolve({ extensions: ['.ts', '.js'], preferBuiltins: true }),
@@ -21,7 +22,9 @@ const basePlugins = [
     sourceMap: false,
     declaration: false,
   }),
-  terser({ compress: { drop_console: true } }),
+  // drop_console is not used: it silently removes every console.* call,
+  // including error reporting
+  terser(),
 ];
 
 // Плагин копирования .d.ts

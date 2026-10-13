@@ -418,33 +418,6 @@ declare module '@via-profit-services/core' {
 
   export type UploadedFile = Promise<FilePayload>;
 
-  interface CoreServiceProps {
-    context: Context;
-  }
-
-  type MakeGraphQLRequestParams = {
-    query: string;
-    operationName: ExecutionArgs['operationName'];
-    variables: ExecutionArgs['variableValues'];
-  };
-
-  export class CoreService {
-    props: CoreServiceProps;
-    constructor(props: CoreServiceProps);
-
-    /**
-     * Send GraphQL request Send to yourself
-     */
-    makeGraphQLRequest<T = ExecutionResult['data']>(
-      params: MakeGraphQLRequestParams,
-    ): MaybePromise<ExecutionResult<T>>;
-
-    /**
-     * Return current module version
-     */
-    getVersion(): string;
-  }
-
   /**
    * Execute each middleware
    */
@@ -581,8 +554,8 @@ declare module '@via-profit-services/core' {
     end: number;
   }
   export interface BetweenMoney {
-    start: number;
-    end: number;
+    start: bigint;
+    end: bigint;
   }
   export interface Between {
     [key: string]: BetweenDate | BetweenTime | BetweenDateTime | BetweenInt | BetweenMoney;
@@ -668,8 +641,9 @@ declare module '@via-profit-services/core' {
 
   /**
    * The value is stored in the smallest monetary
-   * unit (kopecks, cents, etc.). Real type - Int. E.g.
-   * For 250 USD this record returns value as 250000 (250$ * 100¢)\
+   * unit (kopecks, cents, etc.) as a `bigint`. In GraphQL it is a String
+   * containing a decimal integer. E.g.
+   * For 250 USD this record returns value as "25000" (250$ * 100¢)\
    * \
    * It is assumed that you will store the value of this type in its smallest value All calculations in the same way.
    * \
@@ -700,7 +674,6 @@ declare module '@via-profit-services/core' {
   export const JSONScalarType: GraphQLScalarType;
   export const JSONObjectScalarType: GraphQLScalarType;
 
-  export const BetweenDateInputType: GraphQLInputObjectType;
   export const BetweenDateTimeInputType: GraphQLInputObjectType;
   export const BetweenIntInputType: GraphQLInputObjectType;
   export const BetweenMoneyInputType: GraphQLInputObjectType;

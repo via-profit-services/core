@@ -50,20 +50,6 @@ afterAll(async () => {
   await srv.stopServer();
 });
 
-// Helper to build multipart bodies
-function mp(boundary: string, parts: Array<{ headers: string[]; body: string | Buffer }>) {
-  const out: string[] = [];
-  for (const p of parts) {
-    out.push(`--${boundary}`);
-    out.push(...p.headers);
-    out.push('');
-    out.push(typeof p.body === 'string' ? p.body : p.body.toString());
-  }
-  out.push(`--${boundary}--`);
-  out.push('');
-  return out.join('\r\n');
-}
-
 function mpBuf(boundary: string, parts: Array<{ headers: string[]; body: string | Buffer }>) {
   const chunks: Buffer[] = [];
 
