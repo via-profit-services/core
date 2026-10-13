@@ -72,7 +72,8 @@ const applicationFactory: ApplicationFactory = props => {
 
     try {
       const method = request.method || '';
-      const contentType = parseContentType(request.headers['content-type'] || 'application/json');
+      const rawContentType = String(request.headers['content-type'] || 'application/json');
+      const contentType = parseContentType(rawContentType);
 
       // 1. Validate HTTP method
       if (!['GET', 'POST', 'OPTIONS'].includes(method)) {
@@ -83,14 +84,11 @@ const applicationFactory: ApplicationFactory = props => {
       }
 
       // 1.1 validate content-type
-      if (
-        !contentType?.type?.startsWith('application/json') &&
-        !contentType?.type?.startsWith('multipart/form-data')
-      ) {
+      if (contentType?.type !== 'application/json' && contentType?.type !== 'multipart/form-data') {
         throw new ServerError(
           [
             new GraphQLError(
-              `Expected content-type: application/json. Got «${String(contentType)}»`,
+              `Expected content-type: application/json or multipart/form-data. Got «${rawContentType}»`,
             ),
           ],
           'graphql-error-validate-request',
