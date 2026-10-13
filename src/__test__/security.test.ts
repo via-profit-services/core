@@ -23,12 +23,10 @@ import { TempFile } from '../utils/TempFile';
 import configTest, { sendGraphQLRequest } from './config-test';
 import schema from './schema';
 
-const port = 8084;
 const endpoint = '/graphql';
 
-const { startServer, stopServer } = configTest({
+const srv = configTest({
   schema,
-  port,
   endpoint,
   limits: {
     maxJSONBodySize: 2_000_000,
@@ -41,11 +39,11 @@ const { startServer, stopServer } = configTest({
 });
 
 beforeAll(async () => {
-  await startServer();
+  await srv.startServer();
 });
 
 afterAll(async () => {
-  await stopServer();
+  await srv.stopServer();
 });
 
 // Helper to build multipart bodies
@@ -80,7 +78,7 @@ describe('SECURITY / ADVANCED SUITE', () => {
     const req = http.request(
       {
         method: 'POST',
-        port,
+        port: srv.port,
         path: endpoint,
         headers: {
           'content-type': `multipart/form-data; boundary=${boundary}`,
@@ -91,7 +89,6 @@ describe('SECURITY / ADVANCED SUITE', () => {
         res.on('data', c => chunks.push(c));
         res.on('end', () => {
           const body = Buffer.concat(chunks).toString();
-          console.log(body);
           expect(res.statusCode).toBe(200);
           expect(body).toMatch(/ping/i);
           done();
@@ -109,7 +106,10 @@ describe('SECURITY / ADVANCED SUITE', () => {
   //
   // 2. CRLF VARIATIONS
   //
-  test('2.1 Multipart with LF only', async () => {
+  // RFC 2046 requires CRLF line breaks in multipart bodies. Accepting bare LF
+  // makes the parser ambiguous (a "\n--boundary" inside binary data would be
+  // treated as a delimiter), so such bodies must be rejected.
+  test('2.1 Multipart with LF only is rejected', async () => {
     const boundary = '----lf';
     const body = [
       `--${boundary}`,
@@ -121,14 +121,14 @@ describe('SECURITY / ADVANCED SUITE', () => {
     ].join('\n'); // LF only
 
     const res = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body,
       headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
     });
 
-    expect(res.status).toBe(200);
-    expect(res.body).toMatch(/ping/i);
+    expect(res.status).toBe(400);
+    expect(res.body).toMatch(/multipart/i);
   });
 
   //
@@ -141,11 +141,11 @@ describe('SECURITY / ADVANCED SUITE', () => {
     const body = mp(boundary, [
       {
         headers: ['Content-Disposition: form-data; name="operations"'],
-        body: '{"query":"mutation ($f: Upload!) { upload(file: $f) }","variables":{"f":null}}',
+        body: '{"query":"mutation ($f: [FileUpload!]!) { uploadFiles(filesList: $f) { location size } }","variables":{"f":[null]}}',
       },
       {
         headers: ['Content-Disposition: form-data; name="map"'],
-        body: '{"0":["variables.f"]}',
+        body: '{"0":["variables.f.0"]}',
       },
       {
         headers: [
@@ -157,14 +157,15 @@ describe('SECURITY / ADVANCED SUITE', () => {
     ]);
 
     const res = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body,
       headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
     });
 
     expect(res.status).toBe(200);
-    expect(res.body).toMatch(/upload/i);
+    // the file must arrive byte-for-byte, boundary-like bytes included
+    expect(res.parsedBody.data.uploadFiles[0].size).toBe(file.length);
   });
 
   //
@@ -189,7 +190,7 @@ describe('SECURITY / ADVANCED SUITE', () => {
     const body = mp(boundary, parts);
 
     const res = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body,
       headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
@@ -216,7 +217,7 @@ describe('SECURITY / ADVANCED SUITE', () => {
     ]);
 
     const res = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body,
       headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
@@ -240,7 +241,7 @@ describe('SECURITY / ADVANCED SUITE', () => {
     ]);
 
     const res = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body,
       headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
@@ -275,7 +276,7 @@ describe('SECURITY / ADVANCED SUITE', () => {
     ]);
 
     const res = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body,
       headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
@@ -294,11 +295,11 @@ describe('SECURITY / ADVANCED SUITE', () => {
     const body = mp(boundary, [
       {
         headers: ['Content-Disposition: form-data; name="operations"'],
-        body: '{"query":"mutation ($f: Upload!) { upload(file: $f) }","variables":{"f":null}}',
+        body: '{"query":"mutation ($f: [FileUpload!]!) { uploadFiles(filesList: $f) { location size } }","variables":{"f":[null]}}',
       },
       {
         headers: ['Content-Disposition: form-data; name="map"'],
-        body: '{"0":["variables.f"]}',
+        body: '{"0":["variables.f.0"]}',
       },
       {
         headers: [
@@ -310,14 +311,14 @@ describe('SECURITY / ADVANCED SUITE', () => {
     ]);
 
     const res = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body,
       headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
     });
 
     expect(res.status).toBe(200);
-    expect(res.body).toMatch(/upload/i);
+    expect(res.parsedBody.data.uploadFiles[0].size).toBe(3);
   });
 
   //
@@ -342,11 +343,11 @@ describe('SECURITY / ADVANCED SUITE', () => {
   // 9. GZIP BOMB
   //
   test('9.1 gzip bomb', async () => {
-    const huge = Buffer.alloc(5_000_000, 0x41); // 5MB of 'A'
+    const huge = Buffer.alloc(6 * 1024 * 1024, 0x41); // 6 MiB of 'A', the default limit is 5 MiB
     const gz = zlib.gzipSync(huge);
 
     const res = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body: gz,
       headers: {
@@ -362,9 +363,12 @@ describe('SECURITY / ADVANCED SUITE', () => {
   //
   // 10. HEADER INJECTION
   //
-  test('10.1 boundary header injection', async () => {
-    const boundary = '----inj\r\nX-Hacked: yes';
-
+  test.each([
+    ['missing boundary', 'multipart/form-data'],
+    ['empty boundary', 'multipart/form-data; boundary='],
+    ['boundary longer than 70 chars', `multipart/form-data; boundary=${'a'.repeat(71)}`],
+    ['boundary with forbidden chars', 'multipart/form-data; boundary=abc{}'],
+  ])('10.1 invalid boundary: %s', async (_name, contentType) => {
     const body = mp('----inj', [
       {
         headers: ['Content-Disposition: form-data; name="operations"'],
@@ -373,12 +377,10 @@ describe('SECURITY / ADVANCED SUITE', () => {
     ]);
 
     const res = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body,
-      headers: {
-        'content-type': `multipart/form-data; boundary=${boundary}`,
-      },
+      headers: { 'content-type': contentType },
     });
 
     expect(res.status).toBe(400);
@@ -392,7 +394,7 @@ describe('SECURITY / ADVANCED SUITE', () => {
     const bad = Buffer.from([0xff, 0xfe, 0xfd]);
 
     const res = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body: bad,
       headers: { 'content-type': 'application/json' },
@@ -405,11 +407,11 @@ describe('SECURITY / ADVANCED SUITE', () => {
   // 12. HUGE VARIABLES
   //
   test('12.1 huge variables object', async () => {
-    const big = 'x'.repeat(1_500_000);
+    const big = 'x'.repeat(2_500_000); // the suite limit is maxJSONBodySize: 2_000_000
     const body = JSON.stringify({ query: '{ ping }', variables: { big } });
 
     const res = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body,
       headers: { 'content-type': 'application/json' },
@@ -420,26 +422,21 @@ describe('SECURITY / ADVANCED SUITE', () => {
   });
 
   //
-  // 13. CIRCULAR JSON
+  // 13. VARIABLES OF A WRONG TYPE
   //
-  test('13.1 circular JSON in variables', async () => {
-    const obj: any = { a: {} };
-    obj.a.self = obj;
-
-    let body = '';
-    try {
-      body = JSON.stringify({ query: '{ ping }', variables: obj });
-    } catch {
-      body = '{"query":"{ ping }","variables":{}}';
-    }
-
+  test.each([
+    ['array', '{"query":"{ ping }","variables":[1,2]}'],
+    ['number', '{"query":"{ ping }","variables":42}'],
+    ['invalid JSON string', '{"query":"{ ping }","variables":"{oops"}'],
+  ])('13.1 variables as %s', async (_name, body) => {
     const res = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body,
       headers: { 'content-type': 'application/json' },
     });
 
     expect(res.status).toBe(400);
+    expect(res.body).toMatch(/variables/i);
   });
 });

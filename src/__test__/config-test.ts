@@ -1,8 +1,9 @@
 import http from 'node:http';
+import type { AddressInfo } from 'node:net';
 import type { GraphQLSchema } from 'graphql';
 
 import { graphqlHTTPFactory } from '../index';
-import type { Limits } from '@via-profit-services/core';
+import type { InitProps, Limits } from '@via-profit-services/core';
 import { IncomingHttpHeaders } from 'http';
 
 /**
@@ -18,7 +19,7 @@ import { IncomingHttpHeaders } from 'http';
 type StartServer = () => Promise<void>;
 
 /**
- * Syop the GraphQL server\
+ * Stop the GraphQL server\
  * Call this promise after tests finished\
  * ```ts
  * // Example of usage
@@ -29,28 +30,33 @@ type StartServer = () => Promise<void>;
  */
 type StopServer = () => Promise<void>;
 
-type ConfigTestOptions = {
+type ConfigTestOptions = Omit<InitProps, 'schema' | 'limits'> & {
   schema: GraphQLSchema;
-  port: number;
   endpoint: string;
   limits?: Limits;
 };
 
 /**
- * Returns helpers for unit test of this GraphQL server
+ * Returns helpers for unit test of this GraphQL server.
+ *
+ * The server listens on a random free port (port 0), so test suites can run
+ * in parallel and never collide with other processes on the machine.
+ * Read the actual port from `port` after `startServer()` resolved.
  */
 type ConfigTest = (options: ConfigTestOptions) => {
+  server: http.Server;
   startServer: StartServer;
   stopServer: StopServer;
+  readonly port: number;
 };
 
 const configTest: ConfigTest = options => {
   const server = http.createServer();
-  const { schema, port, limits } = options;
+  const { endpoint: _endpoint, ...initProps } = options;
 
   const startServer = async () =>
     new Promise<void>(resolve => {
-      const graphqlHTTP = graphqlHTTPFactory({ schema, limits });
+      const graphqlHTTP = graphqlHTTPFactory(initProps);
       server.on('request', async (req, res) => {
         if (!['POST', 'GET'].includes(req.method || '')) {
           res.end();
@@ -65,14 +71,12 @@ const configTest: ConfigTest = options => {
         res.end();
       });
 
-      server.listen(port, 'localhost', () => {
-        // console.log(`server started at http://localhost:${port}`);
-        resolve();
-      });
+      server.listen(0, 'localhost', () => resolve());
     });
 
   const stopServer = async () =>
     new Promise<void>(resolve => {
+      server.closeAllConnections();
       server.close(err => {
         if (err) {
           console.error(err);
@@ -82,7 +86,14 @@ const configTest: ConfigTest = options => {
       });
     });
 
-  return { server, startServer, stopServer };
+  return {
+    server,
+    startServer,
+    stopServer,
+    get port() {
+      return (server.address() as AddressInfo).port;
+    },
+  };
 };
 
 // Helper to send HTTP requests
@@ -110,6 +121,7 @@ export const sendGraphQLRequest = (props: SendGraphQLRequestProps) => {
     const req = http.request(
       {
         method: 'POST',
+        host: 'localhost',
         port,
         path: endpoint,
         headers: {
@@ -125,9 +137,8 @@ export const sendGraphQLRequest = (props: SendGraphQLRequestProps) => {
           let parsed;
           try {
             parsed = JSON.parse(stringifyBody);
-          } catch (e) {
+          } catch {
             parsed = {};
-            // do nothing
           }
 
           resolve({

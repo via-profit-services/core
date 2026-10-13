@@ -25,14 +25,16 @@ import schema from './schema';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const port = 8085;
 const endpoint = '/graphql';
 
 
-const { startServer, stopServer } = configTest({
+const srv = configTest({
   schema,
-  port,
   endpoint,
+  persistedQueryKey: 'persistedQuery',
+  persistedQueriesMap: {
+    testQuery: '{ ping }',
+  },
   limits: {
     maxJSONBodySize: 2_000_000,
     maxGraphQLDepthLimit: 4,
@@ -41,11 +43,11 @@ const { startServer, stopServer } = configTest({
 });
 
 beforeAll(async () => {
-  await startServer();
+  await srv.startServer();
 });
 
 afterAll(async () => {
-  await stopServer();
+  await srv.stopServer();
 });
 
 // Helper to build multipart bodies
@@ -95,7 +97,7 @@ describe('SERVER / ADVANCED SUITE', () => {
   //
   test('1.1 GET with variables', done => {
     const url = new URL(
-      `http://localhost:${port}${endpoint}?query=query($str:String!){echo(str:$str)}&variables=${encodeURIComponent(
+      `http://localhost:${srv.port}${endpoint}?query=query($str:String!){echo(str:$str)}&variables=${encodeURIComponent(
         JSON.stringify({ str: '42' }),
       )}`,
     );
@@ -116,7 +118,7 @@ describe('SERVER / ADVANCED SUITE', () => {
   //
   test('2.1 GET persisted query', done => {
     const url = new URL(
-      `http://localhost:${port}${endpoint}?persistedQuery=testQuery`,
+      `http://localhost:${srv.port}${endpoint}?persistedQuery=testQuery`,
     );
 
     http.get(url, res => {
@@ -124,7 +126,7 @@ describe('SERVER / ADVANCED SUITE', () => {
       res.on('data', c => buffers.push(c));
       res.on('end', () => {
         const parsed = JSON.parse(Buffer.concat(buffers).toString());
-        expect(parsed.data).toBeDefined();
+        expect(parsed.data).toEqual({ ping: 'pong' });
         done();
       });
     });
@@ -135,7 +137,7 @@ describe('SERVER / ADVANCED SUITE', () => {
   //
   test('3.1 Field error', async () => {
     const res = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body: '{"query": "{ ping }", "variables": invalid}',
       headers: { 'content-type': 'application/json' },
@@ -152,7 +154,7 @@ describe('SERVER / ADVANCED SUITE', () => {
   //
   test('4.1 POST empty body', async () => {
     const res = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body: '',
       headers: { 'content-type': 'application/json' },
@@ -166,7 +168,7 @@ describe('SERVER / ADVANCED SUITE', () => {
   //
   test('5.1 Wrong Content-Type', async () => {
     const res = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body: 'query { ping }',
       headers: { 'content-type': 'text/plain' },
@@ -226,7 +228,7 @@ describe('SERVER / ADVANCED SUITE', () => {
     ]);
 
     const res = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body,
       headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
@@ -241,7 +243,7 @@ describe('SERVER / ADVANCED SUITE', () => {
   test('9.1 HEAD request', done => {
     const req = http.request({
       method: 'HEAD',
-      port,
+      port: srv.port,
       path: `${endpoint}?query={ping}`,
     });
 
@@ -259,7 +261,7 @@ describe('SERVER / ADVANCED SUITE', () => {
   test('10.1 PUT request', done => {
     const req = http.request({
       method: 'PUT',
-      port,
+      port: srv.port,
       path: endpoint,
     });
 
@@ -276,7 +278,7 @@ describe('SERVER / ADVANCED SUITE', () => {
   //
   test('11.1 Unknown field', async () => {
     const res = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body: JSON.stringify({ query: '{ unknownField }' }),
       headers: { 'content-type': 'application/json' },
@@ -290,7 +292,7 @@ describe('SERVER / ADVANCED SUITE', () => {
   //
   test('12.1 Resolver throws', async () => {
     const res = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body: JSON.stringify({ query: '{ throwError }' }),
       headers: { 'content-type': 'application/json' },
@@ -306,7 +308,7 @@ describe('SERVER / ADVANCED SUITE', () => {
   //
   test('14.1 Variables is string', async () => {
     const res = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body: JSON.stringify({
         query: '{ ping }',

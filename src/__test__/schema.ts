@@ -1,5 +1,3 @@
-import path from 'node:path';
-import fs from 'node:fs';
 import {
   GraphQLInt,
   GraphQLNonNull,
@@ -157,6 +155,12 @@ const Query = new GraphQLObjectType({
       type: new GraphQLNonNull(GraphQLString),
       resolve: () => 'pong',
     },
+    throwError: {
+      type: GraphQLString,
+      resolve: () => {
+        throw new Error('Something went wrong');
+      },
+    },
     getFourAsString: {
       type: new GraphQLNonNull(GraphQLString),
       resolve: () => 'four',
@@ -209,40 +213,19 @@ const Mutation = new GraphQLObjectType({
         },
       },
       resolve: async (_parent, args: { filesList: UploadedFile[] }) => {
-        const { filesList } = args;
+        const files = await Promise.all(args.filesList);
+        const response: { location: string; mimeType: string; size: number }[] = [];
 
-        const response: { location: string; mimeType: string }[] = [];
-        const files = await Promise.all(filesList);
+        // Read every file completely and count its bytes.
+        // Nothing is written to disk: the core removes temporary files itself.
+        for (const file of files) {
+          let size = 0;
+          for await (const chunk of file.createReadStream()) {
+            size += (chunk as Buffer).length;
+          }
 
-
-        for(const file of files) {
-          const { createReadStream, mimeType, filename, cleanup } = file;
-          const readStream = createReadStream();
-          const location = path.resolve(__dirname, `../../.files/${filename}`);
-
-          fs.mkdirSync(path.dirname(location), { recursive: true });
-          const writeStream = fs.createWriteStream(location);
-
-          // wait of end of writing
-          await new Promise<void>((resolve, reject) => {
-            writeStream.on('finish', () => {
-              response.push({
-                location,
-                mimeType,
-              });
-              resolve();
-            });
-
-            writeStream.on('error', reject);
-            readStream.on('error', reject);
-
-            readStream.pipe(writeStream);
-          });
-
-          cleanup();
+          response.push({ location: file.filename, mimeType: file.mimeType, size });
         }
-
-
 
         return response;
       },
