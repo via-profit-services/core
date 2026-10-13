@@ -18,6 +18,7 @@ import {
   GraphQLError,
   NoSchemaIntrospectionCustomRule,
   type ValidationRule,
+  type DocumentNode,
 } from 'graphql';
 
 import bodyParser, { parseGraphQLParams } from './utils/body-parser';
@@ -30,6 +31,20 @@ import { buildConfig } from './utils/build-config';
 import parseContentType from './utils/content-type-parser';
 import { UPLOAD_CLEANUP } from './utils/graphql-file-uploader';
 import { CSRF_PREVENTION_HEADERS } from './constants';
+import { LRUCache } from './utils/lru-cache';
+
+/**
+ * Cache of parsed and validated documents (see the comment in the listener).
+ * Bounded by the number of documents and by the total length of their source
+ * text: an AST takes roughly 10-20 times more memory than its source.
+ */
+const DOCUMENT_CACHE_MAX_ENTRIES = 1000;
+const DOCUMENT_CACHE_MAX_TOTAL_LENGTH = 2 * 1024 * 1024;
+
+type CachedDocument = {
+  readonly document: DocumentNode;
+  readonly errors: readonly GraphQLError[];
+};
 
 /**
  * Wraps an error of request parsing into a ServerError: such errors are
@@ -66,6 +81,11 @@ const applicationFactory: ApplicationFactory = props => {
   } = config;
   const stats: CoreStats = { requestCounter: 0, startupTime: new Date() };
   const securityRules: ValidationRule[] = introspection ? [] : [NoSchemaIntrospectionCustomRule];
+  const staticRules = [...specifiedRules, ...securityRules];
+  const documentCache = new LRUCache<string, CachedDocument>(
+    DOCUMENT_CACHE_MAX_ENTRIES,
+    DOCUMENT_CACHE_MAX_TOTAL_LENGTH,
+  );
 
   /**
    * Legacy mode only (`sharedContext: true`).
@@ -197,24 +217,39 @@ const applicationFactory: ApplicationFactory = props => {
         );
       }
 
-      // 6. Parse query → AST. maxTokens stops the parser early on huge documents
-      let documentAST: ReturnType<typeof parse>;
-      try {
-        documentAST = parse(new Source(query, 'GraphQL request'), {
-          maxTokens: limits?.maxGraphQLTokens,
-        });
-      } catch (err) {
-        throw new ServerError(
-          [err instanceof GraphQLError ? err : new GraphQLError(String(err))],
-          'graphql-error-validate-request',
-        );
+      // 6. Parse and validate with the standard rules.
+      // Clients send the same query texts again and again, and the result of
+      // parse() + validate() with request-independent rules depends only on
+      // the text, so it is cached.
+      let cached = documentCache.get(query);
+      if (!cached) {
+        let document: DocumentNode;
+        try {
+          // maxTokens stops the parser early on huge documents
+          document = parse(new Source(query, 'GraphQL request'), {
+            maxTokens: limits?.maxGraphQLTokens,
+          });
+        } catch (err) {
+          throw new ServerError(
+            [err instanceof GraphQLError ? err : new GraphQLError(String(err))],
+            'graphql-error-validate-request',
+          );
+        }
+
+        cached = { document, errors: validate(schema, document, staticRules) };
+        documentCache.set(query, cached, query.length);
       }
 
-      // 7. Validate AST
+      if (cached.errors.length > 0) {
+        throw new ServerError(cached.errors, 'graphql-error-validate-field');
+      }
+
+      const documentAST = cached.document;
+
+      // 7. Validate with request-dependent rules: depth, complexity (uses the
+      // variables) and rules added by middlewares. They are linear and cheap.
       const complexityRule = buildComplexityRule(config, variables);
       const validationErrors = validate(schema, documentAST, [
-        ...specifiedRules,
-        ...securityRules,
         ...validationRule,
         ...(complexityRule ? [complexityRule] : []),
       ]);

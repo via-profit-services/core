@@ -85,7 +85,8 @@ describe('Depth limit', () => {
     const nested = 'fields { type { '.repeat(12) + 'name' + ' } }'.repeat(12);
     const res = await run(`{ __type(name: "Item") { ${nested} } }`);
 
-    expect(messages(res)).toMatch(/introspection query is too deeply nested/);
+    // graphql-js >= 16.9 has its own MaxIntrospectionDepthRule in specifiedRules
+    expect(messages(res)).toMatch(/introspection query is too deeply nested|Maximum introspection depth exceeded/);
   });
 });
 
