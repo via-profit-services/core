@@ -72,6 +72,18 @@ fieldsWrapper(schema, ({ resolve, source, args, context, info }) => {
 
 Низкоуровневая функция: читает и разбирает тело запроса (JSON или multipart) и возвращает объект `{ query?, variables?, operationName?, … }`. Ядро вызывает её само; отдельно она нужна, только если вы строите свой обработчик. Применяет лимиты из `config.limits`.
 
+### `createCursorCodec({ secret })`
+
+Создаёт кодек подписанных курсоров: `{ encode(payload), decode(cursor) }`. Курсор имеет вид `<base64url JSON>.<base64url HMAC-SHA256>`: содержимое читается, но изменить его без секрета нельзя. `decode` бросает `GraphQLError('Invalid cursor')` с `extensions.code = 'BAD_USER_INPUT'`. Секрет должен быть не короче 32 байт. Подробнее в разделе [Пагинация](../guides/connections.md#курсор).
+
+### `parseConnectionArgs(args, filters, { codec, maxPageSize? })`
+
+Проверяет `first`/`last`/`after`/`before`/`offset` и возвращает `{ limit, offset, cursor }` для запроса к базе. `cursor` содержит фильтры, которые нужно применить: явно переданные в `filters` (не `undefined`) важнее фильтров из курсора. Ошибки аргументов — `GraphQLError` с `extensions.code = 'BAD_USER_INPUT'`. [Правила аргументов](../guides/connections.md#аргументы).
+
+### `buildConnection(nodes, { cursor, codec, hasPreviousPage, hasNextPage })`
+
+Собирает `{ edges, pageInfo }` из записей одной страницы. Курсор записи равен курсору страницы с позицией записи: `{ ...cursor, offset: cursor.offset + index }`.
+
 ## Скаляры, типы, интерфейсы
 
 `DateTimeScalarType`, `MoneyScalarType`, `BigIntScalarType`, `TimeScalarType`, `EmailAddressScalarType`, `URLScalarType`, `JSONScalarType`, `JSONObjectScalarType`, `VoidScalarType`, `FileUploadScalarType`,
@@ -125,4 +137,6 @@ fieldsWrapper(schema, ({ resolve, source, args, context, info }) => {
 | `PersistedQueriesMap` | `Record<string, string>` |
 | `FieldsWrapper`, `ResolversWrapperFunction` | `fieldsWrapper` и его обёртка |
 | `CursorConnection<T>`, `Edge<T>`, `Node<T>`, `PageInfo` | Структуры данных для [пагинации](../guides/connections.md) |
+| `ConnectionArgs`, `ConnectionPayload<F>`, `ConnectionCursor<F>`, `JSONValue<T>` | Аргументы, результат `parseConnectionArgs` и содержимое курсора |
+| `CursorCodec`, `CursorCodecOptions`, `ParseConnectionArgsOptions`, `BuildConnectionOptions` | Параметры функций пагинации |
 | `BetweenDateTime`, `BetweenInt`, `BetweenMoney`, `BetweenTime` | Значения input-типов «диапазон» |

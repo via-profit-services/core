@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 /**
  * Code examples from docs/ executed against the real core.
  * If a test fails, update the documentation together with the code.
@@ -12,7 +13,7 @@ import {
 } from 'graphql';
 import type { Middleware } from '@via-profit-services/core';
 
-import { graphqlHTTPFactory, fieldsWrapper } from '../index';
+import { graphqlHTTPFactory, fieldsWrapper, createCursorCodec, parseConnectionArgs } from '../index';
 import { fakeRequest, jsonRequest, fakeResponse } from './helpers';
 
 const Post = new GraphQLObjectType({ name: 'Post', fields: { title: { type: GraphQLString } } });
@@ -163,42 +164,32 @@ describe('docs/api/api.md: fieldsWrapper example', () => {
   });
 });
 
-describe('docs/guides/connections.md: cursor', () => {
-  type UsersCursor = { offset: number; status: Array<'allowed' | 'forbidden'> | null };
+describe('docs/guides/connections.md', () => {
+  // the key from the guide: HKDF of an existing secret, 32 bytes
+  const cursorKey = Buffer.from(
+    crypto.hkdfSync('sha256', 'jwt-private-key', '', 'my-project-connection-cursor', 32),
+  );
+  const cursorCodec = createCursorCodec({ secret: cursorKey });
 
-  const encodeCursor = (cursor: UsersCursor) =>
-    Buffer.from(JSON.stringify(cursor)).toString('base64url');
-
-  const decodeCursor = (value: string): UsersCursor => {
-    try {
-      const cursor = JSON.parse(Buffer.from(value, 'base64url').toString('utf8'));
-      const statusOk =
-        cursor.status === null ||
-        (Array.isArray(cursor.status) &&
-          cursor.status.every((s: unknown) => s === 'allowed' || s === 'forbidden'));
-
-      if (Number.isSafeInteger(cursor.offset) && cursor.offset >= 0 && statusOk) {
-        return { offset: cursor.offset, status: cursor.status };
-      }
-    } catch {
-      // fall through
-    }
-
-    throw new GraphQLError('Invalid cursor', { extensions: { code: 'BAD_USER_INPUT' } });
-  };
-
-  test('round trip and tampering', () => {
-    const cursor = { offset: 10, status: ['allowed' as const] };
-    expect(decodeCursor(encodeCursor(cursor))).toEqual(cursor);
-    expect(() => decodeCursor('not-a-cursor')).toThrow('Invalid cursor');
-    expect(() => decodeCursor(encodeCursor({ offset: -1, status: null }))).toThrow(
-      'Invalid cursor',
+  test('the server restriction wins over the cursor, other filters come from it', () => {
+    const own = parseConnectionArgs(
+      { first: 2 },
+      { status: ['allowed'], client: ['own'] },
+      { codec: cursorCodec, maxPageSize: 100 },
     );
-    expect(() =>
-      decodeCursor(
-        Buffer.from(JSON.stringify({ offset: 0, status: ['admin'] })).toString('base64url'),
-      ),
-    ).toThrow('Invalid cursor');
+    // a cursor issued to another user
+    const foreign = cursorCodec.encode({ ...own.cursor, client: ['foreign'], offset: 1 });
+    const next = parseConnectionArgs(
+      { first: 2, after: foreign },
+      { status: undefined, client: ['own'] },
+      { codec: cursorCodec, maxPageSize: 100 },
+    );
+
+    expect(next).toEqual({
+      limit: 2,
+      offset: 2,
+      cursor: { status: ['allowed'], client: ['own'], offset: 2 },
+    });
   });
 });
 
