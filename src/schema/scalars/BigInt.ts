@@ -1,4 +1,30 @@
-import { GraphQLScalarType, GraphQLError, print } from 'graphql';
+import { GraphQLScalarType, GraphQLError, Kind, print } from 'graphql';
+
+/**
+ * Decimal integer. The length is limited: converting a huge string to
+ * BigInt costs CPU and nobody needs numbers with thousands of digits.
+ */
+const INTEGER_REGEX = /^-?\d{1,100}$/;
+
+const parseBigInt = (value: unknown): bigint => {
+  if (typeof value === 'bigint') {
+    return value;
+  }
+
+  if (typeof value === 'number') {
+    if (!Number.isSafeInteger(value)) {
+      throw new GraphQLError(`BigInt cannot represent non-integer or unsafe number: ${value}`);
+    }
+
+    return BigInt(value);
+  }
+
+  if (typeof value === 'string' && INTEGER_REGEX.test(value)) {
+    return BigInt(value);
+  }
+
+  throw new GraphQLError(`BigInt cannot represent value: ${String(value).slice(0, 100)}`);
+};
 
 export default new GraphQLScalarType<bigint, string | number>({
   name: 'BigInt',
@@ -15,8 +41,9 @@ export default new GraphQLScalarType<bigint, string | number>({
       );
     }
 
-    const bigint = BigInt(value);
+    const bigint = typeof value === 'boolean' ? BigInt(value) : parseBigInt(value);
 
+    // Safe integers are returned as numbers, larger values as strings (JSON has no bigint)
     if (bigint >= Number.MIN_SAFE_INTEGER && bigint <= Number.MAX_SAFE_INTEGER) {
       return Number(bigint);
     }
@@ -24,27 +51,19 @@ export default new GraphQLScalarType<bigint, string | number>({
     return bigint.toString();
   },
   parseValue(value) {
-    const bigint = BigInt((value as any).toString());
-
-    if ((value as any).toString() !== bigint.toString()) {
-      throw new GraphQLError(`BigInt cannot represent value: ${value}`);
-    }
-
-    return bigint;
+    return parseBigInt(value);
   },
   parseLiteral(ast) {
-    if (!('value' in ast)) {
+    if (ast.kind !== Kind.INT && ast.kind !== Kind.STRING) {
       throw new GraphQLError(`BigInt cannot represent non-integer value: ${print(ast)}`, {
         nodes: ast,
       });
     }
 
-    const bigint = BigInt(ast.value);
-
-    if (ast.value.toString() !== bigint.toString()) {
-      throw new GraphQLError(`BigInt cannot represent value: ${ast.value}`);
+    try {
+      return parseBigInt(ast.value);
+    } catch (err) {
+      throw new GraphQLError((err as Error).message, { nodes: ast });
     }
-
-    return bigint;
   },
 });

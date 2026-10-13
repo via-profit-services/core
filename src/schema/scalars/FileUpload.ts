@@ -1,5 +1,5 @@
-import { GraphQLError, GraphQLScalarType } from "graphql";
-import FileUploadInstance from "../../utils/FileUploadInstance";
+import { GraphQLError, GraphQLScalarType } from 'graphql';
+import FileUploadInstance from '../../utils/FileUploadInstance';
 
 /**
  * GraphQL `FileUpload` scalar.
@@ -39,7 +39,7 @@ const FileUpload = new GraphQLScalarType({
    * We return its `.promise`, which resolves to a `FilePayload`.
    */
   parseValue(value) {
-    if (value instanceof FileUploadInstance) {
+    if (FileUploadInstance.isFileUploadInstance(value)) {
       return value.promise;
     }
 

@@ -3,59 +3,80 @@ import http from 'node:http';
 import type { BodyParser, RequestBody, Configuration } from '@via-profit-services/core';
 
 import graphqlFileUploader from './graphql-file-uploader';
+import parseContentType from './content-type-parser';
 import { DEFAULT_JSON_DECOMPRESSED_MAX_BYTES, DEFAULT_JSON_MAX_BYTES } from '../constants';
+import { HttpError } from './http-error';
+import { setBodyStats } from './body-stats';
 
-const JSONOBJREGEX = /^[ \t\n\r]*\{/;
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 /**
  * Main body parser entry point.
  * Handles:
  *   - multipart/form-data (file uploads)
  *   - JSON bodies
- *   - gzip/deflate decompression
+ *   - gzip/deflate/br decompression
  *   - size limits
+ *
+ * Returns `{}` for an empty body (GET requests). A non-empty body must be a
+ * JSON object, otherwise an error is thrown: silently ignoring a broken body
+ * turns a client bug into a confusing "the request is empty" error.
  */
 const bodyParser: BodyParser = async ({ request, response, config }) => {
   const { method, headers } = request;
 
   // POST without content-type is invalid
   if (method === 'POST' && typeof headers['content-type'] === 'undefined') {
-    throw new Error('Missing Content-Type header');
+    throw new HttpError('Missing Content-Type header', 415);
   }
 
-  // Multipart (file upload)
-  if (headers['content-type']?.startsWith('multipart/form-data')) {
-    try {
-      return await graphqlFileUploader({ request, response, config });
-    } catch (err) {
-      // Preserve original error
-      throw err instanceof Error ? err : new Error(String(err));
-    }
+  // Multipart (file upload). Media types are case-insensitive
+  if (parseContentType(String(headers['content-type'] || ''))?.type === 'multipart/form-data') {
+    return graphqlFileUploader({ request, response, config });
   }
 
-  // JSON or other text body
-  const rawBody = await readBody(request, {
-    charset: 'utf-8',
+  const { text: rawBody, wireSize } = await readBody(request, {
     maxJSONBodySize: config.limits?.maxJSONBodySize || DEFAULT_JSON_MAX_BYTES,
-    maxDecompressedSize: config.limits?.maxJSONBodyDecompressedSize || DEFAULT_JSON_DECOMPRESSED_MAX_BYTES,
+    maxDecompressedSize:
+      config.limits?.maxJSONBodyDecompressedSize || DEFAULT_JSON_DECOMPRESSED_MAX_BYTES,
   });
 
-  // Try to parse JSON only if it looks like JSON
-  if (JSONOBJREGEX.test(rawBody)) {
-    try {
-      return JSON.parse(rawBody);
-    } catch {
-      // Invalid JSON — return empty object
-    }
+  if (rawBody.trim() === '') {
+    const empty = {};
+    setBodyStats(empty, { bodySize: wireSize });
+
+    return empty;
   }
 
-  return {};
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(rawBody);
+  } catch (err) {
+    throw new HttpError(
+      `Failed to parse GraphQL query. The request body is not valid JSON: ${err instanceof Error ? err.message : ''}`,
+    );
+  }
+
+  if (Array.isArray(parsed)) {
+    throw new HttpError('Batched operations are not supported');
+  }
+
+  if (!isPlainObject(parsed)) {
+    throw new HttpError('The request body must be a JSON object');
+  }
+
+  setBodyStats(parsed, { bodySize: wireSize });
+
+  return parsed as RequestBody;
 };
 
 interface GraphQLParams {
   query: string;
   variables: { readonly [key: string]: unknown } | null;
   operationName: string | null;
+  /** true if the query text was taken from the persisted queries map */
+  persisted: boolean;
 }
 
 interface GraphQLParamsProps {
@@ -74,23 +95,31 @@ export const parseGraphQLParams = (props: GraphQLParamsProps): GraphQLParams => 
   const { body, request, config } = props;
   const { persistedQueriesMap, persistedQueryKey } = config;
   const url = request.url || '';
-
-  const urlData = new URLSearchParams(url.split('?')[1]);
+  const queryIndex = url.indexOf('?');
+  const urlData = new URLSearchParams(queryIndex === -1 ? '' : url.slice(queryIndex + 1));
 
   const graphQLParams: GraphQLParams = {
     query: '',
     variables: null,
     operationName: null,
+    persisted: false,
   };
 
   //
   // Persisted query support
   //
-  const persistedKey = persistedQueryKey ? urlData.get(persistedQueryKey) || body[persistedQueryKey] : undefined;
-  if (typeof persistedKey === 'string') {
-    const mappedQuery = persistedQueriesMap ? persistedQueriesMap[persistedKey] : undefined;
+  const persistedKey = persistedQueryKey
+    ? urlData.get(persistedQueryKey) || body[persistedQueryKey]
+    : undefined;
+  if (
+    typeof persistedKey === 'string' &&
+    persistedQueriesMap &&
+    Object.prototype.hasOwnProperty.call(persistedQueriesMap, persistedKey)
+  ) {
+    const mappedQuery = persistedQueriesMap[persistedKey];
     if (typeof mappedQuery === 'string') {
       graphQLParams.query = mappedQuery;
+      graphQLParams.persisted = true;
     }
   }
 
@@ -98,21 +127,28 @@ export const parseGraphQLParams = (props: GraphQLParamsProps): GraphQLParams => 
   // Query from URL or body
   //
   if (!graphQLParams.query) {
-    graphQLParams.query = urlData.get('query') ?? String(body.query || '');
+    const query = urlData.get('query') ?? body.query;
+    graphQLParams.query = typeof query === 'string' ? query : '';
   }
 
   //
-  // Variables
+  // Variables: an object, a JSON string of an object (GET), or nothing
   //
-  const variables = urlData.get('variables') ?? body.variables;
+  let variables: unknown = urlData.get('variables') ?? body.variables;
 
   if (typeof variables === 'string') {
     try {
-      graphQLParams.variables = JSON.parse(variables);
+      variables = JSON.parse(variables);
     } catch {
-      throw new Error('Variables are invalid JSON.');
+      throw new HttpError('Variables are invalid JSON.');
     }
-  } else if (typeof variables === 'object' && variables !== null) {
+  }
+
+  if (typeof variables !== 'undefined' && variables !== null) {
+    if (!isPlainObject(variables)) {
+      throw new HttpError('Variables must be an object.');
+    }
+
     graphQLParams.variables = { ...variables };
   }
 
@@ -128,26 +164,30 @@ export const parseGraphQLParams = (props: GraphQLParamsProps): GraphQLParams => 
 };
 
 /**
- * Decompresses request body stream based on Content-Encoding.
+ * Decompression stream for a Content-Encoding.
  */
-const decompressBody = (request: http.IncomingMessage, encoding: string) => {
+const createDecoder = (encoding: string) => {
   switch (encoding) {
     case 'identity':
-      return request;
+      return null;
 
     case 'deflate':
-      return request.pipe(zlib.createInflate());
+      return zlib.createInflate();
 
     case 'gzip':
-      return request.pipe(zlib.createGunzip());
+    case 'x-gzip':
+      return zlib.createGunzip();
+
+    case 'br':
+      return zlib.createBrotliDecompress();
 
     default:
-      throw new Error(`Unsupported content-encoding "${encoding}".`);
+      // RFC 9110: an unsupported content coding is 415
+      throw new HttpError(`Unsupported content-encoding "${encoding}".`, 415);
   }
 };
 
 type ReadBodyOptions = {
-  readonly charset: BufferEncoding;
   readonly maxJSONBodySize: number;
   readonly maxDecompressedSize: number;
 };
@@ -155,74 +195,115 @@ type ReadBodyOptions = {
 /**
  * Reads and optionally decompresses the request body.
  * Enforces:
- *   - max JSON body size
- *   - max decompressed size
+ *   - max body size on the wire (compressed size)
+ *   - max decompressed size (protects from gzip bombs)
+ *
+ * Errors of the request and of the decoder are both handled: with a bare
+ * `pipe` an aborted request or a broken gzip stream would leave the promise
+ * pending forever. `stream.pipeline` is not used on purpose: on error it
+ * destroys the request and its socket, so the client would get a connection
+ * reset instead of an error response.
  */
-const readBody = async (
+const readBody = (
   request: http.IncomingMessage,
   opts: ReadBodyOptions,
-): Promise<string> => {
-  const { charset, maxJSONBodySize, maxDecompressedSize } = opts;
+): Promise<{ text: string; wireSize: number }> =>
+  new Promise((resolve, reject) => {
+    const { maxJSONBodySize, maxDecompressedSize } = opts;
+    const contentEncoding = request.headers['content-encoding'];
+    const encoding =
+      typeof contentEncoding === 'string' ? contentEncoding.trim().toLowerCase() : 'identity';
 
-  if (!charset.startsWith('utf-')) {
-    throw new Error(`Unsupported charset "${charset.toUpperCase()}".`);
-  }
+    const contentLength = Number(request.headers['content-length']);
+    if (Number.isFinite(contentLength) && contentLength > maxJSONBodySize) {
+      reject(
+        new HttpError(
+          `Request body exceeds maximum allowed size of ${maxJSONBodySize} bytes.`,
+          413,
+        ),
+      );
 
-  const contentEncoding = request.headers['content-encoding'];
-  const encoding = typeof contentEncoding === 'string' ? contentEncoding.toLowerCase() : 'identity';
+      return;
+    }
 
-  const contentLengthHeader = request.headers['content-length'];
-  const contentLength =
-    encoding === 'identity' && typeof contentLengthHeader === 'string'
-      ? Number(contentLengthHeader)
-      : null;
+    let decoder: zlib.Gunzip | zlib.Inflate | zlib.BrotliDecompress | null;
+    try {
+      decoder = createDecoder(encoding);
+    } catch (err) {
+      reject(err);
 
-  if (contentLength !== null && contentLength > maxJSONBodySize) {
-    throw new Error(`Request body exceeds maximum allowed size of ${maxJSONBodySize} bytes.`);
-  }
+      return;
+    }
 
-  const stream = decompressBody(request, encoding);
-
-  return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
-    let received = 0;
+    let wireSize = 0;
+    let decodedSize = 0;
+    let settled = false;
 
-    stream.on('data', chunk => {
-      received += chunk.length;
+    const fail = (err: unknown) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      // stop reading and decoding; the socket stays open for the response
+      if (decoder) {
+        request.unpipe(decoder);
+        decoder.destroy();
+      }
+      request.pause();
+      reject(err instanceof Error ? err : new Error(String(err)));
+    };
 
-      if (received > maxDecompressedSize) {
-        reject(
-          new Error(
-            `Decompressed body exceeds maximum allowed size of ${maxDecompressedSize} bytes.`,
+    request.on('data', (chunk: Buffer) => {
+      wireSize += chunk.length;
+      if (wireSize > maxJSONBodySize) {
+        fail(
+          new HttpError(
+            `Request body exceeds maximum allowed size of ${maxJSONBodySize} bytes.`,
+            413,
           ),
         );
-        stream.destroy();
+      }
+    });
+
+    const source = decoder ? request.pipe(decoder) : request;
+
+    source.on('data', (chunk: Buffer) => {
+      if (settled) {
+        return;
+      }
+
+      decodedSize += chunk.length;
+      // Only for an encoded body: an identity body is limited by maxJSONBodySize,
+      // and maxJSONBodySize above maxJSONBodyDecompressedSize must take effect
+      if (decoder && decodedSize > maxDecompressedSize) {
+        fail(
+          new HttpError(
+            `Decompressed body exceeds maximum allowed size of ${maxDecompressedSize} bytes.`,
+            413,
+          ),
+        );
+
         return;
       }
 
       chunks.push(chunk);
     });
 
-    stream.on('end', () => {
-      try {
-        const buffer = Buffer.concat(chunks);
-
-        if (encoding === 'identity' && buffer.length > maxJSONBodySize) {
-          return reject(
-            new Error(`Request body exceeds maximum allowed size of ${maxJSONBodySize} bytes.`),
-          );
-        }
-
-        resolve(buffer.toString(charset));
-      } catch (err) {
-        reject(err instanceof Error ? err : new Error(String(err)));
+    source.once('end', () => {
+      if (!settled) {
+        settled = true;
+        resolve({ text: Buffer.concat(chunks).toString('utf8'), wireSize });
       }
     });
 
-    stream.on('error', err => {
-      reject(new Error(`Failed to read body: ${err instanceof Error ? err.message : err}`));
+    request.once('error', err => fail(new HttpError(`Failed to read body: ${err.message}`)));
+    decoder?.once('error', err => fail(new HttpError(`Failed to read body: ${err.message}`)));
+    request.once('close', () => {
+      if (!request.readableEnded) {
+        fail(new HttpError('Failed to read body: the request was aborted'));
+      }
     });
   });
-};
 
 export default bodyParser;

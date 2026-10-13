@@ -1,6 +1,21 @@
 import { Kind, GraphQLError, GraphQLScalarType } from 'graphql';
 
 /**
+ * An integer written in decimal digits with an optional minus sign.
+ * `BigInt()` alone is not enough: it accepts `""` (→ 0n), `" 12 "`,
+ * `"0x1F"`, `"0b101"` and `"0o7"`.
+ */
+const INTEGER_REGEX = /^-?\d{1,30}$/;
+
+const parseMoney = (value: string): bigint => {
+  if (!INTEGER_REGEX.test(value)) {
+    throw new TypeError(`Value is not a valid Integer: ${value}`);
+  }
+
+  return BigInt(value);
+};
+
+/**
  * GraphQL `Money` scalar.
  *
  * Represents monetary values stored in the smallest currency unit
@@ -11,7 +26,7 @@ import { Kind, GraphQLError, GraphQLScalarType } from 'graphql';
  * - Safe for large monetary values.
  *
  * Input:
- * - Must be a string containing an integer (e.g. "250000").
+ * - Must be a string containing a decimal integer (e.g. "250000", "-100").
  * - Parsed into a bigint.
  *
  * Output:
@@ -20,12 +35,6 @@ import { Kind, GraphQLError, GraphQLScalarType } from 'graphql';
  * Examples:
  * - 250 USD → "25000" (250 * 100 cents)
  * - 1999 RUB → "199900" (1999 * 100 kopecks)
- *
- * Notes for developers:
- * - This scalar does NOT accept float values.
- * - This scalar does NOT accept literal integers (e.g. 123).
- * - Only string literals are allowed in GraphQL queries.
- * - Use bigint internally for all monetary calculations.
  */
 export default new GraphQLScalarType<bigint, string>({
   name: 'Money',
@@ -36,61 +45,51 @@ Example: 250 USD → "25000" (250 * 100¢)
 `,
 
   /**
-   * Serializes internal value (bigint or string) to a string.
-   *
-   * This is used when returning values from resolvers.
+   * Serializes internal value (bigint, integer string or safe integer) to a string.
    */
   serialize(value) {
-    if (typeof value !== 'string' && typeof value !== 'bigint') {
-      throw new TypeError(
-        `Value is not an instance of string or bigint: ${JSON.stringify(value)}`,
-      );
+    if (typeof value === 'bigint') {
+      return value.toString();
     }
 
-    return value.toString();
+    if (typeof value === 'number' && Number.isSafeInteger(value)) {
+      return String(value);
+    }
+
+    if (typeof value === 'string') {
+      return parseMoney(value).toString();
+    }
+
+    throw new TypeError(`Money cannot represent value: ${JSON.stringify(value)}`);
   },
 
   /**
-   * Parses incoming variable values.
-   *
-   * GraphQL variables always pass through this method.
-   * Only string values are accepted.
+   * Parses incoming variable values. Only strings are accepted.
    */
   parseValue(value) {
-    if (typeof value === 'string') {
-      try {
-        return BigInt(value);
-      } catch {
-        throw new TypeError(`Value is not a valid Integer: ${value}`);
-      }
+    if (typeof value !== 'string') {
+      throw new TypeError(`Value is not a valid Integer: ${value}`);
     }
 
-    throw new TypeError(`Value is not a valid Integer: ${value}`);
+    return parseMoney(value);
   },
 
   /**
    * Parses literal values in GraphQL queries.
-   *
-   * Example of supported usage:
-   *   mutation { pay(amount: "25000") }
-   *
-   * Example of unsupported usage:
-   *   mutation { pay(amount: 25000) }  // ❌ not allowed
+   *   mutation { pay(amount: "25000") }  // ok
+   *   mutation { pay(amount: 25000) }    // not allowed
    */
   parseLiteral(ast) {
     if (ast.kind !== Kind.STRING) {
-      throw new GraphQLError(
-        `Can only parse strings to Money but got: ${ast.kind}`,
-        { nodes: [ast] },
-      );
+      throw new GraphQLError(`Can only parse strings to Money but got: ${ast.kind}`, {
+        nodes: [ast],
+      });
     }
 
     try {
-      return BigInt(ast.value);
+      return parseMoney(ast.value);
     } catch {
-      throw new GraphQLError(`Invalid Money literal: ${ast.value}`, {
-        nodes: [ast],
-      });
+      throw new GraphQLError(`Invalid Money literal: ${ast.value}`, { nodes: [ast] });
     }
   },
 });

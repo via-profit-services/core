@@ -3,11 +3,9 @@ import http from 'node:http';
 import configTest from './config-test';
 import schema from './schema';
 
-const port = 8082;
 const endpoint = '/graphql';
-const { startServer, stopServer } = configTest({
+const srv = configTest({
   schema,
-  port,
   endpoint,
   limits: {
     maxGraphQLDepthLimit: 3,
@@ -15,11 +13,11 @@ const { startServer, stopServer } = configTest({
 });
 
 beforeAll(async () => {
-  await startServer();
+  await srv.startServer();
 });
 
 afterAll(async () => {
-  await stopServer();
+  await srv.stopServer();
 });
 
 describe('Graphql depth limit tests', () => {
@@ -42,7 +40,7 @@ describe('Graphql depth limit tests', () => {
 
     const body = JSON.stringify({ query, variables: {} });
     const req = http.request({
-      port,
+      port: srv.port,
       path: endpoint,
       hostname: 'localhost',
       method: 'POST',
@@ -101,7 +99,7 @@ describe('Graphql depth limit tests', () => {
 
     const body = JSON.stringify({ query, variables: {} });
     const req = http.request({
-      port,
+      port: srv.port,
       path: endpoint,
       hostname: 'localhost',
       method: 'POST',

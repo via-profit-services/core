@@ -17,6 +17,7 @@ import {
   DEFAULT_MAX_GRAPHQL_COMPLEXITY_INTROSPECTION_COST,
   DEFAULT_MAX_GRAPHQL_COMPLEXITY_MAX_FIELDS_PER_SELECTION,
   DEFAULT_JSON_DECOMPRESSED_MAX_BYTES,
+  DEFAULT_MAX_GRAPHQL_TOKENS,
 } from '../constants';
 
 import type { Configuration } from '@via-profit-services/core';
@@ -26,6 +27,11 @@ export const buildConfig = (
 ): Configuration => ({
   middleware: [],
   debug: false,
+  sharedContext: false,
+  maskErrors: false,
+  csrfPrevention: false,
+  persistedQueriesOnly: false,
+  introspection: true,
   rootValue: undefined,
   persistedQueriesMap: undefined,
   persistedQueryKey: DEFAULT_PERSISTED_QUERY_KEY,
@@ -39,6 +45,7 @@ export const buildConfig = (
     maxFileParts: DEFAULT_MAX_FILE_PARTS,
     maxJSONBodySize: DEFAULT_JSON_MAX_BYTES,
     maxJSONBodyDecompressedSize: DEFAULT_JSON_DECOMPRESSED_MAX_BYTES,
+    maxGraphQLTokens: DEFAULT_MAX_GRAPHQL_TOKENS,
 
     maxGraphQLDepthLimit: DEFAULT_MAX_GRAPHQL_DEPTH_LIMIT,
     maxGraphQLIntrospectionDepthLimit: DEFAULT_MAX_GRAPHQL_INTROSPECTION_DEPTH_LIMIT,

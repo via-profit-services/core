@@ -51,8 +51,16 @@ declare module '@via-profit-services/core' {
      */
     readonly persistedQueryKey?: string;
     /**
-     * Debug mode \
-     * \
+     * Diagnostics of the server for development. Adds to the response:
+     * - `extensions.queryTime`, `requestCounter`, `startupTime`, `diagnostics`
+     *   (timing of the steps, document cache, operation name);
+     * - `extensions.limits` (as `limits.exposeUsage`);
+     * - `stacktrace` to every error.
+     *
+     * The fields added by the project (`setExtension`, middleware) and
+     * `extensions.requestId` are sent regardless of this option.
+     * Do not enable in production: stack traces reveal the code.
+     *
      * Default: `false`
      */
     readonly debug?: boolean;
@@ -67,38 +75,177 @@ declare module '@via-profit-services/core' {
      */
     readonly middleware?: Middleware | Middleware[];
 
+    /**
+     * **Legacy mode. Do not use it in new projects.**
+     *
+     * By default every HTTP request receives its own empty `context` object.
+     * Middlewares fill it and resolvers of this request read it.
+     *
+     * If `true`, a single context object is created once and is shared by
+     * **all** requests, including concurrent ones (behavior of versions <= 2.10).
+     * Anything a middleware writes into it (user, token, locale...) becomes
+     * visible to other requests. Use it only for code that stores long-living
+     * objects (DB pools, loggers) in the context and was not migrated yet.
+     *
+     * Default: `false`
+     * @deprecated
+     */
+    readonly sharedContext?: boolean;
+
     readonly limits?: Partial<Limits>;
+
+    /**
+     * Hide internal error messages from clients.
+     *
+     * If `true`, an error thrown by a resolver or a middleware that is NOT a
+     * `GraphQLError` (a plain `Error`, a database driver error...) is sent to
+     * the client as `"Internal server error"` with
+     * `extensions.code = "INTERNAL_SERVER_ERROR"`.
+     * Throw `GraphQLError` for messages the client must see:
+     * ```ts
+     * throw new GraphQLError('Access denied', { extensions: { code: 'FORBIDDEN' } });
+     * ```
+     * Validation and request errors of the core are never masked.
+     * Use `onError` to log the original errors.
+     *
+     * Recommended for production. Default: `false`
+     */
+    readonly maskErrors?: boolean;
+
+    /**
+     * Called with the original error of every error of a response
+     * (before masking). Use it for logging.
+     */
+    readonly onError?: (error: Error) => void;
+
+    /**
+     * CSRF protection.
+     *
+     * A browser sends `GET` and `multipart/form-data` POST requests to any
+     * site without a CORS preflight, together with the cookies of that site.
+     * If authorization relies on cookies, a foreign page can execute a
+     * mutation (e.g. an upload) on behalf of the user.
+     *
+     * If `true`, such requests must contain one of the headers
+     * `x-requested-with`, `apollo-require-preflight`, `x-apollo-operation-name`
+     * or `graphql-preflight` (any non-empty value). A browser cannot add
+     * them cross-origin without a preflight. `application/json` POST requests
+     * always require a preflight and are not affected.
+     *
+     * Recommended if cookies are used for authorization. Default: `false`
+     */
+    readonly csrfPrevention?: boolean;
+
+    /**
+     * Accept only queries from `persistedQueriesMap`.
+     * A request with an arbitrary query text is rejected.
+     *
+     * Default: `false`
+     */
+    readonly persistedQueriesOnly?: boolean;
+
+    /**
+     * Allow introspection queries (`__schema`, `__type`).
+     * Set `false` in production if the schema must not be discoverable.
+     * `__typename` is always allowed.
+     *
+     * Default: `true`
+     */
+    readonly introspection?: boolean;
+  }
+
+  /**
+   * How much of a limit a request used. `max` is `null` when the limit is disabled.
+   */
+  export interface LimitUsage {
+    readonly value: number;
+    readonly max: number | null;
+  }
+
+  /**
+   * Measured values of a request against the limits.
+   * Only the measured values are present: e.g. a request rejected while
+   * reading the body has no `depth`.
+   */
+  export interface LimitsUsage {
+    /** Operation name from the request, `null` for an anonymous operation */
+    readonly operationName: string | null;
+    /** Size of the JSON body on the wire, bytes (against `maxJSONBodySize`) */
+    readonly bodySize?: LimitUsage;
+    /** Number of uploaded files (against `maxFiles`) */
+    readonly files?: LimitUsage;
+    /** Total size of uploaded files, bytes (against `maxFilesTotalSize`) */
+    readonly filesTotalSize?: LimitUsage;
+    /** Tokens of the document (against `maxGraphQLTokens`) */
+    readonly tokens?: LimitUsage;
+    /** Depth, the largest of all operations (against `maxGraphQLDepthLimit`) */
+    readonly depth?: LimitUsage;
+    /** Complexity, the largest of all operations (against `complexityLimit.maxComplexity`) */
+    readonly complexity?: LimitUsage;
+    /** Most fields in one selection set (against `complexityLimit.maxFieldsPerSelection`) */
+    readonly width?: LimitUsage;
   }
 
   export interface Limits {
     /**
+     * Send `extensions.limits` (how much of every limit the request used)
+     * in every response. Always on with `debug: true`.
+     *
+     * The values reveal the configured limits. Those can be found by probing
+     * anyway, but keep it off unless the clients need it.
+     *
+     * Default: `false`
+     */
+    readonly exposeUsage?: boolean;
+
+    /**
+     * Called for every request whose document was parsed, also for requests
+     * rejected by a limit. Works in production without exposing anything to
+     * the client: collect the values (histogram, log) and set the limits from
+     * real traffic instead of guessing them.
+     *
+     * An exception thrown here is passed to `onError` and does not affect the request.
+     */
+    readonly onUsage?: (usage: LimitsUsage, context: Context) => void;
+
+    /**
      * Maximum allowed size of a non-file field value in multipart/form-data (in bytes).
      * This applies to fields like "operations" and "map" when using multipart parser.
      * Helps prevent oversized JSON payloads inside multipart requests.
+     *
+     * Default: 1 MB
      */
     readonly maxFieldSize?: number;
 
     /**
      * Maximum allowed size of a single uploaded file (in bytes).
-     * Busboy will truncate the stream and emit a "limit" event if exceeded.
+     * The request is rejected as soon as a file exceeds the limit.
+     *
+     * Default: 10 MB
      */
     readonly maxFileSize?: number;
 
     /**
      * Maximum number of file fields allowed in a multipart/form-data request.
      * Prevents clients from uploading too many files in a single operation.
+     *
+     * Default: 20
      */
     readonly maxFiles?: number;
 
     /**
      * Maximum number of non-file fields allowed in a multipart/form-data request.
      * Typically used to restrict "operations" and "map" fields.
+     *
+     * Default: 6
      */
     readonly maxFileFields?: number;
 
     /**
      * Maximum number of total parts (fields + files) allowed in a multipart request.
      * Protects against multipart flooding attacks.
+     *
+     * Default: 26 (maxFiles + maxFileFields)
      */
     readonly maxFileParts?: number;
 
@@ -126,9 +273,19 @@ declare module '@via-profit-services/core' {
     readonly maxJSONBodyDecompressedSize?: number;
 
     /**
+     * Maximum number of tokens in a GraphQL document.
+     * The parser stops as soon as the limit is reached.
+     *
+     * Default: 10 000
+     */
+    readonly maxGraphQLTokens?: number;
+
+    /**
      * Maximum allowed GraphQL query depth.
      * Depth is measured by nested selection sets, not by number of fields.
      * Helps prevent deeply nested queries that may cause excessive resolver work.
+     * Fragments do not add a level. `0` disables the check.
+     * Default: 20
      */
     readonly maxGraphQLDepthLimit?: number;
 
@@ -150,8 +307,10 @@ declare module '@via-profit-services/core' {
   export interface ComplexityLimitOptions {
     /**
      * Maximum allowed total complexity for a GraphQL operation.
+     * `0` disables the check.
+     * Default: 50 000
      */
-    maxComplexity: number;
+    maxComplexity?: number;
 
     /**
      * Base cost for each field. Default: 1.
@@ -159,8 +318,9 @@ declare module '@via-profit-services/core' {
     fieldCost?: number;
 
     /**
-     * Argument names that represent list size (e.g. first, limit, take).
-     * These arguments multiply the field cost.
+     * Argument names that represent list size (e.g. first, last, limit).
+     * These arguments multiply the field cost: the value of a literal,
+     * a variable or the default value of the argument in the schema.
      */
     listArguments?: string[];
 
@@ -186,7 +346,7 @@ declare module '@via-profit-services/core' {
      * Callback invoked after complexity is calculated.
      * Useful for logging or rate limiting.
      */
-    onComplete?: (complexity: number) => void;
+    onComplete?: (complexity: number, info: { operationName: string; width: number }) => void;
 
     /**
      * Custom error factory for overriding the default error message.
@@ -313,37 +473,16 @@ declare module '@via-profit-services/core' {
      * ```
      */
     readonly createReadStream: (options?: ReadStreamOptions) => ReadStream;
+
+    /**
+     * Removes the temporary file right now.\
+     * Optional: the core removes temporary files automatically when the
+     * HTTP response is closed. Read or copy the file before that moment.
+     */
     readonly cleanup: () => void;
   }
 
   export type UploadedFile = Promise<FilePayload>;
-
-  interface CoreServiceProps {
-    context: Context;
-  }
-
-  type MakeGraphQLRequestParams = {
-    query: string;
-    operationName: ExecutionArgs['operationName'];
-    variables: ExecutionArgs['variableValues'];
-  };
-
-  export class CoreService {
-    props: CoreServiceProps;
-    constructor(props: CoreServiceProps);
-
-    /**
-     * Send GraphQL request Send to yourself
-     */
-    makeGraphQLRequest<T = ExecutionResult['data']>(
-      params: MakeGraphQLRequestParams,
-    ): MaybePromise<ExecutionResult<T>>;
-
-    /**
-     * Return current module version
-     */
-    getVersion(): string;
-  }
 
   /**
    * Execute each middleware
@@ -393,14 +532,94 @@ declare module '@via-profit-services/core' {
     data?: Record<string, any> | null;
     errors?: readonly GraphQLFormattedError[] | null;
     extensions?: GraphQLExtensions;
+
+    /**
+     * Recommended HTTP status code of the response.
+     *
+     * - `200` - the operation was executed (also with errors: partial success);
+     * - `400` - malformed request, syntax or validation error;
+     * - `401` / `403` - an error with `extensions.code` `UNAUTHENTICATED` / `FORBIDDEN`;
+     * - `405` - unsupported HTTP method, mutation via GET (send `Allow: GET, POST`);
+     * - `413` - the body, a file or a multipart limit is too large;
+     * - `415` - unsupported Content-Type or Content-Encoding;
+     * - `500` - unexpected server error.
+     *
+     * A `GraphQLError` thrown before execution (e.g. in a middleware) may set
+     * its own status: `extensions: { http: { status: 401 } }`.
+     *
+     * **Non-enumerable**: it is not serialized by `JSON.stringify(response)`
+     * and is not copied by `{ ...response }`, so the response body keeps
+     * only `data`, `errors` and `extensions` as the GraphQL spec requires.
+     * Read it explicitly: `res.statusCode = response.status ?? 200`.
+     *
+     * Always set by the core (since 2.12).
+     */
+    readonly status?: number;
   };
 
-  export type GraphQLExtensions = CoreStats & {
-    // stats: CoreStats;
-    queryTime: number;
-    requestCounter: number;
-    readonly startupTime: Date;
-  };
+  /**
+   * Timing and other internals of a request (only with `debug: true`)
+   */
+  export interface RequestDiagnostics {
+    readonly operationName: string | null;
+    /** The query came from the persisted queries map */
+    readonly persisted: boolean;
+    /** The parsed and validated document was taken from the cache */
+    readonly documentCache: 'hit' | 'miss';
+    /** Milliseconds spent in every step; a step that did not run is absent */
+    readonly timing: {
+      readonly middlewares?: number;
+      readonly body?: number;
+      readonly document?: number;
+      readonly validation?: number;
+      readonly execution?: number;
+    };
+  }
+
+  /**
+   * `extensions` of a response.
+   *
+   * - fields added by the project (`setExtension`, middleware) and `requestId`: always;
+   * - `limits`: with `limits.exposeUsage` or `debug`;
+   * - `queryTime`, `requestCounter`, `startupTime`, `diagnostics`: only with `debug`.
+   */
+  export interface GraphQLExtensions {
+    /** `X-Request-Id` of the request if it is a safe string, otherwise a random UUID */
+    readonly requestId: string;
+    readonly limits?: LimitsUsage;
+    /** Time of the whole request, ms */
+    readonly queryTime?: number;
+    /** Number of this request since the start of the server */
+    readonly requestCounter?: number;
+    readonly startupTime?: Date;
+    readonly diagnostics?: RequestDiagnostics;
+    readonly [key: string]: unknown;
+  }
+
+  /**
+   * Names of `extensions` fields set by the core. `setExtension` refuses them.
+   */
+  export const RESERVED_EXTENSIONS: readonly string[];
+
+  /**
+   * Adds a field to `extensions` of the response of the current request.
+   * Works in resolvers and middlewares; the field is sent in every mode.
+   *
+   * @example
+   * resolve: (_parent, args, context) => {
+   *   setExtension(context, 'deprecation', 'Use «ordersV2»');
+   * }
+   *
+   * Throws for a reserved name (see RESERVED_EXTENSIONS) and for a context
+   * that does not belong to a request (`sharedContext: true` is not supported).
+   */
+  export const setExtension: (context: Context, name: string, value: unknown) => void;
+
+  /**
+   * ID of the current request: the same value as `extensions.requestId`.
+   * Use it in logs to connect a response with the server log records.
+   */
+  export const getRequestId: (context: Context) => string | undefined;
 
   export type ApplicationFactory = (props: InitProps) => HTTPListener;
 
@@ -464,6 +683,111 @@ declare module '@via-profit-services/core' {
     cursor: string;
   }
 
+  /**
+   * Arguments of a connection field.
+   * `null` and `undefined` mean «not passed».
+   */
+  export interface ConnectionArgs {
+    readonly first?: number | null;
+    readonly last?: number | null;
+    readonly after?: string | null;
+    readonly before?: string | null;
+    /** Page navigation by number: used with `first` only, without cursors */
+    readonly offset?: number | null;
+  }
+
+  /**
+   * A value after a JSON round trip: dates become strings,
+   * undefined keys disappear. This is how the filters come back from a cursor.
+   */
+  export type JSONValue<T> = T extends Date
+    ? string
+    : T extends string | number | boolean | null | undefined
+      ? T
+      : T extends ReadonlyArray<infer U>
+        ? Array<JSONValue<U>>
+        : T extends object
+          ? { [K in keyof T]: JSONValue<T[K]> }
+          : string;
+
+  /**
+   * Payload of a connection cursor: the filters of the first page and
+   * the position of the record in the whole list
+   */
+  export type ConnectionCursor<Filters = Record<string, unknown>> = JSONValue<Omit<Filters, 'offset'>> & {
+    offset: number;
+  };
+
+  export interface ConnectionPayload<Filters = Record<string, unknown>> {
+    /** LIMIT of the database query */
+    readonly limit: number;
+    /** OFFSET of the database query */
+    readonly offset: number;
+    /** Filters to apply (explicit arguments win over the cursor) and the offset of the page */
+    readonly cursor: ConnectionCursor<Filters>;
+  }
+
+  export interface CursorCodecOptions {
+    /**
+     * HMAC-SHA256 key, at least 32 bytes.
+     * Derive a dedicated key, e.g. from the JWT key:
+     * `crypto.hkdfSync('sha256', jwtKey, '', 'connection-cursor', 32)`
+     */
+    readonly secret: string | Buffer;
+  }
+
+  /**
+   * Signed cursors: `<base64url JSON>.<base64url HMAC-SHA256>`.
+   * The payload is readable, but can not be changed without the secret.
+   */
+  export interface CursorCodec {
+    encode(payload: unknown): string;
+    /** Throws GraphQLError «Invalid cursor» (code BAD_USER_INPUT) */
+    decode<Payload = unknown>(cursor: string): Payload;
+  }
+
+  export interface ParseConnectionArgsOptions {
+    readonly codec: CursorCodec;
+    /** Max value of `first` / `last`. Default: no limit */
+    readonly maxPageSize?: number;
+  }
+
+  export interface BuildConnectionOptions {
+    /** The cursor returned by parseConnectionArgs */
+    readonly cursor: { readonly offset: number };
+    readonly codec: CursorCodec;
+    readonly hasPreviousPage: boolean;
+    readonly hasNextPage: boolean;
+  }
+
+  /**
+   * Creates the codec of signed connection cursors.
+   * Throws if the secret is shorter than 32 bytes.
+   */
+  export const createCursorCodec: (options: CursorCodecOptions) => CursorCodec;
+
+  /**
+   * Validates `first` / `last` / `after` / `before` / `offset` and returns
+   * `limit` / `offset` for the query and the cursor of the page.
+   * Errors are GraphQLError with code BAD_USER_INPUT.
+   *
+   * @param filters - filters of the current request; explicit (not undefined)
+   * values win over the values from the cursor
+   */
+  export const parseConnectionArgs: <Filters extends object>(
+    args: ConnectionArgs,
+    filters: Filters,
+    options: ParseConnectionArgsOptions,
+  ) => ConnectionPayload<Filters>;
+
+  /**
+   * Builds `{ edges, pageInfo }` from the records of one page
+   */
+  export const buildConnection: <Node>(
+    nodes: readonly Node[],
+    options: BuildConnectionOptions,
+  ) => CursorConnection<Node>;
+
   export interface BetweenDate {
     start: Date;
     end: Date;
@@ -481,8 +805,8 @@ declare module '@via-profit-services/core' {
     end: number;
   }
   export interface BetweenMoney {
-    start: number;
-    end: number;
+    start: bigint;
+    end: bigint;
   }
   export interface Between {
     [key: string]: BetweenDate | BetweenTime | BetweenDateTime | BetweenInt | BetweenMoney;
@@ -559,7 +883,12 @@ declare module '@via-profit-services/core' {
   class ServerError extends Error {
     readonly graphqlErrors: readonly GraphQLError[];
     readonly errorType: ServerErrorType;
-    constructor(graphqlErrors: readonly GraphQLError[], errorType: ServerErrorType);
+    readonly httpStatus: number;
+    constructor(
+      graphqlErrors: readonly GraphQLError[],
+      errorType: ServerErrorType,
+      httpStatus?: number,
+    );
   }
 
   export const FileUploadScalarType: GraphQLScalarType;
@@ -568,8 +897,9 @@ declare module '@via-profit-services/core' {
 
   /**
    * The value is stored in the smallest monetary
-   * unit (kopecks, cents, etc.). Real type - Int. E.g.
-   * For 250 USD this record returns value as 250000 (250$ * 100¢)\
+   * unit (kopecks, cents, etc.) as a `bigint`. In GraphQL it is a String
+   * containing a decimal integer. E.g.
+   * For 250 USD this record returns value as "25000" (250$ * 100¢)\
    * \
    * It is assumed that you will store the value of this type in its smallest value All calculations in the same way.
    * \
@@ -600,7 +930,6 @@ declare module '@via-profit-services/core' {
   export const JSONScalarType: GraphQLScalarType;
   export const JSONObjectScalarType: GraphQLScalarType;
 
-  export const BetweenDateInputType: GraphQLInputObjectType;
   export const BetweenDateTimeInputType: GraphQLInputObjectType;
   export const BetweenIntInputType: GraphQLInputObjectType;
   export const BetweenMoneyInputType: GraphQLInputObjectType;

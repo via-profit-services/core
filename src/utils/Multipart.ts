@@ -1,452 +1,591 @@
-import { PassThrough, Transform, TransformCallback, Writable } from 'node:stream';
+import { Readable, Writable } from 'node:stream';
 
-type MultipartOptions = {
-  headers: Record<string, any>;
+import { HttpError } from './http-error';
+
+/**
+ * Streaming multipart/form-data parser (RFC 7578, RFC 2046).
+ *
+ * How a multipart body looks like (boundary is `XyZ`):
+ *
+ * ```
+ * --XyZ\r\n                                          ← first delimiter
+ * Content-Disposition: form-data; name="operations"\r\n
+ * \r\n                                               ← end of part headers
+ * {"query": "..."}                                   ← part body
+ * \r\n--XyZ\r\n                                      ← delimiter
+ * Content-Disposition: form-data; name="0"; filename="a.png"\r\n
+ * Content-Type: image/png\r\n
+ * \r\n
+ * <binary data>
+ * \r\n--XyZ--\r\n                                    ← closing delimiter
+ * ```
+ *
+ * Key rules this parser relies on:
+ *
+ * 1. A delimiter is `CRLF + "--" + boundary`. The CRLF belongs to the
+ *    delimiter, not to the part body. Bytes `--XyZ` inside a file are NOT a
+ *    delimiter unless they are preceded by CRLF.
+ * 2. The very first delimiter has no CRLF in front of it. To treat all
+ *    delimiters the same way the parser starts with a virtual CRLF in its buffer.
+ * 3. Data arrives in chunks of arbitrary size, so a delimiter may be split
+ *    between two chunks. When a delimiter is not found, the parser keeps the
+ *    last `delimiter.length - 1` bytes in the buffer (they may be the beginning
+ *    of a delimiter) and releases only the bytes before them.
+ *
+ * The parser never holds a whole part in memory:
+ * - file data is pushed into a Readable stream as soon as it is safe;
+ *   if the consumer is slow, the parser stops accepting chunks (backpressure),
+ *   so the request socket is paused instead of buffering in RAM;
+ * - field values are collected up to `limits.fieldSize` bytes.
+ *
+ * All limits are checked while reading. On any violation the parser emits an
+ * `error` and stops.
+ *
+ * Events:
+ * - `field` (name: string, value: string)
+ * - `file` (name: string, stream: Readable, info: MultipartFileInfo)
+ * - `finish` - the closing delimiter was received and all parts were emitted
+ * - `error` (err: MultipartError)
+ */
+
+export interface MultipartLimits {
+  /** Max size of a non-file field value, bytes */
+  readonly fieldSize: number;
+  /** Max size of a single file, bytes */
+  readonly fileSize: number;
+  /** Max size of all files together, bytes */
+  readonly filesTotalSize: number;
+  /** Max number of file parts */
+  readonly files: number;
+  /** Max number of non-file parts */
+  readonly fields: number;
+  /** Max number of parts (fields + files) */
+  readonly parts: number;
+  /** Max size of the headers block of a single part, bytes */
+  readonly headerSize: number;
+}
+
+export interface MultipartFileInfo {
+  readonly filename: string;
+  readonly mimeType: string;
+  readonly encoding: string;
+}
+
+/**
+ * A malformed multipart body is 400 (Bad Request),
+ * an exceeded limit is 413 (Content Too Large).
+ */
+export class MultipartError extends HttpError {
+  constructor(message: string, status = 400) {
+    super(message, status);
+    this.name = 'MultipartError';
+  }
+}
+
+export const DEFAULT_MAX_PART_HEADER_SIZE = 16 * 1024;
+
+/**
+ * RFC 2046: 1–70 characters from a limited set, must not end with a space.
+ */
+const BOUNDARY_REGEX = /^[0-9a-zA-Z'()+_,\-./:=? ]{0,69}[0-9a-zA-Z'()+_,\-./:=?]$/;
+
+export const isValidBoundary = (boundary: unknown): boundary is string =>
+  typeof boundary === 'string' && BOUNDARY_REGEX.test(boundary);
+
+const CR = 0x0d;
+const LF = 0x0a;
+const DASH = 0x2d;
+const SPACE = 0x20;
+const TAB = 0x09;
+const EMPTY = Buffer.alloc(0);
+const CRLF = Buffer.from('\r\n');
+const HEADERS_END = Buffer.from('\r\n\r\n');
+/** RFC 2046 allows whitespace between a delimiter and its CRLF */
+const MAX_TRANSPORT_PADDING = 64;
+
+type State = 'preamble' | 'after-delimiter' | 'headers' | 'body' | 'done';
+
+type FieldPart = {
+  readonly kind: 'field';
+  readonly name: string;
+  readonly chunks: Buffer[];
+  size: number;
 };
 
+type FilePart = {
+  readonly kind: 'file';
+  readonly name: string;
+  readonly filename: string;
+  readonly stream: FileStream;
+  size: number;
+};
+
+/**
+ * Readable side of an uploaded file.
+ * When the consumer asks for more data (`_read`), the parser is resumed.
+ */
+class FileStream extends Readable {
+  constructor(private readonly onDemand: (stream: FileStream) => void) {
+    super();
+  }
+
+  override _read() {
+    this.onDemand(this);
+  }
+}
+
 export class Multipart extends Writable {
-  private readonly boundary: Buffer;
+  private readonly delimiter: Buffer;
+  private buffer: Buffer = CRLF; // virtual CRLF before the first delimiter, see rule 2
+  private state: State = 'preamble';
+  private part: FieldPart | FilePart | null = null;
 
-  private buffer = Buffer.alloc(0);
-  private state: 'SEARCH' | 'HEADERS' | 'FIELD' | 'FILE' | 'DONE' = 'SEARCH';
-
-  private headers: Record<string, string> = {};
-  private fieldName = '';
-
-  // private fileTemp: TempFile | null = null;
-  private fileStream: PassThrough | null = null;
-  private fileSize = 0;
-  private totalFiles = 0;
-  private totalSize = 0;
   private partsCount = 0;
   private fieldsCount = 0;
+  private filesCount = 0;
+  private filesTotalSize = 0;
 
-  private readonly MAX_BUFFER_SIZE = 1024 * 1024 * 2;
+  /** Stream whose internal buffer is full: wait until it is read */
+  private pausedOn: FileStream | null = null;
+  /** `_write` callback postponed because of backpressure */
+  private pendingCallback: ((error?: Error | null) => void) | null = null;
 
-  private finished = false;
-
-  // Буферы для отсроченного эмита событий
-  private pendingFields: Array<{ name: string; value: string; truncated: boolean }> = [];
-  private pendingFiles: Array<{
-    name: string;
-    stream: PassThrough;
-    info: { filename: string; mimeType: string; encoding: string; fileSize: number };
-  }> = [];
-
-  private eventsFlushed = false;
-
-  constructor(private opts: MultipartOptions) {
+  constructor(
+    boundary: string,
+    private readonly limits: MultipartLimits,
+  ) {
     super();
 
-    this.boundary = Buffer.from('');
-
-    const rawCT = opts.headers['content-type'] || opts.headers['Content-Type'] || '';
-    const ct = rawCT.toLowerCase();
-
-    if (!ct.includes('multipart/form-data')) {
-      process.nextTick(() => this.destroy(new Error('Invalid multipart content-type')));
-      return;
+    if (!isValidBoundary(boundary)) {
+      throw new MultipartError('Invalid multipart boundary');
     }
 
-    const match = rawCT.match(/boundary=([^;]+)/);
-    if (!match) {
-      process.nextTick(() => this.destroy(new Error('Missing multipart boundary')));
-      return;
-    }
-
-    this.boundary = Buffer.from(`--${match[1]}`);
+    this.delimiter = Buffer.from(`\r\n--${boundary}`);
   }
 
-  override _write(chunk: Buffer, _enc: any, cb: any) {
-    if (this.state === 'DONE') {
-      return cb();
-    }
+  /** Number of file parts received so far */
+  get filesReceived() {
+    return this.filesCount;
+  }
+
+  /** Total size of all files received so far, bytes */
+  get filesReceivedSize() {
+    return this.filesTotalSize;
+  }
+
+  override _write(
+    chunk: Buffer,
+    _encoding: BufferEncoding,
+    callback: (error?: Error | null) => void,
+  ) {
+    // The buffer contains only a small unprocessed tail here, so concat is cheap
+    this.buffer = this.buffer.length ? Buffer.concat([this.buffer, chunk]) : chunk;
 
     try {
-      this.processChunk(chunk);
-      cb();
+      this.parse();
     } catch (err) {
-      this.safeDestroy(err as Error);
-      cb();
-    }
-  }
+      callback(err instanceof Error ? err : new MultipartError(String(err)));
 
-  override _final(cb: any) {
-    if (this.state !== 'DONE') {
-      // Проверяем, что все boundaries закрыты
-      if (this.buffer.length > 0) {
-        this.safeDestroy(new Error('Malformed multipart body'));
-      } else {
-        this.finishParsing();
-      }
-    }
-    cb();
-  }
-
-  private safeDestroy(err: Error) {
-    if (this.finished) {
-      return;
-    }
-    this.finished = true;
-
-    if (this.fileStream) {
-      this.fileStream.destroy();
-      this.fileStream = null;
-    }
-
-    super.destroy(err);
-  }
-
-  private writeFileChunk(chunk: Buffer) {
-    console.log('[Multipart] writeFileChunk:', chunk.length);
-    if (!this.fileStream) {
       return;
     }
 
-    this.fileStream.write(chunk);
-    this.fileSize += chunk.length;
-    this.totalSize += chunk.length;
-  }
+    // Backpressure: do not accept the next chunk until the file consumer
+    // has read what was already pushed
+    if (this.pausedOn) {
+      this.pendingCallback = callback;
 
-  private flushEvents() {
-    if (this.eventsFlushed) return;
-    this.eventsFlushed = true;
-
-    // Сначала все поля
-    for (const field of this.pendingFields) {
-      this.emit('field', field.name, field.value, { valueTruncated: field.truncated });
-    }
-
-    // Затем все файлы
-    for (const file of this.pendingFiles) {
-      this.emit('file', file.name, file.stream, file.info);
-    }
-
-    // Очищаем буферы
-    this.pendingFields = [];
-    this.pendingFiles = [];
-  }
-
-  private finishParsing() {
-    if (this.finished) return;
-    this.finished = true;
-
-    // Сбрасываем все накопленные события
-    this.flushEvents();
-
-    if (this.fileStream) {
-      this.fileStream.end();
-      this.fileStream = null;
-    }
-
-    this.emit('finish');
-    this.state = 'DONE';
-  }
-
-  private parseHeaders(raw: string) {
-    const out: Record<string, string> = {};
-    raw.split('\r\n').forEach(line => {
-      const idx = line.indexOf(':');
-      if (idx !== -1) {
-        const k = line.slice(0, idx).trim().toLowerCase();
-        const v = line.slice(idx + 1).trim();
-        out[k] = v;
-      }
-    });
-    return out;
-  }
-
-  private parseContentDisposition(value: string) {
-    const out: Record<string, string> = {};
-    if (!value) return out;
-
-    value.split(';').forEach(part => {
-      const trimmed = part.trim();
-      const eqIndex = trimmed.indexOf('=');
-      if (eqIndex === -1) return;
-
-      const k = trimmed.slice(0, eqIndex).trim();
-      let v = trimmed.slice(eqIndex + 1).trim();
-      // Убираем кавычки
-      if (v.startsWith('"') && v.endsWith('"')) {
-        v = v.slice(1, -1);
-      }
-      out[k] = v;
-    });
-
-    return out;
-  }
-
-  private processChunk(chunk: Buffer) {
-    if (!this.boundary) {
-      this.safeDestroy(new Error('Multipart parser used without boundary'));
       return;
     }
 
-    if (this.state === 'DONE') {
-      return;
-    }
-
-    if (this.buffer.length + chunk.length > this.MAX_BUFFER_SIZE) {
-      this.safeDestroy(new Error('Multipart buffer overflow'));
-      return;
-    }
-
-    this.buffer = Buffer.concat([this.buffer, chunk]);
-
-    while (true) {
-      //
-      // SEARCH — ищем начало части
-      //
-      if (this.state === 'SEARCH') {
-        const boundaryInfo = this.findNextBoundary(this.buffer, this.boundary);
-
-        if (!boundaryInfo) {
-          // Не нашли boundary, ждем следующий chunk
-          return;
-        }
-
-        const { endPos, isClosing } = boundaryInfo;
-
-        if (isClosing) {
-          // Это closing boundary, заканчиваем парсинг
-          this.buffer = this.buffer.slice(endPos);
-          this.finishParsing();
-          return;
-        }
-
-        // Удаляем все до конца boundary
-        this.buffer = this.buffer.slice(endPos);
-
-        // Удаляем следующий \r\n если есть
-        if (this.buffer[0] === 13 && this.buffer[1] === 10) {
-          this.buffer = this.buffer.slice(2);
-        }
-
-        this.partsCount++;
-        this.state = 'HEADERS';
-        continue;
-      }
-
-      //
-      // HEADERS
-      //
-      if (this.state === 'HEADERS') {
-        console.log('HEADERS: looking for end of headers');
-        console.log('Buffer for headers:', this.buffer.slice(0, 200).toString());
-
-        const idx = this.buffer.indexOf('\r\n\r\n');
-        if (idx === -1) {
-          console.log('HEADERS: waiting for end of headers, buffer length:', this.buffer.length);
-          return;
-        }
-
-        console.log('HEADERS: found headers end at idx:', idx);
-
-        const raw = this.buffer.slice(0, idx).toString();
-        console.log('HEADERS raw content:', raw);
-
-        this.buffer = this.buffer.slice(idx + 4);
-
-        this.headers = this.parseHeaders(raw);
-        const cd = this.parseContentDisposition(this.headers['content-disposition']);
-
-        console.log('HEADERS: parsed field:', cd.name, 'has filename:', !!cd.filename);
-
-        if (!cd.name) {
-          this.safeDestroy(new Error('Malformed Content-Disposition'));
-          return;
-        }
-
-        this.fieldName = cd.name;
-
-        if (cd.filename) {
-          this.totalFiles++;
-          this.state = 'FILE';
-          this.fileStream = new PassThrough();
-          this.fileSize = 0;
-        } else {
-          this.fieldsCount++;
-
-          console.log('Starting FIELD for field:', this.fieldName);
-          this.state = 'FIELD';
-        }
-        continue; // Продолжаем цикл, чтобы сразу обработать FIELD или FILE
-      }
-
-      //
-      // FIELD
-      //
-      if (this.state === 'FIELD') {
-        console.log(
-          `FIELD: processing field "${this.fieldName}", buffer length: ${this.buffer.length}`,
-        );
-
-        const boundaryInfo = this.findNextBoundary(this.buffer, this.boundary);
-        if (!boundaryInfo) {
-          console.log(`FIELD: boundary not found for field "${this.fieldName}"`);
-          return;
-        }
-
-        const { position, hasCRLF } = boundaryInfo;
-        console.log(`FIELD: found boundary at position ${position}`);
-
-        // Значение находится между началом буфера и boundary
-        // Вычитаем 2 если есть \r\n перед boundary
-        let valueEnd = position;
-        if (hasCRLF) {
-          valueEnd = position; // position уже указывает на \r\n
-        }
-
-        const value = this.buffer.slice(0, valueEnd).toString();
-
-        console.log(
-          `FIELD: extracted value length ${value.length}, preview: ${value.slice(0, 100)}`,
-        );
-
-        this.pendingFields.push({
-          name: this.fieldName,
-          value,
-          truncated: false,
-        });
-
-        // Удаляем значение поля из буфера
-        let bytesToRemove = valueEnd;
-        if (hasCRLF) {
-          bytesToRemove += 2; // Удаляем \r\n
-        }
-
-        this.buffer = this.buffer.slice(bytesToRemove);
-        this.state = 'SEARCH';
-        continue; // Продолжаем цикл для обработки следующей части
-      }
-
-      //
-      // FILE
-      //
-      if (this.state === 'FILE') {
-        console.log('[DEBUG] BUFFER LENGTH:', this.buffer.length);
-        console.log('[DEBUG] BUFFER HEAD:', this.buffer.slice(0, 32));
-        console.log('[DEBUG] BUFFER TAIL:', this.buffer.slice(-32));
-        const boundaryInfo = this.findNextBoundary(this.buffer, this.boundary);
-
-        if (!boundaryInfo) {
-          this.writeFileChunk(this.buffer);
-          this.buffer = Buffer.alloc(0);
-          return;
-        }
-
-        const { position, hasCRLF } = boundaryInfo;
-
-        // Данные файла находятся между началом буфера и boundary
-        let dataEnd = position;
-        if (hasCRLF) {
-          dataEnd = position; // position уже указывает на \r\n
-        }
-
-        const data = this.buffer.slice(0, dataEnd);
-        this.writeFileChunk(data);
-
-        this.fileStream?.end();
-
-        const cd = this.parseContentDisposition(this.headers['content-disposition']);
-        this.pendingFiles.push({
-          name: this.fieldName,
-          stream: this.fileStream!,
-          info: {
-            filename: cd.filename || '',
-            mimeType: this.headers['content-type'] || 'application/octet-stream',
-            encoding: '7bit',
-            fileSize: this.fileSize,
-          },
-        });
-
-        this.fileStream = null;
-        // this.fileTemp = null;
-
-        // Удаляем данные файла из буфера
-        let bytesToRemove = dataEnd;
-        if (hasCRLF) {
-          bytesToRemove += 2; // Удаляем \r\n
-        }
-
-        this.buffer = this.buffer.slice(bytesToRemove);
-        this.state = 'SEARCH';
-        continue; // Продолжаем цикл
-      }
-    }
+    callback();
   }
 
-  private findNextBoundary(buffer: Buffer, boundary: Buffer) {
-
-    // boundary уже содержит "--"
-    const normal = Buffer.concat([Buffer.from('\r\n'), boundary]);
-    const first = boundary; // первая часть начинается прямо с boundary
-
-    // 1. boundary в начале (первая часть)
-    if (buffer.indexOf(first) === 0) {
-      const isClosing =
-        buffer.length >= first.length + 2 &&
-        buffer[first.length] === 45 &&
-        buffer[first.length + 1] === 45;
-
-      return {
-        position: 0,
-        startPos: 0,
-        endPos: first.length + (isClosing ? 2 : 0),
-        isClosing,
-        hasCRLF: false,
-      };
-    }
-
-    // 2. boundary после CRLF
-    const pos = buffer.indexOf(normal);
-    if (pos !== -1) {
-      const boundaryStart = pos + 2; // пропускаем CRLF
-
-      const isClosing =
-        buffer.length >= boundaryStart + boundary.length + 2 &&
-        buffer[boundaryStart + boundary.length] === 45 &&
-        buffer[boundaryStart + boundary.length + 1] === 45;
-
-      console.log('[DEBUG] SEARCH BOUNDARY:', boundary.toString());
-      console.log(
-        '[DEBUG] RAW BUFFER AROUND POS:',
-        buffer.slice(pos - 10, pos + boundary.length + 10),
+  override _final(callback: (error?: Error | null) => void) {
+    if (this.state !== 'done') {
+      callback(
+        new MultipartError('Unexpected end of multipart body: the closing boundary is missing'),
       );
 
-
-      return {
-        position: pos,
-        startPos: pos,
-        endPos: boundaryStart + boundary.length + (isClosing ? 2 : 0),
-        isClosing,
-        hasCRLF: true,
-      };
+      return;
     }
 
-    return null;
+    callback();
   }
-}
 
-export class NormalizeLineEndings extends Transform {
-  private lastByte: number | null = null;
-
-  _transform(chunk: Buffer, _enc: BufferEncoding, cb: TransformCallback) {
-    const out: number[] = [];
-
-    for (let i = 0; i < chunk.length; i++) {
-      const byte = chunk[i];
-
-      if (byte === 0x0a && this.lastByte !== 0x0d) {
-        out.push(0x0d, 0x0a);
+  override _destroy(error: Error | null, callback: (error?: Error | null) => void) {
+    if (this.part?.kind === 'file') {
+      const { stream } = this.part;
+      // Emitting 'error' on a stream without 'error' listeners crashes the
+      // process, so pass the error only if somebody is listening
+      if (stream.listenerCount('error') > 0) {
+        stream.destroy(error ?? new MultipartError('Multipart parsing was aborted'));
       } else {
-        out.push(byte);
+        stream.destroy();
+      }
+    }
+
+    this.part = null;
+    this.buffer = EMPTY;
+    this.pendingCallback = null;
+    this.pausedOn = null;
+    callback(error);
+  }
+
+  private resume(stream: FileStream) {
+    if (this.pausedOn !== stream) {
+      return;
+    }
+
+    this.pausedOn = null;
+    const callback = this.pendingCallback;
+    this.pendingCallback = null;
+    callback?.();
+  }
+
+  private parse() {
+    for (;;) {
+      switch (this.state) {
+        case 'preamble': {
+          // Everything before the first delimiter is ignored (RFC 2046 preamble)
+          const index = this.buffer.indexOf(this.delimiter);
+          if (index === -1) {
+            this.keepTail(this.delimiter.length - 1);
+
+            return;
+          }
+
+          this.buffer = this.buffer.subarray(index + this.delimiter.length);
+          this.state = 'after-delimiter';
+          break;
+        }
+
+        case 'after-delimiter': {
+          // `--` - closing delimiter, otherwise [whitespace] CRLF and a new part
+          if (this.buffer.length < 2) {
+            return;
+          }
+
+          if (this.buffer[0] === DASH && this.buffer[1] === DASH) {
+            this.finishBody();
+
+            return;
+          }
+
+          let i = 0;
+          while (i < this.buffer.length && (this.buffer[i] === SPACE || this.buffer[i] === TAB)) {
+            i += 1;
+          }
+
+          if (i > MAX_TRANSPORT_PADDING) {
+            throw new MultipartError('Malformed multipart body: invalid boundary line');
+          }
+
+          if (this.buffer.length < i + 2) {
+            return;
+          }
+
+          if (this.buffer[i] !== CR || this.buffer[i + 1] !== LF) {
+            throw new MultipartError(
+              'Malformed multipart body: a boundary must be followed by CRLF (bare LF line breaks are not allowed)',
+            );
+          }
+
+          this.buffer = this.buffer.subarray(i + 2);
+          this.partsCount += 1;
+          if (this.partsCount > this.limits.parts) {
+            throw new MultipartError(
+              `Multipart request exceeds the limit of ${this.limits.parts} parts`,
+              413,
+            );
+          }
+
+          this.state = 'headers';
+          break;
+        }
+
+        case 'headers': {
+          // A part without headers starts with CRLF right away
+          const index = this.buffer.subarray(0, 2).equals(CRLF)
+            ? -2
+            : this.buffer.indexOf(HEADERS_END);
+
+          if (index === -1) {
+            if (this.buffer.length > this.limits.headerSize) {
+              throw new MultipartError(
+                `Multipart part headers exceed the ${this.limits.headerSize} byte size limit`,
+                413,
+              );
+            }
+
+            return;
+          }
+
+          const headers = index === -2 ? '' : this.buffer.subarray(0, index).toString('utf8');
+          this.buffer = this.buffer.subarray(index === -2 ? 2 : index + HEADERS_END.length);
+          this.openPart(parseHeaders(headers));
+          this.state = 'body';
+          break;
+        }
+
+        case 'body': {
+          const index = this.buffer.indexOf(this.delimiter);
+
+          if (index === -1) {
+            // Release everything except a tail that may be the start of a delimiter
+            const safeLength = this.buffer.length - (this.delimiter.length - 1);
+            if (safeLength > 0) {
+              this.partData(this.buffer.subarray(0, safeLength));
+              this.keepTail(this.delimiter.length - 1);
+            }
+
+            return;
+          }
+
+          if (index > 0) {
+            this.partData(this.buffer.subarray(0, index));
+          }
+
+          this.buffer = this.buffer.subarray(index + this.delimiter.length);
+          this.closePart();
+          this.state = 'after-delimiter';
+          break;
+        }
+
+        case 'done':
+        default:
+          // RFC 2046 epilogue: ignored
+          this.buffer = EMPTY;
+
+          return;
+      }
+    }
+  }
+
+  /**
+   * Keeps only the last `length` bytes. They are copied, so the large
+   * incoming chunk can be garbage-collected.
+   */
+  private keepTail(length: number) {
+    if (this.buffer.length > length) {
+      this.buffer = Buffer.from(this.buffer.subarray(this.buffer.length - length));
+    }
+  }
+
+  private openPart(headers: Record<string, string>) {
+    const disposition = parseContentDisposition(headers['content-disposition'] || '');
+
+    if (!disposition || disposition.type !== 'form-data' || !disposition.params.name) {
+      throw new MultipartError(
+        'Malformed multipart part: Content-Disposition "form-data" with a "name" is required',
+      );
+    }
+
+    const { name } = disposition.params;
+    const filename = disposition.params['filename*'] ?? disposition.params.filename;
+
+    // A part is a file when it has the filename parameter, even an empty one
+    if (typeof filename === 'undefined') {
+      this.fieldsCount += 1;
+      if (this.fieldsCount > this.limits.fields) {
+        throw new MultipartError(
+          `Multipart request exceeds the limit of ${this.limits.fields} non-file field parts`,
+          413,
+        );
       }
 
-      this.lastByte = byte;
+      this.part = { kind: 'field', name, chunks: [], size: 0 };
+
+      return;
     }
 
-    cb(null, Buffer.from(out));
+    this.filesCount += 1;
+    if (this.filesCount > this.limits.files) {
+      throw new MultipartError(
+        `Multipart request exceeds the limit of ${this.limits.files} files`,
+        413,
+      );
+    }
+
+    const stream = new FileStream(s => this.resume(s));
+    // If the consumer destroyed the stream, it will never ask for data again
+    stream.once('close', () => this.resume(stream));
+    const info: MultipartFileInfo = {
+      filename: sanitizeFilename(filename),
+      mimeType: (headers['content-type'] || 'application/octet-stream')
+        .split(';')[0]
+        .trim()
+        .toLowerCase(),
+      encoding: (headers['content-transfer-encoding'] || '7bit').toLowerCase(),
+    };
+
+    this.part = { kind: 'file', name, filename: info.filename, stream, size: 0 };
+    this.emit('file', name, stream, info);
+  }
+
+  private partData(data: Buffer) {
+    const { part } = this;
+    if (!part) {
+      return;
+    }
+
+    part.size += data.length;
+
+    if (part.kind === 'field') {
+      if (part.size > this.limits.fieldSize) {
+        throw new MultipartError(
+          `The «${part.name}» multipart field value exceeds the ${this.limits.fieldSize} byte size limit`,
+          413,
+        );
+      }
+
+      part.chunks.push(Buffer.from(data));
+
+      return;
+    }
+
+    this.filesTotalSize += data.length;
+
+    if (part.size > this.limits.fileSize) {
+      throw new MultipartError(
+        `File «${part.filename}» exceeds the ${this.limits.fileSize} byte size limit`,
+        413,
+      );
+    }
+
+    if (this.filesTotalSize > this.limits.filesTotalSize) {
+      throw new MultipartError(
+        `Total upload size exceeds the ${this.limits.filesTotalSize} byte size limit`,
+        413,
+      );
+    }
+
+    // push() returns false when the stream's internal buffer is full
+    if (!part.stream.push(data)) {
+      this.pausedOn = part.stream;
+    }
+  }
+
+  private closePart() {
+    const { part } = this;
+    this.part = null;
+
+    if (part?.kind === 'field') {
+      this.emit('field', part.name, Buffer.concat(part.chunks).toString('utf8'));
+    }
+
+    if (part?.kind === 'file') {
+      part.stream.push(null);
+    }
+  }
+
+  private finishBody() {
+    this.state = 'done';
+    this.buffer = EMPTY;
   }
 }
+
+/**
+ * Parses the headers block of a part. Header names are lower-cased.
+ */
+const parseHeaders = (raw: string): Record<string, string> => {
+  const headers: Record<string, string> = Object.create(null);
+
+  for (const line of raw.split('\r\n')) {
+    const colon = line.indexOf(':');
+    if (colon > 0) {
+      const name = line.slice(0, colon).trim().toLowerCase();
+      if (!(name in headers)) {
+        headers[name] = line.slice(colon + 1).trim();
+      }
+    }
+  }
+
+  return headers;
+};
+
+/**
+ * `form-data; name="file"; filename="photo.png"` →
+ * `{ type: 'form-data', params: { name: 'file', filename: 'photo.png' } }`
+ *
+ * Supports quoted values with backslash escapes and the RFC 5987
+ * `filename*=UTF-8''%D1%84.png` form.
+ */
+const parseContentDisposition = (value: string) => {
+  const semicolon = value.indexOf(';');
+  const type = (semicolon === -1 ? value : value.slice(0, semicolon)).trim().toLowerCase();
+
+  if (!type) {
+    return null;
+  }
+
+  const params: Record<string, string> = Object.create(null);
+  let i = semicolon === -1 ? value.length : semicolon + 1;
+
+  while (i < value.length) {
+    const eq = value.indexOf('=', i);
+    if (eq === -1) {
+      break;
+    }
+
+    const name = value.slice(i, eq).trim().toLowerCase();
+    i = eq + 1;
+    while (value[i] === ' ') {
+      i += 1;
+    }
+
+    let paramValue = '';
+    if (value[i] === '"') {
+      i += 1;
+      while (i < value.length && value[i] !== '"') {
+        if (value[i] === '\\' && i + 1 < value.length) {
+          i += 1;
+        }
+        paramValue += value[i];
+        i += 1;
+      }
+      const next = value.indexOf(';', i);
+      i = next === -1 ? value.length : next + 1;
+    } else {
+      const next = value.indexOf(';', i);
+      paramValue = value.slice(i, next === -1 ? value.length : next).trim();
+      i = next === -1 ? value.length : next + 1;
+    }
+
+    if (name === 'filename*') {
+      const decoded = decodeExtendedValue(paramValue);
+      if (decoded !== null) {
+        params[name] = decoded;
+      }
+    } else if (name && !(name in params)) {
+      params[name] = paramValue;
+    }
+  }
+
+  return { type, params };
+};
+
+/**
+ * RFC 5987: `UTF-8''%D1%84%D0%B0%D0%B9%D0%BB.png` → `файл.png`
+ */
+const decodeExtendedValue = (value: string): string | null => {
+  const match = /^([\w!#$%&+^`{}~-]+)'[\w-]*'(.*)$/.exec(value);
+  if (!match || match[1].toLowerCase() !== 'utf-8') {
+    return null;
+  }
+
+  try {
+    return decodeURIComponent(match[2]);
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * The filename comes from the client and must never be trusted.
+ * Some clients send a full path (`C:\Users\...\photo.png`): only the last
+ * segment is kept. Control characters are removed.
+ * The result is still NOT safe to be used as a path on the server.
+ */
+const sanitizeFilename = (filename: string) =>
+  // eslint-disable-next-line no-control-regex
+  (filename.split(/[/\\]/).pop() || '').replace(/[\u0000-\u001f\u007f]/g, '').trim();

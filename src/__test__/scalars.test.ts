@@ -3,24 +3,23 @@ import { URL } from 'node:url';
 import configTest, { sendGraphQLRequest } from './config-test';
 import schema from './schema';
 
-const port = 8082;
 const endpoint = '/graphql';
-const { startServer, stopServer } = configTest({ schema, port, endpoint });
+const srv = configTest({ schema, endpoint });
 
 describe('DateTime scalar', () => {
   beforeAll(async () => {
-    await startServer();
+    await srv.startServer();
   });
 
   afterAll(async () => {
-    await stopServer();
+    await srv.stopServer();
   });
 
   test('serialize: Date → ISO-UTC string', async () => {
     const date = new Date(Date.UTC(2026, 2, 5, 12, 30, 0)); // 2026-03-05T12:30:00Z
 
     const { parsedBody } = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body: JSON.stringify({
         query: 'query($d: DateTime!) { echoDateTime(dt: $d) }',
@@ -37,7 +36,7 @@ describe('DateTime scalar', () => {
     const iso = '2026-03-05T10:15:20.000Z';
 
     const { parsedBody } = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body: JSON.stringify({
         query: 'query($d: DateTime!) { echoDateTime(dt: $d) }',
@@ -50,28 +49,30 @@ describe('DateTime scalar', () => {
     expect(parsedBody.data.echoDateTime).toBe(iso);
   });
 
-  test('parseValue: reject string without Z', async () => {
-    const bad = '2026-03-05T10:15:20';
+  // Mobile apps send DateTime.now().toIso8601String(): local time without a zone
+  test('parseValue: accept local ISO string without a zone', async () => {
+    const local = '2026-03-05T10:15:20.123456';
 
     const { parsedBody } = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body: JSON.stringify({
         query: 'query($d: DateTime!) { echoDateTime(dt: $d) }',
-        variables: { d: bad },
+        variables: { d: local },
       }),
       headers: { 'Content-Type': 'application/json' },
     });
 
-    expect(parsedBody.errors).toBeDefined();
-    expect((parsedBody.errors as any)[0].message).toMatch(/ISO-UTC/);
+    // interpreted in the time zone of the server, returned as UTC
+    expect(parsedBody.errors).toBeUndefined();
+    expect(parsedBody.data.echoDateTime).toBe(new Date(local).toISOString());
   });
 
   test('parseValue: reject invalid date', async () => {
     const bad = '2026-13-99T99:99:99.999Z';
 
     const { parsedBody } = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body: JSON.stringify({
         query: 'query($d: DateTime!) { echoDateTime(dt: $d) }',
@@ -88,7 +89,7 @@ describe('DateTime scalar', () => {
     const seconds = Math.floor(Date.now() / 1000); // invalid
 
     const { parsedBody } = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body: JSON.stringify({
         query: 'query($d: DateTime!) { echoDateTime(dt: $d) }',
@@ -105,7 +106,7 @@ describe('DateTime scalar', () => {
     const ms = Date.UTC(2026, 2, 5, 12, 0, 0); // valid
 
     const { parsedBody } = await sendGraphQLRequest({
-      port,
+      port: srv.port,
       endpoint,
       body: JSON.stringify({
         query: 'query($d: DateTime!) { echoDateTime(dt: $d) }',
@@ -120,7 +121,7 @@ describe('DateTime scalar', () => {
 
   test('parseLiteral: valid literal string', done => {
     const url = new URL(
-      `http://localhost:${port}${endpoint}?query=query{echoDateTime(dt:"2026-03-05T12:00:00.000Z")}`,
+      `http://localhost:${srv.port}${endpoint}?query=query{echoDateTime(dt:"2026-03-05T12:00:00.000Z")}`,
     );
 
     http.get(url, res => {
@@ -141,9 +142,9 @@ describe('DateTime scalar', () => {
     });
   });
 
-  test('parseLiteral: reject literal without Z', done => {
+  test('parseLiteral: reject a non-ISO literal', done => {
     const url = new URL(
-      `http://localhost:${port}${endpoint}?query=query{echoDateTime(dt:"2026-03-05T12:00:00")}`,
+      `http://localhost:${srv.port}${endpoint}?query=query{echoDateTime(dt:"05.03.2026 12:00")}`,
     );
 
     http.get(url, res => {
@@ -155,7 +156,7 @@ describe('DateTime scalar', () => {
 
         try {
           expect(errors).toBeDefined();
-          expect(errors[0].message).toMatch(/ISO-UTC/);
+          expect(errors[0].message).toMatch(/ISO 8601/);
           done();
         } catch (err) {
           done(err);

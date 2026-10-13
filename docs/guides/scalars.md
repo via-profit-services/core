@@ -1,328 +1,158 @@
-# GraphQL types and scalars of @via-profit-services/core
+# Скаляры и типы
 
-## Table of contents
-
-- [Scalars](#scalars)
-  - [Money](#money)
-  - [DateTime](#datetime)
-  - [Date](#date)
-  - [Time](#time)
-  - [URL](#url)
-  - [EmailAddress](#emailaddress)
-  - [JSON](#json)
-  - [JSONObject](#jsonobject)
-  - [FileUpload](#fileupload)
-  - [Void](#void)
-- [Types](#types)
-  - [Node](#node)
-  - [Edge](#edge)
-  - [Connection](#connection)
-  - [PageInfo](#pageinfo)
-  - [OrderDirection](#orderdirection)
-  - [Error](#error)
-  - BigInt
-  - BetweenDate
-  - BetweenTime
-  - BetweenDateTime
-  - BetweenInt
-  - BetweenMoney
-- [Full source listing of types](#full-source-listing-of-types)
-
-## Scalars
-
-### Money
-
-**Money** - The value is stored in the smallest monetary unit (kopecks, cents, etc.). Real type - Int. E.g. For 250 USD this record returns value as 250000 (250$ \* 100¢)
-
-It is assumed that you will store the value of this type in its smallest value All calculations in the same way.
-
-Usage example:
+Ядро экспортирует готовые скаляры, input-типы и интерфейсы. Скаляр нужно подключить к схеме: использовать его в поле или аргументе либо перечислить в `types` схемы.
 
 ```ts
-import { GraphQLObjectType, GraphQLNonNull, GraphQLID } from 'graphql';
-import { Context, MoneyScalarType } from '@via-profit-services/core';
+import { DateTimeScalarType, MoneyScalarType } from '@via-profit-services/core';
+```
 
-const Ticket = new GraphQLObjectType<unknown, Context>({
+У каждого скаляра три направления преобразования:
+- **вход переменной** (`parseValue`): значение из `variables`;
+- **вход литерала** (`parseLiteral`): значение, записанное прямо в тексте запроса;
+- **выход** (`serialize`): значение, которое вернул резолвер.
+
+Вход проверяется строго, а выход мягко: на выходе данные приходят из вашего кода и БД, ломать из-за них ответы не нужно.
+
+## Скаляры
+
+### `DateTime`
+
+Дата и время. Внутри резолверов — объект `Date`, на выходе — всегда UTC.
+
+| | Принимается | Пример |
+|---|---|---|
+| Вход: строка | ISO 8601 с зоной или без неё; дата или дата-время; реальная календарная дата | `"2026-03-05T10:15:20.123Z"`, `"2026-03-05T10:15:20+05:00"`, `"2026-03-05T10:15:20.123456"`, `"2026-03-05"` |
+| Вход: число | Timestamp в **миллисекундах**, по модулю ≥ 1e11 (1973-03-03 и позже, 1966-10-25 и раньше) | `1772705720000` |
+| Выход | `Date`, любая строка, понятная `new Date()`, число мс | → `"2026-03-05T10:15:20.000Z"` |
+
+**Строка без часового пояса** принимается для совместимости с мобильными приложениями: Dart-метод `DateTime.now().toIso8601String()` возвращает локальное время без зоны. JavaScript интерпретирует такую строку **в часовом поясе сервера**, а строку только с датой (`"2026-03-05"`) — как полночь UTC. Если часовой пояс клиента отличается от серверного, время сдвинется. Поэтому клиентам рекомендуется отправлять UTC:
+
+```dart
+DateTime.now().toUtc().toIso8601String()   // Dart: "2026-03-05T05:15:20.123456Z"
+```
+
+```ts
+new Date().toISOString()                   // JS:   "2026-03-05T05:15:20.123Z"
+```
+
+Отклоняется на входе:
+- строки не в ISO 8601: `"05.03.2026"`, `"March 5, 2026"`, `"1"` (`new Date('1')` превратил бы её в 2001 год);
+- несуществующие даты и время: `"2026-02-30"` (`new Date()` молча превратил бы её в 2 марта), `"…T24:30:00Z"`;
+- `1772705720`: это секунды. Числа меньше 1e11 считаются ошибкой клиента, иначе дата незаметно превратится в январь 1970.
+
+### `Money`
+
+Денежная сумма в **минимальных единицах** (копейках, центах). Внутри резолверов — `bigint`, в GraphQL — строка.
+
+```
+250 ₽  →  "25000"
+```
+
+| | Принимается |
+|---|---|
+| Вход | Только строка из десятичных цифр с необязательным минусом, до 30 цифр: `"25000"`, `"-100"` |
+| Выход | `bigint`, строка из цифр, целое число (safe integer) → строка |
+
+Отклоняется: `""`, `" 12 "`, `"0x10"`, `"1.50"`, `"1e3"`, числа (`25000` без кавычек).
+
+Почему `bigint` и строка: дробные числа JavaScript не подходят для денег (`0.1 + 0.2 !== 0.3`), а JSON не умеет передавать `bigint`.
+
+```ts
+const Ticket = new GraphQLObjectType({
   name: 'Ticket',
   fields: {
-    price: {
-      type: new GraphQLNonNull(MoneyScalarType),
-    },
-    id: {
-      type: new GraphQLNonNull(GraphQLID),
-    },
+    price: { type: new GraphQLNonNull(MoneyScalarType), resolve: ticket => ticket.priceKopecks },
   },
 });
-
-export default Ticket;
 ```
 
-### DateTime
+### `BigInt`
 
-**DateTime** - Use JavaScript Date object for date/time fields.
+Целое число произвольного размера, до 100 цифр. Внутри — `bigint`.
 
-### Date
+| | Принимается |
+|---|---|
+| Вход | Целое число JSON (safe integer) или строка из цифр |
+| Выход | Число, если помещается в `Number.MAX_SAFE_INTEGER`, иначе строка |
 
-**Date** - Use JavaScript Date object for date fields.
+### `Time`
 
-### Time
+Время суток.
 
-**Time** - And Time type.
+| | Принимается |
+|---|---|
+| Вход | `H:MM`, `HH:MM`, `HH:MM:SS` от `00:00` до `23:59:59`, а также `24:00` / `24:00:00` (конец суток) |
+| Выход | Всегда `HH:MM:SS`: `"9:05"` → `"09:05:00"` |
 
-### URL
+### `EmailAddress`
 
-**URL** - A field which value conforms to the standard URL format as specified in [RFC3986](https://www.ietf.org/rfc/rfc3986.txt).
+Строка в формате e-mail. Проверяется регулярным выражением, существование адреса не проверяется.
 
-### EmailAddress
+### `URL`
 
-**EmailAddress** - A field which value conforms to the standard internet email address format as specified in [RFC822](https://www.w3.org/Protocols/rfc822/).
+Абсолютный URL. Внутри резолверов — объект `URL`, на выходе — строка.
 
-### JSON
+Схемы `javascript:` и `vbscript:` отклоняются: такой URL, выведенный ссылкой на фронтенде, приводит к XSS.
 
-**JSON** - The JSON scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+### `JSON` и `JSONObject`
 
-### JSONObject
+- `JSON` — любое JSON-значение без проверки.
+- `JSONObject` — только объект (не массив, не примитив).
 
-**JSONObject** - The JSONObject scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+### `Void`
 
-### Void
+Всегда `null`. Для мутаций, которым нечего возвращать.
 
-**Void** - Represents NULL values
+### `FileUpload`
 
-### FileUpload
+Загруженный файл. Работает только в переменных multipart-запроса. В резолвере значение имеет тип `UploadedFile` (`Promise<FilePayload>`). См. [Загрузка файлов](./file-uploads.md).
 
-**FileUpload** - The scalar as specified GraphQL multipart request [specification](https://github.com/jaydenseric/graphql-multipart-request-spec#graphql-multipart-request-specification)
+## Input-типы «диапазон»
 
-_Examples of usage:_
+Все поля обязательные.
+
+| Тип | Поля |
+|-----|------|
+| `BetweenDateTimeInputType` | `start: DateTime!`, `end: DateTime!` |
+| `BetweenIntInputType` | `start: Int!`, `end: Int!` |
+| `BetweenMoneyInputType` | `start: Money!`, `end: Money!` |
+| `BetweenTimeInputType` | `start: Time!`, `end: Time!` |
 
 ```graphql
-type Query {
-  user(id: ID!): User
-}
-
-type Mutation {
-  update (id: ID!): Void
-}
-
-type User {
-  id: ID!
-  avatar: URL! """ <-- https://example.com/foo/bar"""
-  createdAt: DateTime! """ <-- 2021-10-07T12:31:08+05:00"""
-  email: EmailAddress! """ <-- user@example.com"""
-  meta: JSON! """ <-- [{ foo: "bar" }]"""
-}
+query { orders(createdAt: { start: "2026-01-01T00:00:00Z", end: "2026-02-01T00:00:00Z" }) { id } }
 ```
 
-## Types
+## Интерфейсы и типы
 
-### Node
+| Экспорт | SDL | Назначение |
+|---------|-----|------------|
+| `NodeInterfaceType` | `interface Node { id: ID! }` | Объект с глобальным идентификатором |
+| `EdgeInterfaceType` | `interface Edge { node: Node! cursor: String! }` | Элемент списка с курсором |
+| `ConnectionInterfaceType` | `interface Connection { pageInfo: PageInfo! edges: [Edge]! }` | Список с пагинацией |
+| `PageInfoType` | `type PageInfo { hasPreviousPage: Boolean! hasNextPage: Boolean! startCursor: String endCursor: String }` | Состояние пагинации |
+| `OrderDirectionType` | `enum OrderDirection { ASC DESC }` (значения `'asc'`, `'desc'`) | Направление сортировки |
+| `ErrorInterfaceType` | `interface Error { name: String! msg: String! }` | Ошибки как часть данных (union-результаты мутаций) |
 
-The `Node` **interface** is used to declare a type that must have an `ID`. Node is also used in connections [connections](connections.md)
+Как собрать из них пагинацию — в разделе [Connections](./connections.md).
 
-According to the specification, the Node must contain at least an `id` field with the `ID!` type
-
-Interface implements the SDL:
-
-```graphql
-interface Node {
-  id: String!
-}
-```
-
-Usage example:
-
-```ts
-import { GraphQLID, GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql';
-import { Context, DateTimeScalarType, NodeInterfaceType } from '@via-profit-services/core';
-
-const MyNode = new GraphQLObjectType<unknown, Context>({
-  name: 'MyNode',
-  interfaces: () => [NodeInterfaceType],
-  fields: () => ({
-    id: { type: new GraphQLNonNull(GraphQLID) },
-    name: { type: new GraphQLNonNull(GraphQLString) },
-  }),
-});
-
-export default MyNode;
-```
-
-### Edge
-
-The `Edge` **interface** is used to declare [connections](connections.md). Each edge must contain a key `node` and `cursor`. (see [Connection spec.](https://relay.dev/graphql/connections.htm) for more details).
-According to the specification, the Edge must contain at least an `cursor` field with the type of `String!` and the `node` field with type of your Node.
-
-Interface implements the SDL:
-
-```graphql
-interface Edge {
-  node: SomeNode!
-  cursor: String!
-}
-```
-
-Usage example:
-
-```ts
-import { GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql';
-import { EdgeInterfaceType } from '@via-profit-services/core';
-
-import MyNode from './MyNode';
-
-const MyEdge = new GraphQLObjectType({
-  name: 'MyEdge',
-  interfaces: [EdgeInterfaceType],
-  fields: () => ({
-    cursor: { type: new GraphQLNonNull(GraphQLString) },
-    node: { type: new GraphQLNonNull(MyNode) },
-  }),
-});
-
-export default MyEdge;
-```
-
-### Connection
-
-The `Connection` **interface** is used to declare connections. more info - [connections](connections.md). Each connection must contain a key `totalCount`, `pageInfo` and `edges` (see [Connection spec.](https://relay.dev/graphql/connections.htm) for more details).
-
-Interface implements the SDL:
-
-```graphql
-interface Connection {
-  pageInfo: PageInfo!
-  edges: [Edge!]!
-}
-```
-
-Usage example:
-
-```ts
-import { GraphQLList, GraphQLNonNull, GraphQLObjectType } from 'graphql';
-import { PageInfoType, ConnectionInterfaceType } from '@via-profit-services/core';
-
-import MyEdge from './MyEdge';
-
-const MyConnection = new GraphQLObjectType({
-  name: 'MyConnection',
-  interfaces: [ConnectionInterfaceType],
-  fields: () => ({
-    pageInfo: { type: new GraphQLNonNull(PageInfoType) },
-    edges: {
-      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(MyEdge))),
-    },
-  }),
-});
-
-export default MyConnection;
-```
-
-### PageInfo
-
-The `PageInfo` **type** is used to declare [connections](#connections). (see [Connection spec.](https://relay.dev/graphql/connections.htm) for more details)
-Interface implements the SDL:
-
-```graphql
-type PageInfo {
-  hasPreviousPage: Boolean!
-  hasNextPage: Boolean!
-  startCursor: String
-  endCursor: String
-}
-```
-
-Usage example:
-
-```ts
-import { GraphQLList, GraphQLNonNull, GraphQLObjectType } from 'graphql';
-import { PageInfoType, ConnectionInterfaceType } from '@via-profit-services/core';
-
-import MyEdge from './MyEdge';
-
-const MyConnection = new GraphQLObjectType({
-  name: 'MyConnection',
-  interfaces: [ConnectionInterfaceType],
-  fields: () => ({
-    pageInfo: { type: new GraphQLNonNull(PageInfoType) },
-    edges: { type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(MyEdge))) },
-  }),
-});
-
-export default MyConnection;
-```
-
-### OrderDirection
-
-The `OrderDirection` **type** is an Enum type to make the order (ASC, DESC)
-Interface implements the SDL:
-
-```graphql
-enum OrderDirection {
-  """
-  Sort the query results in a top to bottom style (e.g.: A->Z)
-  """
-  ASC
-
-  """
-  Sort the query results in a bottom to top style (e.g.: Z->A)
-  """
-  DESC
-}
-```
-
-Usage example:
+### Пример: сортировка
 
 ```ts
 import { GraphQLInputObjectType, GraphQLEnumType, GraphQLNonNull } from 'graphql';
 import { OrderDirectionType } from '@via-profit-services/core';
 
-const MyOrderBy = new GraphQLInputObjectType({
-  name: 'MyOrderBy',
-  fields: () => ({
-    direction: { type: new GraphQLNonNull(OrderDirectionType) },
+const UsersOrderBy = new GraphQLInputObjectType({
+  name: 'UsersOrderBy',
+  fields: {
     field: {
       type: new GraphQLNonNull(
         new GraphQLEnumType({
-          name: 'BlockOrderField',
-          values: {
-            NAME: { value: 'name' },
-            TYPE: { value: 'type' },
-          },
+          name: 'UsersOrderField',
+          values: { NAME: { value: 'name' }, CREATED_AT: { value: 'createdAt' } },
         }),
       ),
     },
-  }),
-});
-
-export default MyOrderBy;
-```
-
-### Error
-
-GraphQL Error interface
-
-Interface implements the SDL:
-
-```graphql
-interface Error {
-  name: String!
-  msg: String!
-}
-```
-
-Usage example:
-
-```ts
-import { GraphQLObjectType, GraphQLNonNull, GraphQLString } from 'graphql';
-import { ErrorInterfaceType } from '@via-profit-services/core';
-
-const MyError = new GraphQLObjectType({
-  name: 'MyError',
-  interfaces: () => [ErrorInterfaceType],
-  fields: {
-    name: { type: new GraphQLNonNull(GraphQLString) },
-    msg: { type: new GraphQLNonNull(GraphQLString) },
+    direction: { type: new GraphQLNonNull(OrderDirectionType) },
   },
 });
-
-export default MyError;
 ```

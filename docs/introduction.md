@@ -1,137 +1,107 @@
-# Introduction of @via-profit-services/core
+# Введение
 
-![via-profit-services-cover](https://github.com/via-profit-services/core/raw/master/assets/via-profit-services-cover.png)
+`@via-profit-services/core` — это HTTP-слой GraphQL-сервера. Само выполнение запросов делает эталонная реализация [graphql-js](https://github.com/graphql/graphql-js). Ядро берёт на себя всё, что происходит до и вокруг выполнения:
 
-> Via Profit services / **Core** - [GraphQL](https://graphql.org/) server
+- разбор HTTP-запроса (JSON, GET-параметры, multipart с файлами, gzip/deflate/br);
+- лимиты размеров, глубины и сложности;
+- middleware и контекст;
+- persisted queries;
+- форматирование ошибок.
 
+## Минимальный сервер
 
-## Features
+```ts
+import http from 'node:http';
+import { GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLNonNull } from 'graphql';
+import { graphqlHTTPFactory } from '@via-profit-services/core';
 
- - Flexible
- - Middleware supports
- - Files uploading out of box
-
-## Table of contents
-
- - [Installation](#installation)
- - [Simple GraphQL server](#simple-graphql-server)
- - [Scalar types](./scalars.md)
- - [Context](./context.md)
- - [File uploads](./file-uploads.md)
- - [Cursor pagination](./connections.md)
-
-## Installation
-
-First of all you should install some peer dependencies and install the core:
-
-- [GraphQL](https://github.com/graphql/graphql-js) - The JavaScript reference implementation for GraphQL
-
-## Simple GraphQL server
-
-To build your first project you should do some things:
-
-- Make your GraphQL schema
-- Create an http server
-
-Let's make it:
-
-```js
-import http from "node:http";
-import * as core from "@via-profit-services/core";
-import {
-  GraphQLSchema,
-  GraphQLObjectType,
-  GraphQLNonNull,
-  GraphQLString,
-} from "graphql";
-
-
-// Your schema
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
-    name: "Query",
-    fields: () => ({
+    name: 'Query',
+    fields: {
       sayHello: {
         type: new GraphQLNonNull(GraphQLString),
-        description: "Hello string",
-        resolve: () => "Hello",
+        resolve: () => 'Hello',
       },
-    }),
+    },
   }),
 });
 
+// Фабрика вызывается ОДИН раз при старте приложения
+const graphqlHTTP = graphqlHTTPFactory({ schema });
 
-// Create the simple NodeJS HTTP server
-const server = http.createServer();
+const server = http.createServer(async (req, res) => {
+  // Обработчик вызывается на КАЖДЫЙ запрос
+  const response = await graphqlHTTP(req, res);
 
-// Create The graphqlHTTP listener
-const graphqlHTTP = core.graphqlHTTPFactory({
-  schema,
-  debug: true, // For display geaphql extensions response
+  res.statusCode = response.status ?? 200; // рекомендуемый статус от ядра
+  res.setHeader('content-type', 'application/json');
+  res.end(JSON.stringify(response));
 });
 
-// Now you can use graphqlHTTP in your http request
-server.on("request", async (req, res) => {
-  const { data, errors, extensions } = await graphqlHTTP(req, res);
-  const response = JSON.stringify({ data, errors, extensions });
-
-  res.statusCode = 200;
-  res.setHeader("content-type", "application/json");
-  res.end(response);
-});
-
-server.listen(8080, "localhost", () => {
-  console.debug("started at http://localhost:8080/graphql");
-});
-
+server.listen(8080);
 ```
 
-SDL:
+Ответ на запрос `{ sayHello }`:
 
-```graphql
-Query {
-  sayHello
-}
+```json
+{ "data": { "sayHello": "Hello" } }
 ```
 
-Output:
+С `debug: true` в ответ добавляется блок `extensions` со статистикой сервера:
 
 ```json
 {
-  "data": {
-    "sayHello": "hello"
-  },
+  "data": { "sayHello": "Hello" },
   "extensions": {
-    "queryTime": "2.213368999771774",
+    "queryTime": 2.21,
     "requestCounter": 1,
-    "startupTime": "2021-04-25T04:36:01.796Z"
+    "startupTime": "2026-10-13T04:36:01.796Z"
   }
 }
 ```
 
-Now your Graphql server is ready. You can send a graphql request to the address `http://localhost:8080/graphql`.
+## С Express
 
+Ядру нужен **непрочитанный** поток запроса. Не подключайте перед ним `express.json()` и другие парсеры тела.
 
-## License
+```ts
+import express from 'express';
 
-The MIT License (MIT)
+const app = express();
+const graphqlHTTP = graphqlHTTPFactory({ schema });
 
-Copyright (c) 2020 Via Profit
+app.all('/graphql', async (req, res) => {
+  const response = await graphqlHTTP(req, res);
+  res.status(response.status ?? 200).json(response);
+});
+```
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+## Путь запроса
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+```
+HTTP-запрос
+  │
+  ├─ 1. Проверка метода (GET, POST, OPTIONS) и Content-Type
+  │     (application/json или multipart/form-data)
+  ├─ 2. CSRF-проверка (если csrfPrevention: true)
+  ├─ 3. Middleware: по очереди, наполняют context
+  ├─ 4. Чтение тела: JSON или multipart (файлы → временные файлы на диске)
+  ├─ 5. Параметры: query / variables / operationName из URL или тела,
+  │     persisted query по ключу
+  ├─ 6. parse + стандартная валидация graphql-js (результат кэшируется по тексту запроса)
+  ├─ 7. Лимиты глубины и сложности, правила из middleware
+  ├─ 8. execute: резолверы получают context
+  └─ 9. Ответ { data, errors, extensions } + response.status → ваш код отправляет его клиенту
+        (временные файлы загрузок удаляются после закрытия ответа)
+```
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Ошибка на любом шаге прерывает обработку, и ядро возвращает `{ errors: [...] }`. Подробнее — в разделе [Ошибки](./guides/errors.md).
+
+Обратите внимание, что **middleware выполняются до чтения тела**: в них доступны заголовки и URL, но не переменные запроса.
+
+## Что дальше
+
+- [Конфигурация](./guides/configuration.md): параметры и лимиты.
+- [Контекст](./guides/context.md) и [Middleware](./guides/middlewares.md): авторизация, доступ к БД.
+- [Безопасность](./guides/security.md): перед выкладкой в прод.
