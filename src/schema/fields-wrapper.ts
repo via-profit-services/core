@@ -1,10 +1,10 @@
+import { defaultFieldResolver, isIntrospectionType, isObjectType } from 'graphql';
 import type {
   MutatedField,
   MutatedObjectType,
   FieldsWrapper,
   ResolversWrapperFunction,
-} from '@via-profit-services/core';
-import { defaultFieldResolver, isIntrospectionType, isObjectType } from 'graphql';
+} from './types';
 
 type WrapperResult = Awaited<ReturnType<ResolversWrapperFunction>>;
 

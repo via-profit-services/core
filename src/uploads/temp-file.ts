@@ -4,7 +4,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import type { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import type { ReadStreamOptions } from '@via-profit-services/core';
+import type { ReadStreamOptions } from './types';
 
 /**
  * A temporary file that buffers an uploaded file on disk.

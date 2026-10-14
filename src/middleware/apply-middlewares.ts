@@ -1,4 +1,4 @@
-import type { ApplyMiddlewares } from '@via-profit-services/core';
+import type { ApplyMiddlewares } from './types';
 
 const applyMiddlewares: ApplyMiddlewares = async props => {
   const { middlewares, request, schema, stats, context, extensions, config, validationRule } =

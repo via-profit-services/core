@@ -19,8 +19,7 @@ import {
   DEFAULT_JSON_DECOMPRESSED_MAX_BYTES,
   DEFAULT_MAX_GRAPHQL_TOKENS,
 } from '../constants';
-
-import type { Configuration } from '@via-profit-services/core';
+import type { Configuration } from './types';
 
 export const buildConfig = (
   props: Partial<Configuration> & { schema: GraphQLSchema },

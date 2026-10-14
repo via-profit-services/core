@@ -1,15 +1,14 @@
 import zlib from 'node:zlib';
 import http from 'node:http';
-import type { BodyParser, RequestBody, Configuration } from '@via-profit-services/core';
 
-import graphqlFileUploader from './graphql-file-uploader';
+import graphqlFileUploader from '../uploads/graphql-file-uploader';
 import parseContentType from './content-type-parser';
 import { DEFAULT_JSON_DECOMPRESSED_MAX_BYTES, DEFAULT_JSON_MAX_BYTES } from '../constants';
-import { HttpError } from './http-error';
+import { HttpError } from '../errors/http-error';
 import { setBodyStats } from './body-stats';
-
-const isPlainObject = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
+import { isPlainObject } from '../utils/is-plain-object';
+import type { Configuration } from '../application/types';
+import type { BodyParser, RequestBody } from './types';
 
 /**
  * Main body parser entry point.

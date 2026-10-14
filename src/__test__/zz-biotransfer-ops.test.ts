@@ -3,8 +3,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { buildSchema, parse, validate, Kind, type DefinitionNode, type FragmentDefinitionNode, type OperationDefinitionNode, visit } from 'graphql';
-import depthLimit from '../utils/depth-limit-rule';
-import complexityLimit from '../utils/complexity-limit-rule';
+import depthLimit from '../validation/depth-limit-rule';
+import complexityLimit from '../validation/complexity-limit-rule';
 
 const ROOT = '/home/admin/Projects/biotransfer';
 const dummy = buildSchema('type Query { x: Int }');

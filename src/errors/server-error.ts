@@ -1,8 +1,5 @@
 import { GraphQLError } from 'graphql';
-import type {
-  ServerError as ServerErrorInterface,
-  ServerErrorType,
-} from '@via-profit-services/core';
+import type { ServerErrorType } from './types';
 
 /**
  * Status codes for each errorType when the exact status is not given.
@@ -14,7 +11,7 @@ const DEFAULT_STATUS: Record<ServerErrorType, number> = {
   'graphql-error-validate-schema': 500,
 };
 
-class ServerError extends Error implements ServerErrorInterface {
+class ServerError extends Error {
   readonly httpStatus: number;
 
   constructor(

@@ -17,7 +17,7 @@ import type { UploadedFile, Limits } from '@via-profit-services/core';
 
 import { graphqlHTTPFactory, FileUploadScalarType } from '../index';
 import { fakeRequest, fakeResponse } from './helpers';
-import { Multipart } from '../utils/Multipart';
+import { Multipart } from '../uploads/multipart';
 
 const FileInfo = new GraphQLObjectType({
   name: 'FileInfo',

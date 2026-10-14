@@ -1,8 +1,8 @@
-import fs from 'node:fs';
 import typescript from '@rollup/plugin-typescript';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import terser from '@rollup/plugin-terser';
+import { dts } from 'rollup-plugin-dts';
 import { fileURLToPath } from 'node:url';
 import * as path from 'node:path';
 
@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 const input = path.resolve(__dirname, './src/index.ts');
 
 // Everything from node_modules and Node.js built-ins stays external
-const external = ['graphql', '@via-profit-services/core', /^node:/];
+const external = ['graphql', /^node:/];
 
 const basePlugins = [
   resolve({ extensions: ['.ts', '.js'], preferBuiltins: true }),
@@ -26,18 +26,6 @@ const basePlugins = [
   // including error reporting
   terser(),
 ];
-
-// Плагин копирования .d.ts
-const copyDtsPlugin = {
-  name: 'copy-dts',
-  writeBundle() {
-    const source = path.resolve(__dirname, './src/@types/index.d.ts');
-    const target = path.resolve(__dirname, './dist/index.d.ts');
-    if (fs.existsSync(source)) {
-      fs.copyFileSync(source, target);
-    }
-  },
-};
 
 // ESM bundle
 const esm = {
@@ -58,7 +46,21 @@ const cjs = {
     format: 'cjs',
   },
   external,
-  plugins: [...basePlugins, copyDtsPlugin],
+  plugins: basePlugins,
 };
 
-export default [esm, cjs];
+// Type declarations: generated from the sources and bundled into one file.
+// One file is required: `declare module '@via-profit-services/core'` in a
+// project merges into an interface (e.g. Context) only if the interface is
+// declared in the module itself, not re-exported from another file.
+const types = {
+  input,
+  output: {
+    file: path.resolve(__dirname, './dist/index.d.ts'),
+    format: 'esm',
+  },
+  external,
+  plugins: [dts({ tsconfig: './tsconfig.json' })],
+};
+
+export default [esm, cjs, types];

@@ -18,7 +18,7 @@
 
 import http from 'node:http';
 import zlib from 'node:zlib';
-import { TempFile } from '../utils/TempFile';
+import { TempFile } from '../uploads/temp-file';
 
 import configTest, { sendGraphQLRequest } from './config-test';
 import schema from './schema';
