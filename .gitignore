@@ -31,3 +31,5 @@ dump.rdb
 !.yarn/versions
 
 /artifacts
+# local analysis against the biotransfer sources (absolute paths)
+/src/__test__/zz-biotransfer-ops.test.ts
