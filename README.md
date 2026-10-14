@@ -15,7 +15,7 @@
 npm install @via-profit-services/core graphql
 ```
 
-Требуется Node.js 18.18 или новее (рекомендуется 20+) и `graphql` версии 16.
+Требуется Node.js 20+ и `graphql` версии 16.
 
 ## Быстрый старт
 

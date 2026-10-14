@@ -15,7 +15,7 @@
   },
   "types": "./dist/index.d.ts",
   "engines": {
-    "node": ">=18.18"
+    "node": ">=20"
   },
   "files": [
     "dist",

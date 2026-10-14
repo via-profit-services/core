@@ -2,7 +2,7 @@
 
 ## Окружение
 
-- Node.js 20+ (пакет поддерживает 18.18+)
+- Node.js 20+
 - `npm ci`
 
 ## Команды
@@ -15,7 +15,7 @@
 | `npm run typecheck` | Проверка типов TypeScript |
 | `npm run build` | Сборка `dist/` (ESM + CJS + `index.d.ts`) |
 
-CI (`.github/workflows/ci.yml`) выполняет все проверки на Node.js 18, 20, 22 и 24.
+CI (`.github/workflows/ci.yml`) выполняет все проверки на Node.js 20, 22 и 24.
 
 ## Структура
 
