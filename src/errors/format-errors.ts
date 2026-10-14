@@ -1,6 +1,7 @@
-import type { Context, ServerErrorType } from '@via-profit-services/core';
 import { GraphQLFormattedError, GraphQLError } from 'graphql';
-import ServerError from '../server-error';
+import ServerError from './server-error';
+import type { Context } from '../application/types';
+import type { ServerErrorType } from './types';
 
 export const MASKED_ERROR_MESSAGE = 'Internal server error';
 

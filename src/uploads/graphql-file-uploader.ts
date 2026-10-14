@@ -1,18 +1,18 @@
 import type { Readable } from 'node:stream';
-import type { MultipartParser, RequestBody } from '@via-profit-services/core';
 
-import FileUploadInstance from './FileUploadInstance';
-import { TempFile } from './TempFile';
+import FileUploadInstance from './file-upload-instance';
+import { TempFile } from './temp-file';
 import {
   Multipart,
   MultipartError,
   DEFAULT_MAX_PART_HEADER_SIZE,
   isValidBoundary,
   type MultipartFileInfo,
-} from './Multipart';
+} from './multipart';
 import { setUploadByPath } from './map-path';
-import parseContentType from './content-type-parser';
-import { setBodyStats } from './body-stats';
+import parseContentType from '../http/content-type-parser';
+import { setBodyStats } from '../http/body-stats';
+import { isPlainObject } from '../utils/is-plain-object';
 import {
   DEFAULT_MAX_FIELD_SIZE,
   DEFAULT_MAX_FILE_SIZE,
@@ -21,6 +21,8 @@ import {
   DEFAULT_MAX_FILE_FIELDS,
   DEFAULT_MAX_FILE_PARTS,
 } from '../constants';
+import type { RequestBody } from '../http/types';
+import type { MultipartParser } from './types';
 
 /**
  * Body property holding the function that removes temporary files of the
@@ -28,9 +30,6 @@ import {
  * http.ServerResponse to wait for (see `scheduleCleanup`).
  */
 export const UPLOAD_CLEANUP = Symbol('@via-profit-services/core/upload-cleanup');
-
-const isPlainObject = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 /**
  * GraphQL multipart request (https://github.com/jaydenseric/graphql-multipart-request-spec).

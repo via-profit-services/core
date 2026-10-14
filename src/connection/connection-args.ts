@@ -1,12 +1,12 @@
 import { GraphQLError } from 'graphql';
+
+import { invalidCursorError } from './cursor-codec';
 import type {
   ConnectionArgs,
   ConnectionCursor,
   ConnectionPayload,
   ParseConnectionArgsOptions,
-} from '@via-profit-services/core';
-
-import { invalidCursorError } from './cursor-codec';
+} from './types';
 
 const argsError = (message: string) =>
   new GraphQLError(message, { extensions: { code: 'BAD_USER_INPUT' } });
@@ -40,6 +40,11 @@ const toJSON = <T>(value: T) => JSON.parse(JSON.stringify(value ?? {}));
  *
  * `last` without `before` (the last N records of the whole list) needs the
  * total count, which is not known before the query: it is rejected.
+ *
+ * Errors are GraphQLError with code BAD_USER_INPUT.
+ *
+ * @param filters - filters of the current request; explicit (not undefined)
+ * values win over the values from the cursor
  */
 const parseConnectionArgs = <Filters extends object>(
   args: ConnectionArgs,

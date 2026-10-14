@@ -1,4 +1,4 @@
-import type { FilePayload } from '@via-profit-services/core';
+import type { FilePayload } from './types';
 
 /**
  * A global symbol (registered via Symbol.for) is the same in every copy of

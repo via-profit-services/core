@@ -1,4 +1,4 @@
-import type { Middleware } from '@via-profit-services/core';
+import type { Middleware } from './types';
 
 type ComposeMiddlewares = (...args: Array<Middleware | Middleware[]>) => Middleware[];
 

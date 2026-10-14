@@ -1,8 +1,8 @@
 import type { ValidationRule } from 'graphql';
-import type { Configuration } from '@via-profit-services/core';
 
 import depthLimitRule from './depth-limit-rule';
 import complexityLimitRule from './complexity-limit-rule';
+import type { Configuration } from '../application/types';
 
 /**
  * Collects the measured values of one request (see `limits.onUsage`).

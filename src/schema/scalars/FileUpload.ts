@@ -1,5 +1,5 @@
 import { GraphQLError, GraphQLScalarType } from 'graphql';
-import FileUploadInstance from '../../utils/FileUploadInstance';
+import FileUploadInstance from '../../uploads/file-upload-instance';
 
 /**
  * GraphQL `FileUpload` scalar.

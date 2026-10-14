@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import { GraphQLError } from 'graphql';
-import type { CursorCodec, CursorCodecOptions } from '@via-profit-services/core';
+import type { CursorCodec, CursorCodecOptions } from './types';
 
 /**
  * HMAC-SHA256 key shorter than the hash output weakens the signature:
@@ -23,6 +23,8 @@ export const invalidCursorError = () =>
  * The secret is passed by the project. Do not use a password-like string
  * directly: derive a dedicated key, e.g. from the JWT key with HKDF:
  * `crypto.hkdfSync('sha256', jwtKey, '', 'connection-cursor', 32)`.
+ *
+ * Throws if the secret is shorter than 32 bytes.
  */
 const createCursorCodec = (options: CursorCodecOptions): CursorCodec => {
   const key = Buffer.isBuffer(options?.secret)

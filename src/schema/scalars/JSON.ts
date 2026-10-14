@@ -7,12 +7,12 @@ function identity<T>(value: T): T {
   return value;
 }
 
-function ensureObject(value: any): value is object {
+function ensureObject(value: unknown): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     throw new TypeError(`JSONObject cannot represent non-object value: ${value}`);
   }
 
-  return value;
+  return value as Record<string, unknown>;
 }
 
 function parseObject(ast: ObjectValueNode, variables: any): any {

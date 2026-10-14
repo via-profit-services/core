@@ -1,4 +1,4 @@
-import type { BuildConnectionOptions, CursorConnection } from '@via-profit-services/core';
+import type { BuildConnectionOptions, CursorConnection } from './types';
 
 /**
  * Builds the connection from the records of one page.
