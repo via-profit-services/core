@@ -1,7 +1,7 @@
 {
   "name": "@via-profit-services/core",
   "support": "https://via-profit.ru",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Via Profit Core service",
   "type": "module",
   "main": "./dist/index.cjs",
